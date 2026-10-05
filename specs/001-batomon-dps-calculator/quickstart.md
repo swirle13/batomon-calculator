@@ -47,6 +47,37 @@ Opens the Vite dev server. Navigate to the Calculator view.
 2. **Expected**: the conflicting values and their sources are both visible on that entry's detail
    view, not silently merged into one number (spec.md FR-004, SC-004).
 
+## Validation scenario 5 — Trainer roster + placement (FR-015)
+
+1. Open the Calculator view without selecting anything.
+2. **Expected**: the Trainer selector appears before/above the 2x3 grid-placement controls, and
+   its dropdown lists the full documented roster (23 Trainers per research.md D1), not just
+   "Musician."
+
+## Validation scenario 6 — per-creature effective-stat breakdown reflects modifiers (FR-016)
+
+1. Place one creature with confirmed `baseDamage` (e.g. `scorchimp`) into a grid slot.
+2. Note its displayed effective damage in the per-creature breakdown panel.
+3. Add a team-wide `damageFlatAdd` modifier of `+10` via the Modifiers section.
+4. **Expected**: the breakdown panel's displayed damage for that creature increases by exactly 10,
+   without needing to open the DPS table or chart to infer it.
+
+## Validation scenario 7 — chart X-axis ticks are clean and evenly spaced (FR-017)
+
+1. Assemble any team and run a simulation window of 20s.
+2. **Expected**: the chart's X-axis shows a small number of clean, evenly-spaced tick values (e.g.
+   `0, 5, 10, 15, 20`), never a raw event timestamp like `14.7000000000000001` and never
+   inconsistently-spaced labels driven by the underlying data points.
+
+## Known data gap, not a failure
+
+As of 2026-10-05 (round 2), only 5 of 149 creature records have confirmed `baseDamage` /
+`baseCooldownSeconds` (`bumblebolt`, `formiqueen`, `scorchimp`, `beetbud`, `riglet`) — every other
+creature correctly shows `0` DPS and contributes nothing to the chart, because its stats are
+genuinely unconfirmed (`unconfirmedFields`), not because of an engine bug. See research.md D5 for
+the full diagnosis. If DPS/chart output looks like "nothing is happening," check whether the
+placed creatures actually have confirmed stats before suspecting a regression.
+
 ## Automated checks
 
 ```bash

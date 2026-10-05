@@ -183,6 +183,114 @@ than silently omitting or silently asserting it).
 - **Source**: "Batomon Showdown Batodex and Types" —
   <https://batomonshowdown-game.wiki/reference/batodex-and-types/>. Retrieved 2026-10-05.
 
+## D. Round 2 follow-ups (2026-10-05 — user-reported items, planned via `/speckit-plan`)
+
+### D1. Trainer roster completeness
+> The full documented 1.2.0 roster is 23 Trainers: Black Belt, Bug Catcher, Burglar, Chef, Chemist,
+> Egg Breeder, Gamer, Gentleman, Lucky Girl, Mad Scientist, Masked Man, Monster Ranger, Musician,
+> Painter, Redhead, Rich Lady, Scavenger, Shopkeeper, Smuggler, Swim Coach, Treasure Hunter, Twins,
+> Youngster. Five of these (Twins, Gentleman, Painter, Burglar, Scavenger, Black Belt) were named
+> only in official 1.0.0 patch notes with no official ability text; their ability text below comes
+> from secondary wikis' community/observational sourcing, not a primary patch note.
+
+- **Sources**: "Batomon Showdown Trainers – Abilities and Guides" — <https://batomon.net/trainers/>;
+  "Batomon Showdown Trainer Tier List — Pantra & Jinto (Patch 1.2.0)" —
+  <https://batomonshowdown.org/tier-list/trainer-tier-list/>; "Batomon Showdown Trainers: Every
+  Ability and Which to Pick" — <https://batomonshowdown-game.wiki/guide/trainers-and-picks/>;
+  "Batomon Showdown Trainer Abilities" — <https://batomonshowdowngame.wiki/players/trainer-guide/>.
+  All retrieved 2026-10-05.
+- **Recorded conflicts** (must be `FieldConflict`s, not silently resolved, per Constitution
+  Principle IV): Chemist's base Poison bonus (+3 per batomon.net vs. +1 per
+  batomonshowdown-game.wiki; both agree it increases by +1 more per level-up); Redhead's Burn bonus
+  (+3 per batomon.net vs. +2 per batomonshowdown-game.wiki and the official-demo-capture source
+  cited in the tier-list page).
+- **Engine/data implication**: no type change needed — widen `trainers.ts` from the single
+  "Musician" seed to the full 23-entry roster, with the two conflicts above recorded and the five
+  named-only trainers' `abilityText` flagged via `unconfirmedFields` (see D-amendment below —
+  `unconfirmedFields` is promoted from `CreatureRecord` onto `Provenance` so Trainers can use it
+  too).
+
+### D2. Level-scaling (1–4) specifics
+> Standard merge path: 3 identical Level-1 copies → 1 Level-2; 2 identical Level-2 copies → 1
+> Level-3. Level 3 is the standard ceiling — Level 4 is **not** reachable via ordinary shop/merge
+> play; it only comes from rare in-run events (e.g. a "Monster Professor"-style event) or
+> consumable level-up items (e.g. "Ultra Candy"). Per-level ability/stat values are published as
+> three numbers (L1/L2/L3) where a source gives specifics (e.g. Pyronade Burn 20/40/60; Coalem
+> Shield 550/1100/1650); Level 4's jump is reported as large and inconsistent in size across
+> creatures (anecdotally ~2x–10x+ over L3) rather than a predictable continuation of the L1→L3
+> slope. At least one creature (Sukoi) had its own self-level-up mechanic officially hotfixed from
+> a level-4 cap down to a level-3 cap — level caps are **not** uniformly 4 for every creature.
+
+- **Sources**: "Batomon Showdown Level 4, Merging and Shiny Explained" —
+  <https://batomonshowdown-game.wiki/guide/levels-merging-and-shiny/>; "Batomon Showdown Guide:
+  Meta Builds, Merging & Tips" — <https://batomon-showdown-wiki.wiki/guide/batomon-showdown-guide>;
+  "How to Level Up in Batomon Showdown" —
+  <https://batomonshowdown.org/guides/how-to-level-up/>; "Batomon Showdown Level 4: The Complete
+  Upgrade Guide" — <https://batomon-showdown-wiki.wiki/guide/batomon-showdown-level-4>. All
+  retrieved 2026-10-05.
+- **Engine/data implication**: confirms B6's existing design intent ("each creature record is
+  per-level, not a single merge-computed record") was correct — widen `level` from `1 | 2 | 3` to
+  `1 | 2 | 3 | 4`, and never extrapolate/interpolate a Level 4 number from L1–L3 data; each must be
+  independently cited per-creature when found. Per-creature level caps below 4 must be recordable
+  (not every species defaults to a theoretical max of 4).
+
+### D3. Multicast counts toward output; Trigger does not reset cooldown — both currently unimplemented
+> "Battle stats count triggers, not multicast copies" (1.2.0 patch notes) plus "On Cast resolves
+> when that creature performs a cast, including each repeated cast in a Multicast sequence" (same
+> mechanics guide) together establish: every individual Multicast-sequence hit is its own
+> independent direct-damage event (each can proc Shock separately, each contributes its own
+> damage); a Trigger-caused extra cast, separately, does **not** reset the triggering creature's
+> own ordinary cooldown timer. These are two different mechanics the type vocabulary already has
+> (`AbilityTag.kind: "trigger"`, `EffectDescriptor.statChange.stat: "multicast"`) but `simulate.ts`
+> implements neither today.
+
+- **Source**: "Batomon Showdown Mechanics – Triggers and Evolutions" —
+  <https://batomon.net/guides/mechanics/> (same page already cited in B4; re-confirmed current for
+  1.2.0). Retrieved 2026-10-05.
+- **Engine implication, this round**: Multicast is now in scope — the user explicitly asked to see
+  it alongside damage/status in the per-creature breakdown (item 2). `CreatureRecord` needs a
+  `baseMulticast: number` field (default `1`), and Phase A cast generation must fire
+  `baseMulticast + multicastAdd modifiers` independent direct-damage events at the same timestamp
+  per cooldown completion, each independently Shock-proc-eligible. **Trigger stays out of scope**
+  this round — it's a separate, larger mechanic (one creature's ability granting another creature
+  an extra cast) that nothing in this round's request depends on; tracked, not silently dropped.
+
+### D4. Chart X-axis consistency (engineering decision — no external research needed)
+- **Root cause 1**: `CumulativeChart`'s `<XAxis dataKey="t">` has no explicit `type`, so Recharts
+  defaults to a **category** axis — every distinct `cumulativeSeries[].tSeconds` value becomes its
+  own evenly-*pixel*-spaced tick, regardless of numeric magnitude, which is why consecutive labels
+  (e.g. `4, 4.9, 5.9, 6, 6.9, 8, 8.8, …`) look inconsistent: they ARE inconsistently spaced in
+  value, evenly spaced in pixels.
+- **Root cause 2**: cast times in `simulate.ts` Phase A are generated by repeated float addition
+  (`for (let t = startAt + cooldown; t <= windowSeconds; t += cooldown)`), accumulating IEEE-754
+  drift for non-power-of-two cooldowns — surfacing as labels like `14.7000000000000001`.
+- **Decision**: `XAxis` becomes `type="number"` with an explicit `domain={[0, windowSeconds]}`, so
+  Recharts' own linear-scale "nice tick" generator picks clean, evenly-spaced values (e.g. `0, 5,
+  10, 15, 20`) independent of the underlying data points. Separately, fix the float-drift root
+  cause by generating cast times via index multiplication (`t = startAt + n * cooldown`, not
+  repeated `+=`), and round every `TimelineEvent.tSeconds` to a fixed precision (1e-6s) at the
+  point of creation, so no float artifact can leak into a tooltip label either.
+
+### D5. Corpus completeness — measured baseline (user-reported "regression" diagnosed as a data gap)
+> As of this round, 144 of 149 creature records (~96.6%) have `baseDamage: null` /
+> `baseCooldownSeconds: null` ("unconfirmed", shown as "unknown" in the UI) — only `bumblebolt`,
+> `formiqueen`, `scorchimp`, `beetbud`, and `riglet` currently carry confirmed combat stats. This
+> is far below spec.md's SC-003 target (≥90% complete).
+
+- **Diagnosis**: the user's report of "DPS table is now 0" and "chart shows no values" for a
+  3-creature team (Brawlmantis/Frizzly/Dracana, all back-row) is **not a code regression**. All
+  three have `baseDamage: null` in the corpus. Re-running `simulate()` directly against a creature
+  with confirmed stats (`scorchimp`, 20s window) still correctly produces a non-zero `perCreatureDps`
+  and a populated `cumulativeSeries` — the engine is unaffected by the facilitated-DPS change. The
+  two issues coincided only because the user happened to test a data-incomplete team the next time
+  they used the app.
+- **Engine implication**: none — the engine is correct as-is. **Corpus implication**: this is the
+  single largest remaining gap against the spec's own success criteria. It is too large to close
+  within this planning round (144 creatures × up to 4 levels each, each number individually cited
+  per Constitution Principle IV) and must become a tracked, large, multi-session corpus-research
+  task — same pattern as the existing `tasks.md` T043 "full-corpus widening pass" — rather than a
+  single task.
+
 ## C. Resolved Technical Context (feeds plan.md)
 
 | Field | Resolution |

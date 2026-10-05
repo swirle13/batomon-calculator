@@ -108,15 +108,22 @@ correct and show their data source citation(s).
   naturally through the remainder of the window?
 - How does the simulated time window handle a creature that evolves/transforms/is devoured
   mid-battle, where its stats change partway through the window?
+- How does the system handle a creature whose corpus-confirmed maximum level is below 4 (e.g., a
+  species whose own level-up mechanic was officially capped lower than the general case)? It MUST
+  NOT assume every creature reaches level 4 by default; a per-species confirmed cap is recorded
+  when sourced, otherwise the higher levels are shown as "unknown"/unconfirmed rather than guessed.
 
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
 
 - **FR-001**: System MUST provide a browsable corpus of Batomon creatures, each including name,
-  rarity, type(s), shop cost, base attack interval ("countdown"), base damage, damage type, and
-  ability text, each citing the source(s) it was transcribed from and the game patch/version those
-  values reflect.
+  rarity, type(s), shop cost, base attack interval ("countdown"), base damage, damage type, base
+  Multicast count, and ability text, each citing the source(s) it was transcribed from and the
+  game patch/version those values reflect. Values MUST be recorded **per level the creature can
+  reach** (levels 1 through 4 — level 4 reachable only via rare in-run events or consumable
+  level-up items, not standard shop merging; not every creature is confirmed to reach level 4),
+  never extrapolated or interpolated from another level's values.
 - **FR-002**: System MUST provide a browsable corpus of Trainers, each with their ability
   description, source citation(s), and patch/version tag.
 - **FR-003**: System MUST provide a browsable corpus of Trinkets and Items, each with their effect
@@ -153,6 +160,16 @@ correct and show their data source citation(s).
   rarity.
 - **FR-014**: System MUST clearly display, for the active corpus snapshot, which game patch/version
   it reflects.
+- **FR-015**: System MUST provide the full documented Trainer roster (not a partial seed), and the
+  Trainer-selection control MUST be presented before/above the creature grid-placement controls in
+  the team-building flow, so Trainer choice is made first.
+- **FR-016**: System MUST display, for each currently-placed creature, its current *effective*
+  combat output per type (direct damage, each status effect it applies, and its Multicast count)
+  reflecting any active `StatModifier`s, so a user can see what a modifier change actually affects
+  without having to infer it from the aggregate DPS/status summary alone.
+- **FR-017**: The cumulative damage/status chart's time axis (FR-010) MUST use consistent,
+  evenly-spaced tick values independent of the underlying simulated event timestamps — never
+  deriving tick placement directly from raw event times.
 
 ### Key Entities
 
@@ -215,3 +232,26 @@ correct and show their data source citation(s).
 - **Users have access to no account/login system** — this is a stateless, client-side tool with no
   requirement to persist a user's team configuration across sessions at launch (local-only
   persistence, e.g. for convenience, may be added later without being a launch requirement).
+
+## Amendments
+
+### 2026-10-05 (round 2) — FR-015/016/017 added; FR-001 widened for per-level stats; SC-003 gap logged
+
+Added via `/speckit-plan` in response to user-reported items: full Trainer roster + its placement
+in the team-building flow (FR-015), a per-creature effective-stat breakdown so modifier changes
+are visible (FR-016), consistent chart X-axis ticks (FR-017), and per-level (1–4) creature stats
+(FR-001 amendment) — see research.md section D and data-model.md's matching amendments for the
+cited mechanics and the exact type/engine changes this implies.
+
+**SC-003 status, logged honestly rather than quietly lowered**: as of this round, only 5 of 149
+creature records (~3.4%) have confirmed `baseDamage`/`baseCooldownSeconds` — far below the ≥90%
+target. This is a known, large, pre-existing gap (not introduced by this round's changes); closing
+it requires per-creature, per-level, individually-cited research across the full corpus and is
+tracked as ongoing corpus-widening work (see research.md D5) rather than something any single
+planning or implementation pass can close outright. The 90% target in SC-003 is kept as-is (not
+weakened) to keep it honest as a measure of remaining work.
+
+**Diagnosis note**: a user report that the DPS table and chart "went to zero" after an unrelated UI
+change was investigated and found to be caused by the above corpus gap (the specific creatures
+tested had unconfirmed stats), not a code regression — see research.md D5 for the full diagnosis.
+Logged here so this does not get re-opened as a suspected engine bug in a future round.

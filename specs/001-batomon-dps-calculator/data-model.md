@@ -239,6 +239,96 @@ layers, by their share of the total layer count, and converted to a per-second r
 way `perCreatureDps` is. A creature's own direct damage is never counted here — only damage its
 status grants enabled on top of some hit (its own or an ally's).
 
+### 2026-10-05 (round 2) — `unconfirmedFields` promoted from `CreatureRecord` onto `Provenance`
+
+So `TrainerRecord`/`TrinketRecord`/`ItemRecord` can flag a low-confidence field the same way
+creatures already do (needed immediately by the Trainer-roster widening below — see research.md
+D1's five named-only trainers). Non-breaking: `CreatureRecord` keeps the field, just inherited
+rather than locally declared.
+
+```ts
+interface Provenance {
+  sourceRefs: SourceRef[];
+  patch: string;
+  conflicts?: FieldConflict[];
+  unconfirmedFields?: string[]; // moved here from CreatureRecord, 2026-10-05 round 2
+}
+```
+
+### 2026-10-05 (round 2) — Creature level widened to 1–4; lookup must key on (id, level)
+
+Per research.md D2: Level 4 exists but is reached only via rare events/items, not standard
+merging, and is **not** guaranteed for every species (at least one creature's own level-up was
+officially hotfixed to a lower cap). `CreatureRecord.level` widens accordingly:
+
+```ts
+level: 1 | 2 | 3 | 4; // was 1 | 2 | 3
+confirmedMaxLevel?: 1 | 2 | 3 | 4; // per-species cap, when sourced; absent = not yet researched
+```
+
+**Bug found while planning, not yet triggered by data** (every existing record is `level: 1`, so
+this was latent): `simulate.ts` resolves a placement's creature via
+`corpus.creatures.find(c => c.id === p.creatureId)`, which ignores `TeamPlacement.level` entirely.
+Once the corpus gains real level-2/3/4 records sharing an `id`, this must become
+`corpus.creatures.find(c => c.id === p.creatureId && c.level === p.level)`, raising
+`InvalidTeamConfigurationError` when no record exists for that exact `(id, level)` pair — it must
+never silently fall back to a different level's stats. The UI also needs an actual level selector
+per placement (`TeamConfigContext.setPlacement` currently hardcodes `level = 1` with no control to
+change it), restricted to levels the corpus actually has a record for.
+
+### 2026-10-05 (round 2) — `baseMulticast` added to `CreatureRecord`; Multicast now in engine scope
+
+Per research.md D3 — Multicast causes a cast to resolve as multiple independent direct-damage
+events (each separately Shock-proc-eligible), and the user explicitly asked to see it in the
+per-creature breakdown (item 2, see `perCreatureEffectiveStats` below).
+
+```ts
+baseMulticast: number; // default 1 ("no stated Multicast bonus"); backfilled to 1 for all
+                        // existing records rather than flagged unconfirmed, since "1 = none" is
+                        // the reasonable baseline absent contrary evidence in abilityText
+```
+
+`ModifierStat` gains `"multicastAdd"`. Phase A cast generation fires
+`baseMulticast + multicastAdd` independent direct-damage events per cooldown completion instead of
+one.
+
+### 2026-10-05 (round 2) — `SimulationResult.perCreatureEffectiveStats` (per-creature breakdown, item 2)
+
+The user reported no visibility into "the current mon's damage/shield/burn/poison/multi-cast/
+shock," making it hard to tell what a `StatModifier` actually changes before running the full
+simulation. New field, computed from the exact same per-cast modifier resolution Phase A already
+performs (`sumModifier` et al.) — not a second, divergent computation path, per the Development
+Workflow single-source-of-truth rule:
+
+```ts
+perCreatureEffectiveStats: Record<string /* same key shape as perCreatureDps */, {
+  damage: number | null;
+  damageType: DamageType | null;
+  cooldownSeconds: number | null;
+  multicast: number; // baseMulticast + any multicastAdd modifier
+  appliesStatus: { type: StatusEffectType; amount: number }[]; // post-modifier amounts
+}>;
+```
+
+Replaces/feeds `PlacedCreatureDetails`, which currently only shows raw unmodified corpus values
+and has no way to reflect an active `StatModifier`.
+
+### 2026-10-05 (round 2) — Trainer corpus widened to the full documented roster
+
+No type change — data entry only, per research.md D1. `trainers.ts` grows from the single
+"Musician" seed to the full cited 23-entry roster, including the two recorded `FieldConflict`s
+(Chemist's Poison amount, Redhead's Burn amount) and `unconfirmedFields` flags (now available per
+the `Provenance` promotion above) on the five named-only trainers whose ability text comes from
+secondary/observational sourcing rather than an official patch note.
+
+### 2026-10-05 (round 2) — Chart X-axis: numeric domain + float-safe cast timing
+
+No data-model type change. Per research.md D4: `CumulativeChart`'s `XAxis` becomes
+`type="number" domain={[0, windowSeconds]}`; `simulate.ts` Phase A's cast-time loop switches from
+repeated `+=` addition to index multiplication (`t = startAt + n * cooldown`); every
+`TimelineEvent.tSeconds` is rounded to a fixed precision (1e-6s) at creation so no float-drift
+artifact can surface in any UI (tooltip, table, or chart tick).
+
 ### 2026-10-05 — Shield counted as an output stat, not just absorption
 
 `perStatusPerSecond.Shield` and `cumulativeSeries[].byStatus.Shield` now track the cumulative
