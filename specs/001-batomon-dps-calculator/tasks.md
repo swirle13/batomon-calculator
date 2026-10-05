@@ -235,7 +235,7 @@ and confirm a known conflicting entry shows both values with their sources.
       (Constitution Principle II)
 - [ ] T054 [P] Accessibility pass on `GridPicker`/`TeamSummary`/`CumulativeChart` (keyboard
       navigation, `aria-*` labels)
-- [ ] T055 Create the public GitHub repository (per the earlier decision: `swirle13/batomon-
+- [x] T055 Create the public GitHub repository (per the earlier decision: `swirle13/batomon-
       calculator`-style public repo), push initial history, and confirm the `deploy.yml` workflow
       from T006 publishes successfully to `gh-pages`
 
