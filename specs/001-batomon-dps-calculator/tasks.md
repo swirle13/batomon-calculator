@@ -250,6 +250,17 @@ and confirm a known conflicting entry shows both values with their sources.
 
 ---
 
+## Future Enhancements (user-requested 2026-10-05, explicitly deferred: "once we get all of the
+## mechanics working" — not scheduled into a phase yet)
+
+- [ ] T056 Replace/augment the `<select>`-based `GridPicker` with a big vertical, scrollable
+      creature browser alongside the calculator (showing each Banto's base stats + ability
+      inline, same info as `PlacedCreatureDetails`/`CorpusBrowser` already render) that supports
+      drag-and-drop onto the 2x3 grid. Keep the existing dropdown as a fallback/accessible
+      alternative input method rather than removing it outright (keyboard/screen-reader users).
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies

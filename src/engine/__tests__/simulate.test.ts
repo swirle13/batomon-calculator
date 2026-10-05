@@ -1,8 +1,44 @@
 import { describe, expect, it } from "vitest";
 import { simulate } from "../simulate";
 import { corpus } from "../../data/corpus";
-import type { TeamConfiguration } from "../../data/types";
+import type { Corpus, CreatureRecord, TeamConfiguration } from "../../data/types";
 import { InvalidTeamConfigurationError } from "../errors";
+
+/** Minimal synthetic corpus for isolating "facilitated damage" attribution from real game data. */
+function syntheticCorpus(): Corpus {
+  const shockApplier: CreatureRecord = {
+    id: "shockApplier",
+    name: "Shock Applier",
+    rarity: "Common",
+    types: ["Electric"],
+    level: 1,
+    shopCost: 10,
+    baseCooldownSeconds: 1,
+    baseDamage: null,
+    damageType: null,
+    appliesStatus: [{ type: "Shock", amount: 2 }],
+    abilityText: "test fixture",
+    abilityTags: [],
+    sourceRefs: [],
+    patch: "test",
+  };
+  const attacker: CreatureRecord = {
+    id: "attacker",
+    name: "Attacker",
+    rarity: "Common",
+    types: ["Fire"],
+    level: 1,
+    shopCost: 10,
+    baseCooldownSeconds: 1,
+    baseDamage: 5,
+    damageType: "Direct",
+    abilityText: "test fixture",
+    abilityTags: [],
+    sourceRefs: [],
+    patch: "test",
+  };
+  return { creatures: [shockApplier, attacker], trainers: [], trinkets: [], items: [] };
+}
 
 /**
  * quickstart.md Validation Scenario 1: a single creature with known baseDamage and
@@ -187,6 +223,46 @@ describe("simulate", () => {
     const boosted = simulate(withModifier, corpus).perStatusPerSecond.Poison;
     // Venopuff applies 4 Poison per cast; +2 should raise the single-cast tick damage from 4 to 6.
     expect(boosted).toBeCloseTo(base * (6 / 4), 5);
+  });
+
+  /**
+   * "Facilitated damage" (user-requested, data-model.md amendment, 2026-10-05): a creature
+   * that only grants Shock (no direct damage of its own) should show up with 0 perCreatureDps
+   * but a positive perCreatureFacilitatedDps equal to the Shock procs its layers enabled on
+   * the attacker's hits — and that proc damage must NOT also inflate the attacker's own DPS.
+   */
+  it("attributes Shock proc damage to the Shock-granting creature as facilitated damage, not the attacker's own DPS", () => {
+    const synthetic = syntheticCorpus();
+    const config: TeamConfiguration = {
+      placements: [
+        { slot: { row: "front", col: 0 }, creatureId: "shockApplier", level: 1 },
+        { slot: { row: "front", col: 1 }, creatureId: "attacker", level: 1 },
+      ],
+      trainerId: null,
+      trinketIds: [],
+      itemIds: [],
+      simulationWindowSeconds: 4,
+    };
+    const result = simulate(config, synthetic);
+
+    const shockApplierKey = Object.keys(result.perCreatureFacilitatedDps).find((k) => k.startsWith("shockApplier@"));
+    expect(shockApplierKey).toBeDefined();
+    expect(result.perCreatureFacilitatedDps[shockApplierKey!]).toBeGreaterThan(0);
+
+    // shockApplier never deals direct damage itself.
+    expect(Object.keys(result.perCreatureDps).some((k) => k.startsWith("shockApplier@"))).toBe(false);
+
+    // attacker's own DPS is exactly its own direct damage (5 dmg / 1s cooldown = 5/s), not
+    // inflated by the Shock proc damage its hits triggered.
+    const attackerKey = Object.keys(result.perCreatureDps).find((k) => k.startsWith("attacker@"));
+    expect(result.perCreatureDps[attackerKey!]).toBeCloseTo(5, 5);
+
+    // Casts at t=1,2,3,4 for both. shockApplier (front0) is processed before attacker
+    // (front1) at each tied timestamp (stable slot order), so it grants +2 Shock before
+    // attacker's same-tick hit: t=1 -> layers 0->2, proc 2; t=2 -> 2->4, proc 4; t=3 -> 4->6,
+    // proc 6; t=4 -> 6->8, proc 8. Total proc damage = 20 over a 4s window = 5/s, all
+    // attributed to shockApplier (the only Shock source).
+    expect(result.perCreatureFacilitatedDps[shockApplierKey!]).toBeCloseTo(5, 5);
   });
 
   /**

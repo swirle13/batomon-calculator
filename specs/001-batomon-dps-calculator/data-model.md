@@ -207,7 +207,7 @@ type ModifierStat =
 
 interface StatModifier {
   id: string;
-  label: string; // free-text user note
+  label?: string; // optional free-text user note; the compact UI (2026-10-05 redesign) doesn't collect one
   stat: ModifierStat;
   amount: number;
 }
@@ -221,6 +221,23 @@ interface StatModifier {
 no attack event to attach to and is therefore a no-op; same for status-amount modifiers on a
 creature that doesn't already apply that status. This is intentional — modifiers do not
 fabricate new attacks/status grants that aren't in the cited corpus data.
+
+### 2026-10-05 — "Facilitated damage" per creature (user-requested)
+
+The game's own UI only shows each creature's own damage, not how much damage a *status-granting*
+creature enabled on other hits (e.g. a Shock-applier's layers amplifying every subsequent direct
+hit against the target). To help a user decide whether to invest in a Shock-granter's triggers
+vs. their highest-direct-damage attacker, `SimulationResult` gains:
+
+```ts
+perCreatureFacilitatedDps: Record<string, number>; // same key shape as perCreatureDps
+```
+
+Currently populated only from Shock procs (the only implemented facilitation mechanic): each
+proc's damage is split proportionally across every creature currently contributing Shock
+layers, by their share of the total layer count, and converted to a per-second rate the same
+way `perCreatureDps` is. A creature's own direct damage is never counted here — only damage its
+status grants enabled on top of some hit (its own or an ally's).
 
 ### 2026-10-05 — Shield counted as an output stat, not just absorption
 

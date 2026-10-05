@@ -194,8 +194,8 @@ export type ModifierStat =
 export interface StatModifier {
   /** Stable id for list management/removal in the UI; not otherwise meaningful */
   id: string;
-  /** Free-text user note, e.g. "Round 2 win bonus from Brawlmantis" */
-  label: string;
+  /** Optional free-text user note, e.g. "Round 2 win bonus from Brawlmantis" */
+  label?: string;
   stat: ModifierStat;
   amount: number;
 }
@@ -256,6 +256,16 @@ export interface SimulationResult {
   timeline: TimelineEvent[];
   perCreatureDps: Record<string, number>; // keyed by `${creatureId}@${row}${col}`
   perStatusPerSecond: Record<StatusEffectType, number>;
+  /**
+   * User-requested amendment, 2026-10-05 ("facilitated damage"): per-creature rate of damage
+   * *enabled* by that creature's own status grants on OTHER hits — currently just Shock procs,
+   * the only implemented mechanic where one creature's status grant amplifies a separate hit's
+   * damage. Proportionally attributed by each contributing creature's share of current Shock
+   * layers when multiple creatures grant Shock on the same team. Keyed the same way as
+   * `perCreatureDps`. Deliberately excludes a creature's own direct-damage contribution (that's
+   * what `perCreatureDps` already measures) — see data-model.md's "Facilitated damage" amendment.
+   */
+  perCreatureFacilitatedDps: Record<string, number>;
   cumulativeSeries: {
     tSeconds: number;
     totalDamage: number;

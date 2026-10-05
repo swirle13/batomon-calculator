@@ -183,6 +183,11 @@ export function simulate(
   // --- Phase B: walk casts in order, interleaving Burn/Poison ticks, tracking Shock layers ---
   const timeline: TimelineEvent[] = [];
   let shockLayers = 0;
+  // "Facilitated damage" (data-model.md amendment, 2026-10-05): tracks WHICH creature(s)
+  // contributed each currently-active Shock layer, so a proc's damage can be split
+  // proportionally across them rather than attributed to nobody / the attacker it hit through.
+  const shockLayersBySource = new Map<string, number>();
+  const facilitatedDamage = new Map<string, number>();
   const activeStatuses: ActiveStatus[] = [];
   const perCreatureDamage = new Map<string, number>();
   const perStatusDamage: Record<StatusEffectType, number> = { Burn: 0, Poison: 0, Shock: 0, Shield: 0 };
@@ -241,6 +246,12 @@ export function simulate(
       if (procResult.shockDamage > 0) {
         timeline.push({ tSeconds: cast.tSeconds, kind: "shockProc", sourceSlot, damage: procResult.shockDamage, damageType: "Shock" });
         perStatusDamage.Shock += procResult.shockDamage;
+        // Split this proc's damage proportionally across every creature currently
+        // contributing Shock layers, by their share of the total — see "Facilitated damage".
+        for (const [sourceKey, sourceLayers] of shockLayersBySource) {
+          const share = (procResult.shockDamage * sourceLayers) / shockLayers;
+          facilitatedDamage.set(sourceKey, (facilitatedDamage.get(sourceKey) ?? 0) + share);
+        }
       }
       timeline.push({ tSeconds: cast.tSeconds, kind: "attack", sourceSlot, damage: effectiveDamage, damageType: "Direct" });
       const key = `${creature.id}@${slotKey(sourceSlot)}`;
@@ -255,6 +266,8 @@ export function simulate(
       if (applied.type === "Shock") {
         const amount = applied.amount + modifiers.shockAmountAdd;
         shockLayers += amount;
+        const sourceKey = `${creature.id}@${slotKey(sourceSlot)}`;
+        shockLayersBySource.set(sourceKey, (shockLayersBySource.get(sourceKey) ?? 0) + amount);
         timeline.push({
           tSeconds: cast.tSeconds,
           kind: "ongoingChange",
@@ -306,6 +319,11 @@ export function simulate(
     perCreatureDps[key] = totalDamage / windowSeconds;
   }
 
+  const perCreatureFacilitatedDps: Record<string, number> = {};
+  for (const [key, totalFacilitated] of facilitatedDamage.entries()) {
+    perCreatureFacilitatedDps[key] = totalFacilitated / windowSeconds;
+  }
+
   const perStatusPerSecond: Record<StatusEffectType, number> = {
     Burn: perStatusDamage.Burn / windowSeconds,
     Poison: perStatusDamage.Poison / windowSeconds,
@@ -339,5 +357,5 @@ export function simulate(
     return { tSeconds: t, totalDamage, byStatus };
   });
 
-  return { timeline, perCreatureDps, perStatusPerSecond, cumulativeSeries };
+  return { timeline, perCreatureDps, perCreatureFacilitatedDps, perStatusPerSecond, cumulativeSeries };
 }

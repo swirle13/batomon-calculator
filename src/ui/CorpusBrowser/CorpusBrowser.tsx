@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { corpus, filterCreatures, searchCreatures } from "../../data/corpus";
+import { displayField, isUnconfirmed } from "../../data/display";
 import type { CreatureType, Rarity } from "../../data/types";
 
 const TYPES: CreatureType[] = [
@@ -74,8 +75,6 @@ export function CorpusBrowser() {
       {results.length === 0 && <p>No creatures match this search/filter combination.</p>}
 
       {results.map((c) => {
-        const unconfirmed = new Set(c.unconfirmedFields ?? []);
-        const show = (field: string, value: string | number) => (unconfirmed.has(field) ? "unknown" : value);
         return (
           <article
             key={c.id}
@@ -84,15 +83,15 @@ export function CorpusBrowser() {
             <h3>
               {c.name}{" "}
               <small>
-                ({show("rarity", c.rarity)} — {c.types.length > 0 ? c.types.join(" / ") : "unknown"})
+                ({displayField(c, "rarity", c.rarity)} — {c.types.length > 0 ? c.types.join(" / ") : "unknown"})
               </small>
             </h3>
             <p>
-              Cost ${show("shopCost", c.shopCost)} · Cooldown{" "}
-              {show("baseCooldownSeconds", c.baseCooldownSeconds ?? "unknown")}
-              {typeof c.baseCooldownSeconds === "number" && !unconfirmed.has("baseCooldownSeconds") ? "s" : ""} ·
-              Damage {show("baseDamage", c.baseDamage ?? "unknown")}{" "}
-              {c.damageType && !unconfirmed.has("damageType") ? `(${c.damageType})` : ""}
+              Cost ${displayField(c, "shopCost", c.shopCost)} · Cooldown{" "}
+              {displayField(c, "baseCooldownSeconds", c.baseCooldownSeconds ?? "unknown")}
+              {typeof c.baseCooldownSeconds === "number" && !isUnconfirmed(c, "baseCooldownSeconds") ? "s" : ""} ·
+              Damage {displayField(c, "baseDamage", c.baseDamage ?? "unknown")}{" "}
+              {c.damageType && !isUnconfirmed(c, "damageType") ? `(${c.damageType})` : ""}
             </p>
             {c.appliesStatus && c.appliesStatus.length > 0 && (
               <p>Applies: {c.appliesStatus.map((s) => `${s.amount} ${s.type}`).join(", ")}</p>

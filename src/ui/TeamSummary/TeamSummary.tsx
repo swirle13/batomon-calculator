@@ -16,7 +16,11 @@ export function TeamSummary({ config, result }: TeamSummaryProps) {
     const creature = getCreatureById(placement.creatureId);
     const key = `${placement.creatureId}@${placement.slot.row}${placement.slot.col}`;
     const dps = result.perCreatureDps[key] ?? 0;
-    return { key, name: creature?.name ?? placement.creatureId, slot: placement.slot, dps };
+    // "Facilitated DPS" (user-requested, data-model.md amendment): damage this creature's own
+    // status grants enabled on OTHER hits (currently just Shock procs) — separate from its own
+    // direct-damage DPS, so a Shock-granter's real value is visible even if its own DPS is 0.
+    const facilitatedDps = result.perCreatureFacilitatedDps[key] ?? 0;
+    return { key, name: creature?.name ?? placement.creatureId, slot: placement.slot, dps, facilitatedDps };
   });
 
   const statusRows = Object.entries(result.perStatusPerSecond).filter(([, value]) => value > 0);
@@ -31,12 +35,15 @@ export function TeamSummary({ config, result }: TeamSummaryProps) {
             <th>Creature</th>
             <th>Slot</th>
             <th>DPS</th>
+            <th title="Damage this creature's own status grants (e.g. Shock) enabled on other hits, not counted in its own DPS">
+              Facilitated DPS
+            </th>
           </tr>
         </thead>
         <tbody>
           {dpsRows.length === 0 && (
             <tr>
-              <td colSpan={3}>No creatures placed yet.</td>
+              <td colSpan={4}>No creatures placed yet.</td>
             </tr>
           )}
           {dpsRows.map((row) => (
@@ -46,6 +53,7 @@ export function TeamSummary({ config, result }: TeamSummaryProps) {
                 {row.slot.row} {row.slot.col + 1}
               </td>
               <td>{row.dps.toFixed(2)}</td>
+              <td>{row.facilitatedDps > 0 ? row.facilitatedDps.toFixed(2) : "—"}</td>
             </tr>
           ))}
         </tbody>

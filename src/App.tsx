@@ -3,6 +3,7 @@ import { TeamConfigProvider, useTeamConfig } from "./context/TeamConfigContext";
 import { GridPicker } from "./ui/GridPicker/GridPicker";
 import { TrainerPicker } from "./ui/GridPicker/TrainerPicker";
 import { TeamSummary } from "./ui/TeamSummary/TeamSummary";
+import { PlacedCreatureDetails } from "./ui/TeamSummary/PlacedCreatureDetails";
 import { ModifierEditor } from "./ui/Modifiers/ModifierEditor";
 import { CumulativeChart } from "./ui/CumulativeChart/CumulativeChart";
 import { CorpusBrowser } from "./ui/CorpusBrowser/CorpusBrowser";
@@ -13,7 +14,8 @@ import "./App.css";
 type View = "calculator" | "corpus";
 
 /** FR-014: state which corpus/patch snapshot is active, on both views. */
-const CORPUS_PATCH_LABEL = "Balance 24 / 1.2.0 (community-imported build) — seed slice, see README";
+const CORPUS_PATCH_LABEL =
+  "Balance 24 / 1.2.0 (community-imported build) — 149 named Batomon, 6 with confirmed cooldown/damage, see README";
 
 function CalculatorView() {
   const { config, setSimulationWindowSeconds } = useTeamConfig();
@@ -22,7 +24,13 @@ function CalculatorView() {
   return (
     <div>
       <h2>Build your team</h2>
-      <GridPicker />
+      <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap", alignItems: "flex-start" }}>
+        <GridPicker />
+        <div style={{ flex: "1 1 16rem", minWidth: "16rem", textAlign: "left" }}>
+          <h3>Placed Banto stats</h3>
+          <PlacedCreatureDetails />
+        </div>
+      </div>
       <p>
         <TrainerPicker />
       </p>

@@ -76,6 +76,14 @@ must reproduce, each grounded in a cited source rather than assumed.
     Retrieved 2026-10-05.
   - "Batomon Showdown Shock Builds Guide" — <https://batomonshowdowngame.wiki/guides/shock-build/>.
     Retrieved 2026-10-05.
+  - Corroborating, 2026-10-05: a player forum post independently describes the same magnitude —
+    "Shock (1 shock is 1 extra damage from normal damage)" — Quarter To Three forums, "Autobattler
+    games - sit back and watch it" (post #55 by user Therlun, 2026-05-18),
+    <https://forum.quartertothree.com/t/autobattler-games-sit-back-and-watch-it/165263/55>. This
+    matches the engine's existing `applyShockProc` (proc damage = current layer count) rather
+    than contradicting it; recorded here because the user separately encountered the shorter
+    official-ish flavor text "Shock - Takes additional damage when attacked", which states the
+    *existence* of bonus damage but not its magnitude — this second source fills that gap.
 - **Engine implication**: this is **not** one shared "DOT" shape. Each status type needs its own
   tick/trigger rule:
   - Burn and Poison are modeled as a generic "periodic self-decaying-or-not stack" primitive with
