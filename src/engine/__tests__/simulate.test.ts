@@ -16,6 +16,7 @@ function syntheticCorpus(): Corpus {
     baseCooldownSeconds: 1,
     baseDamage: null,
     damageType: null,
+    baseMulticast: 1,
     appliesStatus: [{ type: "Shock", amount: 2 }],
     abilityText: "test fixture",
     abilityTags: [],
@@ -32,12 +33,80 @@ function syntheticCorpus(): Corpus {
     baseCooldownSeconds: 1,
     baseDamage: 5,
     damageType: "Direct",
+    baseMulticast: 1,
     abilityText: "test fixture",
     abilityTags: [],
     sourceRefs: [],
     patch: "test",
   };
   return { creatures: [shockApplier, attacker], trainers: [], trinkets: [], items: [] };
+}
+
+/**
+ * Synthetic corpus for Phase 7 (round 2) tests: one creature with a Multicast count > 1, one
+ * with a float-drift-prone cooldown, and a two-level variant of the same species id (for the
+ * (id, level) lookup test).
+ */
+function multicastCorpus(): Corpus {
+  const multiCaster: CreatureRecord = {
+    id: "multiCaster",
+    name: "Multi Caster",
+    rarity: "Common",
+    types: ["Fire"],
+    level: 1,
+    shopCost: 10,
+    baseCooldownSeconds: 1,
+    baseDamage: 5,
+    damageType: "Direct",
+    baseMulticast: 3,
+    appliesStatus: [{ type: "Shock", amount: 1 }],
+    abilityText: "test fixture",
+    abilityTags: [],
+    sourceRefs: [],
+    patch: "test",
+  };
+  return { creatures: [multiCaster], trainers: [], trinkets: [], items: [] };
+}
+
+function driftCorpus(): Corpus {
+  const driftCreature: CreatureRecord = {
+    id: "driftCreature",
+    name: "Drift Creature",
+    rarity: "Common",
+    types: ["Fire"],
+    level: 1,
+    shopCost: 10,
+    baseCooldownSeconds: 4.9,
+    baseDamage: 1,
+    damageType: "Direct",
+    baseMulticast: 1,
+    abilityText: "test fixture",
+    abilityTags: [],
+    sourceRefs: [],
+    patch: "test",
+  };
+  return { creatures: [driftCreature], trainers: [], trinkets: [], items: [] };
+}
+
+function multiLevelCorpus(): Corpus {
+  const level1: CreatureRecord = {
+    id: "leveledMon",
+    name: "Leveled Mon",
+    rarity: "Common",
+    types: ["Fire"],
+    level: 1,
+    shopCost: 10,
+    baseCooldownSeconds: 2,
+    baseDamage: 5,
+    damageType: "Direct",
+    baseMulticast: 1,
+    abilityText: "test fixture",
+    abilityTags: [],
+    sourceRefs: [],
+    patch: "test",
+  };
+  const level2: CreatureRecord = { ...level1, level: 2, baseDamage: 10 };
+  return { creatures: [level1, level2], trainers: [], trinkets: [], items: [] };
 }
 
 /**
@@ -283,5 +352,118 @@ describe("simulate", () => {
     expect(result.perStatusPerSecond.Shield).toBeGreaterThan(0);
     const lastPoint = result.cumulativeSeries[result.cumulativeSeries.length - 1]!;
     expect(lastPoint.byStatus.Shield).toBeGreaterThan(0);
+  });
+
+  /**
+   * Phase 7 (round 2) T062 — Multicast (research.md D3): a creature with baseMulticast: 3
+   * fires 3 independent direct-damage events at the same tSeconds per cooldown completion,
+   * each independently eligible to proc Shock.
+   */
+  it("Multicast fires N independent direct-damage events per cooldown completion", () => {
+    const synthetic = multicastCorpus();
+    const config: TeamConfiguration = {
+      placements: [{ slot: { row: "front", col: 0 }, creatureId: "multiCaster", level: 1 }],
+      trainerId: null,
+      trinketIds: [],
+      itemIds: [],
+      simulationWindowSeconds: 1,
+    };
+    const result = simulate(config, synthetic);
+
+    // One cooldown completion at t=1 -> 3 independent "attack" events at the same tSeconds.
+    const attackEvents = result.timeline.filter((e) => e.kind === "attack" && e.tSeconds === 1);
+    expect(attackEvents).toHaveLength(3);
+
+    // Each of the 3 hits deals its own 5 damage -> DPS = 15 / 1s = 15, not 5.
+    const key = Object.keys(result.perCreatureDps)[0]!;
+    expect(result.perCreatureDps[key]).toBeCloseTo(15, 5);
+
+    // Each hit independently procs Shock off the layers granted by the previous hits in the
+    // same Multicast burst (1 Shock granted per hit, applied after that hit's own damage) ->
+    // hit 1 procs 0 (no layers yet), hit 2 procs 1 (1 layer from hit 1), hit 3 procs 2 (2
+    // layers from hits 1+2) = 3 total Shock proc damage at t=1.
+    const shockProcs = result.timeline.filter((e) => e.kind === "shockProc" && e.tSeconds === 1);
+    const totalShockProcDamage = shockProcs.reduce((sum, e) => sum + (e.damage ?? 0), 0);
+    expect(totalShockProcDamage).toBeCloseTo(3, 5);
+  });
+
+  /**
+   * Phase 7 (round 2) T063 — perCreatureEffectiveStats (data-model.md): reflects an active
+   * StatModifier as a post-modifier amount, resolved via the same path as the cast loop.
+   */
+  it("perCreatureEffectiveStats reflects an active damageFlatAdd modifier", () => {
+    const config: TeamConfiguration = {
+      placements: [{ slot: { row: "front", col: 0 }, creatureId: "bumblebolt", level: 1 }],
+      trainerId: null,
+      trinketIds: [],
+      itemIds: [],
+      simulationWindowSeconds: 20,
+      teamModifiers: [{ id: "m1", stat: "damageFlatAdd", amount: 10 }],
+    };
+    const result = simulate(config, corpus);
+    const key = Object.keys(result.perCreatureEffectiveStats).find((k) => k.startsWith("bumblebolt@"));
+    expect(key).toBeDefined();
+    const stats = result.perCreatureEffectiveStats[key!]!;
+    expect(stats.damage).toBeCloseTo(3 + 10, 5);
+    expect(stats.damageType).toBe("Direct");
+    expect(stats.cooldownSeconds).toBeCloseTo(2.5, 5);
+    expect(stats.multicast).toBe(1);
+  });
+
+  /**
+   * Phase 7 (round 2) T064 — chart X-axis float drift (research.md D4): cast times for a
+   * drift-prone cooldown (4.9) must never accumulate float garbage, across a 20+ cast window.
+   */
+  it("cast times never accumulate floating-point drift across many casts", () => {
+    const synthetic = driftCorpus();
+    const config: TeamConfiguration = {
+      placements: [{ slot: { row: "front", col: 0 }, creatureId: "driftCreature", level: 1 }],
+      trainerId: null,
+      trinketIds: [],
+      itemIds: [],
+      simulationWindowSeconds: 4.9 * 25, // 25 casts
+    };
+    const result = simulate(config, synthetic);
+    const attackTimes = result.timeline.filter((e) => e.kind === "attack").map((e) => e.tSeconds);
+    expect(attackTimes.length).toBeGreaterThanOrEqual(24);
+    for (const t of attackTimes) {
+      // Rounding to 6 decimal places must be a no-op if there is no drift beyond that
+      // precision -- i.e. the value already has at most 6 significant decimal digits.
+      expect(t).toBeCloseTo(Math.round(t * 1e6) / 1e6, 9);
+    }
+  });
+
+  /**
+   * Phase 7 (round 2) T065 — (id, level) lookup (data-model.md's lookup-fix amendment):
+   * simulate() must resolve the exact (creatureId, level) pair, never silently fall back to a
+   * different level's record, and must throw when no record exists for that exact pair.
+   */
+  it("resolves a placement's creature by the exact (id, level) pair, not id alone", () => {
+    const synthetic = multiLevelCorpus();
+    const level1Config: TeamConfiguration = {
+      placements: [{ slot: { row: "front", col: 0 }, creatureId: "leveledMon", level: 1 }],
+      trainerId: null,
+      trinketIds: [],
+      itemIds: [],
+      simulationWindowSeconds: 2,
+    };
+    const level2Config: TeamConfiguration = { ...level1Config, placements: [{ ...level1Config.placements[0]!, level: 2 }] };
+
+    const level1Result = simulate(level1Config, synthetic);
+    const level2Result = simulate(level2Config, synthetic);
+    expect(Object.values(level1Result.perCreatureDps)[0]).toBeCloseTo(5 / 2, 5);
+    expect(Object.values(level2Result.perCreatureDps)[0]).toBeCloseTo(10 / 2, 5);
+  });
+
+  it("throws InvalidTeamConfigurationError when no record exists for the exact (id, level) pair", () => {
+    const synthetic = multiLevelCorpus(); // only has level 1 and 2 records
+    const config: TeamConfiguration = {
+      placements: [{ slot: { row: "front", col: 0 }, creatureId: "leveledMon", level: 3 }],
+      trainerId: null,
+      trinketIds: [],
+      itemIds: [],
+      simulationWindowSeconds: 2,
+    };
+    expect(() => simulate(config, synthetic)).toThrow(InvalidTeamConfigurationError);
   });
 });

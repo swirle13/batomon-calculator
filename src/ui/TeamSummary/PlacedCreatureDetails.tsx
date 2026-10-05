@@ -1,10 +1,15 @@
-import { getCreatureById } from "../../data/corpus";
+import { getCreatureByIdAndLevel } from "../../data/corpus";
 import { displayField, isUnconfirmed } from "../../data/display";
 import { useTeamConfig } from "../../context/TeamConfigContext";
-import type { GridSlot } from "../../data/types";
+import type { GridSlot, SimulationResult } from "../../data/types";
+import { slotKey } from "../../engine/grid";
 
 function slotLabel(slot: GridSlot): string {
   return `${slot.row === "back" ? "Back" : "Front"} ${slot.col + 1}`;
+}
+
+interface PlacedCreatureDetailsProps {
+  result: SimulationResult;
 }
 
 /**
@@ -12,8 +17,14 @@ function slotLabel(slot: GridSlot): string {
  * creature's stats once picked. Rather than redesign the picker itself yet, this shows a compact
  * stat card per placed creature to the side of the grid — full stats stay one glance away without
  * giving up the simple dropdown while mechanics are still being built out.
+ *
+ * 2026-10-05 round 2 (item 2 — FR-016): now also renders `result.perCreatureEffectiveStats`, the
+ * *modifier-adjusted* damage/status/Multicast output for this placement, so a user can see what
+ * an active StatModifier actually changes without having to infer it from the aggregate DPS
+ * table. Resolved by `simulate()` itself (data-model.md's single-source-of-truth rule) — this
+ * component never recomputes a modifier total of its own.
  */
-export function PlacedCreatureDetails() {
+export function PlacedCreatureDetails({ result }: PlacedCreatureDetailsProps) {
   const { config } = useTeamConfig();
 
   if (config.placements.length === 0) {
@@ -23,20 +34,24 @@ export function PlacedCreatureDetails() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
       {config.placements.map((placement) => {
-        const creature = getCreatureById(placement.creatureId);
+        const creature = getCreatureByIdAndLevel(placement.creatureId, placement.level);
         const key = `${placement.slot.row}-${placement.slot.col}`;
         if (!creature) {
           return (
             <div key={key} style={{ border: "1px solid #444857", borderRadius: 4, padding: "0.5rem" }}>
-              <strong>{placement.creatureId}</strong> ({slotLabel(placement.slot)}) — unknown creature id
+              <strong>{placement.creatureId}</strong> ({slotLabel(placement.slot)}) — no corpus
+              record at level {placement.level}
             </div>
           );
         }
+        const effectiveKey = `${creature.id}@${slotKey(placement.slot)}`;
+        const effective = result.perCreatureEffectiveStats[effectiveKey];
         return (
           <div key={key} style={{ border: "1px solid #444857", borderRadius: 4, padding: "0.5rem" }}>
             <strong>{creature.name}</strong>{" "}
             <small>
-              ({slotLabel(placement.slot)} · {displayField(creature, "rarity", creature.rarity)} ·{" "}
+              ({slotLabel(placement.slot)} · Lv.{placement.level} ·{" "}
+              {displayField(creature, "rarity", creature.rarity)} ·{" "}
               {creature.types.length > 0 ? creature.types.join("/") : "unknown type"})
             </small>
             <div>
@@ -51,7 +66,30 @@ export function PlacedCreatureDetails() {
             {creature.appliesStatus && creature.appliesStatus.length > 0 && (
               <div>Applies: {creature.appliesStatus.map((s) => `${s.amount} ${s.type}`).join(", ")}</div>
             )}
-            <div style={{ fontSize: "0.9em", opacity: 0.85 }}>{creature.abilityText}</div>
+            {effective && (
+              <div
+                style={{
+                  marginTop: "0.35rem",
+                  paddingTop: "0.35rem",
+                  borderTop: "1px dashed #444857",
+                  fontSize: "0.9em",
+                }}
+                title="Reflects any active modifiers from the Modifiers section below"
+              >
+                <strong>Effective this battle:</strong>{" "}
+                Damage {effective.damage ?? "—"} · Cooldown{" "}
+                {effective.cooldownSeconds !== null ? `${effective.cooldownSeconds.toFixed(2)}s` : "—"} ·{" "}
+                Multicast ×{effective.multicast}
+                {effective.appliesStatus.length > 0 && (
+                  <>
+                    {" "}
+                    · Applies:{" "}
+                    {effective.appliesStatus.map((s) => `${s.amount} ${s.type}`).join(", ")}
+                  </>
+                )}
+              </div>
+            )}
+            <div style={{ fontSize: "0.9em", opacity: 0.85, marginTop: "0.35rem" }}>{creature.abilityText}</div>
           </div>
         );
       })}

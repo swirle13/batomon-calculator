@@ -19,6 +19,11 @@ export function CumulativeChart({ result }: CumulativeChartProps) {
     Shock: point.byStatus.Shock,
     Shield: point.byStatus.Shield,
   }));
+  // FR-017 / research.md D4 (2026-10-05 round 2): the simulated window end is always the last
+  // sample (simulate() always appends `windowSeconds` to its sampleTimes) — used as an explicit
+  // numeric domain below so Recharts' own "nice tick" generator picks clean, evenly-spaced
+  // values instead of defaulting to a category axis keyed off every raw event timestamp.
+  const windowSeconds = data.length > 0 ? data[data.length - 1]!.t : 0;
 
   return (
     <section>
@@ -34,8 +39,16 @@ export function CumulativeChart({ result }: CumulativeChartProps) {
                 (src/index.css prefers-color-scheme: dark), so axis/grid/legend/tooltip colors
                 are set explicitly rather than left to default near-black-on-black. */}
             <CartesianGrid strokeDasharray="3 3" stroke="#444857" />
+            {/* FR-017 (2026-10-05 round 2): type="number" + an explicit domain fixes two bugs —
+                (1) the default category axis placed one tick per raw data point, evenly spaced
+                in *pixels* but not in *value* (e.g. "4, 4.9, 5.9, 6, 6.9..."); (2) occasional
+                float-drift artifacts (e.g. "14.7000000000000001") leaking into tick labels.
+                A numeric axis uses Recharts' own linear-scale "nice tick" generator instead,
+                independent of the underlying data points' exact values. */}
             <XAxis
               dataKey="t"
+              type="number"
+              domain={[0, windowSeconds]}
               stroke="#9ca3af"
               tick={{ fill: "#9ca3af" }}
               label={{ value: "seconds", position: "insideBottomRight", offset: -4, fill: "#9ca3af" }}

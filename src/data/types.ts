@@ -70,6 +70,13 @@ export interface Provenance {
   /** e.g. "1.2.0", "Balance 24", "Build 25037381 Balance 14" — whatever the source states */
   patch: string;
   conflicts?: FieldConflict[];
+  /**
+   * Field names published nowhere with confidence; shown as "unknown" in the UI. Moved here
+   * from `CreatureRecord` (2026-10-05 round 2) so `TrainerRecord`/`TrinketRecord`/`ItemRecord`
+   * can flag a low-confidence field the same way creatures already do — see data-model.md's
+   * "`unconfirmedFields` promoted..." amendment.
+   */
+  unconfirmedFields?: string[];
 }
 
 // ---------------------------------------------------------------------------
@@ -114,7 +121,15 @@ export interface CreatureRecord extends Provenance {
   rarity: Rarity;
   /** 1 or 2 entries typically; ["All"] for Omnichrome-style exceptions */
   types: CreatureType[];
-  level: 1 | 2 | 3;
+  /**
+   * Widened 1-3 -> 1-4 (2026-10-05 round 2, research.md D2): standard merging only reaches
+   * level 3 (3x L1 -> L2, 2x L2 -> L3); level 4 is reachable only via rare in-run events or
+   * consumable level-up items, and is NOT guaranteed for every species.
+   */
+  level: 1 | 2 | 3 | 4;
+  /** Per-species confirmed level cap, when sourced; absent = not yet researched (NOT every
+   * creature is assumed to reach 4 by default — see research.md D2's Sukoi example). */
+  confirmedMaxLevel?: 1 | 2 | 3 | 4;
   /** Gold cost at level 1; merge levels typically have no independent shop cost */
   shopCost: number;
   /** null for creatures with no ordinary cooldown cast */
@@ -122,14 +137,19 @@ export interface CreatureRecord extends Provenance {
   baseDamage: number | null;
   /** null if the creature has no direct-damage cast */
   damageType: DamageType | null;
+  /**
+   * Number of independent direct-damage events a single cooldown completion fires (2026-10-05
+   * round 2, research.md D3). Default `1` ("no stated Multicast bonus") — backfilled onto all
+   * existing records rather than flagged unconfirmed, since "1 = none" is the reasonable
+   * baseline absent contrary evidence in `abilityText`.
+   */
+  baseMulticast: number;
   /** Layers/shield applied per cast, if any */
   appliesStatus?: { type: StatusEffectType; amount: number }[];
   abilityText: string;
   abilityTags: AbilityTag[];
   /** CreatureRecord.id this transforms into, if any (e.g. Riglet -> Rigalord) */
   evolvesInto?: string;
-  /** Field names published nowhere with confidence; shown as "unknown" in the UI */
-  unconfirmedFields?: string[];
 }
 
 export interface TrainerRecord extends Provenance {
@@ -189,7 +209,9 @@ export type ModifierStat =
   | "burnAmountAdd"
   | "poisonAmountAdd"
   | "shockAmountAdd"
-  | "shieldAmountAdd";
+  | "shieldAmountAdd"
+  /** 2026-10-05 round 2 (research.md D3): adds to a creature's baseMulticast count. */
+  | "multicastAdd";
 
 export interface StatModifier {
   /** Stable id for list management/removal in the UI; not otherwise meaningful */
@@ -203,7 +225,9 @@ export interface StatModifier {
 export interface TeamPlacement {
   slot: GridSlot;
   creatureId: string;
-  level: 1 | 2 | 3;
+  /** Widened 1-3 -> 1-4 alongside CreatureRecord.level (2026-10-05 round 2) — must match an
+   * actual `(creatureId, level)` corpus record; see data-model.md's lookup-fix amendment. */
+  level: 1 | 2 | 3 | 4;
   /** Applies only to this placement's creature, on top of any teamModifiers */
   modifiers?: StatModifier[];
 }
@@ -266,6 +290,23 @@ export interface SimulationResult {
    * what `perCreatureDps` already measures) — see data-model.md's "Facilitated damage" amendment.
    */
   perCreatureFacilitatedDps: Record<string, number>;
+  /**
+   * User-requested amendment, 2026-10-05 round 2 (item 2 — "no visualization of the current
+   * mon's damage/shield/burn/poison/multi-cast/shock"): per-placement *effective* (post-
+   * modifier) output, resolved from the exact same per-cast modifier resolution Phase A
+   * already performs — not a second, divergent computation path. Keyed the same way as
+   * `perCreatureDps`. See data-model.md's "perCreatureEffectiveStats" amendment.
+   */
+  perCreatureEffectiveStats: Record<
+    string,
+    {
+      damage: number | null;
+      damageType: DamageType | null;
+      cooldownSeconds: number | null;
+      multicast: number;
+      appliesStatus: { type: StatusEffectType; amount: number }[];
+    }
+  >;
   cumulativeSeries: {
     tSeconds: number;
     totalDamage: number;

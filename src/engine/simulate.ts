@@ -22,6 +22,19 @@ const BURN_TICK_SECONDS = 0.5;
 const POISON_TICK_SECONDS = 1;
 
 /**
+ * Fixed rounding precision for every `tSeconds` value created by this module (research.md D4,
+ * 2026-10-05 round 2). Repeated floating-point addition (and to a lesser extent, multiplication
+ * by a non-power-of-two cooldown) can accumulate IEEE-754 drift (e.g. `14.7000000000000001`)
+ * that would otherwise leak into the UI (chart tooltips, tables). Rounding every timestamp to
+ * this precision at the point of creation keeps the engine's own `tSeconds` values exact for
+ * comparison/sorting and clean for display, without affecting the underlying math meaningfully
+ * (1e-6s is far below anything a status-effect/cooldown value in this corpus resolves to).
+ */
+function roundTime(t: number): number {
+  return Math.round(t * 1e6) / 1e6;
+}
+
+/**
  * MVP simplification (spec.md Assumptions — "idealized target", not a full two-board
  * resolver): every status effect and every point of damage this engine computes is applied
  * against one shared, implicit target. `StatusEffectInstance.targetSlot` and
@@ -50,10 +63,15 @@ function validate(config: TeamConfiguration, corpus: Corpus): void {
       );
     }
     seenSlots.add(key);
-    if (!corpus.creatures.some((c) => c.id === placement.creatureId)) {
+    // 2026-10-05 round 2 (data-model.md's lookup-fix amendment): a placement must resolve to
+    // an exact (creatureId, level) record, never fall back to a different level's stats for
+    // the same id. Every existing corpus record is still level 1 today, so this is latent
+    // against the current corpus, but is enforced now so widening the corpus to real
+    // level-2/3/4 records (tasks.md T075) can never silently resolve the wrong one.
+    if (!corpus.creatures.some((c) => c.id === placement.creatureId && c.level === placement.level)) {
       throw new InvalidTeamConfigurationError(
         "placements",
-        `Unknown creatureId "${placement.creatureId}" — no matching corpus record.`,
+        `No corpus record for creatureId "${placement.creatureId}" at level ${placement.level}.`,
       );
     }
   }
@@ -131,6 +149,8 @@ interface Cast {
     poisonAmountAdd: number;
     shockAmountAdd: number;
     shieldAmountAdd: number;
+    /** 2026-10-05 round 2 (research.md D3) */
+    multicastAdd: number;
   };
 }
 
@@ -153,28 +173,86 @@ export function simulate(
   const teamModifiers = config.teamModifiers ?? [];
   const teamMembers = config.placements.map((p) => ({
     slot: p.slot,
-    creature: corpus.creatures.find((c) => c.id === p.creatureId)!,
+    // Safe to assert: validate() above already confirmed a record exists for this exact
+    // (creatureId, level) pair — see the lookup-fix amendment in data-model.md.
+    creature: corpus.creatures.find((c) => c.id === p.creatureId && c.level === p.level)!,
     placementModifiers: p.modifiers ?? [],
   }));
 
-  // --- Phase A: generate every creature's cast times across the window ---
+  // --- Phase A: generate every creature's cast times across the window, and resolve each
+  //     placement's modifier-adjusted "effective stats" snapshot (2026-10-05 round 2) ---
   const casts: Cast[] = [];
+  const perCreatureEffectiveStats: Record<
+    string,
+    {
+      damage: number | null;
+      damageType: CreatureRecord["damageType"];
+      cooldownSeconds: number | null;
+      multicast: number;
+      appliesStatus: { type: StatusEffectType; amount: number }[];
+    }
+  > = {};
+
   for (const member of teamMembers) {
     const { creature, slot, placementModifiers } = member;
-    if (creature.baseCooldownSeconds === null) continue;
+    const key = `${creature.id}@${slotKey(slot)}`;
+
+    // Modifiers are resolved up front — even when this creature has no ordinary cooldown cast
+    // — so `perCreatureEffectiveStats` can report them below regardless of cast eligibility.
+    const multicastAdd = sumModifier("multicastAdd", teamModifiers, placementModifiers);
+    const damageFlatAdd = sumModifier("damageFlatAdd", teamModifiers, placementModifiers);
+    const statusAmountAdd = {
+      Burn: sumModifier("burnAmountAdd", teamModifiers, placementModifiers),
+      Poison: sumModifier("poisonAmountAdd", teamModifiers, placementModifiers),
+      Shock: sumModifier("shockAmountAdd", teamModifiers, placementModifiers),
+      Shield: sumModifier("shieldAmountAdd", teamModifiers, placementModifiers),
+    };
+    const isDirectHitCapable = creature.damageType === "Direct" && creature.baseDamage !== null;
+    const effectiveMulticast = Math.max(1, creature.baseMulticast + multicastAdd);
+
+    if (creature.baseCooldownSeconds === null) {
+      // Known limitation (data-model.md): a modifier can only scale an effect this creature
+      // already has, and there's no cast at all here to attach any modifier to — report raw,
+      // unmodified values rather than a modifier that silently never applies.
+      perCreatureEffectiveStats[key] = {
+        damage: creature.baseDamage,
+        damageType: creature.damageType,
+        cooldownSeconds: null,
+        multicast: creature.baseMulticast,
+        appliesStatus: creature.appliesStatus ?? [],
+      };
+      continue;
+    }
+
     const cooldownSpeedTotal =
       resolveCooldownSpeedTotal(slot, creature, teamMembers) +
       sumModifier("cooldownSpeedAdd", teamModifiers, placementModifiers);
     const cooldownFlatAdd = sumModifier("cooldownFlatAddSeconds", teamModifiers, placementModifiers);
     const cooldown = effectiveCooldown(creature.baseCooldownSeconds, cooldownSpeedTotal, cooldownFlatAdd);
     const modifiers = {
-      damageFlatAdd: sumModifier("damageFlatAdd", teamModifiers, placementModifiers),
-      burnAmountAdd: sumModifier("burnAmountAdd", teamModifiers, placementModifiers),
-      poisonAmountAdd: sumModifier("poisonAmountAdd", teamModifiers, placementModifiers),
-      shockAmountAdd: sumModifier("shockAmountAdd", teamModifiers, placementModifiers),
-      shieldAmountAdd: sumModifier("shieldAmountAdd", teamModifiers, placementModifiers),
+      damageFlatAdd,
+      burnAmountAdd: statusAmountAdd.Burn,
+      poisonAmountAdd: statusAmountAdd.Poison,
+      shockAmountAdd: statusAmountAdd.Shock,
+      shieldAmountAdd: statusAmountAdd.Shield,
+      multicastAdd,
     };
-    for (let t = startAt + cooldown; t <= windowSeconds; t += cooldown) {
+
+    perCreatureEffectiveStats[key] = {
+      damage: isDirectHitCapable ? creature.baseDamage! + damageFlatAdd : creature.baseDamage,
+      damageType: creature.damageType,
+      cooldownSeconds: cooldown,
+      multicast: effectiveMulticast,
+      appliesStatus: (creature.appliesStatus ?? []).map((s) => ({
+        type: s.type,
+        amount: s.amount + statusAmountAdd[s.type],
+      })),
+    };
+
+    // Index multiplication, not repeated `+=` addition (research.md D4) — avoids accumulating
+    // IEEE-754 drift across many casts; each resulting timestamp is still explicitly rounded.
+    for (let n = 1; startAt + n * cooldown <= windowSeconds + 1e-9; n++) {
+      const t = roundTime(startAt + n * cooldown);
       casts.push({ tSeconds: t, sourceSlot: slot, creature, modifiers });
     }
   }
@@ -221,7 +299,7 @@ export function simulate(
         activeStatuses[earliestIndex] = {
           ...nextInstance,
           type: instance.type,
-          nextTickAt: earliestTime + (instance.type === "Burn" ? BURN_TICK_SECONDS : POISON_TICK_SECONDS),
+          nextTickAt: roundTime(earliestTime + (instance.type === "Burn" ? BURN_TICK_SECONDS : POISON_TICK_SECONDS)),
         };
       }
     }
@@ -231,82 +309,93 @@ export function simulate(
     runTicksUpTo(cast.tSeconds);
 
     const { creature, sourceSlot, modifiers } = cast;
-    // Modifiers can only scale an effect the creature already has (data-model.md's "Known
-    // limitation" on StatModifiers) — a damageFlatAdd modifier never fabricates a new attack
-    // on a creature whose baseDamage is null.
-    const isDirectHit = creature.damageType === "Direct" && creature.baseDamage !== null;
 
-    if (isDirectHit) {
-      const effectiveDamage = creature.baseDamage! + modifiers.damageFlatAdd;
-      const shockInstance: StatusEffectInstance | null =
-        shockLayers > 0
-          ? { type: "Shock", layers: shockLayers, sourceSlot, targetSlot: placeholderTargetSlot(sourceSlot), appliedAtSeconds: cast.tSeconds }
-          : null;
-      const procResult = applyShockProc({ damage: effectiveDamage, damageType: "Direct" }, shockInstance);
-      if (procResult.shockDamage > 0) {
-        timeline.push({ tSeconds: cast.tSeconds, kind: "shockProc", sourceSlot, damage: procResult.shockDamage, damageType: "Shock" });
-        perStatusDamage.Shock += procResult.shockDamage;
-        // Split this proc's damage proportionally across every creature currently
-        // contributing Shock layers, by their share of the total — see "Facilitated damage".
-        for (const [sourceKey, sourceLayers] of shockLayersBySource) {
-          const share = (procResult.shockDamage * sourceLayers) / shockLayers;
-          facilitatedDamage.set(sourceKey, (facilitatedDamage.get(sourceKey) ?? 0) + share);
+    // Multicast (2026-10-05 round 2, research.md D3): a cast with Multicast > 1 resolves as
+    // multiple full, independent repetitions at the same tSeconds — each repetition has its
+    // own direct-damage event (own potential Shock proc) AND its own status-grant application,
+    // not just a damage multiplier. Every existing corpus record defaults to baseMulticast: 1,
+    // so this loop runs exactly once (no behavior change) for every creature not explicitly
+    // granted additional Multicast.
+    const multicastCount = Math.max(1, creature.baseMulticast + modifiers.multicastAdd);
+
+    for (let rep = 0; rep < multicastCount; rep++) {
+      // Modifiers can only scale an effect the creature already has (data-model.md's "Known
+      // limitation" on StatModifiers) — a damageFlatAdd modifier never fabricates a new attack
+      // on a creature whose baseDamage is null.
+      const isDirectHit = creature.damageType === "Direct" && creature.baseDamage !== null;
+
+      if (isDirectHit) {
+        const effectiveDamage = creature.baseDamage! + modifiers.damageFlatAdd;
+        const shockInstance: StatusEffectInstance | null =
+          shockLayers > 0
+            ? { type: "Shock", layers: shockLayers, sourceSlot, targetSlot: placeholderTargetSlot(sourceSlot), appliedAtSeconds: cast.tSeconds }
+            : null;
+        const procResult = applyShockProc({ damage: effectiveDamage, damageType: "Direct" }, shockInstance);
+        if (procResult.shockDamage > 0) {
+          timeline.push({ tSeconds: cast.tSeconds, kind: "shockProc", sourceSlot, damage: procResult.shockDamage, damageType: "Shock" });
+          perStatusDamage.Shock += procResult.shockDamage;
+          // Split this proc's damage proportionally across every creature currently
+          // contributing Shock layers, by their share of the total — see "Facilitated damage".
+          for (const [sourceKey, sourceLayers] of shockLayersBySource) {
+            const share = (procResult.shockDamage * sourceLayers) / shockLayers;
+            facilitatedDamage.set(sourceKey, (facilitatedDamage.get(sourceKey) ?? 0) + share);
+          }
         }
+        timeline.push({ tSeconds: cast.tSeconds, kind: "attack", sourceSlot, damage: effectiveDamage, damageType: "Direct" });
+        const key = `${creature.id}@${slotKey(sourceSlot)}`;
+        perCreatureDamage.set(key, (perCreatureDamage.get(key) ?? 0) + effectiveDamage);
+      } else {
+        // A cast with no direct-damage component still occupies a timeline entry (it happened),
+        // but contributes nothing to perCreatureDps.
+        timeline.push({ tSeconds: cast.tSeconds, kind: "attack", sourceSlot });
       }
-      timeline.push({ tSeconds: cast.tSeconds, kind: "attack", sourceSlot, damage: effectiveDamage, damageType: "Direct" });
-      const key = `${creature.id}@${slotKey(sourceSlot)}`;
-      perCreatureDamage.set(key, (perCreatureDamage.get(key) ?? 0) + effectiveDamage);
-    } else {
-      // A cast with no direct-damage component still occupies a timeline entry (it happened),
-      // but contributes nothing to perCreatureDps.
-      timeline.push({ tSeconds: cast.tSeconds, kind: "attack", sourceSlot });
-    }
 
-    for (const applied of creature.appliesStatus ?? []) {
-      if (applied.type === "Shock") {
-        const amount = applied.amount + modifiers.shockAmountAdd;
-        shockLayers += amount;
-        const sourceKey = `${creature.id}@${slotKey(sourceSlot)}`;
-        shockLayersBySource.set(sourceKey, (shockLayersBySource.get(sourceKey) ?? 0) + amount);
-        timeline.push({
-          tSeconds: cast.tSeconds,
-          kind: "ongoingChange",
-          sourceSlot,
-          statusDelta: { type: "Shock", slot: placeholderTargetSlot(sourceSlot), layerDelta: amount },
-        });
-      } else if (applied.type === "Burn" || applied.type === "Poison") {
-        const amount = applied.amount + (applied.type === "Burn" ? modifiers.burnAmountAdd : modifiers.poisonAmountAdd);
-        const interval = applied.type === "Burn" ? BURN_TICK_SECONDS : POISON_TICK_SECONDS;
-        activeStatuses.push({
-          type: applied.type,
-          layers: amount,
-          sourceSlot,
-          targetSlot: placeholderTargetSlot(sourceSlot),
-          appliedAtSeconds: cast.tSeconds,
-          nextTickAt: cast.tSeconds + interval,
-        });
-      } else if (applied.type === "Shield") {
-        // Shield counters (data-model.md "Shield counted as an output stat", 2026-10-05):
-        // tracked as cumulative Shield *granted* by the team's own casts — same treatment as
-        // Burn/Poison/Shock in spirit, via the existing statusDelta field (Shield isn't a
-        // DamageType, since it never deals damage — see research.md B3) — not as absorption
-        // against an opposing target (still unmodeled, see the T037 note below).
-        const amount = applied.amount + modifiers.shieldAmountAdd;
-        timeline.push({
-          tSeconds: cast.tSeconds,
-          kind: "ongoingChange",
-          sourceSlot,
-          statusDelta: { type: "Shield", slot: placeholderTargetSlot(sourceSlot), layerDelta: amount },
-        });
-        perStatusDamage.Shield += amount;
+      for (const applied of creature.appliesStatus ?? []) {
+        if (applied.type === "Shock") {
+          const amount = applied.amount + modifiers.shockAmountAdd;
+          shockLayers += amount;
+          const sourceKey = `${creature.id}@${slotKey(sourceSlot)}`;
+          shockLayersBySource.set(sourceKey, (shockLayersBySource.get(sourceKey) ?? 0) + amount);
+          timeline.push({
+            tSeconds: cast.tSeconds,
+            kind: "ongoingChange",
+            sourceSlot,
+            statusDelta: { type: "Shock", slot: placeholderTargetSlot(sourceSlot), layerDelta: amount },
+          });
+        } else if (applied.type === "Burn" || applied.type === "Poison") {
+          const amount = applied.amount + (applied.type === "Burn" ? modifiers.burnAmountAdd : modifiers.poisonAmountAdd);
+          const interval = applied.type === "Burn" ? BURN_TICK_SECONDS : POISON_TICK_SECONDS;
+          activeStatuses.push({
+            type: applied.type,
+            layers: amount,
+            sourceSlot,
+            targetSlot: placeholderTargetSlot(sourceSlot),
+            appliedAtSeconds: cast.tSeconds,
+            nextTickAt: roundTime(cast.tSeconds + interval),
+          });
+        } else if (applied.type === "Shield") {
+          // Shield counters (data-model.md "Shield counted as an output stat", 2026-10-05):
+          // tracked as cumulative Shield *granted* by the team's own casts — same treatment as
+          // Burn/Poison/Shock in spirit, via the existing statusDelta field (Shield isn't a
+          // DamageType, since it never deals damage — see research.md B3) — not as absorption
+          // against an opposing target (still unmodeled, see the T037 note below).
+          const amount = applied.amount + modifiers.shieldAmountAdd;
+          timeline.push({
+            tSeconds: cast.tSeconds,
+            kind: "ongoingChange",
+            sourceSlot,
+            statusDelta: { type: "Shield", slot: placeholderTargetSlot(sourceSlot), layerDelta: amount },
+          });
+          perStatusDamage.Shield += amount;
+        }
+        //
+        // KNOWN SCOPE GAP (tasks.md T037): applyShieldReduction() is implemented and unit-tested
+        // (shield.ts) but Shield is still never used to *reduce* incoming damage here. Doing that
+        // meaningfully requires a modeled *target* with its own HP/Shield pool, which does not
+        // exist under this engine's "idealized target" assumption (spec.md Assumptions) —
+        // simulate() only measures the user's team's outgoing damage, never anything absorbing
+        // it. Wiring that in is deferred until/unless the spec grows a real target entity.
       }
-      //
-      // KNOWN SCOPE GAP (tasks.md T037): applyShieldReduction() is implemented and unit-tested
-      // (shield.ts) but Shield is still never used to *reduce* incoming damage here. Doing that
-      // meaningfully requires a modeled *target* with its own HP/Shield pool, which does not
-      // exist under this engine's "idealized target" assumption (spec.md Assumptions) —
-      // simulate() only measures the user's team's outgoing damage, never anything absorbing
-      // it. Wiring that in is deferred until/unless the spec grows a real target entity.
     }
   }
 
@@ -357,5 +446,12 @@ export function simulate(
     return { tSeconds: t, totalDamage, byStatus };
   });
 
-  return { timeline, perCreatureDps, perCreatureFacilitatedDps, perStatusPerSecond, cumulativeSeries };
+  return {
+    timeline,
+    perCreatureDps,
+    perCreatureFacilitatedDps,
+    perCreatureEffectiveStats,
+    perStatusPerSecond,
+    cumulativeSeries,
+  };
 }

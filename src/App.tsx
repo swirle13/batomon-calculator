@@ -15,7 +15,7 @@ type View = "calculator" | "corpus";
 
 /** FR-014: state which corpus/patch snapshot is active, on both views. */
 const CORPUS_PATCH_LABEL =
-  "Balance 24 / 1.2.0 (community-imported build) — 149 named Batomon, 6 with confirmed cooldown/damage, see README";
+  "Balance 24 / 1.2.0 (community-imported build) — 149 named Batomon, 8 with confirmed cooldown/damage, 23 Trainers, see README";
 
 function CalculatorView() {
   const { config, setSimulationWindowSeconds } = useTeamConfig();
@@ -24,16 +24,18 @@ function CalculatorView() {
   return (
     <div>
       <h2>Build your team</h2>
+      {/* FR-015 (2026-10-05 round 2): Trainer choice is presented first, above the grid, since
+          it's the first decision made in the team-building flow. */}
+      <p>
+        <TrainerPicker />
+      </p>
       <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap", alignItems: "flex-start" }}>
         <GridPicker />
         <div style={{ flex: "1 1 16rem", minWidth: "16rem", textAlign: "left" }}>
           <h3>Placed Banto stats</h3>
-          <PlacedCreatureDetails />
+          <PlacedCreatureDetails result={result} />
         </div>
       </div>
-      <p>
-        <TrainerPicker />
-      </p>
       <p>
         <label>
           Simulation window (seconds):{" "}

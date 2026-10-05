@@ -1,6 +1,6 @@
 import { Fragment } from "react";
 import type { GridCol, GridRow, Rarity } from "../../data/types";
-import { corpus } from "../../data/corpus";
+import { corpus, getAvailableLevelsFor } from "../../data/corpus";
 import { useTeamConfig } from "../../context/TeamConfigContext";
 import styles from "./GridPicker.module.css";
 
@@ -33,6 +33,11 @@ export function GridPicker() {
           <div className={styles.rowLabel}>{row === "back" ? "Back row" : "Front row"}</div>
           {COLS.map((col) => {
             const placement = config.placements.find((p) => p.slot.row === row && p.slot.col === col);
+            // FR per data-model.md's lookup-fix amendment: never offer a level the corpus has
+            // no backing record for. Every creature only has a level-1 record today, so this
+            // is a single-option selector for now — it widens automatically once tasks.md T075
+            // adds real level-2/3/4 records.
+            const availableLevels = placement ? getAvailableLevelsFor(placement.creatureId) : [];
             return (
               <div key={`${row}-${col}`} className={styles.slot}>
                 <select
@@ -57,6 +62,23 @@ export function GridPicker() {
                       ),
                   )}
                 </select>
+                {placement && availableLevels.length > 0 && (
+                  <select
+                    value={placement.level}
+                    onChange={(e) => {
+                      const level = Number(e.target.value) as 1 | 2 | 3 | 4;
+                      setPlacement({ row, col }, placement.creatureId, level);
+                    }}
+                    aria-label={`${row} row, slot ${col + 1} level`}
+                    title="Level (restricted to levels this corpus has data for)"
+                  >
+                    {availableLevels.map((level) => (
+                      <option key={level} value={level}>
+                        Lv. {level}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
             );
           })}

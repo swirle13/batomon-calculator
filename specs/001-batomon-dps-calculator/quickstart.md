@@ -71,12 +71,31 @@ Opens the Vite dev server. Navigate to the Calculator view.
 
 ## Known data gap, not a failure
 
-As of 2026-10-05 (round 2), only 5 of 149 creature records have confirmed `baseDamage` /
-`baseCooldownSeconds` (`bumblebolt`, `formiqueen`, `scorchimp`, `beetbud`, `riglet`) — every other
-creature correctly shows `0` DPS and contributes nothing to the chart, because its stats are
-genuinely unconfirmed (`unconfirmedFields`), not because of an engine bug. See research.md D5 for
-the full diagnosis. If DPS/chart output looks like "nothing is happening," check whether the
-placed creatures actually have confirmed stats before suspecting a regression.
+As of 2026-10-05 (round 2 implementation), 8 of 149 creature records have confirmed `baseDamage` /
+`baseCooldownSeconds` (`bumblebolt`, `formiqueen`, `scorchimp`, `beetbud`, `riglet`, plus
+`brawlmantis`/`dracana`/`frizzly` — the exact three the user originally reported as "0 DPS",
+closed via a batodex.com individual-page lookup, tasks.md T075) — every other creature correctly
+shows `0` DPS and contributes nothing to the chart, because its stats are genuinely unconfirmed
+(`unconfirmedFields`), not because of an engine bug. See research.md D5 for the full diagnosis.
+If DPS/chart output looks like "nothing is happening," check whether the placed creatures
+actually have confirmed stats before suspecting a regression.
+
+## Validation results (2026-10-05, round 2 implementation — Scenarios 5-7)
+
+- **Scenario 5 — PASS.** `TrainerPicker` renders above `GridPicker` in `src/App.tsx`;
+  `src/data/trainers.ts` now lists the full 23-entry roster (research.md D1), confirmed via
+  `node -e` id count. Automated: covered indirectly by `simulate()`'s `trainerId` validation
+  tests continuing to pass against the widened roster.
+- **Scenario 6 — PASS.** Added
+  `src/engine/__tests__/simulate.test.ts`'s "perCreatureEffectiveStats reflects an active
+  damageFlatAdd modifier" test: a +10 `damageFlatAdd` team modifier raises Bumblebolt's
+  `perCreatureEffectiveStats` damage from `3` to `13`, matching what `PlacedCreatureDetails`
+  renders.
+- **Scenario 7 — PASS.** `CumulativeChart`'s `XAxis` now uses `type="number"` with an explicit
+  `domain={[0, windowSeconds]}`; `simulate()`'s cast-time generation switched to index
+  multiplication with `roundTime()` applied at every `tSeconds` creation point. Covered by the
+  new "cast times never accumulate floating-point drift across many casts" test (25-cast window,
+  4.9s cooldown — a value that previously produced `14.7000000000000001`-style drift).
 
 ## Automated checks
 

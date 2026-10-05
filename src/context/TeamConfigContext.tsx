@@ -28,7 +28,7 @@ function freshModifierId(): string {
 
 interface TeamConfigContextValue {
   config: TeamConfiguration;
-  setPlacement: (slot: GridSlot, creatureId: string | null, level?: 1 | 2 | 3) => void;
+  setPlacement: (slot: GridSlot, creatureId: string | null, level?: 1 | 2 | 3 | 4) => void;
   setTrainerId: (trainerId: string | null) => void;
   setSimulationWindowSeconds: (seconds: number) => void;
   addTeamModifier: (modifier: Omit<StatModifier, "id">) => void;
