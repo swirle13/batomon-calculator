@@ -67,7 +67,9 @@ export function TeamSummary({ config, result }: TeamSummaryProps) {
           )}
           {statusRows.map(([status, value]) => (
             <tr key={status}>
-              <td>{status}</td>
+              {/* Shield deals no damage — it's a granted/sec rate, not a damage/sec rate like
+                  the other three (data-model.md's "Shield counted as an output stat"). */}
+              <td>{status === "Shield" ? "Shield (granted)" : status}</td>
               <td>{value.toFixed(2)}</td>
             </tr>
           ))}

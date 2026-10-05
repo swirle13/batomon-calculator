@@ -2,6 +2,8 @@ import type {
   Corpus,
   CreatureRecord,
   GridSlot,
+  ModifierStat,
+  StatModifier,
   StatusEffectInstance,
   StatusEffectType,
   TeamConfiguration,
@@ -106,10 +108,30 @@ function resolveCooldownSpeedTotal(
   return total;
 }
 
+/**
+ * Manual carry-over StatModifiers (data-model.md amendment, 2026-10-05): sum every modifier of
+ * the given `stat` from both the team-wide pool and this placement's own pool. Team-wide and
+ * placement-level modifiers are purely additive with each other — there is no precedence.
+ */
+function sumModifier(stat: ModifierStat, teamModifiers: StatModifier[], placementModifiers: StatModifier[]): number {
+  let total = 0;
+  for (const m of teamModifiers) if (m.stat === stat) total += m.amount;
+  for (const m of placementModifiers) if (m.stat === stat) total += m.amount;
+  return total;
+}
+
 interface Cast {
   tSeconds: number;
   sourceSlot: GridSlot;
   creature: CreatureRecord;
+  /** Resolved once per cast so Phase B never has to re-look-up modifiers */
+  modifiers: {
+    damageFlatAdd: number;
+    burnAmountAdd: number;
+    poisonAmountAdd: number;
+    shockAmountAdd: number;
+    shieldAmountAdd: number;
+  };
 }
 
 interface ActiveStatus extends Omit<StatusEffectInstance, "type"> {
@@ -128,20 +150,32 @@ export function simulate(
   const windowSeconds = config.simulationWindowSeconds;
   const startAt = options?.nowSeconds ?? 0;
 
+  const teamModifiers = config.teamModifiers ?? [];
   const teamMembers = config.placements.map((p) => ({
     slot: p.slot,
     creature: corpus.creatures.find((c) => c.id === p.creatureId)!,
+    placementModifiers: p.modifiers ?? [],
   }));
 
   // --- Phase A: generate every creature's cast times across the window ---
   const casts: Cast[] = [];
   for (const member of teamMembers) {
-    const { creature, slot } = member;
+    const { creature, slot, placementModifiers } = member;
     if (creature.baseCooldownSeconds === null) continue;
-    const cooldownSpeedTotal = resolveCooldownSpeedTotal(slot, creature, teamMembers);
-    const cooldown = effectiveCooldown(creature.baseCooldownSeconds, cooldownSpeedTotal, 0);
+    const cooldownSpeedTotal =
+      resolveCooldownSpeedTotal(slot, creature, teamMembers) +
+      sumModifier("cooldownSpeedAdd", teamModifiers, placementModifiers);
+    const cooldownFlatAdd = sumModifier("cooldownFlatAddSeconds", teamModifiers, placementModifiers);
+    const cooldown = effectiveCooldown(creature.baseCooldownSeconds, cooldownSpeedTotal, cooldownFlatAdd);
+    const modifiers = {
+      damageFlatAdd: sumModifier("damageFlatAdd", teamModifiers, placementModifiers),
+      burnAmountAdd: sumModifier("burnAmountAdd", teamModifiers, placementModifiers),
+      poisonAmountAdd: sumModifier("poisonAmountAdd", teamModifiers, placementModifiers),
+      shockAmountAdd: sumModifier("shockAmountAdd", teamModifiers, placementModifiers),
+      shieldAmountAdd: sumModifier("shieldAmountAdd", teamModifiers, placementModifiers),
+    };
     for (let t = startAt + cooldown; t <= windowSeconds; t += cooldown) {
-      casts.push({ tSeconds: t, sourceSlot: slot, creature });
+      casts.push({ tSeconds: t, sourceSlot: slot, creature, modifiers });
     }
   }
   casts.sort((a, b) => a.tSeconds - b.tSeconds || stableSlotIndex(a.sourceSlot) - stableSlotIndex(b.sourceSlot));
@@ -191,22 +225,26 @@ export function simulate(
   for (const cast of casts) {
     runTicksUpTo(cast.tSeconds);
 
-    const { creature, sourceSlot } = cast;
+    const { creature, sourceSlot, modifiers } = cast;
+    // Modifiers can only scale an effect the creature already has (data-model.md's "Known
+    // limitation" on StatModifiers) — a damageFlatAdd modifier never fabricates a new attack
+    // on a creature whose baseDamage is null.
     const isDirectHit = creature.damageType === "Direct" && creature.baseDamage !== null;
 
     if (isDirectHit) {
+      const effectiveDamage = creature.baseDamage! + modifiers.damageFlatAdd;
       const shockInstance: StatusEffectInstance | null =
         shockLayers > 0
           ? { type: "Shock", layers: shockLayers, sourceSlot, targetSlot: placeholderTargetSlot(sourceSlot), appliedAtSeconds: cast.tSeconds }
           : null;
-      const procResult = applyShockProc({ damage: creature.baseDamage!, damageType: "Direct" }, shockInstance);
+      const procResult = applyShockProc({ damage: effectiveDamage, damageType: "Direct" }, shockInstance);
       if (procResult.shockDamage > 0) {
         timeline.push({ tSeconds: cast.tSeconds, kind: "shockProc", sourceSlot, damage: procResult.shockDamage, damageType: "Shock" });
         perStatusDamage.Shock += procResult.shockDamage;
       }
-      timeline.push({ tSeconds: cast.tSeconds, kind: "attack", sourceSlot, damage: creature.baseDamage!, damageType: "Direct" });
+      timeline.push({ tSeconds: cast.tSeconds, kind: "attack", sourceSlot, damage: effectiveDamage, damageType: "Direct" });
       const key = `${creature.id}@${slotKey(sourceSlot)}`;
-      perCreatureDamage.set(key, (perCreatureDamage.get(key) ?? 0) + creature.baseDamage!);
+      perCreatureDamage.set(key, (perCreatureDamage.get(key) ?? 0) + effectiveDamage);
     } else {
       // A cast with no direct-damage component still occupies a timeline entry (it happened),
       // but contributes nothing to perCreatureDps.
@@ -215,33 +253,47 @@ export function simulate(
 
     for (const applied of creature.appliesStatus ?? []) {
       if (applied.type === "Shock") {
-        shockLayers += applied.amount;
+        const amount = applied.amount + modifiers.shockAmountAdd;
+        shockLayers += amount;
         timeline.push({
           tSeconds: cast.tSeconds,
           kind: "ongoingChange",
           sourceSlot,
-          statusDelta: { type: "Shock", slot: placeholderTargetSlot(sourceSlot), layerDelta: applied.amount },
+          statusDelta: { type: "Shock", slot: placeholderTargetSlot(sourceSlot), layerDelta: amount },
         });
       } else if (applied.type === "Burn" || applied.type === "Poison") {
+        const amount = applied.amount + (applied.type === "Burn" ? modifiers.burnAmountAdd : modifiers.poisonAmountAdd);
         const interval = applied.type === "Burn" ? BURN_TICK_SECONDS : POISON_TICK_SECONDS;
         activeStatuses.push({
           type: applied.type,
-          layers: applied.amount,
+          layers: amount,
           sourceSlot,
           targetSlot: placeholderTargetSlot(sourceSlot),
           appliedAtSeconds: cast.tSeconds,
           nextTickAt: cast.tSeconds + interval,
         });
+      } else if (applied.type === "Shield") {
+        // Shield counters (data-model.md "Shield counted as an output stat", 2026-10-05):
+        // tracked as cumulative Shield *granted* by the team's own casts — same treatment as
+        // Burn/Poison/Shock in spirit, via the existing statusDelta field (Shield isn't a
+        // DamageType, since it never deals damage — see research.md B3) — not as absorption
+        // against an opposing target (still unmodeled, see the T037 note below).
+        const amount = applied.amount + modifiers.shieldAmountAdd;
+        timeline.push({
+          tSeconds: cast.tSeconds,
+          kind: "ongoingChange",
+          sourceSlot,
+          statusDelta: { type: "Shield", slot: placeholderTargetSlot(sourceSlot), layerDelta: amount },
+        });
+        perStatusDamage.Shield += amount;
       }
-      // Shield is absorption, not a per-second output stat — intentionally not accumulated
-      // into perStatusDamage/cumulativeSeries here (see shield.ts for its own treatment).
       //
       // KNOWN SCOPE GAP (tasks.md T037): applyShieldReduction() is implemented and unit-tested
-      // (shield.ts) but is NOT wired in here. Doing so meaningfully requires a modeled *target*
-      // with its own HP/Shield pool, which does not exist under this engine's "idealized
-      // target" assumption (spec.md Assumptions) — simulate() only measures the user's team's
-      // outgoing damage, never anything absorbing it. Wiring this in is deferred until/unless
-      // the spec grows a real target entity; tracked explicitly rather than faked.
+      // (shield.ts) but Shield is still never used to *reduce* incoming damage here. Doing that
+      // meaningfully requires a modeled *target* with its own HP/Shield pool, which does not
+      // exist under this engine's "idealized target" assumption (spec.md Assumptions) —
+      // simulate() only measures the user's team's outgoing damage, never anything absorbing
+      // it. Wiring that in is deferred until/unless the spec grows a real target entity.
     }
   }
 
@@ -258,7 +310,9 @@ export function simulate(
     Burn: perStatusDamage.Burn / windowSeconds,
     Poison: perStatusDamage.Poison / windowSeconds,
     Shock: perStatusDamage.Shock / windowSeconds,
-    Shield: 0,
+    // Shield here means Shield *granted* per second (an output stat, same treatment as the
+    // other three), not absorption against an opposing target — see the T037 note above.
+    Shield: perStatusDamage.Shield / windowSeconds,
   };
 
   const sampleTimes = Array.from(new Set([0, ...timeline.map((e) => e.tSeconds), windowSeconds])).sort(
@@ -269,6 +323,13 @@ export function simulate(
     const byStatus: Record<StatusEffectType, number> = { Burn: 0, Poison: 0, Shock: 0, Shield: 0 };
     for (const event of timeline) {
       if (event.tSeconds > t) continue;
+      // Shield grants carry no `damage`/`damageType` (Shield deals no damage — see the
+      // "Shield counted as an output stat" amendment above); they're tracked via
+      // `statusDelta` instead and intentionally excluded from `totalDamage`.
+      if (event.statusDelta?.type === "Shield") {
+        byStatus.Shield += event.statusDelta.layerDelta;
+        continue;
+      }
       if (event.damage === undefined || event.damageType === undefined) continue;
       totalDamage += event.damage;
       if (event.damageType === "Burn" || event.damageType === "Poison" || event.damageType === "Shock") {

@@ -17,6 +17,7 @@ export function CumulativeChart({ result }: CumulativeChartProps) {
     Burn: point.byStatus.Burn,
     Poison: point.byStatus.Poison,
     Shock: point.byStatus.Shock,
+    Shield: point.byStatus.Shield,
   }));
 
   return (
@@ -24,7 +25,7 @@ export function CumulativeChart({ result }: CumulativeChartProps) {
       <h2>Cumulative damage &amp; status over time</h2>
       <div
         role="img"
-        aria-label="Line chart of cumulative total damage and per-status-effect damage over the simulated time window"
+        aria-label="Line chart of cumulative total damage, Burn, Poison, and Shock damage, and Shield granted, over the simulated time window"
         style={{ width: "100%", height: 320 }}
       >
         <ResponsiveContainer>
@@ -36,8 +37,11 @@ export function CumulativeChart({ result }: CumulativeChartProps) {
             <Legend />
             <Line type="stepAfter" dataKey="Total" stroke="#333333" dot={false} />
             <Line type="monotone" dataKey="Burn" stroke="#e07b39" dot={false} />
-            <Line type="monotone" dataKey="Poison" stroke="#5b8c3f" dot={false} />
+            {/* User-requested: Poison is purple, not green (previously #5b8c3f). */}
+            <Line type="monotone" dataKey="Poison" stroke="#8e44ad" dot={false} />
             <Line type="monotone" dataKey="Shock" stroke="#d4b106" dot={false} />
+            {/* Shield counters (user-requested): cumulative Shield granted, not absorbed. */}
+            <Line type="monotone" dataKey="Shield" stroke="#2e86de" dot={false} />
           </LineChart>
         </ResponsiveContainer>
       </div>

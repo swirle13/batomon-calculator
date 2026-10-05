@@ -22,6 +22,13 @@ export type Rarity =
  * research.md B7: "Fighting" is retained with a confidence flag rather than omitted or
  * silently trusted — it appears in ability text in creator footage per one source, but is
  * explicitly flagged there as unconfirmed by official publication.
+ *
+ * "Curio" and "NULL" added 2026-10-05 during the full-corpus widening pass (tasks.md T043):
+ * both appear as literal Type-column values for multiple creatures across two independent
+ * sources — https://batomonshowdown.wiki/batomon/ (Goldora: Curio) and
+ * https://batomon.net/batomon/ (Dollhime/Furnadon/Gachapod/Mallogre/Nekoffin/Pawsperity/
+ * Rubbin/Shrinell/Vipair: Curio; MissingN./NULL-00/NULL-7F/NULL-FF: NULL) — so they are
+ * treated as real closed-vocabulary members, not typos, per Constitution Principle II.
  */
 export type CreatureType =
   | "Fire"
@@ -36,6 +43,8 @@ export type CreatureType =
   | "Dragon"
   | "Ghost"
   | "Fighting"
+  | "Curio"
+  | "NULL"
   | "All";
 
 export type DamageType = "Direct" | "Burn" | "Poison" | "Shock" | "SuddenDeath";
@@ -164,10 +173,39 @@ export interface GridSlot {
   col: GridCol;
 }
 
+/**
+ * Data-model amendment, 2026-10-05 (post-MVP, user-requested): manual carry-over stat
+ * modifiers. The engine only simulates one isolated battle against an idealized target
+ * (spec.md Assumptions) — it has no concept of a multi-round match. Real play often carries
+ * bonuses between rounds (e.g. a creature's "On Victory" ability granting +10 Damage to every
+ * ally permanently for the rest of the run). Rather than simulate the whole match history,
+ * the user can describe the net effect of such carry-overs directly as a flat adjustment on
+ * top of a creature's base stats for this one simulated battle.
+ */
+export type ModifierStat =
+  | "damageFlatAdd"
+  | "cooldownFlatAddSeconds"
+  | "cooldownSpeedAdd"
+  | "burnAmountAdd"
+  | "poisonAmountAdd"
+  | "shockAmountAdd"
+  | "shieldAmountAdd";
+
+export interface StatModifier {
+  /** Stable id for list management/removal in the UI; not otherwise meaningful */
+  id: string;
+  /** Free-text user note, e.g. "Round 2 win bonus from Brawlmantis" */
+  label: string;
+  stat: ModifierStat;
+  amount: number;
+}
+
 export interface TeamPlacement {
   slot: GridSlot;
   creatureId: string;
   level: 1 | 2 | 3;
+  /** Applies only to this placement's creature, on top of any teamModifiers */
+  modifiers?: StatModifier[];
 }
 
 export interface TeamConfiguration {
@@ -178,6 +216,8 @@ export interface TeamConfiguration {
   itemIds: string[];
   /** Configurable per FR-007/FR-008 */
   simulationWindowSeconds: number;
+  /** Applies to every placement's creature when resolving its effective stats */
+  teamModifiers?: StatModifier[];
 }
 
 // ---------------------------------------------------------------------------

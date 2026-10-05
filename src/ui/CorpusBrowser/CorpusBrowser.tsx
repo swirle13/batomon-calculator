@@ -4,7 +4,7 @@ import type { CreatureType, Rarity } from "../../data/types";
 
 const TYPES: CreatureType[] = [
   "Fire", "Water", "Electric", "Toxic", "Flying", "Rock", "Grass", "Bug",
-  "Steel", "Dragon", "Ghost", "Fighting", "All",
+  "Steel", "Dragon", "Ghost", "Fighting", "Curio", "NULL", "All",
 ];
 const RARITIES: Rarity[] = ["Common", "Uncommon", "Rare", "SuperRare", "Legendary", "Mythical"];
 
@@ -12,9 +12,11 @@ const RARITIES: Rarity[] = ["Common", "Uncommon", "Rare", "SuperRare", "Legendar
  * User Story 3: search/filter the corpus (FR-013) and show full cited detail, including any
  * recorded source conflicts, per entry (FR-004, SC-004).
  *
- * NOTE: this seed corpus intentionally covers only the handful of creatures needed to prove
- * the engine's mechanics (Constitution Principle VI). Widening to the full community dex is
- * tracked as tasks.md T043-T046.
+ * As of the tasks.md T043 widening pass (2026-10-05), this covers the full 149-name roster
+ * reconciled from the fan-wiki sources reviewed — see src/data/creatures.ts's header comment
+ * for exactly which fields are fully sourced vs. still `unconfirmedFields` per entry. Fields
+ * listed in an entry's `unconfirmedFields` are rendered as "unknown" below rather than a
+ * possibly-misleading raw value (data-model.md: "shown as 'unknown' in the UI").
  */
 export function CorpusBrowser() {
   const [query, setQuery] = useState("");
@@ -33,9 +35,10 @@ export function CorpusBrowser() {
       <h2>Corpus Browser</h2>
       <p>
         <em>
-          Seed corpus: {corpus.creatures.length} creature(s), {corpus.trainers.length} trainer(s),{" "}
-          {corpus.trinkets.length} trinket(s), {corpus.items.length} item(s). Full corpus widening is
-          tracked in tasks.md (User Story 3).
+          {corpus.creatures.length} creatures, {corpus.trainers.length} trainer(s),{" "}
+          {corpus.trinkets.length} trinket(s), {corpus.items.length} item(s). Most entries have
+          confirmed name/rarity/type/ability-text but an "unknown" cooldown/damage (not published
+          in the fan-wiki sources reviewed) — see each entry's "Unconfirmed" line.
         </em>
       </p>
 
@@ -70,61 +73,76 @@ export function CorpusBrowser() {
 
       {results.length === 0 && <p>No creatures match this search/filter combination.</p>}
 
-      {results.map((c) => (
-        <article key={c.id} style={{ border: "1px solid #ccc", borderRadius: 4, padding: "0.75rem", marginBottom: "0.75rem" }}>
-          <h3>
-            {c.name} <small>({c.rarity} — {c.types.join(" / ")})</small>
-          </h3>
-          <p>
-            Cost ${c.shopCost} · Cooldown {c.baseCooldownSeconds ?? "n/a"}s · Damage{" "}
-            {c.baseDamage ?? "n/a"} {c.damageType ? `(${c.damageType})` : ""}
-          </p>
-          {c.appliesStatus && c.appliesStatus.length > 0 && (
+      {results.map((c) => {
+        const unconfirmed = new Set(c.unconfirmedFields ?? []);
+        const show = (field: string, value: string | number) => (unconfirmed.has(field) ? "unknown" : value);
+        return (
+          <article
+            key={c.id}
+            style={{ border: "1px solid #ccc", borderRadius: 4, padding: "0.75rem", marginBottom: "0.75rem" }}
+          >
+            <h3>
+              {c.name}{" "}
+              <small>
+                ({show("rarity", c.rarity)} — {c.types.length > 0 ? c.types.join(" / ") : "unknown"})
+              </small>
+            </h3>
             <p>
-              Applies:{" "}
-              {c.appliesStatus.map((s) => `${s.amount} ${s.type}`).join(", ")}
+              Cost ${show("shopCost", c.shopCost)} · Cooldown{" "}
+              {show("baseCooldownSeconds", c.baseCooldownSeconds ?? "unknown")}
+              {typeof c.baseCooldownSeconds === "number" && !unconfirmed.has("baseCooldownSeconds") ? "s" : ""} ·
+              Damage {show("baseDamage", c.baseDamage ?? "unknown")}{" "}
+              {c.damageType && !unconfirmed.has("damageType") ? `(${c.damageType})` : ""}
             </p>
-          )}
-          <p>{c.abilityText}</p>
-          {c.unconfirmedFields && c.unconfirmedFields.length > 0 && (
-            <p>
-              <strong>Unconfirmed:</strong> {c.unconfirmedFields.join(", ")}
-            </p>
-          )}
-          <details>
-            <summary>Sources &amp; patch ({c.patch})</summary>
-            <ul>
-              {c.sourceRefs.map((s) => (
-                <li key={s.url}>
-                  <a href={s.url} target="_blank" rel="noreferrer">
-                    {s.title}
-                  </a>{" "}
-                  (retrieved {s.retrievedAt})
-                </li>
-              ))}
-            </ul>
-          </details>
-          {c.conflicts && c.conflicts.length > 0 && (
+            {c.appliesStatus && c.appliesStatus.length > 0 && (
+              <p>Applies: {c.appliesStatus.map((s) => `${s.amount} ${s.type}`).join(", ")}</p>
+            )}
+            <p>{c.abilityText}</p>
+            {c.unconfirmedFields && c.unconfirmedFields.length > 0 && (
+              <p>
+                <strong>Unconfirmed:</strong> {c.unconfirmedFields.join(", ")}
+              </p>
+            )}
+            {c.evolvesInto && (
+              <p>
+                Evolves into: <code>{c.evolvesInto}</code>
+              </p>
+            )}
             <details>
-              <summary>⚠ Recorded source conflicts ({c.conflicts.length})</summary>
+              <summary>Sources &amp; patch ({c.patch})</summary>
               <ul>
-                {c.conflicts.map((conflict) => (
-                  <li key={conflict.field}>
-                    <strong>{conflict.field}</strong>:{" "}
-                    {conflict.values.map((v, i) => (
-                      <span key={i}>
-                        {String(v.value)} ({v.sourceRefs.map((s) => s.title).join(", ")})
-                        {i < conflict.values.length - 1 ? "; " : ""}
-                      </span>
-                    ))}
-                    {conflict.resolution && <div>Resolution: {conflict.resolution}</div>}
+                {c.sourceRefs.map((s) => (
+                  <li key={s.url}>
+                    <a href={s.url} target="_blank" rel="noreferrer">
+                      {s.title}
+                    </a>{" "}
+                    (retrieved {s.retrievedAt})
                   </li>
                 ))}
               </ul>
             </details>
-          )}
-        </article>
-      ))}
+            {c.conflicts && c.conflicts.length > 0 && (
+              <details>
+                <summary>⚠ Recorded source conflicts ({c.conflicts.length})</summary>
+                <ul>
+                  {c.conflicts.map((conflict) => (
+                    <li key={conflict.field}>
+                      <strong>{conflict.field}</strong>:{" "}
+                      {conflict.values.map((v, i) => (
+                        <span key={i}>
+                          {String(v.value)} ({v.sourceRefs.map((s) => s.title).join(", ")})
+                          {i < conflict.values.length - 1 ? "; " : ""}
+                        </span>
+                      ))}
+                      {conflict.resolution && <div>Resolution: {conflict.resolution}</div>}
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            )}
+          </article>
+        );
+      })}
     </div>
   );
 }

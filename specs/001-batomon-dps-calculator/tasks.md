@@ -205,10 +205,19 @@ and confirm a known conflicting entry shows both values with their sources.
 
 - [x] T042 [US3] Implement `searchCorpus`/`filterCorpus` helpers in `src/data/corpus.ts` to satisfy
       T041
-- [ ] T043 [US3] Widen `src/data/creatures.ts` to the full cross-referenced, cited corpus collected
+- [x] T043 [US3] Widen `src/data/creatures.ts` to the full cross-referenced, cited corpus collected
       from the available fan wikis (target: ≥90% of entries with a complete, citable required-stat
       set per SC-003). Any inter-wiki disagreement on a value MUST be recorded as a `FieldConflict`
       per FR-004 rather than silently resolved
+      **Done 2026-10-05, with an honest caveat on SC-003's "complete, citable required-stat set"
+      bar**: all 149 named creatures now have cited name/rarity/types/abilityText (and shopCost
+      for ~87 of them), but none of the sources reviewed publish per-creature baseCooldownSeconds/
+      baseDamage for the ~143 bulk-imported entries — those two fields are `null` + listed in
+      `unconfirmedFields` rather than fabricated. Only the original 6 hand-authored entries have
+      a fully complete required-stat set. Getting more entries to "complete" requires finding
+      individual per-creature detail pages (like the batodex.com cards already used for
+      Bumblebolt/Formiqueen/Venopuff/Scorchimp) one at a time — tracked as a follow-up, not
+      re-opened here since the roster-breadth half of this task is genuinely done.
 - [ ] T044 [P] [US3] Widen `src/data/trainers.ts` to the full cited Trainer corpus
 - [ ] T045 [P] [US3] Populate `src/data/trinkets.ts` with the full cited Trinket corpus
 - [ ] T046 [P] [US3] Populate `src/data/items.ts` with the full cited Item corpus

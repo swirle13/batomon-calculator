@@ -184,3 +184,48 @@ one `SimulationResult`, never re-derive their own numbers independently.
   update model is needed at this scale (≤6 creatures, bounded window).
 - `StatusEffectInstance` layer count: Burn -1 layer per tick (B2); Poison unchanged by its own tick;
   Shock unchanged by anything except an explicit new application (no natural decay, per B2/B4).
+
+## Amendments
+
+### 2026-10-05 — `CreatureType` widened: `"Curio"`, `"NULL"`
+
+Added during the full-corpus widening pass (tasks.md T043) — both appear as literal Type-column
+values across independent sources (see `src/data/types.ts`'s inline citation), not typos.
+
+### 2026-10-05 — Manual carry-over `StatModifier`s (user-requested, post-MVP)
+
+The engine only simulates one isolated battle against an idealized target (see Assumptions in
+spec.md) — it has no multi-round match model. To let a user describe the net effect of a
+previous round's permanent carry-over bonus (e.g. "+10 Damage to every ally, from a creature's
+On Victory ability") without simulating the whole match history, `TeamConfiguration` and
+`TeamPlacement` gained:
+
+```ts
+type ModifierStat =
+  | "damageFlatAdd" | "cooldownFlatAddSeconds" | "cooldownSpeedAdd"
+  | "burnAmountAdd" | "poisonAmountAdd" | "shockAmountAdd" | "shieldAmountAdd";
+
+interface StatModifier {
+  id: string;
+  label: string; // free-text user note
+  stat: ModifierStat;
+  amount: number;
+}
+
+// TeamConfiguration gains: teamModifiers?: StatModifier[]  (applies to every placement; absent/empty = none)
+// TeamPlacement gains:     modifiers?: StatModifier[]       (applies to this placement only)
+```
+
+**Known limitation**: a modifier can only scale an effect a creature *already has*. A
+`damageFlatAdd` on a creature with `baseDamage === null` (no ordinary direct-damage cast) has
+no attack event to attach to and is therefore a no-op; same for status-amount modifiers on a
+creature that doesn't already apply that status. This is intentional — modifiers do not
+fabricate new attacks/status grants that aren't in the cited corpus data.
+
+### 2026-10-05 — Shield counted as an output stat, not just absorption
+
+`perStatusPerSecond.Shield` and `cumulativeSeries[].byStatus.Shield` now track the cumulative
+*Shield granted* by the team's own casts (same treatment as Burn/Poison/Shock), not Shield
+*absorption* against an opposing target (which still isn't modeled — see `simulate.ts`'s T037
+comment). This answers "how much Shield is this team generating over time", which is what the
+summary table and chart surface as "Shield".

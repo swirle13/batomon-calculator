@@ -3,6 +3,7 @@ import { TeamConfigProvider, useTeamConfig } from "./context/TeamConfigContext";
 import { GridPicker } from "./ui/GridPicker/GridPicker";
 import { TrainerPicker } from "./ui/GridPicker/TrainerPicker";
 import { TeamSummary } from "./ui/TeamSummary/TeamSummary";
+import { ModifierEditor } from "./ui/Modifiers/ModifierEditor";
 import { CumulativeChart } from "./ui/CumulativeChart/CumulativeChart";
 import { CorpusBrowser } from "./ui/CorpusBrowser/CorpusBrowser";
 import { corpus } from "./data/corpus";
@@ -38,6 +39,7 @@ function CalculatorView() {
         </label>
       </p>
       <TeamSummary config={config} result={result} />
+      <ModifierEditor />
       <CumulativeChart result={result} />
     </div>
   );

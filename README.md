@@ -47,11 +47,18 @@ an explicit `FieldConflict` (both values, both sources, and an optional `resolut
 rather than silently picked. The Corpus Browser view surfaces these conflicts directly instead
 of hiding them.
 
-**Current status**: the corpus is a deliberately small *seed slice* — just enough creatures to
-exercise every status-effect mechanic the engine implements (Shock, Burn, Poison, Shield,
-positional Ongoing auras), per the project's "simplicity first, widen incrementally" principle.
-Widening it to the full community dex is tracked as open tasks `T043`–`T046` in
-[`tasks.md`](./specs/001-batomon-dps-calculator/tasks.md) — **not** yet done.
+**Current status**: `src/data/creatures.ts` covers all **149 named Batomon** reconciled from the
+fan-wiki sources reviewed (name/rarity/types/ability text for all of them, shop cost for most).
+The original 6 hand-researched entries (Bumblebolt, Formiqueen, Venopuff, Scorchimp, Pebbler,
+Onsetra) remain the only ones with a fully complete, engine-usable stat set
+(`baseCooldownSeconds`/`baseDamage`/structured `abilityTags`) — none of the sources reviewed
+publish per-creature cooldown/damage numbers in bulk, only on individual detail pages. The other
+~143 entries have `baseCooldownSeconds`/`baseDamage`/`abilityTags` as `null`/`[]`, explicitly
+listed in each entry's `unconfirmedFields` (rendered as "unknown" in the Corpus Browser, never a
+misleading `0`) — they're browsable/searchable today but won't contribute DPS to a simulation
+until someone sources their individual stat pages. Trainers/Trinkets/Items are still the
+original seed stub (`T044`–`T046` in [`tasks.md`](./specs/001-batomon-dps-calculator/tasks.md),
+not yet done).
 
 ### Refreshing the corpus for a new game patch
 
@@ -73,8 +80,13 @@ Widening it to the full community dex is tracked as open tasks `T043`–`T046` i
   *user's team's own outgoing damage* against one implicit "idealized target" (see spec.md's
   Assumptions) — there's no modeled opposing HP/Shield pool for it to reduce yet. See `tasks.md`
   T037.
-- **Corpus breadth.** Only 6 creatures and 1 trainer are seeded today; trinkets/items are empty
-  stubs. See `tasks.md` T043–T046.
+- **Corpus depth.** All 149 creatures are named/typed/searchable, but only 6 have confirmed
+  cooldown/damage numbers (see above) — the rest can't contribute DPS to a simulation yet.
+  Trainers/Trinkets/Items are still the original 1-trainer/0-trinket/0-item seed stub. See
+  `tasks.md` T044–T046.
+- **StatModifiers are a manual, honest-effort tool, not a simulated economy.** They let you
+  describe the net effect of a previous round's carry-over bonus, but the engine never derives
+  them from actual match history (there is no multi-round match model at all).
 - **No GitHub repo has been created/pushed yet** for this project (`tasks.md` T055) — do that
   before expecting the `deploy.yml` GitHub Actions workflow to run.
 
