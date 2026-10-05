@@ -218,7 +218,9 @@ and confirm a known conflicting entry shows both values with their sources.
       individual per-creature detail pages (like the batodex.com cards already used for
       Bumblebolt/Formiqueen/Venopuff/Scorchimp) one at a time — tracked as a follow-up, not
       re-opened here since the roster-breadth half of this task is genuinely done.
-- [ ] T044 [P] [US3] Widen `src/data/trainers.ts` to the full cited Trainer corpus
+- [ ] T044 [P] [US3] Widen `src/data/trainers.ts` to the full cited Trainer corpus — **expanded
+      into T070 below** with the exact 23-Trainer roster + citations research.md D1 found during
+      round-2 planning; complete via T070, not here, to avoid duplicate work
 - [ ] T045 [P] [US3] Populate `src/data/trinkets.ts` with the full cited Trinket corpus
 - [ ] T046 [P] [US3] Populate `src/data/items.ts` with the full cited Item corpus
 - [x] T047 [US3] Build `CorpusBrowser` in `src/ui/CorpusBrowser/CorpusBrowser.tsx`: name search +
@@ -250,6 +252,104 @@ and confirm a known conflicting entry shows both values with their sources.
 
 ---
 
+## Phase 7: Round 2 — User-Reported Follow-ups (2026-10-05, via `/speckit-plan` + `/speckit-tasks`)
+
+**Goal**: Implement the design in plan.md's "Amendment: Round 2" and research.md section D /
+data-model.md's matching 2026-10-05 (round 2) amendments — full Trainer roster + its placement
+above the grid (FR-015), a live per-creature effective-stat breakdown (FR-016), a consistent
+chart X-axis (FR-017), and the per-level (1–4) creature data-model widening (FR-001 amendment),
+plus the latent `(id, level)` lookup bug data-model.md surfaced along the way.
+
+**Independent Test**: quickstart.md Validation Scenarios 5–7.
+
+### Foundational data-model updates (blocking — no story label, same as Phase 2)
+
+- [ ] T057 Promote `unconfirmedFields?: string[]` from `CreatureRecord` onto `Provenance` in
+      `src/data/types.ts`, per data-model.md's "`unconfirmedFields` promoted..." amendment —
+      `CreatureRecord` keeps the field only via inheritance, no local re-declaration
+- [ ] T058 [P] Widen `CreatureRecord.level` from `1 | 2 | 3` to `1 | 2 | 3 | 4` and add
+      `confirmedMaxLevel?: 1 | 2 | 3 | 4` in `src/data/types.ts`, per data-model.md's "Creature
+      level widened to 1–4" amendment (per-species cap, when sourced; absent = not yet researched)
+- [ ] T059 [P] Add `baseMulticast: number` to `CreatureRecord` in `src/data/types.ts` — data-
+      model.md: "default `1` ('no stated Multicast bonus')" — and add `"multicastAdd"` to the
+      `ModifierStat` union
+- [ ] T060 Backfill `baseMulticast: 1` onto all 149 existing records in `src/data/creatures.ts` —
+      data-model.md: "backfilled to 1 for all existing records rather than flagged unconfirmed,
+      since '1 = none' is the reasonable baseline absent contrary evidence in abilityText"; do NOT
+      add `"baseMulticast"` to any record's `unconfirmedFields`
+- [ ] T061 [P] Add `perCreatureEffectiveStats: Record<string, { damage: number | null; damageType:
+      DamageType | null; cooldownSeconds: number | null; multicast: number; appliesStatus: {
+      type: StatusEffectType; amount: number }[] }>` to `SimulationResult` in `src/data/types.ts`,
+      exactly per data-model.md's shape (depends on T059)
+
+### Tests for Phase 7 ⚠️ write first, confirm failing before implementing (Constitution Principle III, NON-NEGOTIABLE)
+
+- [ ] T062 [P] Write failing unit tests in `src/engine/__tests__/simulate.test.ts` for Multicast,
+      using a synthetic corpus fixture: a creature with `baseMulticast: 3` fires 3 independent
+      direct-damage events at the same `tSeconds` per cooldown completion, each independently
+      eligible to proc Shock (research.md D3)
+- [ ] T063 [P] Write a failing unit test in `src/engine/__tests__/simulate.test.ts` asserting
+      `perCreatureEffectiveStats` reflects an active `StatModifier` (e.g. `damageFlatAdd`) for a
+      placed creature as a post-modifier amount, resolved via the same path as the cast loop —
+      data-model.md's single-source-of-truth rule, not a second divergent computation
+- [ ] T064 [P] Write a failing unit test in `src/engine/__tests__/simulate.test.ts` asserting cast
+      times for a float-drift-prone cooldown (e.g. `4.9`) never produce a `TimelineEvent.tSeconds`
+      with more than 6 significant decimal digits across a 20+ cast window (research.md D4)
+- [ ] T065 [P] Write a failing unit test in `src/engine/__tests__/simulate.test.ts` asserting
+      `simulate()` throws `InvalidTeamConfigurationError` when a `TeamPlacement.level` has no
+      matching `(id, level)` record in the corpus, and resolves the correct record when one exists
+      at a non-default level
+
+### Implementation for Phase 7
+
+- [ ] T066 [US1] Implement Multicast firing in `src/engine/simulate.ts` Phase A/B: fire
+      `baseMulticast + multicastAdd`-modifier-total independent direct-damage events per cooldown
+      completion, to satisfy T062 (depends on T059)
+- [ ] T067 [US1] Fix the creature lookup in `src/engine/simulate.ts`'s `teamMembers` construction
+      to key on `(creatureId, level)` — `corpus.creatures.find(c => c.id === p.creatureId &&
+      c.level === p.level)` — raising `InvalidTeamConfigurationError` on no match, to satisfy T065
+      (depends on T058)
+- [ ] T068 [US1] Switch `src/engine/simulate.ts` Phase A's cast-time generation from repeated `+=`
+      addition to index multiplication (`t = startAt + n * cooldown`) and round every
+      `TimelineEvent.tSeconds` to 1e-6s precision at creation, to satisfy T064
+- [ ] T069 [US1] Compute `perCreatureEffectiveStats` in `src/engine/simulate.ts` Phase C from the
+      same per-cast `modifiers`/`sumModifier` resolution Phase A already performs, to satisfy T063
+      (depends on T061, T066)
+- [ ] T070 [US1] Widen `src/data/trainers.ts` to the full cited 23-Trainer roster from research.md
+      D1 (Black Belt, Bug Catcher, Burglar, Chef, Chemist, Egg Breeder, Gamer, Gentleman, Lucky
+      Girl, Mad Scientist, Masked Man, Monster Ranger, Musician, Painter, Redhead, Rich Lady,
+      Scavenger, Shopkeeper, Smuggler, Swim Coach, Treasure Hunter, Twins, Youngster), recording
+      the two cited `FieldConflict`s (Chemist's Poison amount: +3 vs. +1; Redhead's Burn amount:
+      +3 vs. +2) and flagging the five named-only trainers' (Twins, Gentleman, Painter, Burglar,
+      Scavenger, Black Belt) `abilityText` via `unconfirmedFields` (supersedes T044; depends on
+      T057 for `unconfirmedFields` being available on `TrainerRecord`)
+- [ ] T071 [US1] Move `<TrainerPicker />` above `<GridPicker />` in the Calculator view
+      (`src/App.tsx`), per FR-015
+- [ ] T072 [US1] Add a per-placement level selector (`1`–`4`, restricted to levels actually present
+      in the corpus for that creature) to `src/ui/GridPicker/GridPicker.tsx`, wired through
+      `TeamConfigContext.setPlacement`'s existing `level` parameter (depends on T058, T067)
+- [ ] T073 [US1] Extend `src/ui/TeamSummary/PlacedCreatureDetails.tsx` to render
+      `perCreatureEffectiveStats` per placement — damage, damage type, cooldown, Multicast count,
+      and each applied status amount — live-updating as `StatModifier`s change, per FR-016
+      (depends on T069)
+- [ ] T074 [US2] Fix `src/ui/CumulativeChart/CumulativeChart.tsx`'s `XAxis` to `type="number"` with
+      an explicit `domain={[0, windowSeconds]}` (derived from the result, e.g. `data.at(-1)?.t`),
+      per FR-017/research.md D4 (depends on T068 for drift-free underlying data)
+
+### Corpus completeness (US3 — tracked, explicitly large/ongoing, not closeable in one pass)
+
+- [ ] T075 [US3] Research and record confirmed `baseDamage`/`baseCooldownSeconds`/per-level (2–4)
+      stats for `src/data/creatures.ts` entries, one cited batch at a time (same pattern as T043's
+      caveat) — target SC-003's ≥90% bar; log progress against the research.md D5 baseline
+      (5/149 confirmed) in `quickstart.md`'s Validation results section after each batch rather
+      than claiming completion prematurely
+
+**Checkpoint**: Trainer roster complete and positioned per FR-015; per-creature effective-stat
+breakdown live per FR-016; chart X-axis consistent per FR-017; level/Multicast data-model gaps
+closed; corpus-completeness work tracked and progressing (T075), not expected done in one pass.
+
+---
+
 ## Future Enhancements (user-requested 2026-10-05, explicitly deferred: "once we get all of the
 ## mechanics working" — not scheduled into a phase yet)
 
@@ -270,6 +370,9 @@ and confirm a known conflicting entry shows both values with their sources.
 - **User Stories (Phase 3-5)**: all depend on Foundational completion; independently testable once
   it's done, and may proceed in priority order (US1 → US2 → US3) or in parallel if staffed
 - **Polish (Phase 6)**: depends on all desired user stories being complete
+- **Round 2 (Phase 7)**: depends on Phases 1–6 being complete (it amends/extends their outputs,
+  notably T027's `simulate()` and T038's `CumulativeChart`); its own Foundational sub-block
+  (T057–T061) blocks every other Phase 7 task the same way Phase 2 blocks Phases 3–5
 
 ### User Story Dependencies
 
@@ -278,6 +381,9 @@ and confirm a known conflicting entry shows both values with their sources.
   testable per quickstart.md Scenario 3 once US1's engine core (T027) exists
 - **US3 (P3)**: reuses the `Corpus` object from Foundational; independently testable without US1/US2
   UI, though it shares the `src/App.tsx` view shell
+- **Phase 7's US1/US2/US3-labeled tasks**: amend/extend the same-numbered story's existing surface
+  rather than opening a new story; order within Phase 7 is Foundational (T057–T061) → Tests
+  (T062–T065) → Implementation (T066–T074) → Corpus research (T075), same shape as Phases 2–5
 
 ### Within Each User Story
 
@@ -297,6 +403,25 @@ Task: "Failing unit test for simulate() single-creature DPS in src/engine/__test
 
 ---
 
+## Parallel Example: Phase 7
+
+```bash
+# Foundational type edits for Phase 7 (different fields/sections of the same file — treat as
+# sequential within src/data/types.ts despite the [P] markers below being about *other* tasks
+# not depending on each other's *completion*, not about editing the same file concurrently):
+Task: "Widen CreatureRecord.level to 1 | 2 | 3 | 4 + confirmedMaxLevel in src/data/types.ts"
+Task: "Add baseMulticast: number to CreatureRecord + multicastAdd to ModifierStat in src/data/types.ts"
+Task: "Add perCreatureEffectiveStats to SimulationResult in src/data/types.ts"
+
+# Tests for Phase 7 (different test cases, same file — same caution as above applies):
+Task: "Failing Multicast test in src/engine/__tests__/simulate.test.ts"
+Task: "Failing perCreatureEffectiveStats modifier test in src/engine/__tests__/simulate.test.ts"
+Task: "Failing float-drift cast-time test in src/engine/__tests__/simulate.test.ts"
+Task: "Failing (id, level) lookup test in src/engine/__tests__/simulate.test.ts"
+```
+
+---
+
 ## Implementation Strategy
 
 ### MVP First (User Story 1 Only)
@@ -311,6 +436,9 @@ Task: "Failing unit test for simulate() single-creature DPS in src/engine/__test
 3. US2 → validate → cumulative chart adds the second explicitly-requested UI focus.
 4. US3 → validate → corpus browser rounds out the "full corpus" requirement.
 5. Polish.
+6. Phase 7 → validate against quickstart.md Scenarios 5–7 → Trainer roster, per-creature
+   breakdown, chart axis, and level/Multicast data-model gaps closed; T075 (corpus completeness)
+   continues as ongoing work beyond this feature's initial delivery.
 
 ### Notes
 
