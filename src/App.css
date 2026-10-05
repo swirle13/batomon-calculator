@@ -1,0 +1,23 @@
+header {
+  padding: 1rem;
+  border-bottom: 1px solid #ddd;
+}
+
+main {
+  padding: 1rem;
+  max-width: 60rem;
+  margin: 0 auto;
+}
+
+table {
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+  min-width: 20rem;
+}
+
+th,
+td {
+  border: 1px solid #ccc;
+  padding: 0.4rem 0.6rem;
+  text-align: left;
+}

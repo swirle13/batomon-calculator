@@ -1,0 +1,95 @@
+<!--
+Sync Impact Report
+Version change: [TEMPLATE] → 1.0.0 (initial ratification)
+Modified principles: n/a (first adoption)
+Added sections: Core Principles (I–VI), Technology Stack, Development Workflow, Governance
+Removed sections: none
+Templates requiring updates:
+  - .specify/templates/plan-template.md ✅ no changes required (reads constitution generically)
+  - .specify/templates/spec-template.md ✅ no changes required
+  - .specify/templates/tasks-template.md ✅ no changes required
+Follow-up TODOs: none
+-->
+
+# Batomon Calculator Constitution
+
+## Core Principles
+
+### I. Static-Data, Engine-Driven Architecture
+All creature, trainer, trinket, and item data MUST live in versioned, typed data modules
+(`src/data/**`) that are strictly separated from the simulation engine (`src/engine/**`) and the
+UI (`src/ui/**` or `src/components/**`). The engine MUST be a pure, deterministic function of
+(roster data + board layout + a fixed tick/time model) with zero dependency on React, the DOM, or
+any UI state. Rationale: Batomon Showdown is a live-service game that patches regularly; the only
+way to re-run the corpus or re-balance the engine without rewriting the UI is to keep data,
+simulation, and presentation as three independently testable layers.
+
+### II. TypeScript Strict Mode, No Escape Hatches
+The project MUST compile under `strict: true` with `noImplicitAny`, `noUncheckedIndexedAccess`, and
+no inline `// @ts-ignore`/`any` suppressions in engine or data code (UI glue code may justify a
+narrow, commented exception). Damage types, status-effect kinds, creature types, and grid positions
+MUST be modeled as closed discriminated unions, never bare strings. Rationale: the corpus is
+hand-collected from fan wikis with inconsistent terminology; the type system is the primary defense
+against a typo silently becoming a wrong damage calculation.
+
+### III. Test-First for the Simulation Engine (NON-NEGOTIABLE)
+Every mechanic the engine implements — cooldown-speed formula, DPS accumulation, damage-over-time
+decay (poison/burn/shock), shield/overkill interaction, multi-target and position-based targeting,
+trainer/ability triggers — MUST have a unit test written and shown failing before the mechanic is
+implemented, and the test MUST cite the wiki source or worked example it is derived from in a code
+comment. Rationale: timing and stacking math is the part most likely to silently drift from the
+real game's behavior, and it is the part the whole calculator's credibility depends on.
+
+### IV. Cited, Versioned Corpus Data
+Every creature/trainer/trinket/item record MUST carry a `sourceRefs` field citing the wiki page(s)
+and retrieval date it was transcribed from, and a `patch` field recording the game version/balance
+patch the numbers reflect. When sources disagree, the conflict MUST be recorded in the record (e.g.
+a `conflicts` array) rather than silently resolved by picking one value. Rationale: no single
+canonical datasheet exists for this game; honesty about provenance and disagreement is what makes
+the corpus trustworthy and refreshable as new patches land.
+
+### V. Zero-Backend, Static Hosting
+The application MUST ship as a fully static single-page app with no server-side component,
+buildable with Vite and deployable to GitHub Pages via a GitHub Actions workflow. All computation
+(corpus lookups, simulation, charting) MUST run client-side. Rationale: matches the self-hosting
+pattern already proven for the author's other tools and keeps the project free to run indefinitely.
+
+### VI. Simplicity & Incremental Delivery
+Build the data schema, engine, and UI against a small, real slice of the corpus first (a handful of
+creatures spanning the mechanics that matter: a DOT applier, a shield/support unit, a positional
+ability) before widening to full corpus coverage. Do not add abstraction (plugin systems, generic
+rule engines, etc.) ahead of at least two concrete creatures/trainers that need it. Rationale: the
+corpus is large and still patching; premature generalization against incomplete/uncertain data is
+wasted work.
+
+## Technology Stack
+
+- **Language**: TypeScript (strict mode), targeting the latest stable release.
+- **UI framework**: React, latest stable major version, function components + hooks only.
+- **Build tool**: Vite.
+- **Charting**: a lightweight, typed charting library (final choice recorded in the implementation
+  plan) rendering cumulative damage/status-value-over-time curves.
+- **Hosting**: static export, deployed to the `gh-pages` branch via GitHub Actions, no backend,
+  no database — the corpus ships as part of the client bundle.
+- **Testing**: a unit-test framework capable of running the engine headlessly (no browser/DOM
+  requirement for engine tests); UI tests may use a DOM-testing library.
+
+## Development Workflow
+
+- Corpus data changes (new/updated creatures, trainers, trinkets, items) are reviewed for the
+  presence of `sourceRefs`, `patch`, and (if applicable) `conflicts` before merging.
+- Engine changes require the failing-test-first evidence described in Principle III to be visible
+  in the change (test added/updated alongside the implementation).
+- UI changes that affect the DPS/status-per-second summary or the cumulative damage/status chart
+  must be checked against at least one engine unit test's expected output, so the displayed numbers
+  and the tested engine output cannot silently diverge.
+
+## Governance
+
+This constitution supersedes ad hoc practice for this repository. Amendments are made by editing
+this file, bumping `CONSTITUTION_VERSION` per semantic versioning (MAJOR: principle removed/redefined
+incompatibly; MINOR: principle or section added; PATCH: clarification/typo), and updating
+`Last Amended`. Any plan produced by `/speckit-plan` must note how it complies with each principle
+above or justify a deviation in that plan's Complexity Tracking section.
+
+**Version**: 1.0.0 | **Ratified**: 2026-10-05 | **Last Amended**: 2026-10-05

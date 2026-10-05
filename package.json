@@ -1,0 +1,42 @@
+{
+  "name": "batomon-calculator",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "DPS and status-effect-per-second calculator for Batomon Showdown, with a cited creature/trainer/trinket/item corpus.",
+  "homepage": "https://swirle13.github.io/batomon-calculator/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/swirle13/batomon-calculator.git"
+  },
+  "author": {
+    "name": "Matthew Johnson",
+    "url": "https://github.com/swirle13"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "oxlint",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "recharts": "^3.10.1"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@types/node": "^24.13.3",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7",
+    "@vitejs/plugin-react": "^6.1.1",
+    "jsdom": "^30.1.2",
+    "oxlint": "^1.81.0",
+    "typescript": "~7.0.2",
+    "vite": "^8.3.0",
+    "vitest": "^5.0.3"
+  }
+}
