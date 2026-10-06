@@ -480,6 +480,92 @@ sums `effectTags` from every trinket in `config.trinketIds`, as an *additional* 
 wide modifier source alongside the user's own manual `teamModifiers` -- additive with it, same
 no-precedence rule the manual carry-over `StatModifier`s already follow with each other.
 
+### 2026-10-06 (round 6) — `spriteFile` added to `CreatureRecord` and `TrinketRecord`
+
+Per research.md H3. Sprites are vendored into the repo, so each record stores the **filename**
+its sprite was published under, not a full URL or a derived-from-`id` convention (4 species have
+a batodex slug that differs from this corpus's `id`, so convention-derivation would 404):
+
+```ts
+interface CreatureRecord extends Provenance {
+  // ...existing fields unchanged...
+  /**
+   * Vendored sprite filename, resolved against `${import.meta.env.BASE_URL}sprites/monster/`.
+   * Stored per record because the publishing slug is not always this record's `id`
+   * (e.g. id `craghorn` is published as `alpinine.png`) -- research.md H3.
+   * Absent = render the existing text-only card; never a broken <img>.
+   */
+  spriteFile?: string;
+}
+```
+
+`TrinketRecord` gains the same optional field, resolved against `sprites/trinket/`.
+
+**Not** added: image width/height/alt as data. All sprites are uniformly 48×48 (verified), and
+alt text is derived from `name` at render time — storing either would be duplicated state.
+
+### 2026-10-06 (round 6) — Canonical stat and rarity colour maps (UI-only)
+
+Per research.md H2. Two new canonical maps alongside round 3's existing `typeColors.ts`, with the
+same rationale (one source of truth for a colour the UI uses in several places):
+
+```ts
+// src/data/statColors.ts
+export const STAT_COLORS: Record<"damage" | "burn" | "poison" | "shock" | "shield" | "heal" | "multicast", string>;
+export const RARITY_COLORS: Record<Rarity, string>;
+```
+
+These are the **game's own** published colours (research.md H2's cross-check against the
+user-supplied in-game card), not a palette chosen here. `Rarity`'s `"SuperRare"` member maps
+explicitly to the published `"Super Rare"` colour — no string munging between the two spellings.
+
+Purely presentational: no engine module reads these, and `StatusEffectType`/`DamageType` are
+unchanged. Deliberately keyed by lowercase stat key (matching the published data) rather than
+reusing `StatusEffectType`, because the set includes `damage`, `heal`, and `multicast`, which are
+not status effects.
+
+### 2026-10-06 (round 6) — Simultaneous casts resolve against a common pre-cast status snapshot
+
+Per research.md H8 — a **behavioural correction** to `simulate()`, not a type change.
+
+Previously, Phase B walked casts in `(tSeconds, stableSlotIndex)` order while mutating a single
+shared `shockLayers` counter, so a Shock layer applied by one creature at time *T* empowered
+another creature's hit at the *same* time *T* if and only if the applier happened to sort first.
+Slot position therefore changed damage output for creatures with no positional ability at all.
+
+New rule: **within one timestamp, every cast's Shock proc resolves against the layer count as of
+the moment that timestamp began.** Layers granted at *T* take effect from the next distinct
+timestamp onward. Consequences:
+
+- `SimulationResult` keeps its exact shape; `timeline` keeps its documented stable ordering and
+  tie-break (which remain correct for *display* — they just no longer decide damage).
+- The invariant this establishes, and which the regression test asserts: **permuting the slots of
+  creatures that have no positional `abilityTags` must leave every number in
+  `perCreatureDps`, `perCreatureFacilitatedDps`, and `perStatusPerSecond` unchanged.**
+- Multicast repetitions are already staggered 0.1 s apart (round 4), so they occupy distinct
+  timestamps and a burst still escalates its own Shock layers across repetitions — unchanged.
+- Not chosen as "what the game does frame-for-frame" (undocumented, research.md H8); chosen
+  because it is invariant under the permutation the user correctly says should not matter.
+
+### 2026-10-06 (round 6) — UI-only restructure: shared card, per-mon modifiers, layout moves
+
+Per research.md H1/H4/H5/H6/H7. **No type changes** — recorded here so the layout contract is
+written down rather than living only in component code:
+
+- **One shared creature-card component** renders the game's four bands (header / sprite+types /
+  cooldown+per-stat lines / ability) and is used by *both* the Corpus Browser and the Calculator's
+  selected-mon panel. The Calculator's panel adds a fifth "Effective this battle" band — this
+  project's own differentiator, kept visually separate from base stats, not merged into them.
+- **Shop cost leaves the battle-stat band** (it is not on the game card) and is shown as
+  secondary metadata.
+- **`teamModifiers` stays in `TeamConfiguration` and in `simulate()`.** Round 6 removes only the
+  *UI option* for creating one by hand; the field itself remains load-bearing because round 5
+  routes trinket `effectTags` through it. Removing the engine path would silently disable
+  trinkets.
+- **Corpus Browser stops rendering `sourceRefs`/`patch`/`conflicts`.** The data stays in the
+  corpus modules unchanged and still satisfies Principle IV; see the matching spec.md amendment
+  for why this does not abandon SC-004, and what replaces the UI as the enforcement surface.
+
 ### 2026-10-05 (round 4) — UI: click-anywhere assignment; drop redundant slot labels
 
 Per research.md F4 — no type change. `GridPicker`'s separate "Choose…"/"Change…" button is

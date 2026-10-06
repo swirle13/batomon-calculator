@@ -594,6 +594,238 @@ as 100% complete in one pass unless it genuinely is.
   Everything else is still real, cited, browsable corpus data — just not simulated, exactly like
   the Shield-absorption and shop-economy gaps already logged in `tasks.md` T037/README.md.
 
+## H. Round 6 (2026-10-06) — Game-faithful card layout, sprite assets, UI restructure, and a confirmed positional-ordering bug
+
+Fourteen user-reported items this round, plus two data-integrity findings this round's
+investigation surfaced that were **not** requested but must not be shipped silently (H9/H10).
+The user supplied four screenshots: an official in-game creature card (Brimtoad), an in-game
+team panel, and two before/after captures of the DPS bug in item 14.
+
+### H1. Official card layout — four stacked bands, not one run-on stat line
+
+> User-supplied screenshot of the in-game Brimtoad card. Transcribed structure (the *layout* is
+> being adopted; the pixel-art styling and palette deliberately are not — see H3):
+>
+> | Band | Left | Right |
+> |---|---|---|
+> | 1 (header) | `BRIMTOAD` | `UNCOMMON` |
+> | 2 | sprite thumbnail | type badges, stacked vertically (`FIRE`, `TOXIC`) |
+> | 3 | cooldown block (`6.0` / `sec`) | one line per stat: `Deal 5 damage`, `Poison 1`, `Burn 1` |
+> | 4 (ability) | trigger (`On Battle Start`) above description (`+4 Burn and +4 Poison permanently.`) | — |
+
+- **Decision**: one shared card component renders bands 1-4, used by **both** the Corpus
+  Browser's per-creature cards **and** the Calculator's "currently selected mon" panel (item 1
+  explicitly names both surfaces). Today these are two independently hand-written layouts
+  (`CorpusBrowser.tsx` and `PlacedCreatureDetails.tsx`) that both cram cost/cooldown/damage onto
+  a single `·`-separated line — the exact complaint.
+- **Rationale**: band 3's one-line-per-stat structure is the substantive fix. The current
+  `Cost $10 · Cooldown 2.5s · Damage 3 (Direct)` line forces the reader to parse three unrelated
+  magnitudes out of one sentence; the game separates cooldown (a timing property, its own block)
+  from per-cast output (one labelled, colour-coded line each). Shop cost is **not** on the game
+  card at all — it is a shop property, not a battle stat — so it moves to a secondary line
+  rather than competing with battle stats for the reader's attention.
+- **Key difference from the game kept deliberately**: this project's `PlacedCreatureDetails`
+  additionally shows "Effective this battle" (modifier-adjusted) values, which no in-game card
+  has. That stays — it is this project's own differentiator (research.md E1's "preserve this
+  project's differentiators" rule) and is rendered as a clearly separated fifth band, not mixed
+  into band 3's base-stat lines.
+
+### H2. Official stat and rarity colours — extractable, not guessed
+
+The same embedded batodex payload documented in G1 carries the game's own colour for every stat
+and rarity, so item 8's "color coordinated" requirement needs no invented palette:
+
+| Stat | Colour | | Rarity | Colour |
+|---|---|---|---|---|
+| Damage | `#ef426b` | | Common | `#70707a` |
+| Burn | `#ed6b3a` | | Uncommon | `#4ab500` |
+| Poison | `#7b57a1` | | Rare | `#0084bd` |
+| Shock | `#e7c61c` | | Super Rare | `#a040a0` |
+| Shield | `#a47c41` | | Legendary | `#d47c00` |
+| Heal | `#578ac9` | | Mythical | `#dc2844` |
+| Multicast | `#7b93c3` | | | |
+
+- **Cross-check against the screenshot**: the in-game Brimtoad card renders "Deal 5 damage" in
+  pink, "Poison 1" in purple, and "Burn 1" in orange — matching `#ef426b`/`#7b57a1`/`#ed6b3a`
+  above. The extracted palette is the game's, not batodex's own invention.
+- **Decision**: a single canonical `statColors`/`rarityColors` map, same pattern as round 3's
+  existing `typeColors.ts` (which already exists for creature types). Note the label mismatch:
+  batodex writes `"Super Rare"`, this corpus's `Rarity` union writes `"SuperRare"` — mapped
+  explicitly, not by string munging.
+
+### H3. Sprite assets — all 149 available, vendored rather than hot-linked
+
+- **Availability**: every one of the 149 extracted creature entries carries a
+  `sprite: "/sprites/monster/<slug>.png"` path (149/149, verified), and every trinket entry
+  carries `sprite: "/sprites/trinket/<slug>.png"`. Spot-fetch of
+  `https://batodex.com/sprites/monster/beetbud.png` returns HTTP 200, a 48×48 8-bit RGBA PNG of
+  769 bytes.
+- **Decision**: **vendor** the sprites into the repository (`public/sprites/...`) rather than
+  hot-linking batodex at runtime. Rationale: Principle V (zero-backend, static hosting,
+  "offline-capable once loaded") — hot-linking would make the app's core visuals depend on a
+  third-party host staying up and permitting cross-origin image loads, and would leak every
+  user's browsing to that host. At ~0.8 KB each, all 149 creature sprites plus 93 trinket
+  sprites total well under 250 KB, which is immaterial next to the existing 962 KB JS bundle.
+- **Attribution**: these are the game's own assets redistributed by a fan dex, not batodex's
+  original artwork. README gains an explicit attribution + provenance note (same spirit as
+  Principle IV's citation rule, applied to assets rather than numbers) stating where they came
+  from, when, and that they remain the game author's property. Flagged for the user as the one
+  item this round with a non-technical (licensing/courtesy) dimension rather than silently
+  bundling someone else's art.
+- **Slug reconciliation**: batodex slugs differ from this corpus's ids for 4 known species
+  (`alpinine`/`craghorn`, `dragonarch`/`draconarch`, `galvanade`/`electranade`,
+  `scorbble`/`scorubble` — round 5's name-matching finding). The sprite filename must therefore
+  be stored **per record** as data, not derived from `id` by convention.
+
+### H4. Trinket presentation — reuse the creature picker, don't invent a second pattern
+
+- **Problem (item 4)**: `TrinketPicker` is a bare `<select>` of 93 names. A dropdown `<option>`
+  cannot render a sprite, and the effect text is the entire reason to pick one trinket over
+  another — so the current control hides the only information that matters at selection time.
+- **Decision**: reuse the round-3 `CreatureSearchModal` interaction wholesale (searchable,
+  filterable grid of clickable cards) for trinkets, with the trinket's sprite, name,
+  rarity-coloured label, full effect text, and the existing "affects DPS" marker on each card.
+  The 6 engine-wired trinkets (round 5) stay visually distinguished from the 87 reference-only
+  ones — that distinction is honest and already established, so it is preserved, not dropped.
+- **Alternative rejected**: a bespoke trinket-only layout. Item 4 asks explicitly for "the same
+  mechanism for displaying batomon when selecting them", and two different selection idioms for
+  two corpora in one tool is the kind of needless divergence Principle VI warns against.
+
+### H5. Per-slot clear control (item 5) — why the modal's "Clear slot" wasn't enough
+
+Clearing a slot is *already possible* two ways (the search modal's "Clear slot" button, and the
+fallback `<select>`'s "— empty —" option), but the user could not find either — which makes it a
+discoverability defect, not a missing capability. **Decision**: a small `×` affordance in the
+filled card's top-right corner, as requested. Implementation constraint worth stating up front
+because it is easy to get wrong: the card is simultaneously a drag handle (round 3, `@dnd-kit`)
+and a click target that opens the search modal (round 4, FR-023) — so the `×` must stop both
+pointer-event propagation (or `@dnd-kit` will treat the press as a drag start) and click
+propagation (or the search modal will open as the slot is cleared).
+
+### H6. Grid/card density and shape (items 3, 6, 7, 13)
+
+- **Item 3 (corpus browser columns)**: currently one full-width `<article>` per creature stacked
+  vertically — on a desktop viewport that is ~1 card per screen-width with most of the line
+  length empty. **Decision**: a responsive CSS grid, `repeat(auto-fill, minmax(17rem, 1fr))`,
+  which naturally lands on 3-4 columns at common desktop widths and degrades to 1-2 on narrow
+  viewports without a media-query ladder (Principle VI). A hard 4-column cap keeps card width
+  from ballooning on ultrawide displays.
+- **Item 6 (row labels)**: `GridPicker`'s `BACK ROW`/`FRONT ROW` labels are removed. The 2×3
+  geometry is self-evident; the labels also consumed a full grid row each. Note this does **not**
+  change any engine semantics — `GridSlot.row` stays `"back" | "front"` as the data value
+  (research.md B5's adjacency and `aboveSlot`/`behindSlot` resolvers depend on it); only the
+  on-screen text is dropped. Same reasoning round 4 applied to FR-024.
+- **Item 7 (square icons)**: slot cards get `aspect-ratio: 1`, matching the game's square team
+  panes (user screenshot 2) and giving item 8's stat badges a stable area to anchor to.
+- **Item 13 (modal heading prose)**: `Choose a Banto — {row} row, slot {col+1}` loses the slot
+  suffix. This is round 4's FR-024 decision applied to the one surface that was missed: the user
+  has just clicked that slot, and drag-and-drop means the choice isn't slot-bound anyway. The
+  `aria-label` keeps a slot reference for screen-reader users who did *not* see the click.
+
+### H7. Modifiers section redesign (item 11)
+
+Four distinct changes the user asked for, which must not be collapsed into one:
+
+1. **Collapsible** — the whole section becomes a closed-by-default disclosure, since it is
+   occasional-use. (It currently occupies permanent vertical space between the DPS tables and
+   the chart for a feature most sessions never touch.)
+2. **Per-mon only in the UI** — the "Team-wide (every placed Banto)" scope option is removed
+   from the dropdown. **Critical constraint**: `TeamConfiguration.teamModifiers` and
+   `simulate()`'s team-wide summation **must stay**, because round 5 wired trinket `effectTags`
+   through exactly that path (`simulate.ts`'s `trinketModifiers` → `teamModifiers`). This is a
+   UI-affordance removal, not an engine-capability removal; deleting the engine support would
+   silently break trinkets. Stated explicitly here because the two are easy to conflate.
+3. **Shorter stat labels** — `"Cooldown Speed (+decimal, e.g. 0.2 = +20%)"` becomes
+   `"Cooldown Speed"`, with the unit/format explanation moved to a subtext line below the form
+   rather than living inside an `<option>` string.
+4. **Integrated per-mon, not a wall of controls** — modifiers are presented against the mon they
+   apply to (the user's "New mons will be added before/after a mon that affects the whole team"
+   point: a carry-over belongs to a specific creature, and the roster shifts around it), rather
+   than as a free-floating scope dropdown the user must mentally re-bind to a slot.
+
+### H8. Confirmed bug (item 14): simultaneous-cast ordering lets slot position change Shock damage
+
+**The user is right, and the mechanism is now identified and reproduced.** Not a display bug.
+
+Reproduced directly against the real corpus with the user's exact two formations:
+
+```text
+BEFORE (bumblebolt front-1): facilitated 4.10, Shock/sec 4.10
+  t=5 events: shockProc@front0(1) | attack@front0(25) | shockProc@front1(1) | attack@front1(3) | ongoingChange@front1
+AFTER  (bumblebolt back-2):  facilitated 4.30, Shock/sec 4.30
+  t=5 events: shockProc@back2(1) | attack@back2(3) | ongoingChange@back2 | shockProc@front0(2) | attack@front0(25)
+```
+
+Minimal 2-creature control (Panbud + Bumblebolt, nothing else) isolates it cleanly: **2.20** with
+Bumblebolt at `front-1` vs **2.40** at `back-0`.
+
+- **Root cause**: Bumblebolt (2.5 s cooldown) and Panbud (5 s cooldown) cast at *identical*
+  timestamps (t = 5, 10, 15, 20). `simulate()` sorts coincident casts by
+  `stableSlotIndex(sourceSlot)` (`simulate.ts` Phase A's final sort), and Phase B mutates the
+  shared `shockLayers` counter as it walks that order. So whether Bumblebolt's Shock application
+  at t=5 lands *before* or *after* Panbud's hit at t=5 — and therefore whether Panbud's hit procs
+  against 1 layer or 2 — is decided purely by which slot each occupies. `STABLE_SLOT_ORDER` puts
+  all of `back` before all of `front`, which is why moving Bumblebolt to the back row raised it.
+- **Why this is a genuine defect, not a modelling choice**: neither creature has any positional
+  ability (`abilityTags: []`), so no documented game mechanic connects their slots to their
+  output. The tie-break exists to make the timeline *deterministic* (contracts/engine-api.md) —
+  determinism is correct, but it was silently doubling as a *damage-affecting* rule.
+- **Decision — "simultaneous casts resolve against a common pre-cast status snapshot"**: within a
+  single timestamp, every cast's Shock proc resolves against the layer count as it stood when
+  that timestamp began; layers applied at that timestamp take effect from the next timestamp
+  onward. This makes output invariant to slot permutation while keeping the timeline's stable
+  ordering (and its tie-break) exactly as documented for display purposes.
+- **Alternatives considered**: (a) *apply all status first, then all hits at a timestamp* — also
+  order-independent, but it lets a layer empower a hit it was simultaneous with, i.e. it picks the
+  opposite arbitrary answer and inflates output; (b) *leave as-is and document it* — rejected, it
+  tells users position matters when the corpus says it doesn't; (c) *sub-order by creature id
+  instead of slot* — rejected, it only relabels the arbitrary tie-break without removing the
+  position/order coupling for other permutations.
+- **Honest limitation to record**: no source documents how the real game resolves two abilities
+  landing on the same frame. The snapshot rule is chosen because it is *invariant* (the property
+  the user is actually asserting: a creature with no positional ability must not change output
+  when moved), not because it is confirmed to match the game frame-for-frame. The regression test
+  therefore asserts the **invariant** — permuting slots of positional-ability-free creatures
+  leaves every output number unchanged — rather than hard-coding 4.10 or 4.30 as "the" answer.
+
+### H9. Unrequested finding: round 5's "100% confirmed" claim is overstated
+
+Round 5's completion report, `README.md`, and `App.tsx`'s `CORPUS_PATCH_LABEL` all state the
+corpus is "100% confirmed across levels 1-4". **That is wrong and must be corrected.** The
+verification behind it counted only `baseCooldownSeconds` (genuinely 596/596 non-null);
+`baseDamage` is `null` in **242 of 596 records (62 of the 149 at level 1)**.
+
+Some of those nulls are legitimate ("confirmed absent" — a status-only creature with no
+direct-damage line), but at least some are genuinely missing data, proven by the user's own
+screenshot: the in-game Brimtoad card reads **"Deal 5 damage"**, while both batodex's embedded
+payload and this corpus record `baseDamage: null` for Brimtoad. So batodex's per-level `stats`
+array omits damage for some creatures, and "null" in this corpus currently conflates
+*confirmed-absent* with *not-published-by-our-source*. Corrected rather than restated: the
+labels are fixed to the real figure, and the conflation is logged as the open gap it is.
+
+### H10. Unrequested finding: 10 species have level-1 values contradicting their own level 2-4 series
+
+Round 5 populated levels 2-4 from batodex's authoritative per-level series but left each
+species' **level-1** record at whatever rounds 2/4 had sourced from the older community dex — so
+10 species now have a level-1 value *larger* than their level-2 value, which no levelling curve
+in this game does:
+
+```text
+brimtoad status 10/4/6/24      cordycant status 300/16/24/96   dragonegg dmg 100/1/1/1
+nullff dmg 180/99/99/999       omnichrome dmg 99/1/1/1         ratacomb dmg 150/40/60/120
+rigalord dmg 200/1/1/1         spinarai status 8/2/3/3         steamscuttle status 60/10/15/60
+bambudo dmg 100/75/75/150
+```
+
+The user's screenshot adjudicates the first one directly: the in-game Brimtoad card shows
+**Burn 1 and Poison 1** at level 1, matching batodex's `levels[0]` (`burn 1, poison 1`) and
+contradicting this corpus's level-1 record (`Burn 5, Poison 5`). **Decision**: re-derive level-1
+from the same authoritative per-level series used for levels 2-4, so each species' four records
+come from one internally consistent source instead of two mutually contradictory ones, and keep
+the older community value as a recorded `FieldConflict` rather than deleting it (Principle IV).
+`bambudo` is noted separately: as Panbud's level-3 evolution it may have no real level-1/2 form
+at all, which is a different question (a spurious record) from a wrong value.
+
 ## C. Resolved Technical Context (feeds plan.md)
 
 | Field | Resolution |

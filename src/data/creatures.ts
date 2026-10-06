@@ -1469,7 +1469,7 @@ export const creatures: CreatureRecord[] = [
     types: ["Fire", "Curio"],
     level: 1,
     baseMulticast: 1,
-    shopCost: 0,
+    shopCost: 10,
     baseCooldownSeconds: 5,
     baseDamage: null,
     damageType: null,

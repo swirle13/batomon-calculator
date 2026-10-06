@@ -127,6 +127,21 @@ correct and show their data source citation(s).
   reaching a level (e.g. "On Victory")? `evolvesInto` MUST still be recorded, but
   `evolvesAtLevel` MUST be left absent rather than guessed — the level-based evolution resolver
   (`resolveLevelUp`) correctly does not apply to such a species.
+- How does the system resolve two creatures whose casts land on the exact same timestamp, where
+  one of them applies a status the other's hit could consume? It MUST resolve both against the
+  status state as of the start of that timestamp, so the outcome does not depend on an internal
+  iteration order (grid position, creature id, or insertion order). A tie-break MAY still fix the
+  *display* order of simultaneous timeline events, but MUST NOT change any computed value
+  (research.md H8 — this was a real defect, found via a user report).
+- How does the system handle a stat value that a source does not publish at all, versus one the
+  source confirms the creature does not have? These are different facts and MUST NOT both be
+  recorded as a bare `null`; conflating them is an open, logged gap (research.md H9) rather than a
+  resolved design.
+- How does the system handle one species' stats being sourced from two different sources across
+  different levels, where the two disagree (e.g. level 1 from an older community dex, levels 2-4
+  from a newer structured source, giving a level-1 value higher than level 2)? It MUST re-derive
+  the whole series from one internally consistent source and record the superseded value as a
+  conflict, rather than leaving a series that contradicts itself (research.md H10).
 
 ## Requirements *(mandatory)*
 
@@ -218,6 +233,43 @@ correct and show their data source citation(s).
   bonus (per FR-007/FR-008's existing modifier-resolution path) — Trinkets whose effect is a
   shop/economy mechanic remain browsable/selectable but are not expected to change the
   DPS/status output, consistent with the Assumptions section's existing shop-economy scope note.
+- **FR-028**: Every creature card — in both the corpus browser and the team-builder's
+  selected-creature panel — MUST present its information in the same band order the in-game card
+  uses: name and rarity together, then sprite and types, then cooldown shown separately from a
+  **one-line-per-stat** breakdown of per-cast output, then ability text. Cost, cooldown, and
+  damage MUST NOT be rendered as a single combined line.
+- **FR-029**: Each per-cast output stat MUST be rendered in the game's own published colour for
+  that stat, consistently everywhere it appears (card stat lines and grid-slot badges alike).
+- **FR-030**: The corpus browser MUST NOT display source citations, patch tags, or recorded
+  source conflicts. These remain recorded in the corpus data itself (see the round 6 Amendment
+  for how FR-004/SC-004 are satisfied without a UI surface).
+- **FR-031**: The corpus browser MUST lay its creature cards out in a multi-column grid
+  (3-4 columns at typical desktop widths) rather than one full-width card per row.
+- **FR-032**: Trinket selection MUST use the same searchable, card-based picker interaction as
+  creature selection (FR-018), showing each trinket's sprite and full effect text at selection
+  time. A plain dropdown of trinket names MUST NOT be the primary selection control.
+- **FR-033**: Each occupied grid slot MUST offer a directly visible control to clear that slot,
+  which MUST NOT also trigger slot reassignment or drag behaviour when activated.
+- **FR-034**: The team grid MUST NOT render textual row labels ("back row"/"front row"), and the
+  creature picker MUST NOT render the target slot's position in its visible heading. Slot
+  position MUST remain available to assistive technology.
+- **FR-035**: Grid-slot creature icons MUST be square, and MUST display that creature's current
+  per-cast output stats as compact colour-coded badges within the slot, matching the in-game team
+  panel's presentation.
+- **FR-036**: System MUST display every creature's sprite image in the creature picker, the team
+  grid, and the corpus browser, and every trinket's sprite in the trinket picker. A creature or
+  trinket with no available sprite MUST render its existing text presentation rather than a
+  broken image.
+- **FR-037**: The simulation-window control MUST be positioned immediately above the cumulative
+  chart and below the DPS/status tables, reflecting that it affects the chart's time axis rather
+  than the per-second summary values.
+- **FR-038**: The DPS table and the status-output table MUST be presented side by side as a
+  single aligned unit.
+- **FR-039**: Modifier editing MUST be a collapsed-by-default disclosure, MUST scope each
+  modifier to a specific placed creature (no user-facing team-wide option), and MUST keep
+  unit/format explanations as supporting text rather than inside control labels.
+- **FR-040**: Permuting the grid positions of placed creatures that have no position-dependent
+  ability MUST NOT change any value in the DPS, facilitated-DPS, or per-status output.
 
 ### Key Entities
 
@@ -347,3 +399,46 @@ server-rendered React payload (research.md G1/G2). FR-026 (level 2-4 corpus) and
 (Trinket selection + flat-bonus application) added accordingly. No prior requirement is removed
 by this correction — SC-003's ≥90% bar and the diagnosis logged in the previous Amendment both
 still stand; this entry only corrects F5's conclusion, not the honesty of having logged it.
+
+### 2026-10-06 (round 6) — FR-028..FR-040 added; SC-004's surface moved out of the UI; two self-found data defects logged
+
+Thirteen user-reported UI/presentation items plus one user-reported bug, all added as FR-028
+through FR-040 and detailed in research.md section H. The user supplied an in-game creature card
+and in-game team panel as the layout reference, and two before/after captures of the bug.
+
+**FR-004/SC-004 are explicitly re-scoped, not quietly dropped.** FR-030 (user item 2) removes
+source citations, patch tags, and recorded source conflicts from the corpus browser UI — and
+SC-004 as originally written ("100% of corpus entries where source wikis disagree have that
+disagreement **visibly recorded in the entry**") was being satisfied *by that very UI*. Rather
+than delete the criterion or pretend the removal doesn't touch it, its enforcement surface moves:
+conflicts and citations remain mandatory **in the corpus data** (`sourceRefs`, `patch`,
+`conflicts` on every record — unchanged, and still required by Principle IV), and the criterion is
+now met by an automated test asserting every recorded conflict is well-formed and every record
+carries at least one citation, instead of by a disclosure widget a user must click. The
+user-facing rationale is sound — a planning tool's reader wants stats, not provenance footnotes —
+but the provenance obligation itself is unchanged, and SC-004's ≥100% bar is kept as-is.
+
+**FR-040 records a real engine defect the user caught.** Grid position was silently changing
+Shock-proc damage for creatures with no positional ability, via `simulate()`'s
+simultaneous-cast tie-break doubling as a damage-ordering rule. Reproduced, root-caused, and
+fixed per research.md H8 / data-model.md's "common pre-cast status snapshot" amendment. The
+user's reasoning in the report ("Bumblebolt doesn't care about positioning and the math shouldn't
+change") is adopted *as the specification* — FR-040 states the invariant, and the regression test
+asserts the invariant rather than either of the two numbers observed.
+
+**Two defects found during this round's investigation that the user did not report, recorded
+rather than quietly fixed or quietly left:**
+
+- Round 5's "**100% confirmed across levels 1-4**" claim — in its completion report, `README.md`,
+  and the in-app corpus label — **is overstated and wrong**. It was verified by counting
+  `baseCooldownSeconds` only; `baseDamage` is `null` in 242 of 596 records (62 of 149 at level 1).
+  The user's own Brimtoad screenshot proves at least some of those nulls are missing data rather
+  than confirmed absences (the in-game card reads "Deal 5 damage"; the corpus and its source both
+  say `null`). All three labels are corrected to the real figure, and the
+  confirmed-absent-vs-not-published conflation is logged as a new Edge Case rather than papered
+  over. SC-003's ≥90% bar is unchanged and is **not** currently met for `baseDamage`.
+- **10 species have a level-1 value that contradicts their own level 2-4 series** (e.g. Brimtoad's
+  level 1 records Burn 5/Poison 5 while level 2 records Burn 2/Poison 2 — and the user's in-game
+  screenshot confirms level 1 is really Burn 1/Poison 1). Caused by round 5 populating levels 2-4
+  from a newer structured source while leaving level 1 on the older community dex. Re-derived from
+  one consistent source with the superseded values kept as recorded conflicts (research.md H10).

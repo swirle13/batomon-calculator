@@ -239,6 +239,77 @@ Frillet→Dewlotl, all at level 3).
    cooldown, the same way a manual `damageFlatAdd` `StatModifier` would — reusing the existing
    modifier-resolution path, not a separate computation.
 
+## Validation scenario 18 — slot permutation does not change output (FR-040, the reported bug)
+
+1. Place Panbud at front-0 and Bumblebolt at front-1. Set the simulation window to 20s.
+2. Note Bumblebolt's **Facilitated DPS** and the **Shock** per-second value.
+3. Drag Bumblebolt to any other empty slot (notably a back-row slot, which sorts earlier).
+4. **Expected**: both values are **identical** to step 2. Neither creature has a positional
+   ability, so position must not change any number. (Before this round: 4.10 → 4.30 in the user's
+   4-creature formation, 2.20 → 2.40 in a 2-creature control.)
+5. **Also expected**: the timeline's event ordering at a shared timestamp may still differ between
+   the two layouts — only the computed values must be invariant (research.md H8).
+
+## Validation scenario 19 — game-faithful card bands, in both places (FR-028/FR-029)
+
+1. Open the Corpus Browser and find any creature with both a damage value and an applied status.
+2. **Expected**: name and rarity on one header band; sprite beside stacked type badges; cooldown
+   rendered as its own block, separate from **one line per output stat**, each in the game's colour
+   for that stat (damage pink `#ef426b`, Burn orange `#ed6b3a`, Poison purple `#7b57a1`, Shock
+   yellow `#e7c61c`, Shield `#a47c41`, Heal `#578ac9`); ability text in its own band. Cost,
+   cooldown, and damage must **not** share one line.
+3. Switch to the Calculator and select that same creature into a slot.
+4. **Expected**: the selected-creature panel shows the **same** band layout (same component), plus
+   this project's own extra "Effective this battle" band, visually separated from the base stats.
+
+## Validation scenario 20 — corpus browser density and provenance removal (FR-030/FR-031)
+
+1. Open the Corpus Browser at a typical desktop width (≥1280px).
+2. **Expected**: creature cards are laid out in 3-4 columns, not one per row.
+3. **Expected**: no "Sources & patch" disclosure and no "Recorded source conflicts" disclosure
+   appears on any card.
+4. **Expected (the part that must not regress)**: `sourceRefs`, `patch`, and `conflicts` are still
+   present on every corpus record, and the automated corpus-provenance test (SC-004's new
+   enforcement surface per spec.md's round 6 Amendment) passes.
+
+## Validation scenario 21 — trinket picker uses the creature-picker interaction (FR-032/FR-036)
+
+1. On the Calculator, open the Trinket picker.
+2. **Expected**: a searchable grid of trinket cards — each showing its sprite, name,
+   rarity, and **full effect text** — not a `<select>` of bare names.
+3. **Expected**: trinkets whose effect actually feeds the simulation remain visually distinguished
+   from the reference-only majority.
+4. Select one, then confirm it can be removed again.
+
+## Validation scenario 22 — slot clearing, squareness, and stat badges (FR-033/FR-035/FR-036)
+
+1. Place any creature with a damage value and an applied status.
+2. **Expected**: the slot is square, shows the creature's sprite, and shows compact colour-coded
+   badges for its current per-cast stats, matching the in-game team panel.
+3. Click the slot's clear (`×`) control.
+4. **Expected**: the slot empties, **and** the creature picker does **not** open, **and** no drag
+   is initiated (research.md H5 — the control sits on both a drag handle and a click target).
+5. **Expected**: changing that placement's level updates the badge values.
+
+## Validation scenario 23 — layout moves (FR-034/FR-037/FR-038)
+
+1. On the Calculator: **Expected** no "BACK ROW"/"FRONT ROW" text appears; the picker's heading
+   reads "Choose a Banto" with no slot suffix; slot position is still exposed via `aria-label`.
+2. **Expected**: the DPS table and the status-output table sit side by side as one aligned unit.
+3. **Expected**: the "Simulation window (seconds)" control sits **below** both tables and
+   **immediately above** the cumulative chart.
+
+## Validation scenario 24 — Modifiers as a per-mon collapsed disclosure (FR-039)
+
+1. **Expected**: the Modifiers section is collapsed by default.
+2. Expand it with at least one creature placed.
+3. **Expected**: no "Team-wide (every placed Banto)" option is offered; each modifier is scoped to
+   a specific placed creature; the Cooldown Speed control's label is short, with the
+   decimal/percent explanation as supporting text rather than inside the option label.
+4. **Expected (must not regress)**: selecting a DPS-affecting Trinket still changes the DPS table.
+   Trinket effects route through `teamModifiers`, which stays in the engine even though its
+   hand-entry UI option is gone (research.md H7, data-model.md round 6).
+
 ## Validation results (2026-10-06, round 5 implementation — Scenarios 16-17)
 
 - **Scenario 16 — PASS (verified against real corpus, not just synthetic fixtures).** Direct
