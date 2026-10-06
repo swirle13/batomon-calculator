@@ -222,7 +222,7 @@ Resolved in:
   redesign taken from the user-supplied in-game shop card, the measured duplication census, and a
   straight answer to "why 40px?" (it was arbitrary — with the caveat that 64px is a 1.333×
   non-integer upscale of the 48px source, and 96px would be the crisp 2×).
-- data-model.md's 2026-10-07 round-7 amendments: three additive `SimulationResult` fields, the
+- data-model.md's 2026-10-06 round-7 amendments: three additive `SimulationResult` fields, the
   timeline-symmetry prerequisite, widened facilitated-damage attribution, and the primitives/token
   contract.
 - spec.md: FR-041 through FR-058; FR-014's surface re-scoped (header prose removed, Corpus Browser

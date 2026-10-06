@@ -943,6 +943,15 @@ shield colour disagrees with the game's own rendering**, and the game wins.
 
 - **Decision**: change `shield` to a silver/steel tone and record it as a corrected value with the
   user screenshot as its source, rather than silently editing a figure H2 cites to batodex.
+- **Sampled, not eyeballed**: pixel-sampling the shield plate in the user's capture gives a cool
+  silver/periwinkle family — `#a7a8b4`, `#a8a9b4`, `#a5a9da`, `#a4a8d9`. Adopting **`#9aa1b8`**:
+  the same hue family, nudged darker so white badge text keeps legible contrast against it (the
+  sampled tones are light enough that white-on-silver would be marginal).
+- **Second, wider consequence**: `CumulativeChart.tsx` hard-codes its own Burn/Poison/Shock/Shield
+  stroke colours (`#e07b39`, `#8e44ad`, `#d4b106`, `#2e86de`) which **already disagree** with
+  `STAT_COLORS`. Fixing only `statColors.ts` would leave Shield blue in the chart and legend while
+  it is silver everywhere else. The chart must consume `STAT_COLORS` — which is a Principle VII
+  violation that pre-existed this round and is only visible because item 1 forced a look.
 - The other six colours were cross-checked against the in-game Brimtoad card in round 6 and are
   unaffected; only `shield` had no in-game cross-check at the time, which is exactly why it is the
   one that was wrong.
@@ -1024,19 +1033,29 @@ not missing, it is **never reached**.
 
 - **Crowding**: each result card is a ~96px-wide box holding a sprite, the name, and a
   `rarity · type/type` line, so the text is squeezed beside the sprite. **Decision**, taking the
-  in-game shop card as the reference the user supplied: a taller card (roughly 3:4 w:h, matching
-  the shop card's proportions), sprite centred and large, name beneath it, **no rarity text on the
-  card** and **no price** (explicitly excluded by the user — it is a shop concept, not a planning
-  one). Type stays communicated by the background, which already encodes it.
+  in-game shop card as the reference the user supplied: sprite centred and large in a type-coloured
+  art area, with the **name in a band across the bottom** (the shop card's actual structure), **no
+  rarity text on the card** and **no price** (explicitly excluded by the user — it is a shop
+  concept, not a planning one). Type stays communicated by the background, which already encodes it.
+- **Card proportions, measured rather than guessed**: a first draft of this section said "roughly
+  3:4 w:h". That was **wrong and inverted**. Measuring the user's shop-card capture directly, the
+  cards are ~**175 × 145 px**, i.e. about **1.2 : 1 (landscape — wider than tall)**. The current
+  picker card is far wider than tall, so the user's "card height should be increased to follow a
+  similar ratio" means growing toward ~1.2:1, not flipping to portrait.
 - **Rarity becomes structure, not a label**: results are grouped into rarity sections with a small
   left-justified rarity heading per group. This conveys strictly more than the per-card label did
   (you can see how many of each rarity match your filter) while removing text from the card.
-- **The "sliver"**: `typeBackground()` returns
-  `linear-gradient(to right, A 0%, A 50%, B 50%, B 100%)`. At a fractional CSS pixel width the
-  50%/50% hard stop lands mid-device-pixel and the browser antialiases it, bleeding a 1px band of
-  the far colour. Rounded corners plus a transparent border (`border: 2px solid transparent`, which
-  with the default `background-clip: border-box` paints the gradient *under* the border) make it
-  read as a sliver at the card's edge.
+- **The "sliver"**, diagnosed correctly on the second attempt: the picker's result card is
+  `border: 2px solid transparent` with `background: linear-gradient(to right, A 0%, A 50%, B 50%,
+  B 100%)`. CSS's default `background-origin: padding-box` positions the gradient against the
+  *padding* box, while the default `background-clip: border-box` *paints* it across the larger
+  *border* box — so the gradient repeats outward into the 2px border area on every side, putting a
+  thin band of the far colour along the card's edge. That is the user's sliver, and their own
+  instinct ("the split color is just rendered over top on half, but it doesn't go the full width")
+  is essentially right.
+  (An earlier draft of this section blamed fractional-pixel antialiasing of the 50% hard stop.
+  That was wrong — it would produce a seam at the *centre*, not a band at the *edge*, which is not
+  what the user reported.)
   **Decision**: stop expressing the split as a gradient. Render it as a dedicated primitive with
   two explicitly-sized halves, which cannot antialias a seam and cannot bleed under a border. This
   also makes the split reusable everywhere a type background appears (I14).
@@ -1044,10 +1063,23 @@ not missing, it is **never reached**.
 ### I9. Corpus-snapshot prose in the header (item 12)
 
 Added for FR-014 ("state which corpus/patch snapshot is active"). It is three lines of provenance
-above every view. **Decision**: remove it from the header. FR-014 is satisfied by the Corpus
-Browser's own summary line, which is where someone asking "what data is this?" already looks —
-same reasoning as round 6's FR-030, and the spec needs the same explicit re-scoping note rather
-than a silent drop.
+above every view, on both views.
+
+**Correction to this section's first draft**, which claimed FR-014 would still be "satisfied by the
+Corpus Browser's own summary line". **That was false** — the Corpus Browser's summary line carries
+*counts only* (`149 creatures… 23 trainers…`); it states no patch or version anywhere. Removing the
+header as drafted would have left FR-014 **unmet on every surface**, while the plan asserted it was
+fine. Caught in review.
+
+- **Decision**: remove the prose from the header as asked, **and** add a single compact
+  version/patch statement to the Corpus Browser's summary line so FR-014 keeps a real home. One
+  short "Balance 24 / 1.2.0" clause is not the per-record citation/conflict rendering FR-030
+  removed — FR-030 bans per-entry provenance in the browser, not a corpus-level version stamp —
+  but the distinction has to be stated, not assumed.
+- **FR-014 must be amended in spec.md explicitly** (narrowed from "on both views" to "somewhere
+  discoverable"), the same way round 6 re-scoped SC-004 rather than letting an unmet criterion sit.
+- `App.tsx`'s `CORPUS_PATCH_LABEL` constant and the README line instructing maintainers to update it
+  both need to follow the text to its new home rather than being orphaned.
 
 ### I10. Trinket list: ragged card heights, unbounded growth, drifting controls (items 13, 16, 17)
 
@@ -1091,16 +1123,24 @@ follow-up guess ("this is how much poison is applied per second") is **not** it.
 
 - **It is damage per second**: `perStatusPerSecond.Poison = (total Poison tick damage) / window`.
   Measured on a representative team: 1310 total Poison damage over a 20s window → **65.50/s**.
-- **And that single number is badly unrepresentative**, exactly as the user argued. Poison damage
-  in each 1-second bucket of that same run:
+- **And that single number is unrepresentative**, exactly as the user argued — though **my first
+  measurement of *how* unrepresentative was wrong, and the corrected figure is below.** The probe
+  that produced it clamped every tick at `t = windowSeconds` into the final bucket
+  (`Math.min(19, floor(t))`), double-counting the last second and reporting `293`. That `293` was
+  an artifact of my own bucketing, not engine behaviour. Re-measured with half-open `(k, k+1]`
+  buckets and no clamping, on a single Drumire (Poison 20, 8 s cooldown):
 
   ```text
-  t:  0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18   19
-      0   0   0   0   1  16  16  17  18  73  73  74  74  90  90  91  91 146 147  293
+  W=20s: total 320, average 16.00/s, final second 40/s   -> 2.50x the average
+  W=60s: total 3920, average 65.33/s, final second 140/s -> 2.14x the average
   ```
 
-  The final second deals **293**, against a window average of 65.50. Reporting one flat figure
-  hides a ~4.5× spread.
+  So the real distortion is roughly **2.1–2.5×**, not 4.5×. Still large enough that one averaged
+  figure materially misleads, which is the user's point and it stands — but the headline number is
+  corrected rather than left overstated.
+- **Burn, measured the same way, genuinely flattens**: a Brimtoad's final eight 1-second buckets
+  over a 60 s window are `0, 0, 1, 0, 0, 0, 0, 0`. The qualitative Poison-vs-Burn difference is
+  real and is the thing worth displaying.
 - **Why Poison in particular**: `applyStatusTick` decrements layers for **Burn** but explicitly
   **not** for Poison (research.md B2) — "Poison: layers do NOT decrease from the act of ticking".
   So every Poison application permanently adds its full amount to a per-tick damage floor, and the
@@ -1116,10 +1156,18 @@ follow-up guess ("this is how much poison is applied per second") is **not** it.
   1. Record Burn/Poison applications in the timeline, closing the asymmetry above.
   2. Add **applied-per-second** per status (stacks/s) — exact, unambiguous, and the direct answer
      to "how much is being added per turn".
-  3. Add a **growth rate (damage/s²)** per status, computed from the simulated run by bucketing
-     tick damage into 1-second windows and taking a least-squares slope. Computed from the actual
-     timeline, not from a closed-form assumption about stacking — so it stays correct if the decay
-     rules are later refined.
+  3. Add a **growth rate (damage/s²)** per status — computed **exactly**, not by curve-fitting.
+     A first draft of this plan proposed a least-squares slope over 1-second buckets; that was
+     rejected on measurement. For a non-decaying status the damage rate at time *t* is simply
+     `live layers(t) / tickInterval`, so
+     `growth = (rate at window end − rate at window start) / windowSeconds` is exact, deterministic,
+     and needs no fitting. The regression alternative was **noisy against a known-exact answer**
+     (2.83 and 2.70 for a case whose true asymptotic growth is 2.50), sensitive to bucket-edge
+     placement, polluted by the zero-damage startup period, and produced `NaN` at a 1-second
+     window — which the UI permits. Exact arithmetic has none of those failure modes.
+  3b. Also expose the **end-of-window damage rate** alongside the window average. This is the most
+     directly interpretable form of the same information ("65.33/s average, but 140/s by the end"),
+     and it is what makes the growth figure legible rather than abstract.
   4. **Attribute status damage to the creature that applied it**, so a pure DOT applier stops
      reporting 0.00 / 0.00. `activeStatuses` already carries `sourceSlot`; it needs the creature id
      too, and each tick's damage then accrues to that creature's facilitated total — the same

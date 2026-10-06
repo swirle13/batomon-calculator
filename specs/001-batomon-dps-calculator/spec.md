@@ -297,7 +297,9 @@ correct and show their data source citation(s).
   with a left-justified heading per section.
 - **FR-049**: A multi-type creature's split background MUST render as exactly two equal halves with
   no colour bleed, seam, or sliver at any element size.
-- **FR-050**: The application header MUST NOT display corpus/patch provenance prose.
+- **FR-050**: The application header MUST NOT display corpus/patch provenance prose. The active
+  corpus/patch version MUST remain stated somewhere discoverable (see FR-014 as amended in the
+  round 7 Amendment).
 - **FR-051**: Cards within any grid MUST share a uniform height sized to the corpus's longest
   content, so no card's text overruns and no row is ragged.
 - **FR-052**: The selected-trinket list MUST be collapsible so that adding trinkets does not
@@ -491,3 +493,41 @@ rather than quietly fixed or quietly left:**
   screenshot confirms level 1 is really Burn 1/Poison 1). Caused by round 5 populating levels 2-4
   from a newer structured source while leaving level 1 on the older community dex. Re-derived from
   one consistent source with the superseded values kept as recorded conflicts (research.md H10).
+
+### 2026-10-06 (round 7) — FR-041..FR-058 added; FR-014 narrowed; Constitution gains Principle VII
+
+Twenty user-reported items (research.md section I). Four required diagnosis — a dead click handler,
+a background "sliver", a wrong Shield colour, and a misleading status metric — and two change how
+the project operates going forward.
+
+**FR-014 is narrowed, not dropped.** FR-050 (user item 12) removes the corpus/patch prose from the
+application header, which is where FR-014 ("state which corpus/patch snapshot is active") was being
+satisfied. FR-014 is therefore amended: the active corpus/patch version MUST still be stated, but
+**on one discoverable surface rather than persistently on every view**. It moves into the Corpus
+Browser's summary line. This is deliberately *not* a re-run of FR-030: FR-030 removed **per-record**
+citations, patch tags, and conflicts from the browser; a single corpus-level version stamp is a
+different thing, and the distinction is recorded here rather than assumed.
+
+A first draft of this round's research claimed FR-014 was *already* satisfied by the Corpus
+Browser's existing summary line. **That was false** — that line carries entry counts only and names
+no version. Had it shipped as drafted, FR-014 would have been silently unmet everywhere while the
+plan asserted compliance. Caught in review and corrected here rather than quietly fixed.
+
+**Constitution amended to 1.1.0** with Principle VII (Shared Design Language & DRY UI), at the
+user's explicit request that it bind "all future requests/changes/tasks" and not just this round.
+FR-058 is its spec-level expression. Motivated by measured duplication, not preference: three
+independent card treatments, two cooldown formatters disagreeing on decimal places, duplicated modal
+chrome, chip styling defined in three files, `RARITIES` defined in three files with inconsistent
+order, `STATUS_COLOR_KEY` defined twice plus a third `statusColor()` variant, chart stroke colours
+diverging from `STAT_COLORS`, and six call sites hard-coding sprite sizes — which reached the user
+as several *separate* visual bugs that are really one cause.
+
+**Two corrections to this round's own evidence**, recorded rather than quietly amended:
+
+- The claim that Poison's averaged DPS understates the end of a fight by "~4.5×" was **inflated by
+  a bug in the measuring probe** (it clamped the final tick into the last bucket, double-counting
+  it). Re-measured correctly: **2.1–2.5×**. The conclusion holds; the number was wrong.
+- The "sliver" was first attributed to fractional-pixel antialiasing of a gradient's 50% stop. That
+  was wrong — it would show at the card's centre, not its edge. The real cause is
+  `background-origin: padding-box` with `background-clip: border-box` repeating the gradient into a
+  transparent 2px border.

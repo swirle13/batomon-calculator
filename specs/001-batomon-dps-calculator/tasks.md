@@ -1139,26 +1139,47 @@ system.
 
 | # | User's item | Task(s) | FR | Scenario |
 |---|---|---|---|---|
-| 1 | Shield UI colour is brown/stone; should be silvery | T154 | FR-041 | 30 |
-| 2 | "Placed Banto stats" typo → "Batomon Stats" | T155 | FR-042 | 30 |
-| 3 | Batomon stats card must not resize to contents; no overflow | T156 | FR-043 | 26 |
-| 4 | "Effective this battle" shows `6.00`, should match `6.0` | T146, T157 | FR-044 | 30 |
+| 1 | Shield UI colour is brown/stone; should be silvery | T154, T154b, T173 | FR-041 | 30 |
+| 2 | "Placed Banto stats" typo → "Batomon Stats" | T155, T173, T174 | FR-042 | 30 |
+| 3 | Batomon stats card must not resize to contents; no overflow | T156, T173 | FR-043 | 26 |
+| 4 | "Effective this battle" shows `6.00`, should match `6.0` | T146, T157, T173 | FR-044 | 30 |
 | 5 | Modifiers wastes space — 1 item/row; make responsive | T158 | FR-045 | 29 |
 | 6 | Modifiers must accumulate same-stat adds, not duplicate chips | T149, T158 | FR-045 | 29 |
 | 7 | "Shield (granted)" overly verbose → "Shield" | T159 | FR-046 | 30 |
 | 8 | Can't click a placed mon to change it; only drag works | T147, T160 | FR-047 | 25 |
-| 9 | "Choose a Banto" typo → "Choose a Batomon" | T155 | FR-042 | 30 |
-| 10 | Picker cards crowded; restructure, rarity as sections, no rarity/price text | T161 | FR-048 | 27 |
-| 11 | Picker split background shows a sliver of the other colour | T145, T161 | FR-049 | 27 |
-| 12 | Remove corpus-snapshot prose from the header | T162 | FR-050 | 30 |
-| 13 | Trinket picker card heights must be uniform | T163 | FR-051 | 26 |
-| 14 | **Shared design system / DRY — binding on all future work** | T142–T146, T168 (+Constitution VII) | FR-058 | 31 |
-| 15 | Side-card mon image too small; type div height varies | T156 | FR-043 | 26 |
-| 16 | Active trinkets must be collapsible | T164 | FR-052 | 26 |
+| 9 | "Choose a Banto" typo → "Choose a Batomon" | T155, T173, T174 | FR-042 | 30 |
+| 10 | Picker cards crowded; restructure, rarity as sections, no rarity/price text | T161, T171, T173 | FR-048 | 27 |
+| 11 | Picker split background shows a sliver of the other colour | T145, T161, T173 | FR-049 | 27 |
+| 12 | Remove corpus-snapshot prose from the header (+ FR-014 rehomed) | T162, T173 | FR-050/FR-014 | 30 |
+| 13 | Trinket picker card heights must be uniform | T163, T171 | FR-051 | 26 |
+| 14 | **Shared design system / DRY — binding on all future work** | T142–T146, T168, **T171 (composites), T172 (data/logic DRY)** (+Constitution VII) | FR-058 | 31 |
+| 15 | Side-card mon image too small; type div height varies | T156, T171, T173 | FR-043 | 26 |
+| 16 | Active trinkets must be collapsible | T164, T173 | FR-052 | 26 |
 | 17 | Active trinket name + `×` must be top-aligned | T164 | FR-052 | 26 |
-| 18 | Grid sprites 40px, should be 64px (and *why* 40?) | T165 | FR-053 | 30 |
+| 18 | Grid sprites 40px, should be 64px (and *why* 40?) | T165, T173 | FR-053 | 30 |
 | 19 | Chart Y label clipped; X label right-justified | T166 | FR-054 | 30 |
 | 20 | Second-order status metrics + DOT facilitated DPS | T148, T151–T153, T167 | FR-055/056/057 | 28 |
+
+**Review record (2026-10-06)**: this phase was audited against the user's verbatim 20 items by a
+separate reviewing agent, and its empirical claims were independently re-verified before acceptance.
+Six findings were confirmed and folded in above, recorded here rather than lost:
+
+1. **My own headline evidence for item 20 was inflated.** The "Poison's final second deals 293, a
+   4.5× spread" figure came from a probe that clamped the final tick into the last bucket,
+   double-counting it. Re-measured correctly: **2.1–2.5×**. The argument holds; the number did not.
+2. **The proposed growth metric was the wrong tool.** A least-squares slope returned 2.83/2.70 for a
+   case whose exact answer is 2.50, and produced `NaN` at a 1-second window. Replaced with exact
+   arithmetic (T152).
+3. **Item 12 would have silently broken FR-014.** The plan claimed the Corpus Browser's summary line
+   already stated the patch version. It does not — it carries counts only. T162 now rehomes it and
+   spec.md amends FR-014 explicitly.
+4. **The sliver diagnosis was wrong** (antialiasing at the centre vs. `background-clip: border-box`
+   repeating into a transparent border at the edge), and **the picker card ratio was wrong and
+   inverted** (~3:4 portrait vs. the measured ~1.2:1 landscape).
+5. **T147 would not have failed first.** A bare `fireEvent.click` already passes today, so the
+   "failing test" proving item 8's bug would have been green against broken code.
+6. **Item 14 was under-scoped**: no composite components, no shared grid, and no data/logic
+   de-duplication despite the user naming "data, logic, functions, and UI" — now T171/T172.
 
 **Answers to the two questions asked in the items** (recorded so they aren't lost in chat):
 
@@ -1182,8 +1203,10 @@ system.
       scale, radii, surface/border colours, type scale, and **sprite sizes** as CSS custom
       properties. Derive the values from what the existing components already use (audit
       `*.module.css` for the recurring `#212330` / `#2c2f3b` / `#3a3d48` / `0.4rem` / `6px` family)
-      so this codifies the current look rather than restyling the app. Literals in component CSS
-      are a defect from this point on (Constitution Principle VII).
+      so this codifies the current look rather than restyling the app. **Reconcile with the vars
+      that already exist** in `src/index.css` (`--bg`, `--text`, `--border`) — extend them, don't
+      introduce a second parallel naming scheme. Include a `--sprite-size-grid` token for T165.
+      Literals in component CSS are a defect from this point on (Constitution Principle VII).
 - [ ] T143 Create `src/ui/primitives/` with `Surface` (the one card/panel container: border, radius,
       background, padding variants), `Chip` (the one pill — used today by `TypeTag`, modifier chips,
       and trinket badges with three different definitions), `StatBadge` (colour-coded stat pill), and
@@ -1210,8 +1233,14 @@ system.
 - [ ] T147 [P] Write a **failing** test in `src/ui/GridPicker/__tests__/GridPicker.test.tsx` for
       FR-047 / item 8: clicking an occupied slot card opens `CreatureSearchModal`. **Assert the
       positive case** — round 6's suite only asserted the negative (the `×` must *not* open it),
-      which is exactly why a completely dead click handler passed CI for a round. Also keep a
-      drag-still-works assertion so the fix can't trade one interaction for the other.
+      which is exactly why a completely dead click handler passed CI for a round.
+      **It must fire the real pointer sequence** `pointerDown` → `pointerUp` → `click`, not a bare
+      `fireEvent.click`: a bare click already passes today (verified), because `@dnd-kit` suppresses
+      the click via a capture-phase `stopPropagation` listener installed on `pointerdown` — so a
+      `fireEvent.click`-only test would be green against the broken code and prove nothing.
+      **Do not** assert "drag moves the placement": jsdom has no layout rects, so `over` is always
+      `null` and the assertion cannot pass for the right reason. Assert instead that a pointer move
+      **past 8px suppresses the click**, which is the actual contract being added.
 - [ ] T148 [P] Write **failing** tests in `src/engine/__tests__/simulate.test.ts` for FR-055/056/057
       / item 20, using a synthetic fixture with one Poison applier and one Burn applier:
       - every Burn **and** Poison application appears in `timeline` as an `ongoingChange` (today
@@ -1220,6 +1249,13 @@ system.
       - `perStatusDamageGrowthPerSecond` is **clearly positive for Poison** (stacks never decay) and
         **~0 for Burn** (stacks decay to a steady state) — assert the *qualitative difference*, since
         that difference is the mechanic, not a tuned constant;
+      - **pin one exact worked case** so the arithmetic can't drift: a lone Drumire (Poison 20,
+        8s cooldown) over a 20s window deals **320** total Poison damage (= 16.00/s average) with a
+        final-second rate of **40/s** and growth **2.00 damage/s²**; over 60s it is 3920 / 65.33 /
+        140 / 2.33. These are measured, not derived by hand;
+      - **a 1-second window produces no `NaN`** in any of the three new fields (the UI's minimum);
+      - the fixture covers Poison and Burn; **state in the test file that Shock and Shield are not
+        covered by it** rather than implying `Record`-wide coverage that doesn't exist;
       - a creature that only applies Poison has **non-zero** `perCreatureFacilitatedDps` and still
         **zero** `perCreatureDps` (facilitated stays separate from own-DPS).
 - [ ] T149 [P] Write **failing** tests in `src/ui/Modifiers/__tests__/ModifierEditor.test.tsx` for
@@ -1236,11 +1272,19 @@ system.
       Poison** is applied, matching what Shock and Shield already do (FR-057). Today Burn/Poison
       reach the timeline only as *ticks*, so applications are uncountable — this is a prerequisite
       for T152, not a cosmetic addition. (depends on T148)
-- [ ] T152 [US1] Add `perStatusAppliedPerSecond` and `perStatusDamageGrowthPerSecond` to
-      `SimulationResult` per data-model.md's round-7 amendment (FR-055). Compute growth by bucketing
-      tick damage into 1-second windows and taking a **least-squares slope over the simulated
-      timeline** — not from a closed-form assumption about how stacks compound, so it stays correct
-      if the decay rules are later refined. (depends on T151)
+- [ ] T152 [US1] Add `perStatusAppliedPerSecond`, `perStatusFinalDamageRate`, and
+      `perStatusDamageGrowthPerSecond` to `SimulationResult` — declared in `src/data/types.ts` and
+      documented in `contracts/engine-api.md` — per data-model.md's round-7 amendment (FR-055).
+      **Compute growth exactly, NOT by curve-fitting.** A first draft specified a least-squares
+      slope over 1-second buckets; that was rejected on measurement — it returned 2.83 and 2.70 for
+      a case whose exact answer is 2.50, was sensitive to bucket-edge placement, was polluted by the
+      zero-damage startup, and produced **`NaN` at a 1-second window**, which the UI permits.
+      Instead: the damage rate at time *t* for a non-decaying status is `live layers(t) /
+      tickInterval`, so report `perStatusFinalDamageRate` (rate at window end) and
+      `growth = (finalRate − initialRate) / windowSeconds`. Exact, deterministic, no NaN.
+      For **Shock** (damage arrives via `shockProc`, not ticks) and **Shield** (no damage at all)
+      state explicitly what these fields mean rather than emitting a meaningless number for a
+      `Record` that spans all four statuses. (depends on T151)
 - [ ] T153 [US1] Attribute Burn/Poison tick damage to the creature that applied the status (FR-056):
       add the applying creature's key to `ActiveStatus` alongside its existing `sourceSlot`, and
       accrue each tick's damage into the same `facilitatedDamage` map Shock procs already feed. Keep
@@ -1250,12 +1294,22 @@ system.
 
 ### Implementation — UI (all of it composed from T142–T146's primitives)
 
-- [ ] T154 [P] Correct `STAT_COLORS.shield` in `src/data/statColors.ts` from the brown `#a47c41` to
-      a silver/steel tone matching the game (item 1 / FR-041). Record in the file's comment that
-      this **overrides** the batodex-published value that research.md H2 cites, on the evidence of
-      the user's in-game capture — six of the seven colours were cross-checked against an in-game
-      card in round 6 and `shield` was the one that wasn't, which is why it is the one that is wrong.
-- [ ] T155 [P] Replace "Banto" with "Batomon" across **all** user-facing copy (items 2 + 9 /
+- [ ] T154 Correct `STAT_COLORS.shield` in `src/data/statColors.ts` from the brown `#a47c41` to
+      **`#9aa1b8`** (item 1 / FR-041). That value is *sampled* from the user's in-game capture, not
+      eyeballed: the shield plate reads `#a7a8b4` / `#a8a9b4` / `#a5a9da`, and `#9aa1b8` is that hue
+      family nudged darker so white badge text keeps legible contrast. Record in the file's comment
+      that this **overrides** the batodex-published value research.md H2 cites, on the evidence of
+      the in-game capture — six of seven colours were cross-checked against an in-game card in round
+      6 and `shield` was the one that wasn't, which is why it is the one that is wrong.
+      **Also update every stale `#a47c41` reference** (the `statColors.ts` header's
+      "should not be adjusted to taste" note, research.md H2's table, quickstart Scenario 19) so the
+      corpus of docs doesn't keep asserting the old value.
+- [ ] T154b Make `src/ui/CumulativeChart/CumulativeChart.tsx` consume `STAT_COLORS` instead of its
+      own hard-coded `#e07b39` / `#8e44ad` / `#d4b106` / `#2e86de` strokes (FR-041 + Principle VII).
+      Those literals **already disagree** with `STAT_COLORS` today, so fixing only `statColors.ts`
+      would leave Shield blue in the chart and legend while it is silver everywhere else. Found
+      while verifying item 1; pre-existing, not introduced this round. (depends on T154)
+- [ ] T155 Replace "Banto" with "Batomon" across **all** user-facing copy (items 2 + 9 /
       FR-042): `Placed Banto stats` → `Batomon Stats`, `Choose a Banto` → `Choose a Batomon`, and
       every `aria-label`, empty state, and title attribute found by grepping `src/` — not only the
       two surfaces the user named. Satisfies T150.
@@ -1264,10 +1318,17 @@ system.
       change between creatures, with independently reserved heights for the sprite/type band and the
       ability band. Size against the corpus's measured worst case, not a guess — longest name is
       **12 chars** ("Quillustrous"), max type count is **2**, longest `abilityText` is **169 chars**.
-      Enlarge the sprite substantially (item 15): the two-type column looks like wasted space
-      precisely *because* a 44px sprite doesn't fill the height the type chips set. Compose from
-      `Surface`/`Chip`/`SectionHeading`. (depends on T143, T145)
-- [ ] T157 [P] Route the "Effective this battle" band's cooldown through `formatCooldown()` so it
+      Enlarge the sprite to the T142 token (item 15): the two-type column looks like wasted space
+      precisely *because* a 44px sprite doesn't fill the height the type chips set.
+      **Reserve every variable band, not just the two named** — the stat-lines block varies (and
+      appears twice: base and "Effective this battle"), and the meta footer varies with
+      `Sell` / `Evolves into…` / `Unconfirmed: …`. State the wrap basis: the side column is
+      `flex: 1 1 16rem`, so "fixed" means a fixed *height* at a defined minimum width, not a frozen
+      width. **`BatomonCard` is shared with the Corpus Browser** — decide and state whether fixed
+      sizing applies there too (it should, for FR-051's uniform grid) rather than leaving one
+      consumer to discover it. Compose from `Surface`/`Chip`/`SectionHeading`/`StatLine`.
+      (depends on T143, T145, T171)
+- [ ] T157 Route the "Effective this battle" band's cooldown through `formatCooldown()` so it
       renders `6.0`, matching the base band directly above it (item 4 / FR-044). (depends on T146)
 - [ ] T158 [US1] Rework `src/ui/Modifiers/ModifierEditor.tsx` for items 5 + 6 (FR-045): (a) lay the
       per-creature rows out in a responsive auto-fit grid instead of one per row — reuse the same
@@ -1276,7 +1337,7 @@ system.
       the entry entirely when the accumulated amount reaches zero** rather than leaving a `+0` chip.
       The engine already sums duplicates correctly, so this is a model-of-record and display change.
       Satisfies T149. (depends on T143, T144)
-- [ ] T159 [P] Render `Shield` instead of `Shield (granted)` in `TeamSummary.tsx` (item 7 / FR-046).
+- [ ] T159 Render `Shield` instead of `Shield (granted)` in `TeamSummary.tsx` (item 7 / FR-046).
       The qualifier advertises a granted-vs-absorbed distinction the engine does not model; that
       scope limit stays documented in README/`T037`, not in a table cell. Satisfies T150.
 - [ ] T160 [US1] Configure `@dnd-kit` sensors explicitly in `src/ui/GridPicker/GridPicker.tsx` with
@@ -1284,8 +1345,13 @@ system.
       cause: `<DndContext>` has no `sensors` prop, so the default `PointerSensor` begins a drag on
       `pointerdown` and `preventDefault()`s it, so the `click` the card's handler waits for is never
       synthesised. Round 4's comment claiming the sensor "only engages past a drag threshold" is
-      **wrong** and must be corrected — there is no default threshold. Also add a `KeyboardSensor`
-      so drag remains keyboard-accessible. Satisfies T147. (depends on T147)
+      **wrong** and must be corrected — there is no default threshold.
+      **Do not claim to add keyboard dragging.** `DraggableCard` spreads `{...listeners}` and then
+      defines its own `onKeyDown`, which overrides the sensor's and already owns Enter/Space (the
+      default keyboard-drag activators). Adding a `KeyboardSensor` would change nothing while
+      implying it did. Keyboard users keep Enter/Space to **open the picker** (the accessible path
+      to reassignment); record "no keyboard drag" as a known limitation rather than papering over
+      it. Satisfies T147. (depends on T147)
 - [ ] T161 [US1] Redesign `src/ui/GridPicker/CreatureSearchModal.tsx` for items 10 + 11
       (FR-048/FR-049), using the user-supplied in-game shop card as the reference: taller cards
       (~3:4 w:h), sprite centred and large, name beneath; **no rarity text and no price on the
@@ -1294,38 +1360,98 @@ system.
       more than the per-card label did while removing text from the card. Use `TypeSplit` (T145) for
       the background so the sliver is gone, and `Modal` (T144) for the chrome. This file has 14
       inline `style={{}}` blocks today — it should finish with ~0. (depends on T144, T145)
-- [ ] T162 [P] Remove the corpus-snapshot prose from the header in `src/App.tsx` (item 12 /
-      FR-050). FR-014 remains satisfied by the Corpus Browser's own summary line; note the
-      re-scoping in spec.md the same way round 6 did for FR-030, rather than dropping it silently.
-- [ ] T163 [P] Give `TrinketPicker`'s grid cards a **uniform fixed height** sized to the corpus's
+- [ ] T162 Remove the corpus-snapshot prose from the header in `src/App.tsx` (item 12 / FR-050)
+      **and give FR-014 a real home**. The first draft of this task claimed "FR-014 remains
+      satisfied by the Corpus Browser's own summary line" — **that was false**: that line carries
+      entry counts only and states no version, so removing the header as drafted would have left
+      FR-014 unmet on every surface while the plan asserted compliance (caught in review).
+      Concretely: move a single compact `Balance 24 / 1.2.0` clause into the Corpus Browser's
+      summary line (a corpus-level version stamp is **not** the per-record citation/conflict
+      rendering FR-030 removed — FR-030 bans per-entry provenance, which this isn't), relocate or
+      retire `CORPUS_PATCH_LABEL` rather than orphaning it, and update the README line that tells
+      maintainers to edit it in the header. spec.md's round 7 Amendment records the FR-014 narrowing.
+- [ ] T163 Give `TrinketPicker`'s grid cards a **uniform fixed height** sized to the corpus's
       longest `effectText` (**110 chars**, measured) so no row is ragged and no text overruns
-      (item 13 / FR-051). (depends on T142, T144)
+      (item 13 / FR-051). State the width the 110 chars are wrapped at — a character count alone
+      doesn't determine a height — and verify at the grid's actual minimum column width.
+      (depends on T142, T144, T171)
 - [ ] T164 [US1] Rework the **selected**-trinket list for items 16 + 17 (FR-052): wrap it in the
       `Disclosure` primitive so adding trinkets no longer pushes the team grid down (with 9
       selected the grid is off-screen), and **top-align** the name column and the `×` column so the
       remove control sits at a constant vertical position regardless of description length. The
-      complaint is click-target consistency, not aesthetics. (depends on T144)
-- [ ] T165 [P] Display grid sprites at **64px** via a named token from T142, not a per-call-site
+      complaint is click-target consistency, not aesthetics. **Default the disclosure to collapsed**
+      — defaulting to open would still push the grid down on the first add, which is the whole
+      complaint — and surface the selected count on the summary so collapsing hides nothing
+      important. (depends on T144)
+- [ ] T165 Display grid sprites at **64px** via a named token from T142, not a per-call-site
       literal (item 18 / FR-053). Record the caveat in the token's comment: the source PNGs are
       48×48, so 64px is a 1.333× non-integer upscale and **96px is the exact 2×** if crisper
-      rendering is wanted later. Keep `image-rendering: pixelated`. (depends on T142)
+      rendering is wanted later. Keep `image-rendering: pixelated`.
+      **Check the small-viewport case**: the slot card is square with `overflow: hidden`, and at
+      three columns on a phone width a 64px sprite plus the level label, name, and stat badges can
+      overflow it. Verify at a narrow viewport and let the token scale down there if needed.
+      (depends on T142)
 - [ ] T166 [P] Fix the chart axes in `src/ui/CumulativeChart/CumulativeChart.tsx` (item 19 /
       FR-054): the Y label is clipped to `cumulative valu` because `position: "insideLeft"` has no
-      room with the chart's `left` margin at `0` — give it margin; and change the X label from
-      `insideBottomRight` (right-justified) to centred. Verify against the rendered label, not a
-      screenshot.
+      room with the chart's `left` margin at `0` — give it margin. Recharts anchors `insideLeft` at
+      the text's *start* at the plot's vertical midpoint and the rotated text extends upward, so
+      also set `style={{ textAnchor: "middle" }}` or the label is off-centre even once it fits.
+      Change the X label from `insideBottomRight` (right-justified) to `insideBottom`, and raise the
+      `XAxis` `height`/offset so it doesn't collide with the tick labels.
+      **Honest note**: `ResponsiveContainer` has zero size in jsdom, so this cannot be asserted in a
+      unit test — verify in the browser and say so in the results rather than claiming test coverage.
 - [ ] T167 [US2] Extend the status-output table in `src/ui/TeamSummary/TeamSummary.tsx` to show, per
-      status, **damage/second**, **applied/second**, and **growth (damage/s²)** from T152 (item 20 /
-      FR-055). Label them so the distinction is unmistakable — the user explicitly mistook the
+      status, **damage/second (window average)**, **damage/second at end of window**,
+      **applied/second**, and **growth (damage/s²)** from T152 (item 20 / FR-055).
+      **Also fix the now-stale "Facilitated DPS" column tooltip** in the *first* table, which reads
+      "e.g. Shock … enabled on other hits" — once T153 lands it holds Burn/Poison damage too. Label them so the distinction is unmistakable — the user explicitly mistook the
       existing figure for an application rate. Add a short note that a non-decaying status (Poison)
       has a rising damage rate, so the averaged figure understates a long fight. (depends on T152,
       T143)
 - [ ] T168 Migrate the remaining surfaces onto the primitives layer and **record what was not
       migrated** (item 14 / FR-058): `TeamSummary`, `CorpusBrowser`, `BatomonCard`, `TrinketPicker`,
-      `GridPicker`, `App`. Re-run the `style={{` census from research.md I14 and report the
+      `GridPicker`, `App`, **`TypeTag` (onto `Chip` — T143 creates `Chip` but no task currently
+      migrates `TypeTag` onto it), `CumulativeChart`, `TrainerPicker`, and `Sprite`**. Re-run the `style={{` census from research.md I14 and report the
       before/after numbers honestly. Any surface left unmigrated goes in README as explicitly
       outstanding — Principle VII requires the remainder be recorded, not implied complete.
       (depends on T142–T146)
+
+- [ ] T171 Add the **composite** primitives item 14 asks for, which T143–T145 alone do not provide.
+      The user's own example — "the subcomponents that go into displaying a mon's color subframe
+      should be the same" — is not met by `TypeSplit` alone, because the slot card, the picker card,
+      and the side card each still assemble sprite + background + name separately. Add:
+      - `CreatureTile` — the one sprite-on-type-background-with-name unit, used by `GridPicker`'s
+        slot, `CreatureSearchModal`'s result card, and `BatomonCard`'s identity band.
+      - `CardGrid` — the one responsive auto-fit grid. Four bespoke copies exist today
+        (`CorpusBrowser`, the creature modal, the trinket modal, and T158's modifier rows), and a
+        CSS-module class cannot be shared across modules, so this must be a component.
+      - `StatLine` — the one coloured `label: value` row, used by `BatomonCard`'s base and effective
+        bands. (depends on T143, T145)
+- [ ] T172 De-duplicate **data and logic**, not just components — item 14 explicitly says "data,
+      logic, functions, and UI", and the plan's first draft only addressed UI and formatters.
+      Confirmed duplicates:
+      - `RARITIES` is declared in **three** files (`CreatureSearchModal`, `CorpusBrowser`,
+        `TrinketPicker`) with inconsistent ordering between them → one exported constant.
+      - `STATUS_COLOR_KEY` is declared **twice** (`GridPicker`, `BatomonCard`), and
+        `statColors.ts`'s `statusColor()` is a third `toLowerCase`-based variant of the same
+        mapping → collapse to one.
+      Add a tripwire test asserting these identifiers are each defined exactly once outside their
+      home module, so the duplication cannot silently reappear.
+- [ ] T173 [P] Add the automated coverage the rest of this phase lacks — items 1, 2, 3, 4, 9, 10,
+      11, 12, 13, 15, 16, 18 and 19 are otherwise verified only by T169's by-hand walk, which is the
+      same "verified by eye" pattern that let item 8's dead click handler survive a whole round.
+      In `src/ui/__tests__/presentation.test.tsx` (and the relevant component test files), assert:
+      **positively** that the side panel heading is `Batomon Stats` and the picker heading is
+      `Choose a Batomon` (T150 only checks the *absence* of "Banto" — the same negative-only trap);
+      no `Corpus snapshot` text renders in `App`; grid sprite `<img>` width equals the T142 token;
+      the effective band renders `6.0` not `6.00`; the trinket disclosure hides the list when
+      collapsed; picker cards render no rarity text and the grid renders rarity section headings;
+      and `TypeSplit` renders two equal halves with **no** `linear-gradient` in its style.
+- [ ] T174 [P] **Update the existing tests this phase's renames break.**
+      `src/ui/__tests__/presentation.test.tsx:65` asserts the heading is exactly `"Choose a Banto"`
+      and will fail the moment T155 lands. Sweep for other assertions pinned to strings, colours, or
+      sprite sizes this phase changes, and update them deliberately rather than discovering them as
+      red CI.
 
 ### Polish for Phase 12
 
