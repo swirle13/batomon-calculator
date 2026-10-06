@@ -39,6 +39,10 @@ interface TeamConfigContextValue {
    */
   movePlacement: (fromSlot: GridSlot, toSlot: GridSlot) => void;
   setTrainerId: (trainerId: string | null) => void;
+  /** FR-027 (2026-10-06 round 5): multi-select, mirroring the Trainer single-select pattern --
+   * `TeamConfiguration.trinketIds` already existed in the type (round 1) but had no setter. */
+  addTrinketId: (trinketId: string) => void;
+  removeTrinketId: (trinketId: string) => void;
   setSimulationWindowSeconds: (seconds: number) => void;
   addTeamModifier: (modifier: Omit<StatModifier, "id">) => void;
   removeTeamModifier: (id: string) => void;
@@ -85,6 +89,14 @@ export function TeamConfigProvider({ children }: { children: ReactNode }) {
         });
       },
       setTrainerId: (trainerId) => setConfig((prev) => ({ ...prev, trainerId })),
+      addTrinketId: (trinketId) =>
+        setConfig((prev) =>
+          prev.trinketIds.includes(trinketId)
+            ? prev // already selected -- no duplicate entries
+            : { ...prev, trinketIds: [...prev.trinketIds, trinketId] },
+        ),
+      removeTrinketId: (trinketId) =>
+        setConfig((prev) => ({ ...prev, trinketIds: prev.trinketIds.filter((id) => id !== trinketId) })),
       setSimulationWindowSeconds: (seconds) =>
         setConfig((prev) => ({ ...prev, simulationWindowSeconds: seconds })),
       addTeamModifier: (modifier) =>

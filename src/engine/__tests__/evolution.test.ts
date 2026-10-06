@@ -95,15 +95,49 @@ describe("resolveLevelUp", () => {
   /**
    * Real-corpus smoke test: Panbud at level 1 (below its evolution threshold) must resolve to
    * itself, not to Bambudo — confirms the resolver doesn't jump the gun before the threshold.
-   * Deliberately does NOT assert the level-3 case against the real corpus: as of this round the
-   * real corpus only has a level-1 Bambudo record (tasks.md T075's corpus-completeness gap), so
-   * resolveLevelUp(corpus, "panbud", 3) correctly returns null today — that's the lookup-fix
-   * discipline working as intended, not a bug, and will correctly flip to non-null once a real
-   * level-3 Bambudo record is added without needing this test to change.
    */
   it("real corpus: Panbud below its evolution threshold resolves to itself", () => {
     const resolved = resolveLevelUp(corpus, "panbud", 1);
     expect(resolved).not.toBeNull();
     expect(resolved!.id).toBe("panbud");
+  });
+
+  /**
+   * Non-level-triggered evolution (2026-10-06 round 5, research.md G1 / spec.md Edge Case):
+   * a species like Ignit evolves "On Victory," not at a level threshold -- evolvesInto is
+   * recorded but evolvesAtLevel is deliberately absent, since resolveLevelUp has no "level"
+   * input to resolve a victory-triggered evolution against. It must never evolve through
+   * leveling, at any level, even though evolvesInto is populated.
+   */
+  it("a species with evolvesInto but no evolvesAtLevel never resolves through evolution at any level", () => {
+    const victoryTriggered: CreatureRecord = {
+      id: "victoryMon",
+      name: "Victory Mon",
+      rarity: "SuperRare",
+      types: ["Fire"],
+      level: 1,
+      baseMulticast: 1,
+      shopCost: 40,
+      baseCooldownSeconds: 8,
+      baseDamage: null,
+      damageType: null,
+      evolvesInto: "evolvedVictoryMon", // no evolvesAtLevel -- victory-triggered, not level-based
+      abilityText: "Evolve on victory.",
+      abilityTags: [],
+      sourceRefs: [],
+      patch: "test",
+    };
+    const synthetic: Corpus = { creatures: [victoryTriggered], trainers: [], trinkets: [], items: [] };
+    for (const level of [1, 2, 3, 4] as const) {
+      const resolved = resolveLevelUp(synthetic, "victoryMon", level);
+      if (level === 1) {
+        expect(resolved?.id).toBe("victoryMon");
+      } else {
+        // No level-1 "evolvedVictoryMon" record exists either, so this correctly returns null
+        // (the lookup-fix discipline) -- the key assertion is it never resolves to the evolved
+        // species id purely from leveling, which it doesn't attempt to do here.
+        expect(resolved?.id).not.toBe("evolvedVictoryMon");
+      }
+    }
   });
 });

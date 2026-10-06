@@ -538,9 +538,9 @@ Trinket corpus (research.md G2) and flat team-wide bonus application.
 
 ### Foundational (blocking — no story label, same as Phase 2)
 
-- [ ] T103 Add `rarity?: Rarity` and `effectTags?: { stat: ModifierStat; amount: number }[]` to
+- [x] T103 Add `rarity?: Rarity` and `effectTags?: { stat: ModifierStat; amount: number }[]` to
       `TrinketRecord` in `src/data/types.ts` (data-model.md's round-5 `TrinketRecord` amendment)
-- [ ] T104 [P] Write a scratch extraction script (not shipped as part of the app) that fetches
+- [x] T104 [P] Write a scratch extraction script (not shipped as part of the app) that fetches
       `https://batodex.com/monsters/<any-slug>` and `https://batodex.com/trinkets` raw HTML,
       locates the `self.__next_f.push([1,"..."])` block containing `"category":"monsters"` (or
       `"trinkets"`), JSON-decodes the JS string, extracts the `entries` array, and recursively
@@ -548,12 +548,12 @@ Trinket corpus (research.md G2) and flat team-wide bonus application.
 
 ### Tests for Phase 10 ⚠️ write first, confirm failing before implementing (Constitution Principle III, NON-NEGOTIABLE)
 
-- [ ] T105 [P] Write a failing unit test in `src/engine/__tests__/simulate.test.ts` (new
+- [x] T105 [P] Write a failing unit test in `src/engine/__tests__/simulate.test.ts` (new
       synthetic corpus fixture with one trinket carrying `effectTags: [{ stat: "damageFlatAdd",
       amount: 10 }]`) asserting a selected trinket's `effectTags` raise `perCreatureDps` by the
       same amount a manual `damageFlatAdd` `teamModifier` would, and that an unselected
       trinket's `effectTags` have no effect
-- [ ] T106 [P] Write a failing unit test in `src/engine/__tests__/evolution.test.ts` (synthetic
+- [x] T106 [P] Write a failing unit test in `src/engine/__tests__/evolution.test.ts` (synthetic
       fixture with `evolvesInto` set but `evolvesAtLevel` absent — a non-level-triggered
       evolution) asserting `resolveLevelUp` never resolves through it at any level — it always
       returns the base species' own record (or `null` if that level doesn't exist for it),
@@ -561,33 +561,43 @@ Trinket corpus (research.md G2) and flat team-wide bonus application.
 
 ### Implementation for Phase 10
 
-- [ ] T107 [US1] Wire trinket `effectTags` into `src/engine/simulate.ts`'s modifier resolution
+- [x] T107 [US1] Wire trinket `effectTags` into `src/engine/simulate.ts`'s modifier resolution
       (Phase A): sum `effectTags` from every id in `config.trinketIds` the same way
       `sumModifier` already sums `teamModifiers`/placement `modifiers` — additive with both,
       no precedence — to satisfy T105 (depends on T103)
-- [ ] T108 [US3] Populate `src/data/creatures.ts` with level 2/3/4 `CreatureRecord` entries for
+- [x] T108 [US3] Populate `src/data/creatures.ts` with level 2/3/4 `CreatureRecord` entries for
       every species and nested evolved form (research.md G1) — one record per `(id, level)`,
       extracted via T104's script from batodex.com's embedded database; cite the extraction
       method and retrieval date; correct any level-1 discrepancies this authoritative structured
       source reveals against the per-creature citations from rounds 2/4
-- [ ] T109 [US3] Populate `src/data/trinkets.ts` with all 93 `TrinketRecord` entries
+      **Done, 2026-10-06**: all 149 species' remaining unconfirmed level-1 stats were filled in
+      first (92→149/149, closing the entire corpus-completeness gap in one pass, not just
+      rounds 2/4's partial batches), then 447 new level-2/3/4 records appended (596 total).
+      **Regression found and fixed in the same pass**: `CreatureSearchModal`/`GridPicker`'s
+      dropdown/`CorpusBrowser` all assumed one record per creature name; multi-level records
+      made them show up to 4 duplicate tiles per species. Fixed via a new `distinctCreatures`
+      export in `src/data/corpus.ts` (one record per species, level 1, used for every UI
+      *listing*) while engine-side level-aware lookups are untouched. Caught by
+      `CreatureSearchModal.test.tsx`'s existing `getByText` assertion failing on multiple
+      matches — direct payoff from round 3's component-test investment.
+- [x] T109 [US3] Populate `src/data/trinkets.ts` with all 93 `TrinketRecord` entries
       (`name`/`effectText`/`rarity`), extracted via T104's script from
       `https://batodex.com/trinkets`; add `effectTags` for every trinket whose `description` is
       a flat, unconditional, permanent team-wide stat bonus mapping onto an existing
       `ModifierStat` (data-model.md's "deliberately a flat list" scoping — leave `effectTags`
       absent for shop/economy-only effects, same treatment as most Trainer abilities)
-- [ ] T110 [US1] Add a `TrinketPicker` component (multi-select, mirroring `TrainerPicker`'s
+- [x] T110 [US1] Add a `TrinketPicker` component (multi-select, mirroring `TrainerPicker`'s
       pattern) in `src/ui/GridPicker/TrinketPicker.tsx`; add `addTrinketId`/`removeTrinketId` to
       `TeamConfigContext`; wire into `src/App.tsx`'s `CalculatorView` alongside `TrainerPicker`
-- [ ] T111 [US1] Verify `GridPicker`'s level selector (built in T072, evolution-aware since
+- [x] T111 [US1] Verify `GridPicker`'s level selector (built in T072, evolution-aware since
       T085) now surfaces real level 2/3/4 options for species with newly-populated level data
       from T108 — no code change expected (the selector already computes options via
       `resolveLevelUp`), but confirm end-to-end with at least one real species (e.g. Panbud)
 
 ### Polish for Phase 10
 
-- [ ] T112 [P] Re-run quickstart.md Validation Scenarios 16–17; record results
-- [ ] T113 Verify `npx tsc -b --noEmit`, full `npx vitest run`, and `npm run build` all pass;
+- [x] T112 [P] Re-run quickstart.md Validation Scenarios 16–17; record results
+- [x] T113 Verify `npx tsc -b --noEmit`, full `npx vitest run`, and `npm run build` all pass;
       report the resulting corpus completeness delta (level-1 confirmed count, and new level
       2-4 record count) honestly, not rounded up
 

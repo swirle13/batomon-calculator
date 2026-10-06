@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import type { CreatureType, GridSlot, Rarity } from "../../data/types";
-import { corpus } from "../../data/corpus";
+import { distinctCreatures } from "../../data/corpus";
 import { typeBackground } from "../../data/typeColors";
 import { slotKey } from "../../engine/grid";
 
@@ -27,7 +27,7 @@ export function CreatureSearchModal({ slot, onClose, onSelect }: CreatureSearchM
   const inputRef = useRef<HTMLInputElement>(null);
 
   const allTypes = useMemo(
-    () => Array.from(new Set(corpus.creatures.flatMap((c) => c.types))).sort(),
+    () => Array.from(new Set(distinctCreatures.flatMap((c) => c.types))).sort(),
     [],
   );
 
@@ -46,7 +46,7 @@ export function CreatureSearchModal({ slot, onClose, onSelect }: CreatureSearchM
   if (slot === null) return null;
 
   const needle = query.trim().toLowerCase();
-  const results = corpus.creatures.filter((c) => {
+  const results = distinctCreatures.filter((c) => {
     if (needle !== "" && !c.name.toLowerCase().includes(needle)) return false;
     if (rarityFilter !== "" && c.rarity !== rarityFilter) return false;
     if (typeFilter !== "" && !c.types.includes(typeFilter)) return false;
@@ -135,7 +135,7 @@ export function CreatureSearchModal({ slot, onClose, onSelect }: CreatureSearchM
         </div>
 
         <p style={{ margin: 0, opacity: 0.75 }}>
-          {results.length} of {corpus.creatures.length}
+          {results.length} of {distinctCreatures.length}
         </p>
 
         <div

@@ -239,6 +239,35 @@ Frillet→Dewlotl, all at level 3).
    cooldown, the same way a manual `damageFlatAdd` `StatModifier` would — reusing the existing
    modifier-resolution path, not a separate computation.
 
+## Validation results (2026-10-06, round 5 implementation — Scenarios 16-17)
+
+- **Scenario 16 — PASS (verified against real corpus, not just synthetic fixtures).** Direct
+  script verification: `resolveLevelUp(corpus, "panbud", level)` for `level` 1-4 returns
+  Panbud@1 (damage 25), Panbud@2 (damage 50), then correctly switches to Bambudo@3 (damage 75)
+  and Bambudo@4 (damage 150). Separately confirmed `resolveLevelUp(corpus, "ignit", level)`
+  returns Ignit unchanged at every level 1-4 — Ignit's victory-triggered evolution into
+  Flarilisk is recorded (`evolvesInto`) but correctly never resolves through leveling (no
+  `evolvesAtLevel`), exactly as designed.
+- **Scenario 17 — PASS (automated).** New `simulate.test.ts` cases confirm a trinket with
+  `effectTags: [{ stat: "damageFlatAdd", amount: 10 }]` raises `perCreatureDps` by exactly that
+  amount when selected (and has zero effect when not selected) — reusing the exact same
+  modifier-resolution path a manual `teamModifier` already uses, not a separate computation.
+
+**Corpus completeness, final count**: level 1-4 `baseCooldownSeconds`/`baseDamage`-or-confirmed-
+absent is now **596/596 (100%)** — up from 92/149 level-1-only at the start of this round. The
+full creature database (every level, every evolution chain) and the full 93-entry Trinket
+database were both extracted from a single page fetch each, via batodex.com's embedded
+React-Server-Components JSON payload (research.md G1/G2) — not fabricated, not estimated.
+
+**Regression caught and fixed during this round**: populating levels 2-4 initially broke the
+creature-search modal, the GridPicker dropdown, and the Corpus Browser — all three previously
+assumed one record per creature *name*, and now showed up to 4 duplicate tiles/rows per species
+(one per level). Fixed by introducing `distinctCreatures` (one record per species, used for all
+UI *listings*) while keeping full-corpus, level-aware lookups (`getCreatureByIdAndLevel`,
+`resolveLevelUp`) unchanged. Caught by a pre-existing `CreatureSearchModal` component test
+(`getByText("Bumblebolt")` started matching 4 elements instead of 1) — a direct demonstration
+of why the round-3 investment in component tests was worth it.
+
 ## Automated checks
 
 ```bash

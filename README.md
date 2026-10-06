@@ -47,22 +47,21 @@ an explicit `FieldConflict` (both values, both sources, and an optional `resolut
 rather than silently picked. The Corpus Browser view surfaces these conflicts directly instead
 of hiding them.
 
-**Current status**: `src/data/creatures.ts` covers all **149 named Batomon** reconciled from the
-fan-wiki sources reviewed (name/rarity/types/ability text for all of them, shop cost for most).
-**92 of 149** now have a fully complete, engine-usable level-1 stat set
-(`baseCooldownSeconds`/`baseDamage`-or-confirmed-absent/`damageType`), confirmed via
-batodex.com's individual per-creature detail pages across rounds 2 and 4 (round 4 alone added
-81 — `tasks.md` T100). None of the *bulk* sources reviewed publish per-creature cooldown/damage
-numbers; only individual detail pages do, which is why this is ongoing, incremental work rather
-than a single pass. The remaining ~57 entries have `baseCooldownSeconds`/`baseDamage` as `null`,
-explicitly listed in each entry's `unconfirmedFields` (rendered as "unknown" in the Corpus
-Browser, never a misleading `0`) — they're browsable/searchable today but won't contribute DPS
-to a simulation until sourced. **Level 2/3/4 stats are a confirmed hard blocker**, not just
-unfinished — no available source publishes them outside a live, JavaScript-driven in-game/wiki
-UI control (research.md F5); 5 species-level evolution thresholds/targets are confirmed instead
-(e.g. Panbud→Bambudo, Scorchimp→Sunsage, Dribblet→Emperooze, all at level 3). Trainers cover the
-full documented **23-Trainer roster** (`T070`, round 2) — Trinkets/Items are still an empty seed
-stub (`T045`–`T046`, not yet done).
+**Current status (round 5, 2026-10-06)**: `src/data/creatures.ts` covers all **149 named
+Batomon**, each with **complete, cited level 1-4 stats** — 596 `CreatureRecord` entries total
+(149 species × 4 levels), **100% confirmed** `baseCooldownSeconds`/`baseDamage`-or-confirmed-
+absent/`damageType`. Round 4's "level 2-4 is a hard blocker" finding was **retracted** in round
+5: batodex.com's listing pages embed their entire database (every creature, every level, every
+evolution chain, by-level ability text) as structured JSON for client-side hydration — invisible
+to a markdown-converting fetch tool, but directly readable from the raw page content. One page
+fetch yielded the complete dataset; see `specs/001-batomon-dps-calculator/research.md` section G
+for the full technical writeup. 11 species have a confirmed evolution target (5 level-triggered
+— e.g. Panbud→Bambudo, Scorchimp→Sunsage, both at level 3 — plus 6 victory/condition-triggered,
+e.g. Ignit→Flarilisk on victory, which `evolvesInto` records but `evolvesAtLevel` deliberately
+does not, since leveling can't trigger them). Trainers cover the full documented **23-Trainer
+roster** (`T070`, round 2); **Trinkets now cover the full 93-entry roster** (`T109`, round 5),
+with 6 trinkets' flat team-wide stat bonuses wired into the DPS simulation — Items are still an
+empty seed stub (`T046`, not yet done).
 
 ### Refreshing the corpus for a new game patch
 
@@ -84,12 +83,19 @@ stub (`T045`–`T046`, not yet done).
   *user's team's own outgoing damage* against one implicit "idealized target" (see spec.md's
   Assumptions) — there's no modeled opposing HP/Shield pool for it to reduce yet. See `tasks.md`
   T037.
-- **Corpus depth.** 92 of 149 creatures have confirmed cooldown/damage numbers (see above) — the
-  other ~57 can't contribute DPS to a simulation yet. **Level 2/3/4 stats are a confirmed,
-  tooling-level blocker** (research.md F5), not just unfinished work — no available source
-  publishes them outside a live, JavaScript-driven UI control, confirmed by direct fetch across
-  multiple sites. Trinkets/Items are still an empty seed stub. See `tasks.md` T100
-  (creature level-1 completion, ongoing) and T045–T046 (Trinkets/Items).
+- **Items are still an empty seed stub.** Trinkets were completed in round 5 (`tasks.md` T109);
+  Items have not been — see `tasks.md` T046.
+- **Only 6 of 93 Trinkets' effects are wired into the DPS simulation.** The rest are real,
+  cited, browsable shop/economy effects (free purchases, gift-rarity boosts, per-day/per-
+  trinket-count scaling, type- or position-conditional bonuses) that don't fit this engine's
+  deliberately narrow "flat, unconditional, team-wide bonus" trinket-effect model
+  (data-model.md's round-5 `TrinketRecord.effectTags` amendment) — same treatment as most
+  Trainer abilities.
+- **Branching/non-level-triggered evolutions are recorded but not resolved by leveling.** A
+  species like Ignit (`evolvesInto: "flarilisk"`, no `evolvesAtLevel`) correctly never evolves
+  through the level selector, since its real trigger is "On Victory" — `resolveLevelUp()` has
+  no way to know a battle was won. This is accurate (it correctly does nothing) but incomplete
+  (it can't ever show the evolved form either) — see research.md G1.
 - **StatModifiers are a manual, honest-effort tool, not a simulated economy.** They let you
   describe the net effect of a previous round's carry-over bonus, but the engine never derives
   them from actual match history (there is no multi-round match model at all).

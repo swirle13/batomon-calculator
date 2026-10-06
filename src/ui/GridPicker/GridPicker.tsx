@@ -1,7 +1,7 @@
 import { Fragment, useState, type ReactNode } from "react";
 import { DndContext, useDraggable, useDroppable, type DragEndEvent } from "@dnd-kit/core";
 import type { CreatureType, GridCol, GridRow, GridSlot, Rarity } from "../../data/types";
-import { corpus, getCreatureById } from "../../data/corpus";
+import { corpus, distinctCreatures, getCreatureById } from "../../data/corpus";
 import { useTeamConfig } from "../../context/TeamConfigContext";
 import { resolveLevelUp } from "../../engine/evolution";
 import { typeBackground } from "../../data/typeColors";
@@ -32,7 +32,7 @@ const COLS: GridCol[] = [0, 1, 2];
 const RARITY_ORDER: Rarity[] = ["Mythical", "Legendary", "SuperRare", "Rare", "Uncommon", "Common"];
 const creaturesByRarity = RARITY_ORDER.map((rarity) => ({
   rarity,
-  creatures: corpus.creatures.filter((c) => c.rarity === rarity).sort((a, b) => a.name.localeCompare(b.name)),
+  creatures: distinctCreatures.filter((c) => c.rarity === rarity).sort((a, b) => a.name.localeCompare(b.name)),
 }));
 
 interface GridPickerProps {

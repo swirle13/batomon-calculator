@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { simulate } from "../simulate";
 import { corpus } from "../../data/corpus";
-import type { Corpus, CreatureRecord, TeamConfiguration } from "../../data/types";
+import type { Corpus, CreatureRecord, TeamConfiguration, TrinketRecord } from "../../data/types";
 import { InvalidTeamConfigurationError } from "../errors";
 
 /** Minimal synthetic corpus for isolating "facilitated damage" attribution from real game data. */
@@ -490,5 +490,62 @@ describe("simulate", () => {
       simulationWindowSeconds: 2,
     };
     expect(() => simulate(config, synthetic)).toThrow(InvalidTeamConfigurationError);
+  });
+
+  /**
+   * Trinket effectTags (2026-10-06 round 5, data-model.md's "Trinket effect application"
+   * amendment): a selected trinket's flat team-wide stat bonus must apply through the exact
+   * same modifier-resolution path as a manual teamModifier -- not a separate computation.
+   */
+  it("a selected trinket's effectTags apply as an implicit team-wide modifier", () => {
+    const base = multicastCorpus(); // reuse: has "multiCaster" (baseDamage 5, cooldown 1)
+    const bonusTrinket: TrinketRecord = {
+      id: "test-trinket",
+      name: "Test Trinket",
+      effectText: "Your team gains +10 Damage permanently.",
+      effectTags: [{ stat: "damageFlatAdd", amount: 10 }],
+      abilityTags: [],
+      sourceRefs: [],
+      patch: "test",
+    };
+    const synthetic = { ...base, trinkets: [bonusTrinket] };
+    const config: TeamConfiguration = {
+      placements: [{ slot: { row: "front", col: 0 }, creatureId: "multiCaster", level: 1 }],
+      trainerId: null,
+      trinketIds: ["test-trinket"],
+      itemIds: [],
+      // Must cover the full staggered Multicast burst (t=1.0/1.1/1.2) -- see round 4's own
+      // Multicast stagger test for why a window of exactly 1 would truncate to 1 hit.
+      simulationWindowSeconds: 1.2,
+    };
+    const result = simulate(config, synthetic);
+    const key = Object.keys(result.perCreatureDps)[0]!;
+    // multiCaster has baseMulticast: 3, baseDamage: 5 -> 3 hits of (5+10) = 45 over 1.2s window.
+    expect(result.perCreatureDps[key]).toBeCloseTo(45 / 1.2, 5);
+  });
+
+  it("an unselected trinket's effectTags have no effect", () => {
+    const base = multicastCorpus();
+    const bonusTrinket: TrinketRecord = {
+      id: "test-trinket",
+      name: "Test Trinket",
+      effectText: "Your team gains +10 Damage permanently.",
+      effectTags: [{ stat: "damageFlatAdd", amount: 10 }],
+      abilityTags: [],
+      sourceRefs: [],
+      patch: "test",
+    };
+    const synthetic = { ...base, trinkets: [bonusTrinket] };
+    const config: TeamConfiguration = {
+      placements: [{ slot: { row: "front", col: 0 }, creatureId: "multiCaster", level: 1 }],
+      trainerId: null,
+      trinketIds: [], // not selected
+      itemIds: [],
+      simulationWindowSeconds: 1.2,
+    };
+    const result = simulate(config, synthetic);
+    const key = Object.keys(result.perCreatureDps)[0]!;
+    // No bonus -> 3 hits of 5 = 15 total over 1.2s, not 45.
+    expect(result.perCreatureDps[key]).toBeCloseTo(15 / 1.2, 5);
   });
 });

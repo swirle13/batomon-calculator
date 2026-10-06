@@ -178,7 +178,19 @@ export interface TrinketRecord extends Provenance {
   id: string;
   name: string;
   effectText: string;
+  /** Added 2026-10-06 round 5 -- batodex.com's trinket database publishes rarity directly,
+   * same closed Rarity union creatures already use. */
+  rarity?: Rarity;
   abilityTags: AbilityTag[];
+  /**
+   * Added 2026-10-06 round 5 (research.md G2): flat, unconditional, permanent team-wide stat
+   * bonuses this trinket grants when selected -- the only trinket-effect shape this engine
+   * simulates. Most trinket effects (shop/economy mechanics) have no entry here and remain
+   * real, cited, browsable-only corpus data. Deliberately a flat list, not the full creature
+   * AbilityTag/TargetSelector shape -- every trinket effect this maps applies to "your team,"
+   * unconditionally, so there is no positional targeting to encode.
+   */
+  effectTags?: { stat: ModifierStat; amount: number }[];
 }
 
 export interface ItemRecord extends Provenance {

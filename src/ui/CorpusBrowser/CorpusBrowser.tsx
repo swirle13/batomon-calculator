@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { corpus, filterCreatures, searchCreatures } from "../../data/corpus";
+import { corpus, distinctCreatures, filterCreatures, searchCreatures } from "../../data/corpus";
 import { displayField, isUnconfirmed } from "../../data/display";
 import type { CreatureType, Rarity } from "../../data/types";
 import { TypeTag } from "../shared/TypeTag";
@@ -37,10 +37,10 @@ export function CorpusBrowser() {
       <h2>Corpus Browser</h2>
       <p>
         <em>
-          {corpus.creatures.length} creatures, {corpus.trainers.length} trainer(s),{" "}
-          {corpus.trinkets.length} trinket(s), {corpus.items.length} item(s). Most entries have
-          confirmed name/rarity/type/ability-text but an "unknown" cooldown/damage (not published
-          in the fan-wiki sources reviewed) — see each entry's "Unconfirmed" line.
+          {distinctCreatures.length} creatures (each with up to 4 level records, round 5),{" "}
+          {corpus.trainers.length} trainer(s), {corpus.trinkets.length} trinket(s),{" "}
+          {corpus.items.length} item(s). Nearly all creature stats are now confirmed per level
+          (round 5) — see each entry's "Unconfirmed" line for the few remaining exceptions.
         </em>
       </p>
 

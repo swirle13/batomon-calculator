@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { TeamConfigProvider, useTeamConfig } from "./context/TeamConfigContext";
 import { GridPicker } from "./ui/GridPicker/GridPicker";
 import { TrainerPicker } from "./ui/GridPicker/TrainerPicker";
+import { TrinketPicker } from "./ui/GridPicker/TrinketPicker";
 import { TeamSummary } from "./ui/TeamSummary/TeamSummary";
 import { PlacedCreatureDetails } from "./ui/TeamSummary/PlacedCreatureDetails";
 import { ModifierEditor } from "./ui/Modifiers/ModifierEditor";
@@ -16,7 +17,7 @@ type View = "calculator" | "corpus";
 
 /** FR-014: state which corpus/patch snapshot is active, on both views. */
 const CORPUS_PATCH_LABEL =
-  "Balance 24 / 1.2.0 (community-imported build) — 149 named Batomon, 92 with confirmed cooldown/damage, 23 Trainers, see README";
+  "Balance 24 / 1.2.0 (community-imported build) — 149 named Batomon, 100% confirmed across levels 1-4, 23 Trainers, 93 Trinkets, see README";
 
 function CalculatorView() {
   const { config, setSimulationWindowSeconds } = useTeamConfig();
@@ -33,6 +34,9 @@ function CalculatorView() {
           it's the first decision made in the team-building flow. */}
       <p>
         <TrainerPicker />
+      </p>
+      <p>
+        <TrinketPicker />
       </p>
       <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap", alignItems: "flex-start" }}>
         <GridPicker onHighlightSlot={setHighlightedSlot} />

@@ -170,7 +170,20 @@ export function simulate(
   const windowSeconds = config.simulationWindowSeconds;
   const startAt = options?.nowSeconds ?? 0;
 
-  const teamModifiers = config.teamModifiers ?? [];
+  // Trinket effectTags (2026-10-06 round 5, data-model.md's "Trinket effect application"
+  // amendment): every selected trinket's flat team-wide bonus is folded into the same
+  // teamModifiers list the user's manual carry-over StatModifiers already use -- additive with
+  // them, no precedence, same rule the manual modifiers already follow with each other. This
+  // reuses 100% of the existing sumModifier() resolution path rather than adding a parallel one.
+  const trinketModifiers: StatModifier[] = config.trinketIds.flatMap((trinketId) => {
+    const trinket = corpus.trinkets.find((t) => t.id === trinketId);
+    return (trinket?.effectTags ?? []).map((tag, i) => ({
+      id: `trinket-${trinketId}-${i}`,
+      stat: tag.stat,
+      amount: tag.amount,
+    }));
+  });
+  const teamModifiers = [...(config.teamModifiers ?? []), ...trinketModifiers];
   const teamMembers = config.placements.map((p) => ({
     slot: p.slot,
     // Safe to assert: validate() above already confirmed a record exists for this exact
