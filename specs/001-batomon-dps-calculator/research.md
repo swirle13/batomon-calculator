@@ -928,6 +928,241 @@ Quantified across the corpus:
   happily while every value is wrong by one row. That verification now exists as
   `provenance.test.ts`-adjacent tooling and should be run after any future bulk corpus edit.
 
+## I. Round 7 (2026-10-06) — Design system, picker/card redesign, click-vs-drag fix, and second-order status metrics
+
+Twenty user-reported items. Four needed real diagnosis before they could be planned (I7, I8, I11,
+I13); one is architectural and changes how all future work is done (I14). The rest are bounded
+presentation fixes, grouped below rather than given a subsection each.
+
+### I1. Shield's colour is wrong in our map, and the game proves it
+
+The user's in-game capture shows a Shield value rendered on a **silver/steel** plate. Our
+`STAT_COLORS.shield` is `#a47c41` — a brown. That value came from round 6's extraction of
+batodex's published palette (research.md H2), so this is not a transcription slip: **batodex's
+shield colour disagrees with the game's own rendering**, and the game wins.
+
+- **Decision**: change `shield` to a silver/steel tone and record it as a corrected value with the
+  user screenshot as its source, rather than silently editing a figure H2 cites to batodex.
+- The other six colours were cross-checked against the in-game Brimtoad card in round 6 and are
+  unaffected; only `shield` had no in-game cross-check at the time, which is exactly why it is the
+  one that was wrong.
+
+### I2. Terminology: "Banto" is not a word in this game
+
+Two surfaces say "Banto" — `Placed Banto stats` and `Choose a Banto` (items 2, 9). The creatures
+are **Batomon**. "Banto" was invented in round 1 and has survived five rounds unchallenged.
+
+- **Decision**: "Batomon" everywhere in user-facing copy. Grep the whole `src/` tree rather than
+  fixing only the two surfaces the user happened to name — the same typo is likely in `aria-label`s
+  and empty-state strings a screenshot wouldn't show.
+
+### I3. Cards must reserve space, not resize to their contents (items 3, 15)
+
+The selected-creature panel changes size as you hover different creatures: a one-type creature's
+card is shorter than a two-type one, the ability band grows with text length, and a long name
+wraps. The grid visibly reflows on hover, which is both distracting and makes the adjacent column
+jump.
+
+- **Decision**: fixed, reserved dimensions for the whole card and *independently* for the bands
+  that vary (the type column, the sprite frame, the ability block). Sized to the corpus's actual
+  worst case, not guessed: compute the longest name, longest ability text, and max type count
+  across all 596 records and size against those.
+- **Also item 15**: the sprite in that card is far too small, which is *why* the two-type column
+  looks like wasted space — the band's height is set by the type chips, and a 44px sprite doesn't
+  fill it. Enlarging the sprite fixes the imbalance and the reserved height at once.
+
+### I4. Decimal precision regression (item 4)
+
+`Effective this battle` renders `cooldownSeconds.toFixed(2)` → `6.00`, while the base band renders
+`toFixed(1)` → `6.0`. The in-game card uses one decimal. The two bands sit directly above one
+another showing the same quantity at different precision, which reads like a discrepancy.
+
+- **Decision**: one shared formatter used by both, one decimal. Not two call sites agreeing by
+  convention — a formatter, because this is exactly the class of divergence I14 exists to prevent.
+
+### I5. Modifier rows waste a full row each; identical modifiers stack as duplicate chips (items 5, 6)
+
+- **Layout**: one creature per row at any viewport width. **Decision**: responsive auto-fit grid,
+  same primitive the corpus browser uses — not a new bespoke breakpoint ladder.
+- **Accumulation**: adding `Burn applied +10` twice produces two separate `+10` chips rather than
+  one `+20`. The engine sums them correctly (`sumModifier` adds every matching entry), so this is
+  purely a display/model-of-record question. **Decision**: merge on `(stat)` within a placement —
+  adding `+10` to an existing `+10` yields a single `+20` chip, and removing it removes the whole
+  accumulated amount. Rationale: a list of indistinguishable `+10` chips gives the user no way to
+  tell which is which, and no reason to care.
+- **Edge case to handle rather than discover later**: merging to **zero** (`+10` then `-10`) must
+  remove the chip entirely, not leave a `+0` chip that renders but does nothing.
+
+### I6. "Shield (granted)" over-qualifies (item 7)
+
+The parenthetical was added in round 2 to distinguish Shield *granted* from Shield *absorbed* — but
+absorption is not modelled and never has been (`T037`), so the qualifier advertises a distinction
+the tool does not make. **Decision**: render `Shield`. The granted-vs-absorbed scope limit stays
+documented in README/tasks where it belongs, not in a table cell.
+
+### I7. Root cause found: `@dnd-kit` swallows the click because no activation constraint is set
+
+The user cannot click an occupied slot to reopen the picker; only dragging works. The card *does*
+have an `onClick` that opens the modal (FR-023, round 4) and it is still wired — so the handler is
+not missing, it is **never reached**.
+
+- **Root cause**: `<DndContext>` is rendered with no `sensors` prop, so it falls back to the
+  default `PointerSensor` with **no `activationConstraint`**. That sensor begins a drag on
+  `pointerdown` and calls `preventDefault()`, so the browser never synthesises a `click` on the
+  element. Round 4's claim that "a plain click still fires normally because the pointer sensor only
+  engages past a drag threshold" was **wrong**: there is no such threshold by default — one has to
+  be configured.
+- **Decision**: configure the sensor explicitly with
+  `activationConstraint: { distance: 8 }`, which is precisely the user's "drag if I click and hold
+  [and move], but click once to open". 8px is large enough to absorb pointer jitter on a click and
+  small enough that an intentional drag feels immediate.
+- **Why this wasn't caught**: round 6's `GridPicker` test asserts the clear button does **not** open
+  the picker — it never asserts the positive case that clicking the card **does**. A test that only
+  checks a negative passes happily when the feature is entirely dead. The new test must assert both.
+
+### I8. Creature picker: crowding, and the "sliver" is a gradient seam (items 10, 11)
+
+- **Crowding**: each result card is a ~96px-wide box holding a sprite, the name, and a
+  `rarity · type/type` line, so the text is squeezed beside the sprite. **Decision**, taking the
+  in-game shop card as the reference the user supplied: a taller card (roughly 3:4 w:h, matching
+  the shop card's proportions), sprite centred and large, name beneath it, **no rarity text on the
+  card** and **no price** (explicitly excluded by the user — it is a shop concept, not a planning
+  one). Type stays communicated by the background, which already encodes it.
+- **Rarity becomes structure, not a label**: results are grouped into rarity sections with a small
+  left-justified rarity heading per group. This conveys strictly more than the per-card label did
+  (you can see how many of each rarity match your filter) while removing text from the card.
+- **The "sliver"**: `typeBackground()` returns
+  `linear-gradient(to right, A 0%, A 50%, B 50%, B 100%)`. At a fractional CSS pixel width the
+  50%/50% hard stop lands mid-device-pixel and the browser antialiases it, bleeding a 1px band of
+  the far colour. Rounded corners plus a transparent border (`border: 2px solid transparent`, which
+  with the default `background-clip: border-box` paints the gradient *under* the border) make it
+  read as a sliver at the card's edge.
+  **Decision**: stop expressing the split as a gradient. Render it as a dedicated primitive with
+  two explicitly-sized halves, which cannot antialias a seam and cannot bleed under a border. This
+  also makes the split reusable everywhere a type background appears (I14).
+
+### I9. Corpus-snapshot prose in the header (item 12)
+
+Added for FR-014 ("state which corpus/patch snapshot is active"). It is three lines of provenance
+above every view. **Decision**: remove it from the header. FR-014 is satisfied by the Corpus
+Browser's own summary line, which is where someone asking "what data is this?" already looks —
+same reasoning as round 6's FR-030, and the spec needs the same explicit re-scoping note rather
+than a silent drop.
+
+### I10. Trinket list: ragged card heights, unbounded growth, drifting controls (items 13, 16, 17)
+
+- **13**: picker cards size to their effect text, so a grid row is as tall as its wordiest card and
+  the rest have dead space. **Decision**: uniform fixed height across the grid, sized to the
+  longest `effectText` in the corpus (computed, not guessed), with overflow handled deliberately.
+- **16**: each selected trinket adds a full row above the team grid, pushing the board down —
+  with 9 selected the grid is off-screen. **Decision**: collapse the selected list into a
+  disclosure, same primitive as Modifiers.
+- **17**: the name and the `×` are vertically centred, so a long description moves them down and
+  the remove button lands in a different place on every row. **Decision**: top-align both columns
+  so `×` is at a constant offset regardless of description length — the user's actual complaint is
+  Fitts's-law consistency, not aesthetics.
+
+### I11. Sprite display size — answering "why 40px?" (item 18)
+
+Straight answer: **40px was an arbitrary choice I made in round 6** to fit the then-smaller slot
+card. It has no source and no reason behind it. batodex renders the same art at 64px.
+
+- **Decision**: 64px in the team grid, as requested.
+- **One caveat worth stating rather than discovering visually**: the source PNGs are **48×48**, so
+  64px is a **1.333× non-integer upscale**. With `image-rendering: pixelated` that makes some
+  source pixels 1 screen-pixel wide and others 2 — a subtly uneven grid. **96px (exactly 2×)** is
+  the crispest size above 48. Going with 64 as asked, and recording 96 as the alternative so the
+  trade-off is a choice rather than an accident.
+- Sprite sizes become named tokens rather than per-call-site numbers (I14), so this is one edit
+  next time, not six.
+
+### I12. Chart axis labels are clipped and misaligned (item 19)
+
+`cumulative value` renders at `position: "insideLeft"` with the chart's `left` margin at `0`, so the
+rotated label has no room and is clipped to `cumulative valu`. `seconds` uses
+`position: "insideBottomRight"`, which right-justifies it. **Decision**: give the Y axis enough left
+margin to fit its rotated label, and centre the X label (`insideBottom`). Verify by measuring the
+rendered label, not by eyeballing a screenshot.
+
+### I13. Status metrics are first-order only, and that actively misleads for Poison (item 20)
+
+The user's question — "where does Poison 21.30 come from?" — has a definite answer, and their
+follow-up guess ("this is how much poison is applied per second") is **not** it.
+
+- **It is damage per second**: `perStatusPerSecond.Poison = (total Poison tick damage) / window`.
+  Measured on a representative team: 1310 total Poison damage over a 20s window → **65.50/s**.
+- **And that single number is badly unrepresentative**, exactly as the user argued. Poison damage
+  in each 1-second bucket of that same run:
+
+  ```text
+  t:  0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18   19
+      0   0   0   0   1  16  16  17  18  73  73  74  74  90  90  91  91 146 147  293
+  ```
+
+  The final second deals **293**, against a window average of 65.50. Reporting one flat figure
+  hides a ~4.5× spread.
+- **Why Poison in particular**: `applyStatusTick` decrements layers for **Burn** but explicitly
+  **not** for Poison (research.md B2) — "Poison: layers do NOT decrease from the act of ticking".
+  So every Poison application permanently adds its full amount to a per-tick damage floor, and the
+  rate grows without bound. Burn self-limits (a stack of N deals N+(N−1)+…+1 and expires). Shock
+  layers also never decay, so Shock grows too, but only on direct hits.
+  **This difference is the whole reason a second-order metric is needed, and it is a property of
+  the modelled mechanics, not a reporting preference.**
+- **Blocking gap found while measuring this**: `simulate()` pushes an `ongoingChange` timeline event
+  for Shock and Shield applications but **not for Burn or Poison** — those only ever appear in the
+  timeline as *ticks*. So "stacks applied per second" is not derivable from the timeline today.
+  Fixing that is a prerequisite, not an optional extra.
+- **Decisions**:
+  1. Record Burn/Poison applications in the timeline, closing the asymmetry above.
+  2. Add **applied-per-second** per status (stacks/s) — exact, unambiguous, and the direct answer
+     to "how much is being added per turn".
+  3. Add a **growth rate (damage/s²)** per status, computed from the simulated run by bucketing
+     tick damage into 1-second windows and taking a least-squares slope. Computed from the actual
+     timeline, not from a closed-form assumption about stacking — so it stays correct if the decay
+     rules are later refined.
+  4. **Attribute status damage to the creature that applied it**, so a pure DOT applier stops
+     reporting 0.00 / 0.00. `activeStatuses` already carries `sourceSlot`; it needs the creature id
+     too, and each tick's damage then accrues to that creature's facilitated total — the same
+     `facilitatedDamage` map Shock procs already use. This directly implements the user's worked
+     example (20 poison applied three times, ticking 3×, 2×, 1× times respectively).
+- **Scope boundary kept explicit**: facilitated DPS remains *separate* from own-DPS rather than
+  being folded into it. A Poison applier's value genuinely is not direct damage, and merging the
+  two would make a DOT team's DPS column incomparable with a direct-damage team's.
+
+### I14. Standing requirement: a shared design system, applied retroactively and to all future work
+
+The user's most consequential item, and deliberately scoped beyond this round: *"please also take
+it into consideration for all future requests/changes/tasks, not just for the code base existing up
+until this request was made."*
+
+**Current state, measured rather than asserted** — `style={{` occurrences by file:
+
+```text
+CreatureSearchModal 14 | BatomonCard 3 | PlacedCreatureDetails 3 | TrinketPicker 3
+GridPicker 2 | App 2 | TypeTag 1 | Sprite 1 | TeamSummary 1 | CumulativeChart 1
+```
+
+Concrete duplication this has already produced, each of which is a bug the user reported this
+round: three independent "card" treatments with different borders/radii/padding; two different
+cooldown formatters disagreeing on decimals (I4); modal chrome duplicated between the creature and
+trinket pickers; chip/tag styling defined separately in `TypeTag`, the modifier chips, and the
+trinket badges; and six call sites each passing their own literal sprite size (I11).
+
+- **Decision**: introduce a primitives layer — design tokens as CSS custom properties (spacing,
+  radii, surface colours, border colours, type scale, sprite sizes) plus a small set of components
+  (`Surface`/`Card`, `Chip`, `StatBadge`, `Modal`, `Disclosure`, `SectionHeading`, `TypeSplit`) —
+  and migrate the existing UI onto it. Not a component *library* dependency: this is ~7 local
+  components over the existing CSS-modules approach (research.md A4), which keeps Principle VI
+  satisfied — each primitive has at least two existing call sites today, so none is abstraction
+  ahead of need.
+- **Decision**: make it **binding on future work** by amending the Constitution with a new
+  principle rather than leaving it as a round-7 note. The Constitution is what `/speckit-plan` and
+  `/speckit-implement` already read every round; a task-list note would be forgotten by round 8.
+  This is a MINOR version bump (principle added) per the Governance section's own rules.
+- **Honest limit**: this round migrates the surfaces it already touches plus the worst offenders.
+  A full migration of every file is not attempted in one pass, and the remainder is recorded as
+  explicitly outstanding rather than implied complete.
+
 ## C. Resolved Technical Context (feeds plan.md)
 
 | Field | Resolution |

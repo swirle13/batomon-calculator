@@ -480,6 +480,66 @@ sums `effectTags` from every trinket in `config.trinketIds`, as an *additional* 
 wide modifier source alongside the user's own manual `teamModifiers` -- additive with it, same
 no-precedence rule the manual carry-over `StatModifier`s already follow with each other.
 
+### 2026-10-06 (round 7) — `SimulationResult` gains second-order status metrics; DOT damage is attributed
+
+Per research.md I13 (FR-055/056/057). Three related changes, all additive — no existing field
+changes shape or meaning:
+
+```ts
+interface SimulationResult {
+  // ...existing fields unchanged...
+
+  /** Status stacks APPLIED per second, by status. Distinct from `perStatusPerSecond`, which is
+   * DAMAGE per second. Both are needed: a user reading only the damage figure cannot tell whether
+   * it is a steady rate or one that is still climbing. */
+  perStatusAppliedPerSecond: Record<StatusEffectType, number>;
+
+  /** Growth of the damage rate, in damage per second per second, by status.
+   * Computed from the simulated timeline by bucketing tick damage into 1-second windows and
+   * taking a least-squares slope -- NOT from a closed-form assumption about how stacks compound,
+   * so it stays correct if the decay rules are later refined. ~0 for a status at steady state
+   * (Burn), clearly positive for one whose stacks never decay (Poison). */
+  perStatusDamageGrowthPerSecond: Record<StatusEffectType, number>;
+}
+```
+
+**Why this is a mechanics consequence, not a reporting preference**: `applyStatusTick` decrements
+layers for Burn but deliberately not for Poison (research.md B2). So each Poison application
+permanently raises a per-tick damage floor and the rate grows without bound, while Burn self-limits.
+Measured on a representative team, Poison's final-second damage was **293** against a 20-second
+average of **65.50** — a ~4.5× spread hidden behind one number.
+
+**Prerequisite fix (FR-057)**: `simulate()` currently pushes an `ongoingChange` timeline event when
+Shock or Shield is applied but **not** when Burn or Poison is. Burn/Poison appear in the timeline
+only as ticks, so applications are not countable. Those events are added, making all four statuses
+symmetric in the timeline. This is a pre-existing asymmetry being closed, not a new concept.
+
+**Facilitated damage widened (FR-056)**: `ActiveStatus` gains the applying creature's key alongside
+its existing `sourceSlot`, and each Burn/Poison tick's damage accrues to that creature in the same
+`facilitatedDamage` map Shock procs already feed. A pure DOT applier currently reports `0.00` own
+DPS *and* `0.00` facilitated DPS, which states it contributes nothing.
+
+Facilitated output stays **separate** from own-DPS rather than being merged into it: a DOT
+applier's contribution genuinely is not direct damage, and folding them together would make a DOT
+team's DPS column incomparable with a direct-damage team's.
+
+### 2026-10-06 (round 7) — UI primitives layer and design tokens (Constitution Principle VII)
+
+Per research.md I14. **No data-model types change** — recorded here because it is a structural
+contract every UI surface is now bound by, not a one-round styling pass.
+
+- **Tokens** (CSS custom properties, one definition site): spacing scale, radii, surface and border
+  colours, type scale, and **sprite sizes**. Referenced by name; literals are a defect.
+- **Primitives** (local components over the existing CSS-modules approach — not a component-library
+  dependency): `Surface`/`Card`, `Chip`, `StatBadge`, `Modal`, `Disclosure`, `SectionHeading`,
+  `TypeSplit`. Each has ≥2 existing call sites today, so none is abstraction ahead of need
+  (Principle VI).
+- **`TypeSplit` replaces `typeBackground()`'s gradient** (FR-049): the
+  `linear-gradient(..., A 50%, B 50%, ...)` hard stop antialiases at fractional pixel widths and
+  bleeds a 1px sliver of the far colour, which the default `background-clip: border-box` then paints
+  under the card's transparent border. Two explicitly-sized halves cannot produce that seam.
+  `typeColor()` is unchanged and still the single source of truth for which colour a type is.
+
 ### 2026-10-06 (round 6) — `spriteFile` added to `CreatureRecord` and `TrinketRecord`
 
 Per research.md H3. Sprites are vendored into the repo, so each record stores the **filename**

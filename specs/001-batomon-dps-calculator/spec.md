@@ -273,6 +273,53 @@ correct and show their data source citation(s).
 - **FR-040**: Permuting the grid positions of placed creatures that have no position-dependent
   ability MUST NOT change any value in the DPS, facilitated-DPS, or per-status output.
 
+- **FR-041**: Every colour used to represent a stat MUST match that stat's appearance in the game.
+  Where a third-party source's published palette disagrees with the game's own rendering, the game's
+  rendering wins and the correction MUST be recorded with its evidence.
+- **FR-042**: User-facing copy MUST refer to the creatures as "Batomon". The term "Banto" MUST NOT
+  appear in any user-visible string, including accessibility labels.
+- **FR-043**: Cards and panels MUST reserve fixed space sized to the corpus's actual worst case,
+  and MUST NOT resize or reflow as their contents change (different creature, type count, name
+  length, or ability-text length). Text MUST NOT overflow its container.
+- **FR-044**: Any value shown on more than one surface (cooldown, damage, status amount) MUST be
+  rendered through a single shared formatter, so two surfaces cannot display the same quantity at
+  different precision.
+- **FR-045**: Modifier editing MUST adapt its layout to the available width rather than fixing one
+  item per row, and MUST accumulate repeated modifiers of the same stat on the same creature into a
+  single total rather than listing separate equal entries. An accumulated total reaching zero MUST
+  remove the entry.
+- **FR-046**: Status output labels MUST NOT qualify a value with a distinction the engine does not
+  model.
+- **FR-047**: An occupied grid slot MUST respond to a single click by opening the creature picker,
+  **and** MUST still support dragging to another slot. Neither interaction may suppress the other.
+- **FR-048**: The creature picker's result cards MUST show the creature's sprite prominently and its
+  name, MUST NOT show rarity text or price on the card, and MUST group results into rarity sections
+  with a left-justified heading per section.
+- **FR-049**: A multi-type creature's split background MUST render as exactly two equal halves with
+  no colour bleed, seam, or sliver at any element size.
+- **FR-050**: The application header MUST NOT display corpus/patch provenance prose.
+- **FR-051**: Cards within any grid MUST share a uniform height sized to the corpus's longest
+  content, so no card's text overruns and no row is ragged.
+- **FR-052**: The selected-trinket list MUST be collapsible so that adding trinkets does not
+  displace the team grid, and each entry's name and remove control MUST be top-aligned so the
+  remove control sits at a constant position regardless of description length.
+- **FR-053**: Creature sprites MUST be displayed at a size specified by a shared named token rather
+  than per-call-site literals.
+- **FR-054**: Chart axis labels MUST be fully visible (not clipped) and the horizontal axis label
+  MUST be centred.
+- **FR-055**: The status-output summary MUST report, per status, both the damage per second **and**
+  the rate at which that status is being applied, plus an indication of how quickly the damage rate
+  is itself growing — because a status whose stacks do not decay produces a damage rate that rises
+  throughout the battle, which a single averaged figure misrepresents.
+- **FR-056**: A creature whose contribution is applying a damage-over-time status MUST have that
+  resulting damage attributed to it as facilitated output, rather than reporting zero for both its
+  own and its facilitated contribution.
+- **FR-057**: The simulation timeline MUST record the application of every status effect, not only
+  some of them, so that application rates are derivable for all statuses on equal terms.
+- **FR-058**: All UI MUST be composed from the shared primitives layer and design tokens described
+  in Constitution Principle VII. Introducing a bespoke duplicate of an existing visual pattern is a
+  defect.
+
 ### Key Entities
 
 - **Creature (Batomon)**: A collectible unit with name, rarity, one or more types, shop cost, base

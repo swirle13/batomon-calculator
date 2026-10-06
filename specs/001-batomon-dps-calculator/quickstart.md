@@ -351,6 +351,82 @@ UI *listings*) while keeping full-corpus, level-aware lookups (`getCreatureByIdA
 (`getByText("Bumblebolt")` started matching 4 elements instead of 1) — a direct demonstration
 of why the round-3 investment in component tests was worth it.
 
+## Validation scenario 25 — click opens the picker, drag still moves (FR-047, the reported bug)
+
+1. Place any creature. **Single-click** its card.
+2. **Expected**: the creature picker opens. (Before this round it did not — `@dnd-kit` consumed the
+   click, research.md I7.)
+3. Close it. Now press and **drag** the same card to another slot.
+4. **Expected**: the placement moves. Both interactions work; neither suppresses the other.
+5. **Also expected**: clicking the slot's `×` still clears it without opening the picker
+   (scenario 22 must not regress).
+
+## Validation scenario 26 — nothing reflows, nothing overflows (FR-043/FR-051)
+
+1. Hover a one-type creature in the grid, then a two-type creature with a long name and long
+   ability text.
+2. **Expected**: the selected-creature card's outer dimensions do **not** change between them, and
+   no text is clipped or overflows. The adjacent column does not shift.
+3. Open the creature picker, then the trinket picker.
+4. **Expected**: every card in each grid has the same height; no row is ragged and no effect text
+   overruns its card.
+
+## Validation scenario 27 — picker presentation (FR-048/FR-049)
+
+1. Open the creature picker.
+2. **Expected**: results are grouped into rarity sections, each with a small left-justified rarity
+   heading. Cards show a large sprite and the name; **no** rarity text and **no** price on the card.
+3. Find a dual-type creature.
+4. **Expected**: its background is exactly two equal halves with a clean division — no sliver,
+   seam, or bleed of the far colour at any edge, at any card size.
+
+## Validation scenario 28 — status second-order metrics (FR-055/FR-056/FR-057)
+
+1. Build a Poison-heavy team (e.g. Drumire + Cinnabark + Rattleghast). Set the window to 20s.
+2. **Expected**: the status table reports, for Poison, damage/second **and** stacks applied/second
+   **and** a clearly positive damage/s² growth figure — because Poison stacks never decay
+   (research.md B2/I13).
+3. **Expected**: Burn's growth figure is at or near zero, since Burn stacks do decay and reach a
+   steady state. The two statuses must not report the same growth shape.
+4. **Expected**: each Poison applier now shows a non-zero **Facilitated DPS**, rather than 0.00 for
+   both its own and its facilitated contribution.
+5. **Expected**: own-DPS is still 0.00 for a creature with no direct damage — facilitated output is
+   reported separately, not folded in.
+
+## Validation scenario 29 — modifier layout and accumulation (FR-045)
+
+1. Expand Modifiers with several creatures placed.
+2. **Expected**: rows lay out several per row at desktop width, reflowing to fewer when narrow.
+3. Add `Burn applied +10` to one creature, then add `+10` to the same creature again.
+4. **Expected**: **one** chip reading `+20`, not two `+10` chips.
+5. Add `-20` to the same stat.
+6. **Expected**: the chip disappears entirely rather than remaining as `+0`.
+
+## Validation scenario 30 — copy, labels, and chrome (FR-041/FR-042/FR-044/FR-046/FR-050/FR-053/FR-054)
+
+1. **Expected**: the word "Banto" appears nowhere on screen, including in accessibility labels.
+2. **Expected**: the selected-creature panel is titled with "Batomon".
+3. **Expected**: the base and "Effective this battle" bands show cooldown at the **same** precision
+   (one decimal).
+4. **Expected**: the status table says `Shield`, not `Shield (granted)`.
+5. **Expected**: the corpus-snapshot prose is gone from the header. (FR-014 is still met by the
+   Corpus Browser's own summary line — see spec.md's round 7 Amendment.)
+6. **Expected**: a Shield value renders in a silver/steel tone, matching the game, not brown.
+7. **Expected**: grid sprites render at 64px.
+8. **Expected**: the chart's Y label reads `cumulative value` in full (not clipped) and the X label
+   `seconds` is centred.
+
+## Validation scenario 31 — design-system compliance (FR-058, Constitution Principle VII)
+
+1. Grep `src/ui` for `style={{`.
+2. **Expected**: occurrences are substantially reduced versus round 6's census (research.md I14),
+   and any remaining are justified one-offs (e.g. a dynamic colour fed from data), not duplicated
+   card/chip/modal chrome.
+3. **Expected**: cards, chips, badges, modal chrome, disclosures, and type-split backgrounds each
+   resolve to **one** shared component, and sprite sizes and spacing come from named tokens.
+4. **Expected**: any surface this round did **not** migrate is recorded as explicitly outstanding
+   rather than left implied complete.
+
 ## Validation results (2026-10-06, round 6 implementation — Scenarios 18-24)
 
 86 tests pass (up from 74 at the start of this round's implementation, 64 before it). Per scenario:

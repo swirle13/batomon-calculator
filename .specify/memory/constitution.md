@@ -62,6 +62,29 @@ rule engines, etc.) ahead of at least two concrete creatures/trainers that need 
 corpus is large and still patching; premature generalization against incomplete/uncertain data is
 wasted work.
 
+### VII. Shared Design Language & DRY UI (added 2026-10-06, round 7)
+Every visual surface is composed from a shared primitives layer, never styled ad hoc. Concretely:
+design tokens (spacing, radii, surface/border colours, type scale, sprite sizes) live as CSS custom
+properties in one place and are referenced by name, never re-typed as literals; any visual pattern
+that appears on two or more surfaces (card/surface container, chip, stat badge, modal chrome,
+collapsible disclosure, section heading, type-split background) is a single shared component that
+both surfaces use; and any value rendered in more than one place (a cooldown, a stat, a creature
+name) goes through one shared formatter so two surfaces cannot disagree about precision or wording.
+
+A change that introduces a new bespoke card, chip, modal, or inline `style={{...}}` block
+duplicating an existing pattern is a defect, even if it looks correct in isolation.
+
+Rationale: by round 6 this project had three independent card treatments, two cooldown formatters
+disagreeing on decimal places, duplicated modal chrome, chip styling defined in three files, and
+six call sites each hard-coding their own sprite size — which surfaced as a batch of separate
+user-reported visual bugs that were really one cause. Divergent styling is not a cosmetic concern;
+it is a maintenance hydra where each fix must be chased across every copy.
+
+This principle is **retroactive and forward-binding**: existing surfaces are migrated onto the
+primitives layer as they are touched, and new work must compose from it rather than adding another
+one-off. Where a round cannot complete a migration, the remainder is recorded as explicitly
+outstanding rather than left implied.
+
 ## Technology Stack
 
 - **Language**: TypeScript (strict mode), targeting the latest stable release.
@@ -92,4 +115,14 @@ incompatibly; MINOR: principle or section added; PATCH: clarification/typo), and
 `Last Amended`. Any plan produced by `/speckit-plan` must note how it complies with each principle
 above or justify a deviation in that plan's Complexity Tracking section.
 
-**Version**: 1.0.0 | **Ratified**: 2026-10-05 | **Last Amended**: 2026-10-05
+**Version**: 1.1.0 | **Ratified**: 2026-10-05 | **Last Amended**: 2026-10-06
+
+<!--
+  1.1.0 (2026-10-06, round 7): MINOR — added Principle VII (Shared Design Language & DRY UI).
+  Added at the user's explicit request that it "inform and affect everything in this codebase"
+  and apply "for all future requests/changes/tasks, not just for the code base existing up until
+  this request was made" — which is a governance-level requirement, not a round-7 task note, so it
+  is recorded here where every /speckit-plan and /speckit-implement run already reads it.
+  See research.md I14 for the measured duplication that motivated it.
+-->
+
