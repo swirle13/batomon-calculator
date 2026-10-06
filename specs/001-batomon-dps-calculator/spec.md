@@ -325,8 +325,10 @@ correct and show their data source citation(s).
 - **FR-059**: A shared UI primitive MUST render identically regardless of the container it is placed
   in. A primitive whose size or appearance is determined by its parent's layout is a defect, not a
   reusable component.
-- **FR-060**: Every creature sprite MUST take its size from the shared token. A literal size at a
-  call site is a defect (WI-001).
+- **FR-060**: Every creature sprite MUST take its size from a shared token, and the creature
+  picker's sprites MUST render at **64×64**, matching the team grid. A literal size at a call site is
+  a defect. ("From the shared token" alone is insufficient — the token named for the picker was
+  48px, so that wording would have left the defect in place.)
 - **FR-061**: The creature picker's result cards MUST place the sprite in the art area and the name
   in a band at the card's bottom edge, with no unfilled background between them.
 - **FR-062**: The selected-creature panel MUST hold a constant width as its contents change, so that
@@ -337,9 +339,10 @@ correct and show their data source citation(s).
 - **FR-065**: Grid slots MUST NOT render a per-slot fallback dropdown. (The accessible path to
   reassignment is Enter/Space on the slot, restored in FR-047.)
 - **FR-066**: Modifier editing MUST be positioned between the team grid and the summary tables.
-- **FR-067**: Every list of corpus records MUST be sorted at the point of display, never inheriting
-  the order records happen to occupy in their source file. A corpus edit MUST NOT be able to change
-  display order.
+- **FR-067**: **Every list rendered in the UI** — not only lists of corpus records — MUST be ordered
+  deterministically at the point of display, never inheriting the order its items happen to occupy in
+  a source file or an object's key order. A data edit MUST NOT be able to change display order. This
+  includes filter dropdowns and summary-table rows, not just creature lists.
 - **FR-068**: System MUST provide a chart of instantaneous damage-per-second over time, distinct from
   the cumulative chart, so that a rising or falling output rate is visible rather than implied.
 - **FR-069**: System SHOULD offer a placement suggestion that searches arrangements of the currently
@@ -584,8 +587,15 @@ Corpus Browser's cards, reasoning that its grid already equalises row heights an
 cards would waste vertical space (research.md I3). WI-013 asks for the opposite. The user's
 preference governs; the earlier rationale is recorded as superseded.
 
-**FR-069 ships with a stated blind spot.** Only **one** creature in the 596-record corpus
-(Formiqueen) has an engine-readable positional ability. The chaining effects motivating the request —
+**FR-069 ships with a stated blind spot, and the count behind it was corrected in review.** An
+earlier draft asserted only one creature had a positional ability. In fact **two** carry
+positional-target `AbilityTag`s — Formiqueen (`adjacent`) and Onsetra (`behind`) — but the engine
+reads only `cooldownSpeedModifier` tags, so **one** is actually actionable and Onsetra's is silently
+ignored. Any count shown to the user must therefore be computed from what the engine can act on, not
+from what carries a tag; the latter would reassure about a creature the optimiser cannot reason
+about. Unmodelled positional *trinkets* must be disclosed too — Link Cable ("All of your team's
+monsters are now considered adjacent to each other") would invalidate the one interaction the
+optimiser can see. The chaining effects motivating the request —
 "speeds up mon in front", "mon in slot X gets multicast Y" — exist as `abilityText` with no
 `AbilityTag`, so the engine cannot reason about them. An optimiser will therefore find no improvement
 for almost every team, and the UI must say *why* rather than presenting an empty result as a

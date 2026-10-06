@@ -1506,8 +1506,12 @@ colours, labels, sprite size, and chart axes all say what the user actually aske
       `.creatureTileArt`'s `flex: 1` governs nothing, the name band sits directly under the sprite,
       and the bare coloured halves show through the rest of the card (SS1). Make `.typeSplitContent`
       fill the host and carry the layout, so the art area expands and the name band reaches the
-      bottom edge. Also default `CreatureTile`'s `spriteSize` to the **shared token**, not the
-      literal `48` it currently defaults to (FR-060).
+      bottom edge. Also fix the sprite size to **64px, explicitly** (FR-060).
+      **Naming "the token" is not sufficient and would have left this item unfixed**: there are four
+      sprite tokens and the one named for this surface is `--sprite-picker: 48px`
+      (`src/ui/tokens.css:67`), while the 64px one the team grid uses is `--sprite-grid`. `Sprite`'s
+      own default is also 48. Set `--sprite-picker: 64px` so the picker matches the grid the user
+      compared it against, and make `CreatureTile` default to that token rather than a literal.
       **This is the round's headline lesson — record it in the component's comment**: every call site
       inherited one defect identically, so shared components bought consistency, not correctness.
 - [ ] T176 **[WI-003]** Record the answer to the user's question in `research.md` J1 (already
@@ -1519,7 +1523,9 @@ colours, labels, sprite size, and chart axes all say what the user actually aske
 ### Implementation — UI
 
 - [ ] T177 **[WI-001, WI-002]** In `src/ui/GridPicker/CreatureSearchModal.tsx`, remove the hard-coded
-      `spriteSize={48}` so the card inherits the token (FR-060), and verify the card renders
+      `spriteSize={48}` so the card inherits the (now 64px) `--sprite-picker` token (FR-060), and
+      verify the rendered `<img>` really is 64 wide rather than assuming the token resolved —
+      verify the card renders
       sprite-in-art-area / name-at-bottom with no empty colour block (FR-061). (depends on T175)
 - [ ] T178 **[WI-004, WI-005]** Give `CooldownBlock` an intrinsic fixed size in
       `src/ui/shared/BatomonCard/BatomonCard.module.css` (`.cooldown`) plus `align-self: start`, so
@@ -1529,15 +1535,30 @@ colours, labels, sprite size, and chart axes all say what the user actually aske
       `.cooldown` having no height of its own — the base band's parent carries
       `min-height: 5.5rem` and stretches it, the effective band's parent does not. A primitive whose
       appearance depends on its container is not reusable; that is the generalised rule FR-059 adds.
+- [ ] T179b **[WI-006]** Resolve the `Cost $unknown` the user also pointed at. T179 removes only the
+      *marker*; the cost itself still renders as "unknown" (`displayField` → `unconfirmedFields`
+      contains `"shopCost"`), so removing the marker alone **strictly reduces information** — the
+      reader is left with an unexplained "unknown". The user stated "These are known". Either source
+      the real shop cost for the affected records and drop `"shopCost"` from their
+      `unconfirmedFields`, or — if no source has it — stop rendering a Cost line at all when the
+      value is unconfirmed, rather than printing "unknown". Do **not** fabricate a cost.
 - [ ] T179 **[WI-006]** Remove the `Unconfirmed: …` marker from the stats card's meta row in
       `BatomonCard.tsx`. Keep `unconfirmedFields` in the data and keep rendering unknown values as
       "unknown" rather than `0` — the user objected to the *marker*, not to honest unknowns.
 - [ ] T180 **[WI-007]** Fix the selected-creature column's width in `src/App.tsx` (currently
-      `flex: 1 1 16rem`) to a constant (`flex: 0 0 <token>`) (FR-062). Round 7 deliberately left
+      `flex: 1 1 16rem`) to a constant. **Add the width token this needs** — none exists today
+      (`tokens.css` has only `--picker-card-min-width`/`--picker-card-aspect`) — e.g.
+      `--detail-panel-width: 22rem`, and use `flex: 0 0 var(--detail-panel-width)` (FR-062). Round 7 deliberately left
       width flexible (research.md I3, "freezing the width would fight the page layout"); that is now
-      superseded — a content-derived width changes the sibling chart's width, which makes Recharts'
-      `ResponsiveContainer` re-measure and redraw. The visible reflow and the chart redraw are one
-      bug.
+      superseded by the user's explicit request.
+      **Correction to this task's first draft, which asserted a mechanism the DOM does not support**:
+      it claimed the column's width drives the chart's width via `ResponsiveContainer`. It does not —
+      `#root` is a fixed `1126px` (`src/index.css:55-57`) and `CumulativeChart` is not a sibling of
+      the flex row (it sits outside it), so the chart's width is already independent of this column.
+      Fixing the width is still correct for FR-062 and still removes the reflow the user can see, but
+      **do not assume it eliminates the redraw**. If the redraw persists, investigate the real cause
+      separately (likely `result` being recomputed on every config change, or a scrollbar appearing
+      as the page height changes) and report it rather than declaring the item done.
 - [ ] T181 **[WI-008]** Give the summary tables a bottom border matching the weight of their other
       edges in `src/ui/TeamSummary/TeamSummary.module.css` (FR-063). Currently each `td`/`th` has a
       faint `border-bottom` and the table's outer edge inherits it, so the bottom reads unfinished.
@@ -1555,8 +1576,12 @@ colours, labels, sprite size, and chart axes all say what the user actually aske
 - [ ] T185 **[WI-013]** Pass `fixedHeight` to `BatomonCard` from `CorpusBrowser.tsx` so browser cards
       share one height (FR-070). **This reverses a round 7 decision** (research.md I3 deliberately
       left it off there, reasoning the grid already equalises rows and freezing 149 cards wastes
-      space) — record it as superseded by the user's explicit request, not as an oversight. Size the
-      fixed height for the browser's narrower cards, not the side panel's.
+      space) — record it as superseded by the user's explicit request, not as an oversight.
+      **`fixedHeight` is currently a boolean selecting one class with a single value sized for the
+      side panel** (`.cardFixed { height: 33rem }`), so "pass `fixedHeight`" and "size it for the
+      browser's narrower cards" are mutually exclusive as first drafted. Change the prop to accept a
+      variant (e.g. `fixedHeight?: "panel" | "browser"`) with its own height per variant, rather than
+      forcing 33rem onto 149 browser cards.
 - [ ] T186 **[WI-014]** Remove the "Corpus snapshot" prose from `CorpusBrowser.tsx` **and relocate
       the version to a single footer line** so FR-014 keeps a home (FR-070). Round 7 moved this text
       *into* the browser precisely to satisfy FR-014 after removing it from the header; dropping it
@@ -1573,9 +1598,15 @@ colours, labels, sprite size, and chart axes all say what the user actually aske
       alphabetical" pattern in SS5.
 - [ ] T189 **[WI-016]** Audit **every** list surface for reliance on source order and fix each —
       the ask says lists "anywhere in this site", so this is not limited to the browser. Check at
-      minimum `CorpusBrowser`, `CreatureSearchModal`, `GridPicker`'s dropdown, `TrinketPicker`, and
-      `TrainerPicker`; add an automated assertion that a displayed list is sorted, so a future corpus
-      edit cannot reintroduce file-order dependence. (depends on T188)
+      minimum `CorpusBrowser`, `CreatureSearchModal`, `TrinketPicker`, and `TrainerPicker`.
+      **Three surfaces missed by the first draft of this task, all verified**:
+      (a) the browser's own **Type filter** is a hard-coded, non-alphabetical array
+      (`CorpusBrowser.tsx:8-11`) rendered straight into its `<select>` — a list in the very view the
+      user screenshotted, and the picker's equivalent list *is* sorted, so the app contradicts
+      itself; (b) `TeamSummary`'s DPS rows follow `config.placements` insertion order; (c) its status
+      rows follow `Object.entries(perStatusPerSecond)` key order. The ask says lists "anywhere in
+      this site", so these count. Add an automated assertion that a displayed list is sorted, so a
+      future corpus edit cannot reintroduce file-order dependence. (depends on T188)
 
 ### Implementation — engine & charts
 
@@ -1600,19 +1631,40 @@ colours, labels, sprite size, and chart axes all say what the user actually aske
       with a known positional interaction (Formiqueen's adjacency aura) must be reported as
       improvable when its beneficiary is moved out of range.
 - [ ] T193 **[WI-018]** Surface the optimiser in the UI with its **blind spot stated** (FR-069).
-      **Non-negotiable honesty requirement**: only **one** creature in the entire 596-record corpus
-      (Formiqueen) has an engine-readable positional `AbilityTag`. The chaining effects that motivated
-      the request — "speeds up mon in front", "mon in slot X gets multicast Y" — exist only as
-      `abilityText`. The optimiser will therefore find no improvement for almost every team, and the
-      UI MUST report how many placed creatures have positional abilities it can actually reason
-      about, so an empty result reads as "I can't see these effects yet" rather than "your placement
-      is optimal". (depends on T192)
+      **Non-negotiable honesty requirement, with a corrected count.** An earlier draft of this task
+      claimed "only one creature has an engine-readable positional `AbilityTag`". **That is false and
+      the correction matters**: *two* creatures carry positional-target tags — Formiqueen
+      (`adjacent`) and **Onsetra** (`behind`, "the ally behind applies its Ongoing abilities 1
+      additional time", which is literally one of the chaining effects the user described). But
+      `simulate.ts:108` reads **only** `cooldownSpeedModifier` tags, so Onsetra's tag is present,
+      typed, and silently ignored.
+      Therefore the UI count MUST be computed from **what the engine can act on**, not from "has a
+      positional tag" — the latter would report a reassuring "2" for a team the optimiser cannot
+      actually reason about, which is the precise misleading outcome this requirement exists to
+      prevent. Note the count is also level-dependent: Onsetra's level 2-4 records have empty
+      `abilityTags` while Formiqueen's do not.
+      **Also disclose unmodelled positional TRINKETS**, which the ask named ("trinkets make effects
+      for certain slots") and the first draft omitted entirely. Known case: **Link Cable** — "All of
+      your team's monsters are now considered adjacent to each other" — has empty `abilityTags`, so
+      selecting it would silently invalidate the one positional interaction the optimiser *can* see.
+      (depends on T192)
 - [ ] T194 **[WI-018]** Record the corpus-coverage limitation behind T193 in `README.md`'s known-gaps
       list, so the optimiser's weakness is documented alongside the other honest scope gaps rather
       than discoverable only by using it.
 
 ### Polish
 
+- [ ] T194b **Write quickstart.md Validation Scenarios 32–38 before T195 tries to walk them.** The
+      phase's Independent Test and T195 both cite scenarios that **do not exist** — quickstart ends
+      at 31 — so the phase currently has no defined acceptance criteria. Cover at minimum: picker
+      sprite size + name-band placement (WI-001/002), identical cooldown blocks (WI-004/005), fixed
+      panel width (WI-007), display-layer sorting including the Type filter (WI-016), the DPS-rate
+      chart rising for a Poison team (WI-017), and the optimiser's blind-spot disclosure (WI-018).
+- [ ] T194c **Add the round-8 amendments the other rounds all have and this one is missing**:
+      `plan.md` (no round-8 section exists), `data-model.md` (T190 adds a `SimulationResult` field
+      that file documents), and `contracts/engine-api.md` (T190's field and T192's entirely new
+      `src/engine/optimize.ts` module both fall under that contract, which currently mentions
+      neither).
 - [ ] T195 [P] Walk quickstart.md Validation Scenarios 32–38 and record results, stating per scenario
       whether it was verified by automated test or by code-trace/browser check.
 - [ ] T196 Verify `npx tsc -b --noEmit`, full `npx vitest run`, and `npm run build` all pass; report
