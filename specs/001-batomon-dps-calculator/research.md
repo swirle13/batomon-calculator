@@ -528,6 +528,72 @@ rounds). This remains a large, multi-source-citation task — continuing `tasks.
 existing "one cited batch at a time" pattern, scaled up substantially this round, not claimed
 as 100% complete in one pass unless it genuinely is.
 
+## G. Round 5 follow-ups (2026-10-06 — level 2-4 stats unblocked; full Trinket corpus + engine)
+
+### G1. Correction to research.md F5: level 2/3/4 stats are NOT blocked — F5's finding was a tooling artifact, not a data-availability fact
+
+> **F5 is retracted.** Investigating directly (not re-asserting the prior finding): batodex.com's
+> creature pages are server-rendered by Next.js's App Router, which embeds the *entire* site
+> database — every creature, every level 1-4 stat, every evolved form, both normal and Shiny
+> variants, and the full by-level ability text — as one JSON object inside a
+> `self.__next_f.push([1, "..."])` React Server Components streaming script tag on **every**
+> page. Round 4's investigation used a fetch tool that converts pages to readable markdown,
+> which discards `<script>` tags entirely — so the data was never actually inaccessible, it was
+> just invisible to that specific extraction method. Fetching the raw HTML directly (`curl`) and
+> parsing the embedded payload reveals the complete dataset in one request.
+
+- **Verified structure** (`https://batodex.com/monsters/bonshell`, retrieved 2026-10-06):
+  decoding the JS string inside the matching `push` call yields
+  `{"category":"monsters","entries":[{"id":"beetbud",...,"levels":[{"level":1,"cooldown":7,
+  "multicast":null,"stats":[{"key":"shield","value":100}]},{"level":2,...,"value":200},
+  {"level":3,...,"value":300},{"level":4,...,"value":600}],"shinyLevels":[...],"ability":
+  {"trigger":"On Cast","description":"...","byLevel":{"1":"...","2":"...","3":"...","4":"..."}},
+  "shinyAbility":{...},"evolution":{"targetId":"bambudo","level":3,"trigger":"level"}|null,
+  "evolvedForm":{...nested, same shape...}|"$undefined", ...}, ...]}` — 144 top-level entries,
+  with evolved forms nested one level inside their pre-evolution entry's `evolvedForm` key
+  (multi-stage chains nest recursively — e.g. Ignit's `evolvedForm` is Flarilisk, whose own
+  `evolvedForm` would be Basilord if encoded the same way). Flattening recursively yields
+  **exactly 149 unique creature ids** — matching this corpus's own total exactly.
+- **Resolves research.md F2.6's open branching-evolution question**: Ignit's `evolution` field
+  is `{"targetId":"flarilisk","level":null,"trigger":"victory"}` — a single target, victory-
+  triggered, not level-based and not actually branching to two targets. The earlier ambiguity
+  (BatoForge's scraped table appearing to list Ignit against both Basilord and Flarilisk) was
+  the scrape losing structure; Ignit→Flarilisk→Basilord is a two-stage victory-triggered chain,
+  not a branch. `evolvesAtLevel` (this corpus's field) only models level-triggered evolution; a
+  victory-triggered one gets `evolvesInto` populated with no `evolvesAtLevel` — recorded as a
+  known limitation (resolveLevelUp cannot currently resolve a victory-triggered evolution,
+  since it has no "level" input to key off; still correct for not evolving when it shouldn't).
+- **New data per level, not previously captured**: `multicast` varies *by level* for some
+  species (e.g. Humbolt: 2/3/4/8 across levels 1-4; Sunsage: null/null/null/2) — round 4's
+  `baseMulticast` was only ever set from level-1 data. Ability text's magnitude also scales by
+  level independent of the base `stats` value (e.g. Bonshell's On-Cast ability: "+80/+160/
+  +240/+480 Damage and Shield" across levels 1-4, distinct from its separate base Shield stat
+  of 100/200/300/600) — both are now captured per level.
+- **Engine/data implication**: no `CreatureRecord` schema change needed — every field this
+  requires (`level`, `baseCooldownSeconds`, `baseDamage`, `damageType`, `appliesStatus`,
+  `baseMulticast`, `healAmount`, `evolvesInto`, `evolvesAtLevel`) already exists from rounds
+  2-4. This is a (large) data-population task, not a design task: one `CreatureRecord` per
+  `(id, level)` pair, up to 4 per species/evolved-form, extracted programmatically rather than
+  hand-transcribed per creature (infeasible by hand at this volume — ~450+ records).
+
+### G2. Full Trinket database — the exact same technique applies
+
+> `https://batodex.com/trinkets` embeds the identical pattern: one `self.__next_f.push` block
+> containing `{"category":"trinkets","entries":[{"id":"bargain_bin","name":"Bargain Bin",
+> "tier":1,"description":"The first Common monster you buy each day is free.","isUnique":true,
+> "sets":[...],"sources":{...},"rarity":{"label":"Common","color":"#70707a"}}, ...]}` —
+> **93 entries**, matching this project's own `src/ui/CorpusBrowser/CorpusBrowser.tsx` comment
+> ("93 trinket(s)") and the earlier-cited `batomon.com/wiki` "93 trinkets" figure.
+
+- **Engine implication**: most trinket effects described here are shop/economy mechanics (free
+  purchases, gift-choice rarity, per-day grants) — out of scope for this engine per research.md
+  B6, same as most Trainer abilities. A minority are flat, unconditional, permanent team-wide
+  stat bonuses (e.g. "On Victory: Your team gains +5 Damage permanently") that map directly onto
+  this corpus's existing `ModifierStat` vocabulary — these are the only trinket effects wired
+  into `simulate()`'s math this round (data-model.md's "Trinket effect application" amendment).
+  Everything else is still real, cited, browsable corpus data — just not simulated, exactly like
+  the Shield-absorption and shop-economy gaps already logged in `tasks.md` T037/README.md.
+
 ## C. Resolved Technical Context (feeds plan.md)
 
 | Field | Resolution |

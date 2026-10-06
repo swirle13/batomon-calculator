@@ -116,10 +116,17 @@ correct and show their data source citation(s).
   under different, not-yet-individually-confirmed conditions (a "branching" evolution)? It MUST
   NOT guess which branch applies; such a species is treated as having no resolvable evolution
   until a source confirms each branch's specific trigger condition.
-- How does the system handle level 2/3/4 stats when no available source publishes them in a
-  form the project's tooling can extract (e.g., values locked behind a live, JavaScript-driven
-  UI control rather than published as static text)? It MUST be logged as an explicit, cited
-  blocker rather than silently left blank with no explanation, or worse, fabricated.
+- How does the system handle level 2/3/4 stats when a source publishes them behind a live,
+  JavaScript-driven UI control rather than as directly-readable static text? It MUST investigate
+  whether the underlying data is nonetheless present in the page's own served content (e.g.
+  embedded for client-side hydration) before concluding it is unavailable — round 4 initially
+  misdiagnosed this as a hard blocker using a tool that discarded that embedded data; round 5
+  found and used it directly (research.md G1). Only log an actual blocker once confirmed by
+  inspecting raw page content, not merely a rendered/converted view of it.
+- How does the system handle a species whose evolution is triggered by something other than
+  reaching a level (e.g. "On Victory")? `evolvesInto` MUST still be recorded, but
+  `evolvesAtLevel` MUST be left absent rather than guessed — the level-based evolution resolver
+  (`resolveLevelUp`) correctly does not apply to such a species.
 
 ## Requirements *(mandatory)*
 
@@ -202,6 +209,15 @@ correct and show their data source citation(s).
   (browsable in the Corpus Browser), citing sources the same as any other stat, even though
   neither is simulated in the DPS/status engine (Heal has no modeled target to restore, per the
   Assumptions section; Sell Value is a shop-economy concept, out of scope for simulation).
+- **FR-026**: System MUST record each creature's level 2, 3, and 4 stats (cooldown, Multicast,
+  damage/status amounts, by-level ability text) as distinct, individually citable corpus
+  records, for every level the species or its evolved form(s) can reach.
+- **FR-027**: Users MUST be able to select one or more Trinkets to apply to the assembled team,
+  mirroring the existing Trainer-selection flow (FR-006), and the DPS/status summary MUST
+  reflect any selected Trinket whose effect is a flat, unconditional, permanent team-wide stat
+  bonus (per FR-007/FR-008's existing modifier-resolution path) — Trinkets whose effect is a
+  shop/economy mechanic remain browsable/selectable but are not expected to change the
+  DPS/status output, consistent with the Assumptions section's existing shop-economy scope note.
 
 ### Key Entities
 
@@ -319,3 +335,15 @@ level 2/3/4 stats for all 149 creatures was investigated directly and found to b
 not merely large — no available source publishes those numbers in a form this project's tooling
 can extract (research.md F5). The level-1 damage/cooldown completion task (research.md F6)
 remains large but achievable and continues as tracked, incremental work (`tasks.md` T075).
+
+### 2026-10-06 (round 5) — FR-026/027 added; F5's "blocked" finding retracted; full level 2-4 + Trinket corpus
+
+Round 4's F5 finding ("level 2-4 stats are a hard blocker") is **retracted** — it was a tooling
+artifact (a markdown-converting fetch tool discarding the `<script>` tag the data actually lived
+in), not a true data-availability limit. Investigating the raw page content directly found the
+complete creature database (all 149 ids, all 4 levels, by-level ability text, evolution chains)
+and the complete 93-entry Trinket database both embedded in their respective listing pages'
+server-rendered React payload (research.md G1/G2). FR-026 (level 2-4 corpus) and FR-027
+(Trinket selection + flat-bonus application) added accordingly. No prior requirement is removed
+by this correction — SC-003's ≥90% bar and the diagnosis logged in the previous Amendment both
+still stand; this entry only corrects F5's conclusion, not the honesty of having logged it.

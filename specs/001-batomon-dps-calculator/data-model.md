@@ -434,6 +434,52 @@ interface CreatureRecord extends Provenance {
 }
 ```
 
+### 2026-10-06 (round 5) — Level 2-4 creature records populated at scale; no schema change
+
+Per research.md G1 — every field needed (`level`, `baseCooldownSeconds`, `baseDamage`,
+`damageType`, `appliesStatus`, `baseMulticast`, `healAmount`, `evolvesInto`, `evolvesAtLevel`)
+already existed from rounds 2-4. This amendment is a data-population note, not a type change:
+one `CreatureRecord` per `(id, level)` pair is added for levels 2-4 of every species and nested
+evolved form, extracted programmatically from batodex.com's embedded per-page database
+(research.md G1) rather than hand-transcribed. `evolvesInto` is populated even for non-level-
+triggered evolutions (e.g. Ignit's victory-triggered evolution into Flarilisk) but
+`evolvesAtLevel` is left absent for those — `resolveLevelUp()` has no "level" input to resolve a
+victory-triggered evolution against, so it correctly treats such a species as non-evolving for
+leveling purposes; this is a recorded known limitation, not a bug to fix this round.
+
+### 2026-10-06 (round 5) — Trinket corpus populated; `rarity` added to `TrinketRecord`; flat team-wide trinket effects wired into `simulate()`
+
+Per research.md G2 — the full 93-entry Trinket database is extracted the same way as the
+creature database. Two small, additive type changes:
+
+```ts
+interface TrinketRecord extends Provenance {
+  id: string;
+  name: string;
+  effectText: string;
+  /** Added 2026-10-06 round 5 -- batodex.com's trinket database publishes rarity directly,
+   * same closed Rarity union creatures already use. */
+  rarity?: Rarity;
+  abilityTags: AbilityTag[];
+  /**
+   * Added 2026-10-06 round 5 (research.md G2): flat, unconditional, permanent team-wide stat
+   * bonuses this trinket grants when selected -- the only trinket-effect shape this engine
+   * simulates. Most trinket effects (shop/economy mechanics -- free purchases, gift rarity,
+   * per-day grants) have no entry here and remain real, cited, browsable-only corpus data,
+   * same treatment as most Trainer abilities and the shop-economy scope gap (research.md B6).
+   * Deliberately a flat list, not the full creature AbilityTag/TargetSelector shape --
+   * every trinket effect this maps applies to "your team," unconditionally, so there is no
+   * positional targeting to encode.
+   */
+  effectTags?: { stat: ModifierStat; amount: number }[];
+}
+```
+
+**Engine implication**: `simulate()`'s Phase A modifier resolution (`sumModifier`) now also
+sums `effectTags` from every trinket in `config.trinketIds`, as an *additional* implicit team-
+wide modifier source alongside the user's own manual `teamModifiers` -- additive with it, same
+no-precedence rule the manual carry-over `StatModifier`s already follow with each other.
+
 ### 2026-10-05 (round 4) — UI: click-anywhere assignment; drop redundant slot labels
 
 Per research.md F4 — no type change. `GridPicker`'s separate "Choose…"/"Change…" button is

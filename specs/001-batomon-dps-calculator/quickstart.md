@@ -221,6 +221,24 @@ batodex.com individual pages). Level 2/3/4 stats remain an explicit, evidence-ba
 confirmed (Panbud→Bambudo, Scorchimp→Sunsage, Beetbud→Beetdown, Dribblet→Emperooze,
 Frillet→Dewlotl, all at level 3).
 
+## Validation scenario 16 — level 2-4 stats resolve through the evolution-aware level selector (FR-026)
+
+1. Place Panbud, set its placement level to 2.
+2. **Expected**: Panbud's own level-2 damage/cooldown apply (no evolution yet, since Panbud's
+   `evolvesAtLevel` is 3).
+3. Set the same placement's level to 3.
+4. **Expected**: the slot now shows Bambudo (per FR-022's existing evolution-aware resolution)
+   at Bambudo's own level-3 stats, not Panbud's.
+
+## Validation scenario 17 — Trinket selection applies a flat team-wide bonus (FR-027)
+
+1. Place one creature with confirmed `baseDamage`.
+2. Note its DPS.
+3. Select a Trinket whose effect is a flat permanent team-wide Damage bonus (per `effectTags`).
+4. **Expected**: the placed creature's DPS increases by exactly that flat amount divided by its
+   cooldown, the same way a manual `damageFlatAdd` `StatModifier` would — reusing the existing
+   modifier-resolution path, not a separate computation.
+
 ## Automated checks
 
 ```bash
