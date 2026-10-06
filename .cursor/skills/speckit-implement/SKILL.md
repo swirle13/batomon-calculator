@@ -98,6 +98,21 @@ You **MUST** consider the user input before proceeding (if not empty).
    - **IF EXISTS**: Read research.md for technical decisions and constraints
    - **IF EXISTS**: Read .specify/memory/constitution.md for governance constraints
    - **IF EXISTS**: Read quickstart.md for integration scenarios
+   - **IF this feature's tasks include React component, frontend UI, or styling work**
+     (local addition, 2026-10-05 — not part of the upstream spec-kit template): before writing
+     or modifying any `.tsx`/component/UI code, read these two installed skills in full —
+     - `.cursor/skills/davila7-claude-code-templates-react-dev/SKILL.md` — React 18/19 +
+       TypeScript patterns (hooks typing, event typing, generic components, discriminated
+       unions). Apply its stack-agnostic typing rules; its routing-library references
+       (TanStack Router / React Router) do not apply to this project (no router is used) —
+       skip those sections rather than introducing a router dependency this project doesn't
+       have (Constitution Principle VI, no abstraction ahead of actual need).
+     - `.cursor/skills/sickn33-antigravity-awesome-skills-frontend-design/SKILL.md` — a design-
+       direction checklist (name an explicit aesthetic stance, avoid generic/default layouts,
+       deliberate color/type/motion choices). Use it to make UI/styling decisions deliberate
+       and stated up front, not applied retroactively — but weigh its "maximalist" defaults
+       against this project's own established style (plain CSS modules, dark theme, no
+       component library — research.md A4) rather than overriding that decision by default.
 
 4. **Project Setup Verification**:
    - **REQUIRED**: Create/verify ignore files based on actual project setup:
@@ -162,6 +177,12 @@ You **MUST** consider the user input before proceeding (if not empty).
    - **Core development**: Implement models, services, CLI commands, endpoints
    - **Integration work**: Database connections, middleware, logging, external services
    - **Polish and validation**: Unit tests, performance optimization, documentation
+   - **Frontend/React/UI tasks** (local addition, 2026-10-05): apply the typed-hooks/typed-
+     events/discriminated-union patterns from `.cursor/skills/davila7-claude-code-templates-
+     react-dev/SKILL.md` instead of defaulting to untyped props/`any` event handlers; state an
+     explicit, named design direction up front per `.cursor/skills/sickn33-antigravity-awesome-
+     skills-frontend-design/SKILL.md` before implementing new UI rather than improvising
+     styling ad hoc task-by-task
 
 8. Progress tracking and error handling:
    - Report progress after each completed task
