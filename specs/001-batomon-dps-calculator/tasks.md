@@ -454,6 +454,72 @@ shows the evolved species.
 
 ---
 
+## Phase 9: Round 4 — Patch Corrections, New Stats, UI Cleanup, Corpus Scale-Up (2026-10-05)
+
+**Goal**: Implement plan.md's "Amendment: Round 4" — correct `STATUS_VS_SHIELD_REDUCTION` to
+15% and Multicast's 0.1s stagger (both patch-driven corrections to existing behavior, FR-007/
+FR-008's underlying mechanics), add Heal/Sell Value corpus data (FR-025), click-anywhere
+assignment (FR-023), drop redundant slot labels (FR-024), and make a large, honest pass at
+level-1 damage/cooldown completion (research.md F6) — level 2/3/4 stats are **blocked**
+(research.md F5) and explicitly NOT attempted.
+
+**Independent Test**: quickstart.md Validation Scenarios 13–15.
+
+### Foundational (blocking — no story label, same as Phase 2)
+
+- [ ] T092 Update `STATUS_VS_SHIELD_REDUCTION` in `src/engine/shield.ts` from `0.25` to `0.15`;
+      update its `Provenance` to cite the August 2026 patch sources (research.md F1), keeping
+      the 30% -> 25% -> 15% history in a comment
+- [ ] T093 [P] Add `healAmount?: number` and `sellValue?: number` to `CreatureRecord` in
+      `src/data/types.ts` (data-model.md's "New stats: healAmount, sellValue" amendment — corpus
+      data only, no engine behavior this round)
+
+### Tests for Phase 9 ⚠️ write/update first, confirm failing before implementing (Constitution Principle III, NON-NEGOTIABLE)
+
+- [ ] T094 [P] Update the expected reduction value in `src/engine/__tests__/shield.test.ts` from
+      25% to 15%; confirm it FAILS against the still-unmodified `STATUS_VS_SHIELD_REDUCTION`
+      before T092 lands
+- [ ] T095 [P] Write a failing unit test in `src/engine/__tests__/simulate.test.ts` (reusing the
+      existing `multicastCorpus()` fixture) asserting a Multicast-3 creature's three repetitions
+      land at three distinct timestamps 0.1s apart (`t`, `t+0.1`, `t+0.2`), not all at `t`
+      (research.md F2)
+
+### Implementation for Phase 9
+
+- [ ] T096 [US2] Implement the `STATUS_VS_SHIELD_REDUCTION` value change (satisfies T094;
+      depends on T092 — same change, listed separately only because T094 is a test-first task)
+- [ ] T097 [US1] Fix Multicast repetition timing in `src/engine/simulate.ts` Phase B: stagger
+      each repetition `i` to `roundTime(cast.tSeconds + i * 0.1)` instead of reusing
+      `cast.tSeconds` for all repetitions; a repetition whose staggered timestamp exceeds
+      `windowSeconds` is not generated, to satisfy T095
+- [ ] T098 [US1] Remove the separate "Choose…"/"Change…" button in
+      `src/ui/GridPicker/GridPicker.tsx`; make the slot's card (occupied) or placeholder (empty)
+      itself the click target that opens `CreatureSearchModal`, coexisting with the existing
+      drag handlers on occupied cards (FR-023)
+- [ ] T099 [US1] Remove the displayed slot-position text (e.g. "Back 1") from
+      `src/ui/TeamSummary/TeamSummary.tsx`'s DPS table and
+      `src/ui/TeamSummary/PlacedCreatureDetails.tsx`'s panel header; the underlying
+      `${creatureId}@${slotKey}` keying is unchanged (FR-024)
+- [ ] T100 [US3] Research and record level-1 `baseDamage`/`baseCooldownSeconds`/`damageType`
+      (and `healAmount`/`sellValue` where sourced) for as many of the ~140 still-unconfirmed
+      `src/data/creatures.ts` entries as feasible this round, cited via individual per-creature
+      detail pages (research.md F6) — large, chunked, continuing the `tasks.md` T075 pattern;
+      log the resulting confirmed-count delta honestly, not claimed as 100% complete unless it
+      genuinely is
+
+### Polish for Phase 9
+
+- [ ] T101 [P] Re-run quickstart.md Validation Scenarios 13–15; record results in quickstart.md
+- [ ] T102 Verify `npx tsc -b --noEmit`, full `npx vitest run`, and `npm run build` all pass
+
+**Checkpoint**: Shield/Multicast mechanics match the current patch; Heal/Sell Value are
+browsable corpus data; assignment works by clicking the card itself; DPS table/side panel no
+longer show redundant slot text; level-1 corpus completeness has measurably improved (exact
+delta reported, not assumed); level 2/3/4 stats remain an explicitly logged, tooling-blocked gap
+(research.md F5), not silently dropped.
+
+---
+
 ## Future Enhancements (user-requested 2026-10-05, explicitly deferred: "once we get all of the
 ## mechanics working" — not scheduled into a phase yet)
 
@@ -480,6 +546,8 @@ shows the evolved species.
 - **Round 3 (Phase 8)**: depends on Phase 7 being complete (T085 depends on T072's level
   selector; T088 depends on T073's `PlacedCreatureDetails`); its own Foundational sub-block
   (T076–T078) blocks every other Phase 8 task
+- **Round 4 (Phase 9)**: depends on Phase 8 being complete (T098 amends T082/T083's modal
+  wiring; T099 amends T088's panel); its own Foundational sub-block (T092–T093) blocks T096/T100
 
 ### User Story Dependencies
 
