@@ -16,8 +16,14 @@ import "./App.css";
 type View = "calculator" | "corpus";
 
 /** FR-014: state which corpus/patch snapshot is active, on both views. */
+/**
+ * 2026-10-06 round 6 (tasks.md T134): this previously claimed "100% confirmed across levels 1-4",
+ * which was wrong — that figure counted cooldowns only. Stated honestly now: cooldowns are complete,
+ * damage is published for 89 of 149 species, and the remaining 60 have no damage line in any source
+ * reviewed (which is NOT the same as confirmed to deal none — research.md H9).
+ */
 const CORPUS_PATCH_LABEL =
-  "Balance 24 / 1.2.0 (community-imported build) — 149 named Batomon, 100% confirmed across levels 1-4, 23 Trainers, 93 Trinkets, see README";
+  "Balance 24 / 1.2.0 (community-imported build) — 149 named Batomon × levels 1-4 (596 records); cooldowns complete, damage published for 89 of 149; 23 Trainers, 93 Trinkets; see README";
 
 function CalculatorView() {
   const { config, setSimulationWindowSeconds } = useTeamConfig();

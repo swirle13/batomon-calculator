@@ -351,6 +351,74 @@ UI *listings*) while keeping full-corpus, level-aware lookups (`getCreatureByIdA
 (`getByText("Bumblebolt")` started matching 4 elements instead of 1) — a direct demonstration
 of why the round-3 investment in component tests was worth it.
 
+## Validation results (2026-10-06, round 6 implementation — Scenarios 18-24)
+
+86 tests pass (up from 74 at the start of this round's implementation, 64 before it). Per scenario:
+
+- **Scenario 18 — PASS (automated, both shapes).** Three new `simulate.test.ts` cases, all red
+  before the fix: a same-timestamp collision on synthetic creatures, the **Multicast** variant (the
+  second manifestation, which the per-timestamp snapshot alone does *not* fix), and the user's real
+  Panbud + Bumblebolt formation, which reproduced 2.20 → 2.40 before and is identical after. The
+  tests assert the **invariant**, not 4.10 or 4.30 — research.md H8 is explicit that neither is
+  confirmed to be the game's real same-frame answer.
+  - Note one pre-existing test's expectation changed 5 → 3. That is the fix working: its own comment
+    derived the 5 from "shockApplier (front0) is processed before attacker (front1) … so it grants
+    +2 Shock before attacker's same-tick hit", i.e. from the very ordering dependency being removed.
+- **Scenario 19 — PASS (automated + visual).** `presentation.test.tsx` asserts no element renders
+  cost/cooldown/damage in one combined line anywhere in the Corpus Browser. Both surfaces render
+  through the same `BatomonCard`, so they cannot drift. Band order, the official stat colours, and
+  the ability-trigger line were checked visually against the user's in-game card screenshot.
+  - **Scope note**: the trigger line needed a new `abilityTrigger` field (392 of 596 records have
+    one) — the reference card shows it, but `abilityText` only ever held the description, so this
+    scenario could not have passed by layout change alone.
+- **Scenario 20 — PASS (automated + visual).** `presentation.test.tsx` asserts neither "Sources &
+  patch" nor "Recorded source conflicts" renders, *and* that every record still carries citations.
+  Column count verified visually at 1280px (3 columns) and 2560px (4, capped by `max-width`).
+  SC-004's handover is live: `provenance.test.ts` passes with 8 assertions across all four record
+  types.
+- **Scenario 21 — PASS (automated).** Asserts the picker is not a 93-option `<select>` and that a
+  known trinket's full effect text renders, plus that the "affects DPS" distinction survives.
+- **Scenario 22 — PASS (automated, mouse *and* keyboard).** `GridPicker.test.tsx` asserts the clear
+  control empties the slot without opening the picker on both paths. The keyboard case was a real
+  trap: the card's own `onKeyDown` hijacks Enter/Space, so a click-only test would have passed while
+  keyboard users got the picker opened and the slot left populated. Sprite rendering and
+  colour-coded badges also asserted.
+- **Scenario 23 — PASS (automated + visual).** Asserts no row-label text, the heading is exactly
+  "Choose a Banto" while the dialog's `aria-label` still names the slot, and both summary tables
+  share one parent element. Control order (`TeamSummary` → collapsed `ModifierEditor` →
+  simulation-window → chart) verified visually.
+- **Scenario 24 — PASS (automated).** `ModifierEditor.test.tsx` asserts all four sub-requests
+  separately: collapsed by default, no team-wide option, short labels with the decimal note as
+  supporting text, and one add-control per placed creature. The companion engine assertion confirms
+  a DPS-affecting trinket still changes DPS, i.e. removing the team-wide *UI* did not remove the
+  engine path trinkets ride on.
+
+**Corpus state, stated precisely rather than rounded up** — and correcting the previous round's
+claim rather than restating it:
+
+| Measure | Value |
+|---|---|
+| Creature records (149 species × levels 1-4) | 596 |
+| Records agreeing value-for-value with the authoritative per-level series | **596 / 596** |
+| Cooldowns published | 596 / 596 |
+| Species with a published damage value | **89 / 149** (60 have no damage line in any source) |
+| Creature sprites / trinket sprites | 149 / 149 and 93 / 93 |
+| Records carrying a recorded `FieldConflict` | 9 |
+
+Two corrections this round, neither user-reported:
+
+1. Round 5's "**100% confirmed across levels 1-4**" was **wrong** — verified by counting cooldowns
+   only. Corrected in `README.md`, `App.tsx`'s corpus label, and the Corpus Browser's intro.
+2. Far more seriously, round 5's level-1 gap-filling pass had an **off-by-one row alignment bug that
+   gave 55 of 149 species another creature's stats**. Every check applied at the time was
+   shape-based (record counts, null counts, monotonic progressions) and all of them passed while the
+   values were wrong by one row. Repaired from the authoritative series; the 6 remaining genuine
+   source disagreements adopt the authoritative value with the superseded community figure retained
+   as a `FieldConflict`. A new `levelSeries.test.ts` now compares **every record value-for-value**
+   against a committed source snapshot, and includes a test that deliberately shifts the data by one
+   row to prove the comparison actually detects it — the first version of that guard was a run-length
+   heuristic that did **not** detect a shift at all.
+
 ## Automated checks
 
 ```bash

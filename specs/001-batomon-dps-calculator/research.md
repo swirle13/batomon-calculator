@@ -874,6 +874,60 @@ the older community value as a recorded `FieldConflict` rather than deleting it 
 `bambudo` is noted separately: as Panbud's level-3 evolution it may have no real level-1/2 form
 at all, which is a different question (a spurious record) from a wrong value.
 
+### H11. Unrequested finding, and the most serious of the round: 49 level-1 records held a *different creature's* stats
+
+Investigating H10's 10 non-monotonic species during implementation turned up the actual cause,
+which is much larger than 10 species and was never reported by the user.
+
+Comparing all 149 level-1 records against the authoritative per-level series revealed a pattern:
+
+```text
+quillustrous: ours cd=4.5   auth cd=7       ratacomb:  ours dmg=150  auth dmg=20
+ratacomb:     ours cd=7     auth cd=4       rigalord:  ours dmg=200  auth dmg=1
+rattleghast:  ours cd=4     auth cd=3.5     rubbin:    ours dmg=1    auth dmg=40
+reapra:       ours cd=3.5   auth cd=7.5     runerock:  ours dmg=40   auth dmg=null
+```
+
+Each record held **the previous record's** values. Round 5's "fill in the remaining level-1
+records" pass (T108) had an **off-by-one row alignment bug**, so it wrote each creature the
+*preceding* creature's cooldown, damage, damage type, status amounts, and heal. **55** records
+were affected (a first pass of the repair script compared only cooldown and damage and so missed 6
+more whose *status amounts* alone were wrong -- Brimtoad among them, the one case the user's own
+screenshot adjudicates: Burn 5/Poison 5 recorded against Burn 1/Poison 1 published).
+
+Quantified across the corpus:
+
+| Level | Agreed with source | Disagreed |
+|---|---|---|
+| 1 | 94 / 149 | **61** (55 off-by-one shifted + 6 genuine source disagreements) |
+| 2 | 149 / 149 | 0 |
+| 3 | 149 / 149 | 0 |
+| 4 | 149 / 149 | 0 |
+
+- **Why only 10 showed up in H10**: the monotonicity check that found H10 only catches a shift
+  when it happens to produce a level-1 value *larger* than level 2. The other 39 shifts moved
+  values that still looked plausible. A shape-based check (is this series monotonic?) was never
+  going to find this; only a value-by-value comparison against the source did.
+- **Why levels 2-4 are clean**: they were written by a different, correctly-aligned bulk append in
+  the same round. The bug was specific to the level-1 gap-filling step — which is exactly the step
+  round 5's own completion report described as "closing the entire corpus-completeness gap in one
+  pass". It closed the gap with 49 wrong answers.
+- **Treatment**: the 55 are a transcription bug, not a disagreement — the value belongs to a
+  different species — so they are corrected outright. The 6 remaining differ by a plausible margin
+  (e.g. Nekoffin damage 250 vs 200, Opalion cooldown 8 vs 9) and are treated as genuine
+  community-dex-vs-batodex disagreements: the batodex value is adopted (it is the source levels 2-4
+  come from, so adopting it makes each species' four records internally consistent) and the
+  community value is **retained as a recorded `FieldConflict`**, not dropped (Principle IV).
+  Repaired by `scripts/reconcile-level1.mjs`, committed rather than discarded.
+- **Post-repair state**: all 596 records across all four levels agree with the authoritative
+  series, verified programmatically rather than by spot check.
+- **Lesson worth recording, since this is the second round in a row a bulk data script shipped a
+  silent misalignment** (round 5's `flatten_monsters` dedup bug, now this): a bulk corpus write
+  needs a verification pass that compares the *written* values back against the source
+  value-by-value. Shape or count checks ("596 records exist", "596 cooldowns are non-null") pass
+  happily while every value is wrong by one row. That verification now exists as
+  `provenance.test.ts`-adjacent tooling and should be run after any future bulk corpus edit.
+
 ## C. Resolved Technical Context (feeds plan.md)
 
 | Field | Resolution |

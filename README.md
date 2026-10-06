@@ -47,21 +47,49 @@ an explicit `FieldConflict` (both values, both sources, and an optional `resolut
 rather than silently picked. The Corpus Browser view surfaces these conflicts directly instead
 of hiding them.
 
-**Current status (round 5, 2026-10-06)**: `src/data/creatures.ts` covers all **149 named
-Batomon**, each with **complete, cited level 1-4 stats** — 596 `CreatureRecord` entries total
-(149 species × 4 levels), **100% confirmed** `baseCooldownSeconds`/`baseDamage`-or-confirmed-
-absent/`damageType`. Round 4's "level 2-4 is a hard blocker" finding was **retracted** in round
-5: batodex.com's listing pages embed their entire database (every creature, every level, every
-evolution chain, by-level ability text) as structured JSON for client-side hydration — invisible
-to a markdown-converting fetch tool, but directly readable from the raw page content. One page
-fetch yielded the complete dataset; see `specs/001-batomon-dps-calculator/research.md` section G
-for the full technical writeup. 11 species have a confirmed evolution target (5 level-triggered
-— e.g. Panbud→Bambudo, Scorchimp→Sunsage, both at level 3 — plus 6 victory/condition-triggered,
-e.g. Ignit→Flarilisk on victory, which `evolvesInto` records but `evolvesAtLevel` deliberately
-does not, since leveling can't trigger them). Trainers cover the full documented **23-Trainer
-roster** (`T070`, round 2); **Trinkets now cover the full 93-entry roster** (`T109`, round 5),
-with 6 trinkets' flat team-wide stat bonuses wired into the DPS simulation — Items are still an
-empty seed stub (`T046`, not yet done).
+**Current status (round 6, 2026-10-06)**: `src/data/creatures.ts` covers all **149 named Batomon**
+across levels 1-4 — **596 `CreatureRecord` entries**, every one now verified value-for-value
+against the authoritative per-level series by an automated test
+(`src/data/__tests__/levelSeries.test.ts`). Precisely:
+
+- **Cooldowns**: complete for all 596 records.
+- **Damage**: published for **89 of 149 species**; the other 60 have no damage line in any source
+  reviewed. Those record `baseDamage: null` and render as *no damage line* rather than a misleading
+  `0` — but note `null` here means "not published by our sources", **not** "confirmed to deal no
+  damage". A user-supplied in-game screenshot shows Brimtoad dealing 5 damage where every source we
+  have omits it, so that conflation is a real, open gap (research.md H9), not a closed question.
+- **Sprites**: all 149 creatures and all 93 trinkets, vendored locally (see Assets below).
+- **Evolutions**: 11 species have a confirmed target — 5 level-triggered (e.g. Panbud→Bambudo,
+  Scorchimp→Sunsage, both at level 3) and 6 victory/condition-triggered (e.g. Ignit→Flarilisk on
+  victory), which `evolvesInto` records but `evolvesAtLevel` deliberately does not, since levelling
+  cannot trigger them.
+- **Trainers**: the full documented 23-Trainer roster (`T070`, round 2). **Trinkets**: the full
+  93-entry roster (`T109`, round 5), 6 of which have flat team-wide bonuses wired into the
+  simulation. **Items**: still an empty seed stub (`T046`, not yet done).
+
+> **Correction to the previous release's claim.** Rounds 5's status note, this README, and the
+> in-app corpus label all said the corpus was "100% confirmed across levels 1-4". That was wrong:
+> it had been verified by counting cooldowns only. Worse, round 6 found that round 5's level-1
+> gap-filling pass had an **off-by-one row alignment bug that gave 55 of 149 species another
+> creature's stats** entirely — invisible to every shape-based check applied at the time (record
+> counts, null counts, monotonic progressions all passed). All 55 are repaired from the
+> authoritative series, 6 further genuine source disagreements are recorded as `FieldConflict`s
+> rather than overwritten, and a value-for-value regression test now guards against a recurrence.
+> Full writeup: `specs/001-batomon-dps-calculator/research.md` section H11.
+
+Round 4's "level 2-4 is a hard blocker" finding was **retracted** in round 5: batodex.com's listing
+pages embed their entire database (every creature, every level, every evolution chain, by-level
+ability text) as structured JSON for client-side hydration — invisible to a markdown-converting
+fetch tool, but directly readable from raw page content. See research.md section G.
+
+### Assets
+
+Creature and trinket sprites are **vendored** into `public/sprites/` rather than hot-linked, so the
+app stays self-contained and offline-capable once loaded (Constitution Principle V) and no user's
+browsing is leaked to a third-party host. They are the **game's own artwork**, obtained via the
+batodex.com fan dex (2026-10-06) and redistributed here for a non-commercial fan calculator; they
+remain the property of the game's authors, not of this project or of batodex. Re-fetch or refresh
+them with `node scripts/vendor-sprites.mjs`.
 
 ### Refreshing the corpus for a new game patch
 

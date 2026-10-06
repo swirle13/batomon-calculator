@@ -155,4 +155,8 @@
   font-size: 0.8rem;
   line-height: 1.3;
   color: #d7d9e3;
+  /* Several trinkets' effectText embeds a trigger line then a newline ("On Victory\nYour team
+     gains..."), as published. Preserve it so the trigger reads on its own line the way the game
+     shows it, instead of being collapsed into one run-on sentence. */
+  white-space: pre-line;
 }

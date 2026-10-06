@@ -68,6 +68,14 @@ describe("GridPicker layout (FR-034/FR-035)", () => {
     expect(screen.queryByText(/^front row$/i)).toBeNull();
   });
 
+  it("renders the placed creature's sprite in its slot (FR-036, item 12)", () => {
+    renderWithPlacement();
+    const sprite = screen.getByRole("img", { name: "Bumblebolt" });
+    // Resolved against BASE_URL via the shared Sprite component -- a root-relative path would
+    // work in dev and 404 in production under /batomon-calculator/.
+    expect(sprite.getAttribute("src")).toMatch(/sprites\/monster\/bumblebolt\.png$/);
+  });
+
   it("shows the placed creature's output stats as colour-coded badges in its slot", () => {
     renderWithPlacement();
     // Bumblebolt L1: 3 Direct damage, 1 Shock.
