@@ -2,29 +2,23 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 0.5rem;
-  max-width: 36rem;
+  max-width: 30rem;
 }
 
-.rowLabel {
-  grid-column: 1 / -1;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #888;
-  margin-top: 0.5rem;
-}
+/* 2026-10-06 round 6 (FR-034): the `.rowLabel` rule is gone along with the BACK ROW / FRONT ROW
+   elements. The 2x3 geometry is self-evident on screen, and each label consumed a whole grid row.
+   `GridSlot.row` is unchanged as DATA -- adjacency, aboveSlot, and behindSlot all depend on it. */
 
-.slot select {
-  width: 100%;
-  padding: 0.5rem;
-  font-size: 0.9rem;
-}
-
-/* Round 3 (2026-10-05): drag-and-drop + type-colored cards (FR-019/FR-020). */
 .slot {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+}
+
+.slot select {
+  width: 100%;
+  padding: 0.3rem;
+  font-size: 0.85rem;
 }
 
 .dropZone {
@@ -37,30 +31,123 @@
   border-color: #f5f5f5;
 }
 
-.card {
+/*
+ * 2026-10-06 round 6 (FR-035): square panes, matching the in-game team panel. The square shape
+ * also gives the stat badges a stable area to anchor to at the bottom -- which is why `.card` is
+ * a positioned flex column with the badges pinned last rather than inline after the name.
+ */
+.card,
+.emptyCard {
+  position: relative;
+  aspect-ratio: 1;
   border-radius: 6px;
-  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.card {
   color: #fff;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
   cursor: grab;
   user-select: none;
+  padding: 0.3rem;
 }
 
 .cardDragging {
   opacity: 0.5;
 }
 
+/* Empty slots are square too -- square filled cards beside non-square placeholders would make the
+   grid look broken in exactly the way FR-035 is meant to fix. */
 .emptyCard {
   border: 1px dashed #666;
-  border-radius: 6px;
-  padding: 0.5rem;
   color: #9ca3af;
-  text-align: center;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.level {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.95;
+}
+
+.name {
+  font-weight: 700;
+  font-size: 0.8rem;
+  line-height: 1.15;
+  /* Long names must not push the sprite or badges out of a fixed-aspect pane. */
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.spriteWrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+}
+
+/* --- FR-035: floating, colour-coded stat badges along the bottom of the pane --- */
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15rem;
+  justify-content: center;
+  margin-top: auto;
+}
+
+.badge {
+  min-width: 1.4rem;
+  padding: 0.05rem 0.3rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-align: center;
+  color: #fff;
+  /* Matches the game's pill treatment: colour carries the meaning, so keep the value legible on
+     every one of the six published stat colours. */
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(0, 0, 0, 0.35);
+}
+
+/* --- FR-033: per-slot clear control --- */
+.clear {
+  position: absolute;
+  top: 0.15rem;
+  right: 0.15rem;
+  width: 1.1rem;
+  height: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  font-size: 0.8rem;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 1;
+}
+
+.clear:hover,
+.clear:focus-visible {
+  background: #c0392b;
 }
 
 .fallbackDetails summary {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: #9ca3af;
   cursor: pointer;
 }

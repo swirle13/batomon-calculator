@@ -1,0 +1,158 @@
+/* Trinket picker (2026-10-06 round 6, FR-032). Mirrors the creature picker's card-grid idiom. */
+
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.summaryRow {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.selectedList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  max-width: 44rem;
+  width: 100%;
+}
+
+.selectedItem {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  text-align: left;
+}
+
+.selectedName {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.selectedEffect {
+  color: #9ca3af;
+  flex: 1;
+  min-width: 0;
+}
+
+.affectsDps {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #e0a93c;
+  white-space: nowrap;
+}
+
+/* --- modal --- */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.panel {
+  background: #1f2028;
+  border: 1px solid #444857;
+  border-radius: 8px;
+  padding: 1rem;
+  width: min(900px, 94vw);
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.panelHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.panelTitle {
+  margin: 0;
+}
+
+.filters {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.search {
+  flex: 1 1 14rem;
+}
+
+.count {
+  font-size: 0.8rem;
+  color: #9ca3af;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: 0.5rem;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+  align-items: start;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.5rem;
+  border: 2px solid #3a3d48;
+  border-radius: 6px;
+  background: #262833;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+}
+
+.card:hover {
+  background: #2e313e;
+}
+
+/* Multi-select, so selection state has to be visible on the card itself -- this modal stays open
+   across choices rather than closing on the first one. */
+.cardSelected {
+  background: #343a4d;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.cardName {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.cardRarity {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.cardEffect {
+  font-size: 0.8rem;
+  line-height: 1.3;
+  color: #d7d9e3;
+}

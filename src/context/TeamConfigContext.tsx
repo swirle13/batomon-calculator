@@ -52,19 +52,35 @@ interface TeamConfigContextValue {
 
 const TeamConfigContext = createContext<TeamConfigContextValue | null>(null);
 
-export function TeamConfigProvider({ children }: { children: ReactNode }) {
-  const [config, setConfig] = useState<TeamConfiguration>(emptyConfig());
+export function TeamConfigProvider({
+  children,
+  /** Seed state. Exists so component tests can render a pre-populated team without driving the
+   * whole UI to build one; the app itself never passes it. */
+  initialConfig,
+}: {
+  children: ReactNode;
+  initialConfig?: TeamConfiguration;
+}) {
+  const [config, setConfig] = useState<TeamConfiguration>(initialConfig ?? emptyConfig());
 
   const value = useMemo<TeamConfigContextValue>(
     () => ({
       config,
       setPlacement: (slot, creatureId, level = 1) => {
         setConfig((prev) => {
+          const existing = prev.placements.find((p) => slotsEqual(p.slot, slot));
           const withoutSlot = prev.placements.filter((p) => !slotsEqual(p.slot, slot));
           if (creatureId === null) {
             return { ...prev, placements: withoutSlot };
           }
-          const next: TeamPlacement = { slot, creatureId, level };
+          // 2026-10-06 round 6 (tasks.md T138): carry this slot's existing modifiers over rather
+          // than dropping them. This used to construct a bare placement, so changing a creature's
+          // LEVEL -- which routes through here -- silently erased every modifier the user had
+          // attached to it. Harmless while modifiers were a niche side panel; not harmless now
+          // that round 6 makes per-creature modifiers the primary modifier workflow (FR-039).
+          // Modifiers survive an evolution too (Panbud -> Bambudo at Lv.3 keeps its carry-over),
+          // which matches what a "carry-over from a previous round" means.
+          const next: TeamPlacement = { slot, creatureId, level, modifiers: existing?.modifiers };
           return { ...prev, placements: [...withoutSlot, next] };
         });
       },

@@ -1,0 +1,35 @@
+/*
+ * Multi-column corpus grid (2026-10-06 round 6, FR-031). Previously one full-width <article> per
+ * creature, which at desktop widths meant roughly one card per screen-width with most of the line
+ * length empty -- the user's "much too wide and inefficient" report.
+ */
+
+.results {
+  display: grid;
+  /* Lands on 3-4 columns at common desktop widths and degrades to 2, then 1, on narrow viewports
+     with no media-query ladder (Constitution Principle VI). */
+  grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+  gap: 0.75rem;
+  /* `auto-fill` alone cannot cap the column count, so the cap is a max-width on the container:
+     at 4 * 17rem + gaps the grid stops widening and stays legible on ultrawide displays rather
+     than stretching each card. */
+  max-width: 76rem;
+  margin: 0 auto;
+  align-items: start;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.summary {
+  max-width: 60rem;
+  margin: 0 auto 0.75rem;
+  font-size: 0.85rem;
+  color: #9ca3af;
+  line-height: 1.4;
+}

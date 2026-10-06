@@ -39,12 +39,20 @@ function CalculatorView() {
         <TrinketPicker />
       </p>
       <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap", alignItems: "flex-start" }}>
-        <GridPicker onHighlightSlot={setHighlightedSlot} />
+        <GridPicker onHighlightSlot={setHighlightedSlot} result={result} />
         <div style={{ flex: "1 1 16rem", minWidth: "16rem", textAlign: "left" }}>
           <h3>Placed Banto stats</h3>
           <PlacedCreatureDetails result={result} highlightedSlot={highlightedSlot} />
         </div>
       </div>
+      <TeamSummary config={config} result={result} />
+      {/* 2026-10-06 round 6 (FR-039): collapsed by default, so it sits between the tables and the
+          chart without pushing them apart. */}
+      <ModifierEditor />
+      {/* FR-037: the simulation window governs the chart's time axis, not the per-second summary
+          values, so it sits immediately above the chart and below the tables. Order matters here —
+          leaving ModifierEditor between this control and the chart would satisfy "below the tables"
+          while breaking "just above the chart" (research.md H7/tasks.md T130). */}
       <p>
         <label>
           Simulation window (seconds):{" "}
@@ -57,8 +65,6 @@ function CalculatorView() {
           />
         </label>
       </p>
-      <TeamSummary config={config} result={result} />
-      <ModifierEditor />
       <CumulativeChart result={result} />
     </div>
   );

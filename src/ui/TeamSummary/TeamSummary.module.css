@@ -1,0 +1,41 @@
+/*
+ * 2026-10-06 round 6 (FR-038): the two summary tables sit side by side as one aligned unit.
+ * They were previously two separately left-justified block tables in different divs — the user's
+ * "different divs and are left justified, making it look ugly" report. Alignment is part of the
+ * ask, not just adjacency, so the pair is centred as a group with the tables top-aligned and
+ * sharing a single gap.
+ */
+
+.tables {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.tables table {
+  /* Each table sizes to its content rather than stretching, so the two read as a matched pair
+     instead of two mismatched full-width blocks. */
+  border-collapse: collapse;
+}
+
+.tables caption {
+  font-size: 0.85rem;
+  color: #9ca3af;
+  padding-bottom: 0.25rem;
+  white-space: nowrap;
+}
+
+.tables th,
+.tables td {
+  padding: 0.25rem 0.6rem;
+  border-bottom: 1px solid #2c2f3b;
+  text-align: left;
+}
+
+/* Numeric columns right-align so magnitudes line up digit-for-digit down the column. */
+.numeric {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}

@@ -3,6 +3,7 @@ import type { CreatureType, GridSlot, Rarity } from "../../data/types";
 import { distinctCreatures } from "../../data/corpus";
 import { typeBackground } from "../../data/typeColors";
 import { slotKey } from "../../engine/grid";
+import { Sprite } from "../shared/Sprite";
 
 interface CreatureSearchModalProps {
   /** `null` = closed. Changing to a different slot while already open re-triggers the
@@ -90,9 +91,11 @@ export function CreatureSearchModal({ slot, onClose, onSelect }: CreatureSearchM
         }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <h3 style={{ margin: 0 }}>
-            Choose a Banto — {slot.row} row, slot {slot.col + 1}
-          </h3>
+          {/* 2026-10-06 round 6 (FR-034): the slot position used to be spelled out here
+              ("— back row, slot 2"). Dropped: the user just clicked that slot, and drag-and-drop
+              means the choice isn't slot-bound anyway. It stays in the dialog's aria-label above,
+              for anyone who didn't see the click. */}
+          <h3 style={{ margin: 0 }}>Choose a Banto</h3>
           <button type="button" onClick={onClose} aria-label="Close">
             Close
           </button>
@@ -183,9 +186,14 @@ export function CreatureSearchModal({ slot, onClose, onSelect }: CreatureSearchM
                 textShadow: "0 1px 2px rgba(0,0,0,0.6)",
               }}
             >
-              <div style={{ fontWeight: 600 }}>{c.name}</div>
-              <div style={{ fontSize: "0.75em", opacity: 0.9 }}>
-                {c.rarity} · {c.types.join("/")}
+              <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                <Sprite spriteFile={c.spriteFile} kind="monster" size={28} alt={c.name} />
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontWeight: 600 }}>{c.name}</div>
+                  <div style={{ fontSize: "0.75em", opacity: 0.9 }}>
+                    {c.rarity} · {c.types.join("/")}
+                  </div>
+                </div>
               </div>
             </button>
           ))}

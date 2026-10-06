@@ -1,5 +1,7 @@
 import type { SimulationResult, TeamConfiguration } from "../../data/types";
 import { getCreatureById } from "../../data/corpus";
+import { statusColor } from "../../data/statColors";
+import styles from "./TeamSummary.module.css";
 
 interface TeamSummaryProps {
   config: TeamConfiguration;
@@ -10,6 +12,9 @@ interface TeamSummaryProps {
  * FR-009: show each creature's DPS and each active status effect's per-second value side by
  * side, reading only from the one `SimulationResult` the Calculator view computed (never a
  * separate recomputation — Constitution's "cannot silently diverge" rule).
+ *
+ * 2026-10-06 round 6 (FR-038): the two tables are now laid out as one aligned, centred pair rather
+ * than two separately left-justified blocks in different divs.
  */
 export function TeamSummary({ config, result }: TeamSummaryProps) {
   const dpsRows = config.placements.map((placement) => {
@@ -30,59 +35,70 @@ export function TeamSummary({ config, result }: TeamSummaryProps) {
   return (
     <section>
       <h2>Team Summary</h2>
-      <table>
-        <caption>Damage per second, by creature</caption>
-        <thead>
-          <tr>
-            <th>Creature</th>
-            <th>DPS</th>
-            <th title="Damage this creature's own status grants (e.g. Shock) enabled on other hits, not counted in its own DPS">
-              Facilitated DPS
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {dpsRows.length === 0 && (
+      <div className={styles.tables}>
+        <table>
+          <caption>Damage per second, by creature</caption>
+          <thead>
             <tr>
-              {/* 2026-10-05 round 4 (FR-024): slot position is no longer shown as text here --
-                  the grid itself already shows it, so this is 3 columns now, not 4. */}
-              <td colSpan={3}>No creatures placed yet.</td>
+              <th>Creature</th>
+              <th className={styles.numeric}>DPS</th>
+              <th
+                className={styles.numeric}
+                title="Damage this creature's own status grants (e.g. Shock) enabled on other hits, not counted in its own DPS"
+              >
+                Facilitated DPS
+              </th>
             </tr>
-          )}
-          {dpsRows.map((row) => (
-            <tr key={row.key}>
-              <td>{row.name}</td>
-              <td>{row.dps.toFixed(2)}</td>
-              <td>{row.facilitatedDps > 0 ? row.facilitatedDps.toFixed(2) : "—"}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {dpsRows.length === 0 && (
+              <tr>
+                {/* 2026-10-05 round 4 (FR-024): slot position is no longer shown as text here --
+                    the grid itself already shows it, so this is 3 columns now, not 4. */}
+                <td colSpan={3}>No creatures placed yet.</td>
+              </tr>
+            )}
+            {dpsRows.map((row) => (
+              <tr key={row.key}>
+                <td>{row.name}</td>
+                <td className={styles.numeric}>{row.dps.toFixed(2)}</td>
+                <td className={styles.numeric}>
+                  {row.facilitatedDps > 0 ? row.facilitatedDps.toFixed(2) : "—"}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
 
-      <table>
-        <caption>Status effect output, per second</caption>
-        <thead>
-          <tr>
-            <th>Status</th>
-            <th>Per second</th>
-          </tr>
-        </thead>
-        <tbody>
-          {statusRows.length === 0 && (
+        <table>
+          <caption>Status effect output, per second</caption>
+          <thead>
             <tr>
-              <td colSpan={2}>No active status effects.</td>
+              <th>Status</th>
+              <th className={styles.numeric}>Per second</th>
             </tr>
-          )}
-          {statusRows.map(([status, value]) => (
-            <tr key={status}>
-              {/* Shield deals no damage — it's a granted/sec rate, not a damage/sec rate like
-                  the other three (data-model.md's "Shield counted as an output stat"). */}
-              <td>{status === "Shield" ? "Shield (granted)" : status}</td>
-              <td>{value.toFixed(2)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {statusRows.length === 0 && (
+              <tr>
+                <td colSpan={2}>No active status effects.</td>
+              </tr>
+            )}
+            {statusRows.map(([status, value]) => (
+              <tr key={status}>
+                {/* Shield deals no damage — it's a granted/sec rate, not a damage/sec rate like
+                    the other three (data-model.md's "Shield counted as an output stat"). The
+                    status name carries its published colour (FR-029), the same colour the card
+                    stat lines and the grid badges use. */}
+                <td style={{ color: statusColor(status as "Burn" | "Poison" | "Shock" | "Shield"), fontWeight: 600 }}>
+                  {status === "Shield" ? "Shield (granted)" : status}
+                </td>
+                <td className={styles.numeric}>{value.toFixed(2)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </section>
   );
 }

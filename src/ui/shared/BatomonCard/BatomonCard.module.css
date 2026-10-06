@@ -1,0 +1,183 @@
+/*
+ * Game-card layout, dark shell (2026-10-06 round 6, FR-028/FR-029, research.md H1).
+ *
+ * Design direction: "game-card fidelity in a dark shell". The in-game card's information
+ * ARCHITECTURE is adopted -- discrete stacked bands, rarity in the header, cooldown isolated from
+ * per-cast output, one colour-coded line per stat -- while the pixel-art frame, light palette, and
+ * display typeface deliberately are not (the user explicitly said layout, not style). The
+ * differentiation anchor is band 3: a boxed cooldown beside colour-coded stat lines, which reads
+ * as a game card rather than a data table.
+ *
+ * No web font is introduced: this app must stay offline-capable once loaded (Constitution
+ * Principle V) and already has an established plain-CSS-modules dark theme (research.md A4).
+ */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #3a3d48;
+  border-radius: 8px;
+  background: #212330;
+  overflow: hidden;
+  text-align: left;
+}
+
+/* --- Band 1: name + rarity, rarity-coloured --- */
+.header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.4rem 0.6rem;
+  /* Set per-card from RARITY_COLORS via a custom property, so the header reads as the rarity
+     band the game card uses rather than a generic title bar. */
+  background: color-mix(in srgb, var(--rarity-color, #70707a) 30%, #1b1d27);
+  border-bottom: 1px solid var(--rarity-color, #3a3d48);
+}
+
+.name {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.rarity {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--rarity-color, #9ca3af);
+  /* The rarity colours are mid-tone by design; a dark outline keeps them legible on the tinted
+     header without lightening the published colour itself. */
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  white-space: nowrap;
+}
+
+/* --- Band 2: sprite + stacked type badges --- */
+.identity {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.6rem;
+}
+
+.spriteFrame {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  border: 1px solid #3a3d48;
+  border-radius: 6px;
+  background: #171821;
+  flex-shrink: 0;
+}
+
+.types {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  align-items: flex-start;
+}
+
+/* --- Band 3: cooldown block | one line per output stat --- */
+.output {
+  display: flex;
+  gap: 0.6rem;
+  padding: 0.5rem 0.6rem;
+  border-top: 1px solid #2c2f3b;
+}
+
+.cooldown {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 3.25rem;
+  padding: 0.3rem;
+  border: 1px solid #3a3d48;
+  border-radius: 6px;
+  background: #171821;
+  flex-shrink: 0;
+  line-height: 1.1;
+}
+
+.cooldownValue {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.cooldownUnit {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #9ca3af;
+}
+
+/* One line per stat -- the substantive fix. Previously cost/cooldown/damage shared one
+   `·`-separated sentence, which forced the reader to parse three unrelated magnitudes at once. */
+.statLines {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  justify-content: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.statLine {
+  font-size: 0.9rem;
+  font-weight: 600;
+  /* Colour comes from STAT_COLORS (the game's own published value), set inline per line. */
+}
+
+.noOutput {
+  font-size: 0.85rem;
+  color: #9ca3af;
+  font-style: italic;
+}
+
+/* --- Band 4: ability trigger + description --- */
+.ability {
+  padding: 0.5rem 0.6rem;
+  border-top: 1px solid #2c2f3b;
+}
+
+.abilityTrigger {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  /* Amber, matching the game card's trigger line treatment. */
+  color: #e0a93c;
+  margin-bottom: 0.15rem;
+}
+
+.abilityText {
+  font-size: 0.85rem;
+  line-height: 1.35;
+  color: #d7d9e3;
+  margin: 0;
+}
+
+/* --- Secondary metadata: cost, evolution, unconfirmed fields --- */
+.meta {
+  padding: 0.35rem 0.6rem;
+  border-top: 1px solid #2c2f3b;
+  font-size: 0.75rem;
+  color: #9ca3af;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15rem 0.6rem;
+}
+
+.unconfirmed {
+  color: #c9a227;
+}
+
+/* Slot for the Calculator's "Effective this battle" band (never rendered by the Corpus Browser). */
+.extra {
+  border-top: 1px dashed #444857;
+  padding: 0.5rem 0.6rem;
+}

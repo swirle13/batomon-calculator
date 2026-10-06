@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
 import { corpus, distinctCreatures, filterCreatures, searchCreatures } from "../../data/corpus";
-import { displayField, isUnconfirmed } from "../../data/display";
 import type { CreatureType, Rarity } from "../../data/types";
-import { TypeTag } from "../shared/TypeTag";
+import { BatomonCard } from "../shared/BatomonCard/BatomonCard";
+import styles from "./CorpusBrowser.module.css";
 
 const TYPES: CreatureType[] = [
   "Fire", "Water", "Electric", "Toxic", "Flying", "Rock", "Grass", "Bug",
@@ -11,14 +11,20 @@ const TYPES: CreatureType[] = [
 const RARITIES: Rarity[] = ["Common", "Uncommon", "Rare", "SuperRare", "Legendary", "Mythical"];
 
 /**
- * User Story 3: search/filter the corpus (FR-013) and show full cited detail, including any
- * recorded source conflicts, per entry (FR-004, SC-004).
+ * User Story 3: search/filter the corpus (FR-013).
  *
- * As of the tasks.md T043 widening pass (2026-10-05), this covers the full 149-name roster
- * reconciled from the fan-wiki sources reviewed — see src/data/creatures.ts's header comment
- * for exactly which fields are fully sourced vs. still `unconfirmedFields` per entry. Fields
- * listed in an entry's `unconfirmedFields` are rendered as "unknown" below rather than a
- * possibly-misleading raw value (data-model.md: "shown as 'unknown' in the UI").
+ * 2026-10-06 round 6: each result now renders through the shared `BatomonCard` (FR-028 — the same
+ * component the Calculator's selected-creature panel uses, so the two can't drift), laid out in a
+ * multi-column grid (FR-031).
+ *
+ * **Source citations, patch tags, and recorded source conflicts are deliberately NOT rendered
+ * here** (FR-030, user-requested). That data is unchanged and still mandatory on every record —
+ * what moved is only where it is enforced: `src/data/__tests__/provenance.test.ts` now asserts
+ * every record is cited and every recorded conflict is well-formed, which is how SC-004 is met
+ * without a disclosure widget a reader has to click past. See spec.md's round 6 Amendment.
+ *
+ * Listings iterate `distinctCreatures` (one record per species), not `corpus.creatures` — since
+ * round 5 the latter holds up to 4 level records per species and would show duplicate cards.
  */
 export function CorpusBrowser() {
   const [query, setQuery] = useState("");
@@ -35,20 +41,19 @@ export function CorpusBrowser() {
   return (
     <div>
       <h2>Corpus Browser</h2>
-      <p>
-        <em>
-          {distinctCreatures.length} creatures (each with up to 4 level records, round 5),{" "}
-          {corpus.trainers.length} trainer(s), {corpus.trinkets.length} trinket(s),{" "}
-          {corpus.items.length} item(s). Nearly all creature stats are now confirmed per level
-          (round 5) — see each entry's "Unconfirmed" line for the few remaining exceptions.
-        </em>
+      <p className={styles.summary}>
+        {distinctCreatures.length} creatures, each with level 1-4 records ({corpus.creatures.length} in
+        total), {corpus.trainers.length} trainers, {corpus.trinkets.length} trinkets,{" "}
+        {corpus.items.length} items. Cooldowns are confirmed for every level record; damage is still
+        unpublished for some species and is shown as no damage line rather than a misleading 0 — see
+        each card's "Unconfirmed" note.
       </p>
 
-      <p>
+      <p className={styles.filters}>
         <label>
           Search:{" "}
           <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Creature name…" />
-        </label>{" "}
+        </label>
         <label>
           Type:{" "}
           <select value={type} onChange={(e) => setType(e.target.value as CreatureType | "")}>
@@ -59,7 +64,7 @@ export function CorpusBrowser() {
               </option>
             ))}
           </select>
-        </label>{" "}
+        </label>
         <label>
           Rarity:{" "}
           <select value={rarity} onChange={(e) => setRarity(e.target.value as Rarity | "")}>
@@ -75,77 +80,11 @@ export function CorpusBrowser() {
 
       {results.length === 0 && <p>No creatures match this search/filter combination.</p>}
 
-      {results.map((c) => {
-        return (
-          <article
-            key={c.id}
-            style={{ border: "1px solid #ccc", borderRadius: 4, padding: "0.75rem", marginBottom: "0.75rem" }}
-          >
-            <h3 style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
-              {c.name}
-              <small>({displayField(c, "rarity", c.rarity)})</small>
-              {c.types.length > 0 ? (
-                c.types.map((t) => <TypeTag key={t} type={t} />)
-              ) : (
-                <small>unknown type</small>
-              )}
-            </h3>
-            <p>
-              Cost ${displayField(c, "shopCost", c.shopCost)} · Cooldown{" "}
-              {displayField(c, "baseCooldownSeconds", c.baseCooldownSeconds ?? "unknown")}
-              {typeof c.baseCooldownSeconds === "number" && !isUnconfirmed(c, "baseCooldownSeconds") ? "s" : ""} ·
-              Damage {displayField(c, "baseDamage", c.baseDamage ?? "unknown")}{" "}
-              {c.damageType && !isUnconfirmed(c, "damageType") ? `(${c.damageType})` : ""}
-            </p>
-            {c.appliesStatus && c.appliesStatus.length > 0 && (
-              <p>Applies: {c.appliesStatus.map((s) => `${s.amount} ${s.type}`).join(", ")}</p>
-            )}
-            <p>{c.abilityText}</p>
-            {c.unconfirmedFields && c.unconfirmedFields.length > 0 && (
-              <p>
-                <strong>Unconfirmed:</strong> {c.unconfirmedFields.join(", ")}
-              </p>
-            )}
-            {c.evolvesInto && (
-              <p>
-                Evolves into: <code>{c.evolvesInto}</code>
-              </p>
-            )}
-            <details>
-              <summary>Sources &amp; patch ({c.patch})</summary>
-              <ul>
-                {c.sourceRefs.map((s) => (
-                  <li key={s.url}>
-                    <a href={s.url} target="_blank" rel="noreferrer">
-                      {s.title}
-                    </a>{" "}
-                    (retrieved {s.retrievedAt})
-                  </li>
-                ))}
-              </ul>
-            </details>
-            {c.conflicts && c.conflicts.length > 0 && (
-              <details>
-                <summary>⚠ Recorded source conflicts ({c.conflicts.length})</summary>
-                <ul>
-                  {c.conflicts.map((conflict) => (
-                    <li key={conflict.field}>
-                      <strong>{conflict.field}</strong>:{" "}
-                      {conflict.values.map((v, i) => (
-                        <span key={i}>
-                          {String(v.value)} ({v.sourceRefs.map((s) => s.title).join(", ")})
-                          {i < conflict.values.length - 1 ? "; " : ""}
-                        </span>
-                      ))}
-                      {conflict.resolution && <div>Resolution: {conflict.resolution}</div>}
-                    </li>
-                  ))}
-                </ul>
-              </details>
-            )}
-          </article>
-        );
-      })}
+      <div className={styles.results}>
+        {results.map((creature) => (
+          <BatomonCard key={creature.id} creature={creature} />
+        ))}
+      </div>
     </div>
   );
 }
