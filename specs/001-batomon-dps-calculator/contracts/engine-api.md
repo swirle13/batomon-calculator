@@ -84,6 +84,29 @@ function applyShieldReduction(
   (`STATUS_VS_SHIELD_REDUCTION`, defined alongside its own `Provenance`), never hardcoded at the
   call site, because this value has already changed twice in the game's history (B3).
 
+## `resolveLevelUp` (added round 3, 2026-10-05 — research.md E2.6 / data-model.md's matching amendment)
+
+```ts
+function resolveLevelUp(
+  corpus: Corpus,
+  baseSpeciesId: string,
+  targetLevel: 1 | 2 | 3 | 4
+): CreatureRecord | null;
+```
+
+- Walks `evolvesInto`/`evolvesAtLevel` chains (transitively, for multi-stage evolutions) to
+  resolve which species a placement should display at `targetLevel`, starting from
+  `baseSpeciesId`. A species with no `evolvesInto` simply resolves to itself at `targetLevel`.
+- Returns `null` if the resolved species has no corpus record at `targetLevel` (never falls back
+  to a different level's record — same discipline as `simulate`'s `(id, level)` lookup fix).
+- Pure function, same purity/determinism contract as `simulate`/`effectiveCooldown` above.
+- MUST be unit-tested against the two confirmed worked examples before UI code depends on it
+  (Constitution Principle III): Panbud at level 3 resolves to Bambudo; Scorchimp at level 3
+  resolves to Sunsage. A species with more than one documented `evolvesInto` target (a
+  "branching" evolution — none currently in the corpus) is explicitly out of this function's
+  contract until the data model grows a way to disambiguate branches (data-model.md's "Known
+  limitation" on `evolvesInto`).
+
 ## Error types
 
 ```ts

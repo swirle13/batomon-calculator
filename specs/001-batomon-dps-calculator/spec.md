@@ -112,6 +112,10 @@ correct and show their data source citation(s).
   species whose own level-up mechanic was officially capped lower than the general case)? It MUST
   NOT assume every creature reaches level 4 by default; a per-species confirmed cap is recorded
   when sourced, otherwise the higher levels are shown as "unknown"/unconfirmed rather than guessed.
+- How does the system handle a species documented with more than one possible evolution target
+  under different, not-yet-individually-confirmed conditions (a "branching" evolution)? It MUST
+  NOT guess which branch applies; such a species is treated as having no resolvable evolution
+  until a source confirms each branch's specific trigger condition.
 
 ## Requirements *(mandatory)*
 
@@ -170,6 +174,22 @@ correct and show their data source citation(s).
 - **FR-017**: The cumulative damage/status chart's time axis (FR-010) MUST use consistent,
   evenly-spaced tick values independent of the underlying simulated event timestamps — never
   deriving tick placement directly from raw event times.
+- **FR-018**: A creature-assignment search control MUST clear any previously-entered search text
+  and receive keyboard focus every time it is opened, regardless of which slot it is opened for.
+- **FR-019**: Users MUST be able to drag an already-placed creature from one grid slot to another
+  (including a slot already occupied by a different placement, which MUST swap the two
+  placements rather than discard either one) as an alternative to the search-based assignment
+  flow in FR-018 — the search-based flow MUST remain fully available as well, for users who
+  cannot or prefer not to use drag-and-drop.
+- **FR-020**: Every place a creature type is rendered as a color (card background, type tag,
+  future filter control) MUST use one single, consistent color per type — never two different
+  color treatments for the same type within the UI.
+- **FR-021**: The per-creature detail view MUST be a persistent panel that updates only when a
+  different creature is hovered or focused, MUST NOT disappear when the pointer/focus leaves a
+  creature's card, and MUST NOT visually obscure any other creature's card.
+- **FR-022**: When a user sets a placement's level at or beyond a species' documented evolution
+  threshold, the system MUST display that species' evolved form at that level (resolved from the
+  corpus's evolution data) rather than omitting or disabling the level option.
 
 ### Key Entities
 
@@ -255,3 +275,19 @@ weakened) to keep it honest as a measure of remaining work.
 change was investigated and found to be caused by the above corpus gap (the specific creatures
 tested had unconfirmed stats), not a code regression — see research.md D5 for the full diagnosis.
 Logged here so this does not get re-opened as a suspected engine bug in a future round.
+
+### 2026-10-05 (round 3) — FR-018 through FR-022 added: reference-site-inspired team-builder redesign
+
+The user found an external, independently-built companion site (batomon.com's "Build Lab") whose
+*layout concept* they want this project to adopt (icon-based creature cards, type-colored
+backgrounds, a per-slot search modal, a hover detail panel) without visually cloning it, while
+fixing 7 specific defects they identified in it and preserving this project's own
+differentiators (StatModifiers, DPS/damage output — the reference has neither). See research.md
+section E for the full defect-by-defect analysis and the resulting design decisions
+(data-model.md gains matching amendments: `evolvesAtLevel`, a canonical type-color mapping, and
+drag-and-drop semantics).
+
+**Trust note** (not a spec requirement, recorded for context): the user also asked whether
+batomon.com is an official site. It is not — confirmed via WHOIS, TLS certificate, hosting
+fingerprint, and the site's own FAQ self-disclosure, all cited in research.md E1. It is treated
+here purely as UI/UX inspiration and a potential future corpus citation source, not an authority.

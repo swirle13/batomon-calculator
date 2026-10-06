@@ -329,6 +329,94 @@ repeated `+=` addition to index multiplication (`t = startAt + n * cooldown`); e
 `TimelineEvent.tSeconds` is rounded to a fixed precision (1e-6s) at creation so no float-drift
 artifact can surface in any UI (tooltip, table, or chart tick).
 
+### 2026-10-05 (round 3) — Evolution-aware leveling: `evolvesAtLevel`
+
+Per research.md E2.6 — the reference UI's level selector simply hides levels past a species'
+evolution point instead of resolving to the evolved species. Pairs with the existing
+`evolvesInto`:
+
+```ts
+interface CreatureRecord extends Provenance {
+  // ...existing fields...
+  evolvesInto?: string; // unchanged
+  /** The level at which `evolvesInto` takes effect, e.g. 3 for Panbud -> Bambudo. Required
+   * whenever `evolvesInto` is set; a species with no evolution has neither field. */
+  evolvesAtLevel?: 2 | 3 | 4;
+}
+```
+
+New engine helper (contracts/engine-api.md gains this signature; test-first per Constitution
+Principle III when implemented):
+
+```ts
+/**
+ * Walks `evolvesInto`/`evolvesAtLevel` chains to resolve which species a placement should
+ * actually show at `targetLevel`, starting from `baseSpeciesId`. Returns the resolved
+ * CreatureRecord at `targetLevel` (via the (id, level) lookup — see the round-2 amendment
+ * above), or `null` if no record exists for the resolved species at that level. A species with
+ * no `evolvesInto` simply returns itself at `targetLevel`. Multi-stage chains (an evolved
+ * species that itself evolves again) are followed transitively.
+ */
+function resolveLevelUp(corpus: Corpus, baseSpeciesId: string, targetLevel: 1 | 2 | 3 | 4): CreatureRecord | null;
+```
+
+**Known limitation, recorded rather than silently guessed** (research.md E2.6): a species with
+*more than one* documented `evolvesInto` target under different conditions (a "branching"
+evolution) cannot be represented by a single `evolvesInto`/`evolvesAtLevel` pair. No such branch
+is populated in the corpus yet — `evolvesInto` stays a single optional field until a specific
+branching case is confirmed from a source with its trigger-condition table intact, at which
+point the data model will need a real amendment (e.g. a `conditions` array), not a guess at
+which branch to encode.
+
+### 2026-10-05 (round 3) — Canonical `CreatureType` color mapping
+
+Per research.md E2.4 — the reference UI colors a creature's card background by type but renders
+its type tag chips with no color at all, two different treatments for the same information. One
+canonical mapping, defined once in the data layer and imported by every UI component that
+renders a type as a color (card background, tag chip, future type filter), so this class of
+inconsistency is structurally impossible to reintroduce:
+
+```ts
+// src/data/typeColors.ts
+const TYPE_COLORS: Record<CreatureType, string> = { /* one hex per CreatureType, incl. "All" */ };
+function typeColor(type: CreatureType): string; // TYPE_COLORS[type]
+```
+
+Dual-typed creatures render a split/gradient background using both types' colors (the visual
+pattern the user liked in the reference UI), not a blended third color — each type stays
+individually identifiable.
+
+### 2026-10-05 (round 3) — Drag-and-drop placement editing (`@dnd-kit/core`)
+
+Per research.md E2.5 — adds a second way to assign/rearrange placements (dragging an existing
+placement onto another slot), *alongside* the existing modal/dropdown flow (kept for keyboard/
+screen-reader users — Constitution-aligned with the still-open `tasks.md` T054 accessibility
+pass). No `TeamConfiguration`/`TeamPlacement` shape change — this is purely a new UI interaction
+over the existing `setPlacement` mutation:
+
+- Dropping placement A onto an **empty** slot B: A moves to B (same as picking A's creature in
+  B's modal, then clearing A's old slot).
+- Dropping placement A onto an **occupied** slot B: A and B **swap** (each keeps its own level
+  and modifiers) — not "B is overwritten/cleared." This matches how a user would expect
+  rearranging an already-built team to work, and never silently discards a placement's
+  modifiers.
+
+### 2026-10-05 (round 3) — Persistent side-panel "highlighted slot" is UI state, not team data
+
+Per research.md E2.7 — the reference UI's hover-anchored detail popup disappears on
+pointer-leave and can visually cover other cards. The redesigned detail view is a single,
+layout-reserved side panel driven by a `highlightedSlot: GridSlot | null` value that:
+
+- updates on hover/focus of a *different* placed creature's card,
+- is **never cleared** by hover/focus-leaving a card (sticky — keeps showing the last-highlighted
+  creature),
+- defaults to the first placement (or an empty-state message if none) rather than nothing.
+
+This is **transient UI state, not part of `TeamConfiguration`** — it does not get persisted,
+shared via "Copy URL"-style serialization (not a feature of this project, but worth stating the
+boundary explicitly), or read by `simulate()`. It lives in the team-builder's own component
+state, same category as (not merged into) `TeamConfigContext`.
+
 ### 2026-10-05 — Shield counted as an output stat, not just absorption
 
 `perStatusPerSecond.Shield` and `cumulativeSeries[].byStatus.Shield` now track the cumulative

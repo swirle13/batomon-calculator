@@ -97,6 +97,43 @@ actually have confirmed stats before suspecting a regression.
   new "cast times never accumulate floating-point drift across many casts" test (25-cast window,
   4.9s cooldown — a value that previously produced `14.7000000000000001`-style drift).
 
+## Validation scenario 8 — search modal autofocus + clears between slots (FR-018)
+
+1. Open the creature-assignment search for slot 1, type a query, pick a creature.
+2. Open the creature-assignment search for a *different* slot (slot 2).
+3. **Expected**: the search field is empty (not slot 1's leftover query) and has keyboard focus
+   immediately, with no extra click required before typing.
+
+## Validation scenario 9 — drag-and-drop swap between occupied slots (FR-019)
+
+1. Place creature A in slot 1 and creature B in slot 2, each with a distinct level/modifier set.
+2. Drag slot 1's card onto slot 2.
+3. **Expected**: slot 1 now shows B (with B's own level/modifiers) and slot 2 shows A (with A's
+   own level/modifiers) — a swap, not an overwrite that discards either placement's modifiers.
+   The existing search-modal flow (Scenario 8) must still work for both slots afterward.
+
+## Validation scenario 10 — evolution-aware leveling (FR-022)
+
+1. Place Panbud in a slot.
+2. Set that placement's level to 3.
+3. **Expected**: the slot now shows Bambudo (Panbud's level-3 evolution, research.md E2.6) at
+   level 3 — not Panbud with a missing/disabled level-3 option.
+
+## Validation scenario 11 — persistent, non-overlapping detail side panel (FR-021)
+
+1. Hover a placed creature's card; confirm its details appear in the side panel.
+2. Move the pointer completely off every card (e.g. over empty page space).
+3. **Expected**: the side panel still shows the last-hovered creature's details — it does not
+   disappear. Hovering a different placed creature updates the panel to that creature instead.
+4. **Expected**: the panel never visually overlaps/covers another creature's card, regardless of
+   which row is hovered.
+
+## Validation scenario 12 — consistent type colors (FR-020)
+
+1. View a dual-typed creature's card background and its type tag chips (wherever both appear).
+2. **Expected**: both the card background and the tag chips use the same color per type (from
+   the single `TYPE_COLORS` mapping) — never two different color treatments for one type.
+
 ## Automated checks
 
 ```bash

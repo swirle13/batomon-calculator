@@ -291,6 +291,120 @@ than silently omitting or silently asserting it).
   task — same pattern as the existing `tasks.md` T043 "full-corpus widening pass" — rather than a
   single task.
 
+## E. Round 3 follow-ups (2026-10-05 — reference-site UI inspiration, planned via `/speckit-plan`)
+
+### E1. Trust/provenance investigation: is batomon.com official?
+> **No.** `batomon.com` is an independent community-built companion site, not affiliated with
+> the game's developer/publisher. Confirmed via four independent angles:
+
+- **WHOIS**: `batomon.com` was registered 2026-07-23 (~2.5 months before this investigation)
+  through Cloudflare, Inc., with registrant identity privacy-redacted (Cloudflare's own privacy
+  proxy), billing address in Brazil (state SP). This is a personal/indie registration pattern,
+  not a corporate game-studio domain record — there is no organization name on file at all.
+- **TLS certificate**: issued by Google Trust Services (`WE1`), a generic auto-issued cert
+  (`DNS:batomon.com, DNS:*.batomon.com`, no Extended/Organization Validation) — issuable by
+  anyone who controls the domain; neutral evidence, doesn't indicate official status either way.
+- **Hosting**: DNS resolves to Cloudflare anycast IPs via Cloudflare nameservers
+  (`chad.ns.cloudflare.com`, `laila.ns.cloudflare.com`); HTTP response headers show a Next.js app
+  (`_next/static/chunks/...`) served through Cloudflare's edge (`server: cloudflare`,
+  `cf-ray`) — a standard indie-dev stack (Cloudflare Pages/Workers + Next.js), not a
+  publisher-grade CDN contract that would itself imply anything about affiliation.
+- **The site's own self-disclosure** (strongest signal): the page header reads "COMMUNITY META
+  COMPANION" directly under the logo, and its own FAQ states outright: *"Batomon.com is not the
+  game developer. Batomon.com is an independent community site... Only the game developer
+  announces official ports and release dates. Follow the official Steam page and official
+  Discord announcements."* — <https://batomon.com/faq>, retrieved 2026-10-05.
+- **Developer of record**: Batomon Showdown's actual developer and publisher, per its Steam
+  store page, is **berrymint** — <https://store.steampowered.com/app/4557380/Batomon_Showdown/>,
+  retrieved 2026-10-05. No evidence connects berrymint to batomon.com's registration or operation.
+
+**Conclusion**: batomon.com is in the same category as this project — a fan-built companion tool
+over the same community-sourced data (it even cites the identical "Balance 24 / Steam build
+25600878" patch label we already use) — not an authority to defer to uncritically, but a
+legitimate *additional* citable source for corpus research (it has its own per-creature wiki
+pages, e.g. `batomon.com/batomon/<slug>`), on the same footing as batodex.com/batomon.net/the
+various `batomonshowdow(n)*.wiki` sites already cited elsewhere in this document. The "AI
+generated" feel is very plausibly accurate (Next.js + generic Cloudflare hosting + a brand-new
+domain is a common AI-assisted-indie-site fingerprint) but is not itself evidence of malice —
+same caveat already applied to every other fan source cited throughout this document.
+
+### E2. UI/UX direction: adopt the reference site's team-builder layout concept, fix 7 defects
+The user wants this project's *layout concept* (icon-based creature cards in the grid,
+type-colored card backgrounds, a modal creature search per slot, level/Shiny controls per
+placement, a hover detail panel) without visually cloning batomon.com's Build Lab, and wants our
+own differentiators (StatModifiers, DPS/damage numbers — batomon.com's Build Lab has **none** of
+either) preserved and foregrounded, not lost in the redesign. The user also identified 7 concrete
+defects in the reference implementation to deliberately avoid:
+
+1. **Search modal doesn't autofocus or clear on reopen** — opening the picker for a *different*
+   slot keeps the previous slot's typed query, so the first thing visible is a stale, over-
+   filtered result list, and the user must manually click into the field to type at all.
+   **Decision**: the search input must both clear its value AND receive keyboard focus every
+   time the modal opens for any slot (not just the first time) — a standard modal-UX fix, no new
+   dependency.
+2. **No manual/custom stat values** — this is already this project's `StatModifier` system
+   (data-model.md's "Manual carry-over StatModifiers" amendment); nothing new needed here beyond
+   making sure the redesigned layout keeps the Modifiers section easy to find, not buried.
+3. **No DPS/damage display at all** — this project's entire reason to exist; the redesign must
+   keep `TeamSummary`/`CumulativeChart` prominent, not drop them for the sake of matching the
+   reference's visual density.
+4. **Type tag chips aren't color-coded the same way card backgrounds are** (user's screenshot 3):
+   the reference's per-creature detail card colors the sprite backdrop by type but renders the
+   "bug"/"fighting" pill chips below the name as plain uncolored outlines — two different
+   treatments for the same piece of information. **Decision**: define one canonical
+   `CreatureType -> color` mapping (data-model.md amendment below) and reuse it literally
+   everywhere a type is rendered as a color — card background, tag chip, and any future type
+   filter control — so this class of inconsistency can't recur.
+5. **No drag-and-drop between slots** — only a modal-based "click a slot, pick from a list" flow.
+   **Decision**: add drag-and-drop as an *additional* interaction, not a replacement — the
+   existing modal/dropdown-driven assignment must stay fully functional for keyboard/
+   screen-reader users (accessibility parity, Constitution-aligned with the still-open `tasks.md`
+   T054 accessibility pass). Library choice:
+   - **Decision**: `@dnd-kit/core`.
+   - **Rationale**: built-in keyboard support (arrow-key dragging) and screen-reader
+     announcements out of the box, unlike the native HTML5 Drag-and-Drop API (which is
+     keyboard-inaccessible by default and has inconsistent touch/mobile support without extra
+     polyfill work) — directly relevant since this project already has an open accessibility
+     task. Actively maintained, fully typed, and scoped exactly to "pick up/drop one item,"
+     with no sortable-list machinery this project doesn't need (a fixed 6-slot grid, not a
+     reorderable list).
+   - **Alternatives considered**: native HTML5 DnD (zero dependency, but the accessibility and
+     mobile gaps above are a direct regression against this project's own stated goals);
+     `react-dnd` (older, requires choosing + wiring a separate backend, more ceremony for the
+     same end result); `@dnd-kit/sortable` (unnecessary — that's for reorderable lists, not a
+     fixed grid of named slots).
+6. **Level selector doesn't offer a species' post-evolution levels** (user's examples: Scorchimp
+   → Sunsage, Panbud → Bambudo, both "at level 3"): the reference's level dropdown for a
+   creature that evolves at level 3 has no level-3/4 option at all, instead of switching the slot
+   to the evolved species. Confirmed both of the user's examples, plus a related evolutions
+   reference not yet cited elsewhere in this project:
+   - Panbud → Bambudo at level 3 — <https://batodex.com/monsters/panbud> ("Evolves into Bambudo
+     at Lv 3") and <https://batomon.com/batomon/panbud> ("Evolves into Bambudo at level 3"), both
+     retrieved 2026-10-05. (Scorchimp → Sunsage at level 3 was already confirmed and present in
+     this project's corpus — `src/data/creatures.ts`'s `evolvesInto: "sunsage"`.)
+   - "Batomon Showdown Evolutions Reference" — <https://batoforge.com/evolutions>, retrieved
+     2026-10-05 — lists 13 evolutions across 11 base Batomon for the current build; corroborates
+     Panbud→Bambudo, Scorchimp→Sunsage, and the already-cited Beetbud→Beetdown, but the scraped
+     table lost its trigger-condition column alignment for several pairs (notably Ignit, which
+     this source appears to list against *two* different targets — Basilord and Flarilisk — and
+     Sproutquill, listed against both Fernfowl and Quillustrous). **Left unresolved, not
+     guessed**: a branching evolution (more than one documented target) needs its own trigger
+     condition confirmed from a source with intact table structure before encoding either branch
+     — recorded as a research gap, not arbitrarily picked.
+   - **Engine/data implication**: `CreatureRecord` needs a level threshold paired with
+     `evolvesInto` (`evolvesAtLevel`, see data-model.md amendment) so the UI can resolve "the
+     user picked level 3 for a Panbud placement" into "show Bambudo at level 3" by lookup, not by
+     hiding the option. Actually populating this for creatures beyond Panbud/Scorchimp/Beetbud is
+     corpus-research work in the same spirit as `tasks.md` T075, not a one-shot fix.
+7. **Hover detail card isn't a persistent side panel** — it appears anchored to whichever card is
+   currently hovered, disappears when the pointer leaves, and visually covers lower-row cards
+   when a card near the top of the grid is hovered (z-index/anchoring bug). **Decision**: the
+   detail view becomes a single, layout-reserved side panel (not an overlay) driven by a
+   `highlightedSlot` piece of *transient UI state* — updates on hover/focus of a new card, never
+   clears on hover/focus-out, defaults to the first placed creature (or an empty state) rather
+   than nothing. This is explicitly UI-only state, not part of `TeamConfiguration` — see
+   data-model.md's note on keeping it out of the persisted team-config shape.
+
 ## C. Resolved Technical Context (feeds plan.md)
 
 | Field | Resolution |
