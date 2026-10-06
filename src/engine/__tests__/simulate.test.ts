@@ -359,32 +359,57 @@ describe("simulate", () => {
    * fires 3 independent direct-damage events at the same tSeconds per cooldown completion,
    * each independently eligible to proc Shock.
    */
-  it("Multicast fires N independent direct-damage events per cooldown completion", () => {
+  it("Multicast fires N independent direct-damage events, staggered 0.1s apart (research.md F2, round 4)", () => {
     const synthetic = multicastCorpus();
     const config: TeamConfiguration = {
       placements: [{ slot: { row: "front", col: 0 }, creatureId: "multiCaster", level: 1 }],
       trainerId: null,
       trinketIds: [],
       itemIds: [],
-      simulationWindowSeconds: 1,
+      // Window must extend to cover the full staggered burst (t=1.0/1.1/1.2), not just the
+      // cooldown-triggered timestamp itself -- a tighter window legitimately truncates later
+      // repetitions (see the next test).
+      simulationWindowSeconds: 1.2,
     };
     const result = simulate(config, synthetic);
 
-    // One cooldown completion at t=1 -> 3 independent "attack" events at the same tSeconds.
-    const attackEvents = result.timeline.filter((e) => e.kind === "attack" && e.tSeconds === 1);
+    // One cooldown completion at t=1 -> 3 independent "attack" events, staggered 0.1s apart
+    // (research.md F2, round 4 correction -- was simultaneous in round 2), NOT all at t=1.
+    const attackEvents = result.timeline
+      .filter((e) => e.kind === "attack")
+      .map((e) => e.tSeconds)
+      .sort((a, b) => a - b);
     expect(attackEvents).toHaveLength(3);
+    expect(attackEvents[0]).toBeCloseTo(1, 5);
+    expect(attackEvents[1]).toBeCloseTo(1.1, 5);
+    expect(attackEvents[2]).toBeCloseTo(1.2, 5);
 
-    // Each of the 3 hits deals its own 5 damage -> DPS = 15 / 1s = 15, not 5.
+    // Each of the 3 hits deals its own 5 damage -> total 15 damage / 1.2s window = 12.5 DPS.
     const key = Object.keys(result.perCreatureDps)[0]!;
-    expect(result.perCreatureDps[key]).toBeCloseTo(15, 5);
+    expect(result.perCreatureDps[key]).toBeCloseTo(15 / 1.2, 5);
 
     // Each hit independently procs Shock off the layers granted by the previous hits in the
     // same Multicast burst (1 Shock granted per hit, applied after that hit's own damage) ->
     // hit 1 procs 0 (no layers yet), hit 2 procs 1 (1 layer from hit 1), hit 3 procs 2 (2
-    // layers from hits 1+2) = 3 total Shock proc damage at t=1.
-    const shockProcs = result.timeline.filter((e) => e.kind === "shockProc" && e.tSeconds === 1);
+    // layers from hits 1+2) = 3 total Shock proc damage, now spread across t=1/1.1/1.2.
+    const shockProcs = result.timeline.filter((e) => e.kind === "shockProc");
     const totalShockProcDamage = shockProcs.reduce((sum, e) => sum + (e.damage ?? 0), 0);
     expect(totalShockProcDamage).toBeCloseTo(3, 5);
+  });
+
+  it("a Multicast repetition staggered past the simulation window is not generated", () => {
+    const synthetic = multicastCorpus(); // baseMulticast: 3, baseCooldownSeconds: 1
+    const config: TeamConfiguration = {
+      placements: [{ slot: { row: "front", col: 0 }, creatureId: "multiCaster", level: 1 }],
+      trainerId: null,
+      trinketIds: [],
+      itemIds: [],
+      // Window ends exactly between the 2nd (t=1.1) and 3rd (t=1.2) repetition.
+      simulationWindowSeconds: 1.15,
+    };
+    const result = simulate(config, synthetic);
+    const attackEvents = result.timeline.filter((e) => e.kind === "attack");
+    expect(attackEvents).toHaveLength(2);
   });
 
   /**

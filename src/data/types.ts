@@ -144,6 +144,15 @@ export interface CreatureRecord extends Provenance {
    * baseline absent contrary evidence in `abilityText`.
    */
   baseMulticast: number;
+  /**
+   * HP restored per cast, resolved after damage in the same tick (2026-10-05 round 4,
+   * research.md F3). Corpus data only — not simulated, same "no modeled target/HP pool" gap as
+   * Shield absorption (tasks.md T037) — until/unless a target entity exists.
+   */
+  healAmount?: number;
+  /** Extra gold gained when sold (2026-10-05 round 4, research.md F3) — shop/economy data
+   * (research.md B6, out of scope for the engine), recorded for Corpus Browser completeness. */
+  sellValue?: number;
   /** Layers/shield applied per cast, if any */
   appliesStatus?: { type: StatusEffectType; amount: number }[];
   abilityText: string;

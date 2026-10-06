@@ -200,6 +200,27 @@ below).
 4. **Expected**: its repeated casts land 0.1s apart in the timeline, not at the identical
    timestamp.
 
+## Validation results (2026-10-05, round 4 implementation — Scenarios 13-15)
+
+- **Scenario 13 — PASS.** `GridPicker`'s separate "Choose…"/"Change…" button was removed; the
+  card (`DraggableCard`) and the empty-slot placeholder (`EmptyCard`) are themselves the click
+  target (`onClick`/`onKeyDown` for Enter/Space), opening `CreatureSearchModal` for that slot.
+- **Scenario 14 — PASS.** `TeamSummary`'s "Slot" column and `PlacedCreatureDetails`'s slot-label
+  text were removed; both now show only name/level/stats, reading `${creatureId}@${slotKey}`
+  under the hood unchanged.
+- **Scenario 15 — PASS (automated).** `shield.test.ts` pins `STATUS_VS_SHIELD_REDUCTION` at
+  exactly 0.15 (20 damage -> 17 to Shield) as a regression test, not just "whatever the constant
+  says." `simulate.test.ts`'s Multicast tests assert three repetitions land at `t`, `t+0.1`,
+  `t+0.2` (not all at `t`), and that a repetition staggered past the simulation window is
+  correctly not generated.
+
+**Corpus scale-up results, logged honestly**: level-1 `baseDamage`/`baseCooldownSeconds`
+confirmation went from 9/149 to **92/149** this round (`tasks.md` T100, 81 new creatures via
+batodex.com individual pages). Level 2/3/4 stats remain an explicit, evidence-backed blocker
+(research.md F5) — not attempted with fabricated numbers. 5 evolution thresholds/targets
+confirmed (Panbud→Bambudo, Scorchimp→Sunsage, Beetbud→Beetdown, Dribblet→Emperooze,
+Frillet→Dewlotl, all at level 3).
+
 ## Automated checks
 
 ```bash

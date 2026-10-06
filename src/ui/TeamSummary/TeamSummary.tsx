@@ -20,7 +20,9 @@ export function TeamSummary({ config, result }: TeamSummaryProps) {
     // status grants enabled on OTHER hits (currently just Shock procs) — separate from its own
     // direct-damage DPS, so a Shock-granter's real value is visible even if its own DPS is 0.
     const facilitatedDps = result.perCreatureFacilitatedDps[key] ?? 0;
-    return { key, name: creature?.name ?? placement.creatureId, slot: placement.slot, dps, facilitatedDps };
+    // 2026-10-05 round 4 (FR-024): no longer carries `slot` for display -- the grid already
+    // shows position, so repeating it as text here was redundant (user-reported).
+    return { key, name: creature?.name ?? placement.creatureId, dps, facilitatedDps };
   });
 
   const statusRows = Object.entries(result.perStatusPerSecond).filter(([, value]) => value > 0);
@@ -33,7 +35,6 @@ export function TeamSummary({ config, result }: TeamSummaryProps) {
         <thead>
           <tr>
             <th>Creature</th>
-            <th>Slot</th>
             <th>DPS</th>
             <th title="Damage this creature's own status grants (e.g. Shock) enabled on other hits, not counted in its own DPS">
               Facilitated DPS
@@ -43,15 +44,14 @@ export function TeamSummary({ config, result }: TeamSummaryProps) {
         <tbody>
           {dpsRows.length === 0 && (
             <tr>
-              <td colSpan={4}>No creatures placed yet.</td>
+              {/* 2026-10-05 round 4 (FR-024): slot position is no longer shown as text here --
+                  the grid itself already shows it, so this is 3 columns now, not 4. */}
+              <td colSpan={3}>No creatures placed yet.</td>
             </tr>
           )}
           {dpsRows.map((row) => (
             <tr key={row.key}>
               <td>{row.name}</td>
-              <td>
-                {row.slot.row} {row.slot.col + 1}
-              </td>
               <td>{row.dps.toFixed(2)}</td>
               <td>{row.facilitatedDps > 0 ? row.facilitatedDps.toFixed(2) : "—"}</td>
             </tr>

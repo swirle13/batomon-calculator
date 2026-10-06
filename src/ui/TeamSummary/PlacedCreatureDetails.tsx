@@ -5,10 +5,6 @@ import type { GridSlot, SimulationResult } from "../../data/types";
 import { slotKey } from "../../engine/grid";
 import { TypeTag } from "../shared/TypeTag";
 
-function slotLabel(slot: GridSlot): string {
-  return `${slot.row === "back" ? "Back" : "Front"} ${slot.col + 1}`;
-}
-
 interface PlacedCreatureDetailsProps {
   result: SimulationResult;
   /**
@@ -52,8 +48,7 @@ export function PlacedCreatureDetails({ result, highlightedSlot }: PlacedCreatur
   if (!creature) {
     return (
       <div style={{ border: "1px solid #444857", borderRadius: 4, padding: "0.5rem" }}>
-        <strong>{placement.creatureId}</strong> ({slotLabel(placement.slot)}) — no corpus record
-        at level {placement.level}
+        <strong>{placement.creatureId}</strong> — no corpus record at level {placement.level}
       </div>
     );
   }
@@ -64,9 +59,9 @@ export function PlacedCreatureDetails({ result, highlightedSlot }: PlacedCreatur
   return (
     <div style={{ border: "1px solid #444857", borderRadius: 4, padding: "0.75rem" }}>
       <strong style={{ fontSize: "1.1em" }}>{creature.name}</strong>{" "}
-      <small>
-        ({slotLabel(placement.slot)} · Lv.{placement.level})
-      </small>
+      {/* 2026-10-05 round 4 (FR-024): slot position dropped from this label -- the grid already
+          shows it (user-reported redundancy); level is kept since it's not visible elsewhere. */}
+      <small>(Lv.{placement.level})</small>
       <div style={{ margin: "0.4rem 0", display: "flex", gap: "0.35rem", flexWrap: "wrap", alignItems: "center" }}>
         {creature.types.length > 0 ? (
           creature.types.map((t) => <TypeTag key={t} type={t} />)

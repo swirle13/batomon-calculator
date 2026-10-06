@@ -56,6 +56,7 @@
   padding: 0.5rem;
   color: #9ca3af;
   text-align: center;
+  cursor: pointer;
 }
 
 .fallbackDetails summary {

@@ -47,9 +47,14 @@ interface DraggableCardProps {
   types: CreatureType[];
   level: number;
   onHighlight: () => void;
+  /** FR-023 (2026-10-05 round 4): the card itself is the click target that opens
+   * CreatureSearchModal — no separate "Change…" button. Coexists with dragging on the same
+   * element: @dnd-kit/core's pointer sensor only starts an actual drag once the pointer moves
+   * past its activation threshold, so a plain click (no movement) still fires this normally. */
+  onOpenSearch: () => void;
 }
 
-function DraggableCard({ slot, name, types, level, onHighlight }: DraggableCardProps) {
+function DraggableCard({ slot, name, types, level, onHighlight, onOpenSearch }: DraggableCardProps) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: slotKey(slot),
     data: { slot },
@@ -63,12 +68,43 @@ function DraggableCard({ slot, name, types, level, onHighlight }: DraggableCardP
       style={{ background: typeBackground(types) }}
       onMouseEnter={onHighlight}
       onFocus={onHighlight}
+      onClick={onOpenSearch}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onOpenSearch();
+        }
+      }}
       tabIndex={0}
       role="button"
-      aria-label={`${name}, level ${level}. Draggable to another slot.`}
+      aria-label={`${name}, level ${level}. Click to change, or drag to another slot.`}
     >
       <div style={{ fontWeight: 600 }}>{name}</div>
       <div style={{ fontSize: "0.8em", opacity: 0.9 }}>Lv.{level}</div>
+    </div>
+  );
+}
+
+interface EmptyCardProps {
+  onOpenSearch: () => void;
+}
+
+function EmptyCard({ onOpenSearch }: EmptyCardProps) {
+  return (
+    <div
+      className={styles.emptyCard}
+      onClick={onOpenSearch}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onOpenSearch();
+        }
+      }}
+      tabIndex={0}
+      role="button"
+      aria-label="Empty slot. Click to choose a creature."
+    >
+      — empty —
     </div>
   );
 }
@@ -127,15 +163,12 @@ export function GridPicker({ onHighlightSlot }: GridPickerProps) {
                           types={creature.types}
                           level={placement.level}
                           onHighlight={() => onHighlightSlot(slot)}
+                          onOpenSearch={() => setSearchModalSlot(slot)}
                         />
                       ) : (
-                        <div className={styles.emptyCard}>— empty —</div>
+                        <EmptyCard onOpenSearch={() => setSearchModalSlot(slot)} />
                       )}
                     </DroppableZone>
-
-                    <button type="button" onClick={() => setSearchModalSlot(slot)}>
-                      {placement ? "Change…" : "Choose…"}
-                    </button>
 
                     {placement && availableLevels.length > 0 && (
                       <select

@@ -16,7 +16,7 @@ type View = "calculator" | "corpus";
 
 /** FR-014: state which corpus/patch snapshot is active, on both views. */
 const CORPUS_PATCH_LABEL =
-  "Balance 24 / 1.2.0 (community-imported build) — 149 named Batomon, 8 with confirmed cooldown/damage, 23 Trainers, see README";
+  "Balance 24 / 1.2.0 (community-imported build) — 149 named Batomon, 92 with confirmed cooldown/damage, 23 Trainers, see README";
 
 function CalculatorView() {
   const { config, setSimulationWindowSeconds } = useTeamConfig();

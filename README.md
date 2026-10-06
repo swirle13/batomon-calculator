@@ -49,18 +49,20 @@ of hiding them.
 
 **Current status**: `src/data/creatures.ts` covers all **149 named Batomon** reconciled from the
 fan-wiki sources reviewed (name/rarity/types/ability text for all of them, shop cost for most).
-8 entries now have a fully complete, engine-usable stat set (`baseCooldownSeconds`/`baseDamage`/
-`damageType`) — the original 6 hand-researched entries (Bumblebolt, Formiqueen, Venopuff,
-Scorchimp, Pebbler, Onsetra) plus Brawlmantis/Dracana/Frizzly, confirmed 2026-10-05 round 2 via
-batodex.com's individual per-creature detail pages (which turn out to exist for every creature,
-not just these — closing this gap for the other ~141 is tracked as ongoing work, `tasks.md`
-T075). None of the *bulk* sources reviewed publish per-creature cooldown/damage numbers; only
-individual detail pages do. The other ~141 entries have `baseCooldownSeconds`/`baseDamage`/
-`abilityTags` as `null`/`[]`, explicitly listed in each entry's `unconfirmedFields` (rendered as
-"unknown" in the Corpus Browser, never a misleading `0`) — they're browsable/searchable today
-but won't contribute DPS to a simulation until someone sources their individual stat pages.
-Trainers now cover the full documented **23-Trainer roster** (`T070`, round 2) — Trinkets/Items
-are still an empty seed stub (`T045`–`T046`, not yet done).
+**92 of 149** now have a fully complete, engine-usable level-1 stat set
+(`baseCooldownSeconds`/`baseDamage`-or-confirmed-absent/`damageType`), confirmed via
+batodex.com's individual per-creature detail pages across rounds 2 and 4 (round 4 alone added
+81 — `tasks.md` T100). None of the *bulk* sources reviewed publish per-creature cooldown/damage
+numbers; only individual detail pages do, which is why this is ongoing, incremental work rather
+than a single pass. The remaining ~57 entries have `baseCooldownSeconds`/`baseDamage` as `null`,
+explicitly listed in each entry's `unconfirmedFields` (rendered as "unknown" in the Corpus
+Browser, never a misleading `0`) — they're browsable/searchable today but won't contribute DPS
+to a simulation until sourced. **Level 2/3/4 stats are a confirmed hard blocker**, not just
+unfinished — no available source publishes them outside a live, JavaScript-driven in-game/wiki
+UI control (research.md F5); 5 species-level evolution thresholds/targets are confirmed instead
+(e.g. Panbud→Bambudo, Scorchimp→Sunsage, Dribblet→Emperooze, all at level 3). Trainers cover the
+full documented **23-Trainer roster** (`T070`, round 2) — Trinkets/Items are still an empty seed
+stub (`T045`–`T046`, not yet done).
 
 ### Refreshing the corpus for a new game patch
 
@@ -82,10 +84,12 @@ are still an empty seed stub (`T045`–`T046`, not yet done).
   *user's team's own outgoing damage* against one implicit "idealized target" (see spec.md's
   Assumptions) — there's no modeled opposing HP/Shield pool for it to reduce yet. See `tasks.md`
   T037.
-- **Corpus depth.** All 149 creatures are named/typed/searchable, but only 8 have confirmed
-  cooldown/damage numbers (see above) — the rest can't contribute DPS to a simulation yet, and
-  no creature has a researched level 2/3/4 stat variant yet either. Trinkets/Items are still an
-  empty seed stub. See `tasks.md` T075 (creatures/levels) and T045–T046 (Trinkets/Items).
+- **Corpus depth.** 92 of 149 creatures have confirmed cooldown/damage numbers (see above) — the
+  other ~57 can't contribute DPS to a simulation yet. **Level 2/3/4 stats are a confirmed,
+  tooling-level blocker** (research.md F5), not just unfinished work — no available source
+  publishes them outside a live, JavaScript-driven UI control, confirmed by direct fetch across
+  multiple sites. Trinkets/Items are still an empty seed stub. See `tasks.md` T100
+  (creature level-1 completion, ongoing) and T045–T046 (Trinkets/Items).
 - **StatModifiers are a manual, honest-effort tool, not a simulated economy.** They let you
   describe the net effect of a previous round's carry-over bonus, but the engine never derives
   them from actual match history (there is no multi-round match model at all).
