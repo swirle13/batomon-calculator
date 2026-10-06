@@ -351,7 +351,14 @@ export interface SimulationResult {
    * `(finalRate - initialRate) / windowSeconds`, and the initial rate is always 0.
    * Computed exactly rather than by curve-fitting -- a least-squares slope over 1-second buckets
    * was measured against a known-exact case and was both noisy and NaN-prone at a 1s window
-   * (research.md I13). Clearly positive for Poison (stacks never decay), ~0 for Burn (they do).
+   * (research.md I13).
+   *
+   * Positive for BOTH Poison and Burn in practice, for different reasons -- an earlier version of
+   * this comment wrongly claimed Burn was ~0. Poison's stacks never decay, so it grows without
+   * bound forever. Burn's instances each decay at a fixed 1 layer per 0.5s tick regardless of
+   * size, so an N-layer instance lives N/2 seconds -- Basilord's 170 burn lasts 85s, far longer
+   * than a battle. Burn therefore climbs throughout any realistic fight and plateaus only in
+   * principle. Only a *tiny* burn stack settles quickly.
    */
   perStatusDamageGrowthPerSecond: Record<StatusEffectType, number>;
   /**

@@ -386,8 +386,11 @@ of why the round-3 investment in component tests was worth it.
 2. **Expected**: the status table reports, for Poison, damage/second **and** stacks applied/second
    **and** a clearly positive damage/s² growth figure — because Poison stacks never decay
    (research.md B2/I13).
-3. **Expected**: Burn's growth figure is at or near zero, since Burn stacks do decay and reach a
-   steady state. The two statuses must not report the same growth shape.
+3. **Expected**: a real fire build (Basilord/Blixie/Pyronade) **also** reports clearly positive
+   Burn growth — do *not* expect zero. Each burn instance sheds 1 stack per tick regardless of its
+   size, so a big application (Basilord's 170 lives ~85s) outlasts the battle and new ones
+   accumulate faster than old ones drain. Only a *tiny* burn stack (e.g. a lone Brimtoad applying
+   Burn 1) settles quickly — that case is tested separately so the distinction stays recorded.
 4. **Expected**: each Poison applier now shows a non-zero **Facilitated DPS**, rather than 0.00 for
    both its own and its facilitated contribution.
 5. **Expected**: own-DPS is still 0.00 for a creature with no direct damage — facilitated output is
@@ -446,7 +449,11 @@ of why the round-3 investment in component tests was worth it.
   no result card contains rarity text, and **no element anywhere renders a `linear-gradient`** —
   which is the structural guarantee that the sliver is gone, since it came from a gradient painted
   across the border box.
-- **Scenario 28 — PASS (automated, with exact numbers pinned).** A lone Drumire over 20s: 320 total
+- **Scenario 28 — PASS (automated, with exact numbers pinned), amended after a user correction.**
+  The original Burn assertion was wrong: it used a lone Brimtoad (Burn 1 every 6s — the weakest in
+  the corpus, expiring in 0.5s) and concluded Burn's growth was ~0. A real fire build reports
+  **38.90/s²** at a 20s window. Both cases are now tested: a real build grows, a tiny stack
+  settles. A lone Drumire over 20s: 320 total
   Poison damage (16.00/s average), 40/s final rate, 2.00 damage/s² growth, 2.00 stacks/s applied —
   and 16.00 facilitated DPS attributed to Drumire while its own DPS stays absent. Poison's growth
   > 1 while Burn's < 0.1 over the same window, which is the mechanic (Poison stacks never decay).

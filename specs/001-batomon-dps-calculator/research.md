@@ -1138,9 +1138,38 @@ follow-up guess ("this is how much poison is applied per second") is **not** it.
   So the real distortion is roughly **2.1–2.5×**, not 4.5×. Still large enough that one averaged
   figure materially misleads, which is the user's point and it stands — but the headline number is
   corrected rather than left overstated.
-- **Burn, measured the same way, genuinely flattens**: a Brimtoad's final eight 1-second buckets
-  over a 60 s window are `0, 0, 1, 0, 0, 0, 0, 0`. The qualitative Poison-vs-Burn difference is
-  real and is the thing worth displaying.
+- **CORRECTION (user-reported, after this section was first written): Burn also climbs, and the
+  evidence I used to say otherwise was a badly-chosen fixture.** This section originally read
+  "Burn, measured the same way, genuinely flattens", citing a Brimtoad's final 1-second buckets
+  over a 60 s window (`0, 0, 1, 0, 0, 0, 0, 0`). That measurement is real but unrepresentative:
+  Brimtoad applies **Burn 1** every 6 s, the weakest burn in the corpus, and a 1-layer instance
+  expires in 0.5 s. It was always going to look flat.
+
+  The user observed real play where burn kept climbing across a fire board, and re-measuring
+  against an actual fire build confirms them:
+
+  ```text
+  team: Basilord(170), Blixie(30), Coalem(20), Pyronade(20), Flarilisk(10), Snapscald(8)
+  W= 20s: avg  353.6/s  end  778/s  growth 38.90/s^2   curve 0 -> 20 -> 472 -> 450 -> 851
+  W= 60s: avg 1000.6/s  end 1798/s  growth 29.97/s^2   curve 0 -> 450 -> 966 -> 1411 -> 1766
+  W=120s: avg 1463.2/s  end 2190/s  growth 18.25/s^2   curve 0 -> 966 -> 1735 -> 2026 -> 1898
+  ```
+
+  **Mechanism**: each Burn *instance* sheds exactly 1 layer per 0.5 s tick **regardless of its
+  size**, so an N-layer instance lives `N/2` seconds. Basilord's 170-stack lives **85 s**. With a
+  fresh application every 8 s, instances accumulate far faster than any one drains. A steady state
+  does exist — aggregate decay scales with the number of live instances — but the *time to reach
+  it* is on the order of the largest stack's lifetime, which exceeds a real battle. The curve above
+  only begins to flatten at a 120 s window.
+
+- **The corrected Poison-vs-Burn distinction** is therefore quantitative, not binary:
+  - **Poison** grows **without bound, forever** — its stacks never decay, so there is no steady
+    state at any window length.
+  - **Burn** grows **throughout any realistic fight** and plateaus only in principle. Only a small
+    burn stack settles quickly.
+
+  Both warrant the growth column. The original framing ("Poison grows, Burn doesn't") would have
+  told fire-build users their scaling was flat when it is not.
 - **Why Poison in particular**: `applyStatusTick` decrements layers for **Burn** but explicitly
   **not** for Poison (research.md B2) — "Poison: layers do NOT decrease from the act of ticking".
   So every Poison application permanently adds its full amount to a per-tick damage floor, and the

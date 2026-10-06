@@ -728,11 +728,38 @@ describe("second-order status metrics (FR-055/056/057)", () => {
     expect(result.perStatusDamageGrowthPerSecond.Poison).toBeCloseTo(140 / 60, 5);
   });
 
-  it("distinguishes a non-decaying status from a decaying one by its growth", () => {
-    // This qualitative difference IS the mechanic, not a tuned constant: applyStatusTick
-    // decrements Burn's layers and explicitly does not decrement Poison's (research.md B2).
-    const poison = simulate(drumireOnly(60), corpus);
-    const burn = simulate(
+  it("reports growth for BOTH Poison and a real Burn build -- Burn does not sit at zero", () => {
+    // CORRECTION (user-reported, 2026-10-06): an earlier version of this test asserted Burn's
+    // growth was ~0, using a LONE BRIMTOAD applying Burn 1 every 6s. That was fixture selection
+    // bias -- a 1-layer instance lives 0.5s, so it is at steady state instantly. It is the
+    // weakest burn in the corpus, and it confirmed an assumption instead of testing it.
+    //
+    // Each burn INSTANCE decays at a fixed 1 layer per 0.5s tick regardless of its size, so an
+    // N-layer instance lives N/2 seconds. Basilord's 170 burn lives 85s; with a new application
+    // every 8s, instances pile up faster than any one drains. Burn therefore climbs throughout
+    // any realistic battle and plateaus only in principle.
+    const fireBuild: TeamConfiguration = {
+      placements: [
+        { slot: { row: "back", col: 0 }, creatureId: "basilord", level: 1 },
+        { slot: { row: "back", col: 1 }, creatureId: "blixie", level: 1 },
+        { slot: { row: "back", col: 2 }, creatureId: "pyronade", level: 1 },
+      ],
+      trainerId: null,
+      trinketIds: [],
+      itemIds: [],
+      simulationWindowSeconds: 20,
+    };
+    const burn = simulate(fireBuild, corpus);
+    // Emphatically not zero, and not a rounding artifact.
+    expect(burn.perStatusDamageGrowthPerSecond.Burn).toBeGreaterThan(5);
+    // The end-of-window rate is far above the window average -- the same distortion Poison has.
+    expect(burn.perStatusFinalDamageRate.Burn).toBeGreaterThan(burn.perStatusPerSecond.Burn * 1.5);
+  });
+
+  it("still reaches steady state quickly when burn stacks are tiny", () => {
+    // The flip side, kept so the real distinction is recorded rather than over-corrected: a small
+    // burn stack DOES plateau fast, because its instance expires in well under a second.
+    const tinyBurn = simulate(
       {
         placements: [{ slot: { row: "back", col: 0 }, creatureId: "brimtoad", level: 1 }],
         trainerId: null,
@@ -742,8 +769,16 @@ describe("second-order status metrics (FR-055/056/057)", () => {
       },
       corpus,
     );
-    expect(poison.perStatusDamageGrowthPerSecond.Poison).toBeGreaterThan(1);
-    expect(burn.perStatusDamageGrowthPerSecond.Burn).toBeLessThan(0.1);
+    expect(tinyBurn.perStatusDamageGrowthPerSecond.Burn).toBeLessThan(0.1);
+  });
+
+  it("Poison grows without bound, which Burn does not -- the difference is duration, not presence", () => {
+    // Poison's growth persists at ANY window length because its stacks never decay at all.
+    // Burn's decays away eventually; it simply takes longer than a battle for big stacks.
+    const poisonShort = simulate(drumireOnly(20), corpus);
+    const poisonLong = simulate(drumireOnly(600), corpus);
+    expect(poisonShort.perStatusDamageGrowthPerSecond.Poison).toBeGreaterThan(1);
+    expect(poisonLong.perStatusDamageGrowthPerSecond.Poison).toBeGreaterThan(1);
   });
 
   it("attributes DOT damage to the creature that applied it, without inflating its own DPS", () => {

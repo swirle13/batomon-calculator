@@ -121,10 +121,13 @@ export function TeamSummary({ config, result }: TeamSummaryProps) {
         </table>
       </div>
       <p className={styles.note}>
-        A status whose stacks never decay (Poison) deals more damage every second as the fight goes
-        on, so <strong>Dmg/s (avg)</strong> understates a long battle — compare it with{" "}
-        <strong>Dmg/s (end)</strong>. Burn decays and settles to a steady rate, so its growth is
-        near zero. <strong>Applied/s</strong> is the stack <em>input</em> rate, not damage.
+        Status damage climbs as a fight goes on, so <strong>Dmg/s (avg)</strong> understates a long
+        battle — compare it with <strong>Dmg/s (end)</strong>. Poison never stops growing: its
+        stacks don&rsquo;t decay at all. Burn grows too, for most of a realistic fight — each burn
+        instance sheds 1 stack per tick no matter how big it was, so a large application takes a
+        long time to burn out (a 170-stack burn lasts ~85s) and new ones pile up faster than old
+        ones drain. Only small burn stacks settle quickly.{" "}
+        <strong>Applied/s</strong> is the stack <em>input</em> rate, not damage.
       </p>
     </section>
   );

@@ -497,8 +497,11 @@ interface SimulationResult {
   /** Growth of the damage rate, in damage per second per second, by status.
    * Computed from the simulated timeline by bucketing tick damage into 1-second windows and
    * taking a least-squares slope -- NOT from a closed-form assumption about how stacks compound,
-   * so it stays correct if the decay rules are later refined. ~0 for a status at steady state
-   * (Burn), clearly positive for one whose stacks never decay (Poison). */
+   * so it stays correct if the decay rules are later refined.
+   * Positive for BOTH Poison and Burn in practice (an earlier draft wrongly said Burn was ~0):
+   * Poison's stacks never decay so it grows forever, while each Burn instance sheds 1 layer per
+   * tick regardless of size, so a large application outlives the battle and new ones pile up
+   * faster than old ones drain. Only a small burn stack settles quickly. */
   perStatusDamageGrowthPerSecond: Record<StatusEffectType, number>;
 }
 ```
