@@ -19,3 +19,47 @@
   padding: 0.5rem;
   font-size: 0.9rem;
 }
+
+/* Round 3 (2026-10-05): drag-and-drop + type-colored cards (FR-019/FR-020). */
+.slot {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.dropZone {
+  border: 2px dashed transparent;
+  border-radius: 6px;
+  padding: 0.15rem;
+}
+
+.dropZoneOver {
+  border-color: #f5f5f5;
+}
+
+.card {
+  border-radius: 6px;
+  padding: 0.5rem;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+  cursor: grab;
+  user-select: none;
+}
+
+.cardDragging {
+  opacity: 0.5;
+}
+
+.emptyCard {
+  border: 1px dashed #666;
+  border-radius: 6px;
+  padding: 0.5rem;
+  color: #9ca3af;
+  text-align: center;
+}
+
+.fallbackDetails summary {
+  font-size: 0.8rem;
+  color: #9ca3af;
+  cursor: pointer;
+}

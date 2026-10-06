@@ -89,6 +89,14 @@ are still an empty seed stub (`T045`–`T046`, not yet done).
 - **StatModifiers are a manual, honest-effort tool, not a simulated economy.** They let you
   describe the net effect of a previous round's carry-over bonus, but the engine never derives
   them from actual match history (there is no multi-round match model at all).
+- **Evolution-aware leveling (`resolveLevelUp`) can't be demonstrated live yet.** The mechanism
+  is implemented and unit-tested (`src/engine/evolution.ts`), and Panbud→Bambudo / Scorchimp→
+  Sunsage / Beetbud→Beetdown are cited at level 3 — but the real corpus only has level-1 stat
+  records for every species (same gap as above), so the live level selector can't yet offer a
+  level that actually triggers a resolved evolution. See `tasks.md` T075.
+- **Drag-and-drop is pointer-only; the search modal has no full focus trap.** Both are tracked
+  under the still-open accessibility pass (`tasks.md` T054/T091) — the plain `<select>` fallback
+  remains fully keyboard-operable as the accessible path for rearranging placements.
 - **No GitHub repo has been created/pushed yet** for this project (`tasks.md` T055) — do that
   before expecting the `deploy.yml` GitHub Actions workflow to run.
 

@@ -9,6 +9,7 @@ import { CumulativeChart } from "./ui/CumulativeChart/CumulativeChart";
 import { CorpusBrowser } from "./ui/CorpusBrowser/CorpusBrowser";
 import { corpus } from "./data/corpus";
 import { simulate } from "./engine/simulate";
+import type { GridSlot } from "./data/types";
 import "./App.css";
 
 type View = "calculator" | "corpus";
@@ -20,6 +21,10 @@ const CORPUS_PATCH_LABEL =
 function CalculatorView() {
   const { config, setSimulationWindowSeconds } = useTeamConfig();
   const result = useMemo(() => simulate(config, corpus), [config]);
+  // 2026-10-05 round 3 (FR-021 / data-model.md's "Persistent side-panel... is UI state, not
+  // team data" amendment): transient, lifted here (not TeamConfigContext) because it's purely
+  // a display concern, never read by simulate() or persisted with the team configuration.
+  const [highlightedSlot, setHighlightedSlot] = useState<GridSlot | null>(null);
 
   return (
     <div>
@@ -30,10 +35,10 @@ function CalculatorView() {
         <TrainerPicker />
       </p>
       <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap", alignItems: "flex-start" }}>
-        <GridPicker />
+        <GridPicker onHighlightSlot={setHighlightedSlot} />
         <div style={{ flex: "1 1 16rem", minWidth: "16rem", textAlign: "left" }}>
           <h3>Placed Banto stats</h3>
-          <PlacedCreatureDetails result={result} />
+          <PlacedCreatureDetails result={result} highlightedSlot={highlightedSlot} />
         </div>
       </div>
       <p>

@@ -150,6 +150,12 @@ export interface CreatureRecord extends Provenance {
   abilityTags: AbilityTag[];
   /** CreatureRecord.id this transforms into, if any (e.g. Riglet -> Rigalord) */
   evolvesInto?: string;
+  /**
+   * The level at which `evolvesInto` takes effect, e.g. 3 for Panbud -> Bambudo (2026-10-05
+   * round 3, data-model.md's "Evolution-aware leveling" amendment). Required whenever
+   * `evolvesInto` is set; a species with no evolution has neither field.
+   */
+  evolvesAtLevel?: 2 | 3 | 4;
 }
 
 export interface TrainerRecord extends Provenance {

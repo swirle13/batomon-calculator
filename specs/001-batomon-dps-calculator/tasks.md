@@ -368,19 +368,19 @@ non-overlapping detail side panel (FR-021), and evolution-aware leveling (FR-022
 
 ### Foundational (blocking — no story label, same as Phase 2)
 
-- [ ] T076 Add `evolvesAtLevel?: 2 | 3 | 4` to `CreatureRecord` in `src/data/types.ts`, paired
+- [x] T076 Add `evolvesAtLevel?: 2 | 3 | 4` to `CreatureRecord` in `src/data/types.ts`, paired
       with the existing `evolvesInto` — data-model.md: "Required whenever `evolvesInto` is set;
       a species with no evolution has neither field"
-- [ ] T077 [P] Add `@dnd-kit/core` to `package.json` dependencies (plan.md Technical Context —
+- [x] T077 [P] Add `@dnd-kit/core` to `package.json` dependencies (plan.md Technical Context —
       chosen over native HTML5 Drag-and-Drop for built-in keyboard/screen-reader support)
-- [ ] T078 [P] Create `src/data/typeColors.ts`: `TYPE_COLORS: Record<CreatureType, string>` (one
+- [x] T078 [P] Create `src/data/typeColors.ts`: `TYPE_COLORS: Record<CreatureType, string>` (one
       hex color per `CreatureType`, including `"All"`) + `typeColor(type): string` — data-model.md's
       "Canonical `CreatureType` color mapping" amendment, the single source every UI component
       below must import rather than defining its own color per type
 
 ### Tests for Phase 8 ⚠️ write first, confirm failing before implementing (Constitution Principle III, NON-NEGOTIABLE)
 
-- [ ] T079 [P] Write failing unit tests for `resolveLevelUp(corpus, baseSpeciesId, targetLevel)`
+- [x] T079 [P] Write failing unit tests for `resolveLevelUp(corpus, baseSpeciesId, targetLevel)`
       in a new `src/engine/__tests__/evolution.test.ts` (contracts/engine-api.md): Panbud at
       level 3 resolves to Bambudo; Scorchimp at level 3 resolves to Sunsage; a species with no
       `evolvesInto` resolves to itself at any level; resolving to a species/level pair absent
@@ -388,40 +388,40 @@ non-overlapping detail side panel (FR-021), and evolution-aware leveling (FR-022
 
 ### Implementation for Phase 8
 
-- [ ] T080 [US1] Implement `resolveLevelUp()` in a new `src/engine/evolution.ts` to satisfy T079
+- [x] T080 [US1] Implement `resolveLevelUp()` in a new `src/engine/evolution.ts` to satisfy T079
       (depends on T076)
-- [ ] T081 [US3] Update `src/data/creatures.ts`: add `evolvesAtLevel: 3` to Beetbud and Scorchimp
+- [x] T081 [US3] Update `src/data/creatures.ts`: add `evolvesAtLevel: 3` to Beetbud and Scorchimp
       (both already have `evolvesInto` and an "Evolves at level 3" `abilityText`); add
       `evolvesInto: "bambudo"` + `evolvesAtLevel: 3` to Panbud and remove `"evolvesInto"` from
       its `unconfirmedFields`, cited via <https://batodex.com/monsters/panbud> and
       <https://batomon.com/batomon/panbud> (research.md E2.6) (depends on T076)
-- [ ] T082 [US1] Build a creature-search modal (`src/ui/GridPicker/CreatureSearchModal.tsx`)
+- [x] T082 [US1] Build a creature-search modal (`src/ui/GridPicker/CreatureSearchModal.tsx`)
       satisfying FR-018: every time it opens, for any slot, it MUST clear any previously-entered
       search text and move keyboard focus into the search field immediately
-- [ ] T083 [US1] Wire `CreatureSearchModal` into `src/ui/GridPicker/GridPicker.tsx` as the
+- [x] T083 [US1] Wire `CreatureSearchModal` into `src/ui/GridPicker/GridPicker.tsx` as the
       primary assignment flow; keep the existing `<select>` fully functional as an
       always-available fallback (FR-019's note that the search/modal flow must remain available
       for users who don't use drag-and-drop — same keyboard/screen-reader parity reasoning)
       (depends on T082)
-- [ ] T084 [US1] Add drag-and-drop between grid slots in `src/ui/GridPicker/GridPicker.tsx`
+- [x] T084 [US1] Add drag-and-drop between grid slots in `src/ui/GridPicker/GridPicker.tsx`
       using `@dnd-kit/core`'s `DndContext`/`useDraggable`/`useDroppable`: dropping a placement
       onto an **empty** slot moves it; dropping onto an **occupied** slot **swaps** the two
       placements, each keeping its own level and modifiers (data-model.md's "Drag-and-drop
       placement editing" amendment, FR-019) (depends on T077)
-- [ ] T085 [US1] Wire `resolveLevelUp()` into the per-placement level selector in
+- [x] T085 [US1] Wire `resolveLevelUp()` into the per-placement level selector in
       `src/ui/GridPicker/GridPicker.tsx` (the selector added in T072): selecting a level resolves
       through evolution, updating the slot's `creatureId` to the resolved species whenever it
       differs from the currently-placed one (FR-022) (depends on T080, T081)
-- [ ] T086 [US3] Build a `TypeTag` component (`src/ui/shared/TypeTag.tsx`) using `typeColor()`
+- [x] T086 [US3] Build a `TypeTag` component (`src/ui/shared/TypeTag.tsx`) using `typeColor()`
       from `src/data/typeColors.ts`; replace the plain-text type rendering in
       `src/ui/TeamSummary/PlacedCreatureDetails.tsx` and `src/ui/CorpusBrowser/CorpusBrowser.tsx`
       with it (FR-020) (depends on T078)
-- [ ] T087 [US1] Apply `typeColor()` to each placed creature's card background in
+- [x] T087 [US1] Apply `typeColor()` to each placed creature's card background in
       `src/ui/GridPicker/GridPicker.tsx` (and in `CreatureSearchModal`'s result tiles): a
       split/gradient background using both colors for dual-typed creatures, per data-model.md's
       "Dual-typed creatures render a split/gradient background... each type stays individually
       identifiable" (FR-020) (depends on T078, T082)
-- [ ] T088 [US1] Refactor `PlacedCreatureDetails` (`src/ui/TeamSummary/PlacedCreatureDetails.tsx`)
+- [x] T088 [US1] Refactor `PlacedCreatureDetails` (`src/ui/TeamSummary/PlacedCreatureDetails.tsx`)
       into a persistent side panel driven by a `highlightedSlot: GridSlot | null` state lifted
       into `CalculatorView` (`src/App.tsx`): hovering/focusing a placed creature's card updates
       `highlightedSlot`; hover/focus **leaving** a card MUST NOT clear it (sticky); the panel
@@ -431,12 +431,21 @@ non-overlapping detail side panel (FR-021), and evolution-aware leveling (FR-022
 
 ### Polish for Phase 8
 
-- [ ] T089 [P] Re-run quickstart.md Validation Scenarios 8–12 end-to-end; record results in
+- [x] T089 [P] Re-run quickstart.md Validation Scenarios 8–12 end-to-end; record results in
       quickstart.md's Validation results section
-- [ ] T090 Verify `npx tsc -b --noEmit`, full `npx vitest run`, and `npm run build` all pass
-- [ ] T091 [P] Accessibility check for `CreatureSearchModal` (focus trap, Escape-to-close) and
+- [x] T090 Verify `npx tsc -b --noEmit`, full `npx vitest run`, and `npm run build` all pass
+- [x] T091 [P] Accessibility check for `CreatureSearchModal` (focus trap, Escape-to-close) and
       the drag-and-drop interaction (keyboard-equivalent reachable via the fallback `<select>`
       flow from T083) — ties into the still-open `tasks.md` T054 accessibility pass
+      **Checked, 2026-10-05**: `CreatureSearchModal` has `role="dialog"`/`aria-modal="true"`/
+      `aria-label`, Escape-to-close, backdrop-click-to-close, and autofocus (all covered by
+      `CreatureSearchModal.test.tsx`) — but does **not** implement a full Tab focus trap (Tab
+      can still reach elements behind the overlay). `@dnd-kit/core`'s drag-and-drop is
+      pointer-only here (no `KeyboardSensor` configured) — by design, the fallback `<select>`
+      dropdown (kept fully functional per data-model.md's round-3 amendment) is the keyboard-
+      equivalent path for rearranging placements, achieving the same end state in more steps
+      rather than needing native keyboard-drag. Both gaps (focus trap, keyboard-native drag) are
+      left for T054's broader accessibility pass, not silently claimed as solved here.
 
 **Checkpoint**: Search modal autofocuses/clears per slot; drag-and-drop swap works alongside the
 existing dropdown; one canonical type-color mapping used everywhere; the detail panel is

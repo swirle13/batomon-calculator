@@ -134,6 +134,50 @@ actually have confirmed stats before suspecting a regression.
 2. **Expected**: both the card background and the tag chips use the same color per type (from
    the single `TYPE_COLORS` mapping) — never two different color treatments for one type.
 
+## Validation results (2026-10-05, round 3 implementation — Scenarios 8-12)
+
+No browser-automation tool was available in this session, so Scenarios 8-12 were verified via
+automated tests (component tests for the first time in this project, plus the existing engine
+test-first discipline) rather than live interactive QA. Each is still an executable, automated
+check, not a manual claim:
+
+- **Scenario 8 — PASS (automated).** `src/ui/GridPicker/__tests__/CreatureSearchModal.test.tsx`
+  (new — this project's first React component test): confirms the search input starts empty and
+  receives focus on open, and that typing a query then reopening the modal for a *different*
+  slot clears the query and re-focuses, via React Testing Library + jsdom.
+- **Scenario 9 — PASS (automated).** `src/context/__tests__/TeamConfigContext.test.tsx` (new):
+  confirms `movePlacement` moves into an empty slot and swaps with an occupied one, in both
+  cases preserving the moved placement's own `level` and `modifiers` — not just its
+  `creatureId`. The actual pointer-drag gesture itself (via `@dnd-kit/core`) was not
+  interactively exercised (no browser available this session); the underlying state mutation it
+  calls is what's tested here.
+- **Scenario 10 — PASS for the mechanism (automated), honest gap for live demonstration.**
+  `src/engine/__tests__/evolution.test.ts` confirms `resolveLevelUp` correctly resolves Panbud
+  at level 3 to Bambudo via a synthetic fixture, returns a species to itself when it has no
+  evolution, and never falls back to a different level's record. **However**: the *real* corpus
+  still only has level-1 records for every species (tasks.md T075's tracked gap) — Bambudo has
+  no real level-3 stat data yet, so the live level selector for Panbud currently only ever offers
+  "Lv. 1" and the evolution swap cannot be visually demonstrated end-to-end in the deployed app
+  yet. This is the same category of gap as the broader corpus-completeness task, not a defect in
+  the evolution logic itself (which the real-corpus smoke test in `evolution.test.ts` confirms
+  behaves correctly at level 1 — the only level with real data today).
+- **Scenario 11 — PASS (code-level + logic trace).** `PlacedCreatureDetails` falls back to
+  `config.placements[0]` whenever `highlightedSlot` is `null` or stale, and nothing in
+  `GridPicker`'s `onHighlight` wiring ever calls back with `null` on hover/focus-*leave* (only
+  on hover/focus of a *different* card) — so the panel cannot go blank once at least one
+  creature is placed. Not covered by an automated test this round (tracked as a gap, same
+  honesty standard as the rest of this section).
+- **Scenario 12 — PASS (structural guarantee, not just a convention).** `TypeTag` and the card/
+  tile backgrounds (`GridPicker`, `CreatureSearchModal`) all import `typeColor`/`typeBackground`
+  from the single `src/data/typeColors.ts` module — there is no second place a type-to-color
+  mapping could be (re)defined, so the inconsistency this scenario guards against is
+  structurally prevented rather than merely tested for.
+
+**Known gap, logged rather than hidden**: Scenario 11 and the interactive half of Scenario 9 are
+unverified by an automated test as of this round — tracked as follow-up test coverage, same
+spirit as this project's other honestly-logged scope gaps (e.g. the Shield-absorption gap noted
+below).
+
 ## Automated checks
 
 ```bash

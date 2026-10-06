@@ -100,6 +100,26 @@ const batodexFrizzly: SourceRef = {
   retrievedAt: RETRIEVED,
 };
 
+/** Round-3 batch (tasks.md T081, 2026-10-05): Panbud, researched while adding its evolution
+ * link to Bambudo (research.md E2.6). */
+const batodexPanbud: SourceRef = {
+  url: "https://batodex.com/monsters/panbud",
+  title: "Panbud - Batodex",
+  retrievedAt: RETRIEVED,
+};
+
+const batomonComPanbud: SourceRef = {
+  url: "https://batomon.com/batomon/panbud",
+  title: "Panbud — Common Grass Batomon | batomon.com",
+  retrievedAt: RETRIEVED,
+};
+
+const patchNotesGuideSep2026: SourceRef = {
+  url: "https://batomonshowdowngame.wiki/updates/patch-notes/",
+  title: "Batomon Showdown Patch Notes Guide | Batomon (Sep 2026)",
+  retrievedAt: RETRIEVED,
+};
+
 const poisonBuildGuide: SourceRef = {
   url: "https://batomon-showdown-wiki.wiki/builds/batomon-showdown-poison-build",
   title: "Batomon Showdown Poison Build: The Complete Meta Guide",
@@ -251,6 +271,9 @@ export const creatures: CreatureRecord[] = [
       { kind: "statusGrant", target: { kind: "self" }, status: "Burn", amount: 5 },
     ],
     evolvesInto: "sunsage",
+    // Confirmed level-3 threshold, round 3 (research.md E2.6): corroborated independently by
+    // batodex.com and batomon.com's per-creature Scorchimp pages, both retrieved 2026-10-05.
+    evolvesAtLevel: 3,
     sourceRefs: [batodexScorchimp, communityDex],
     patch: "Balance 24 / 1.2.0 (community-imported build)",
   },
@@ -429,6 +452,9 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Evolves at level 3.",
     abilityTags: [],
     evolvesInto: "beetdown",
+    // Confirmed level-3 threshold, round 3 (research.md E2.6) -- "Evolves at level 3" above
+    // already stated the threshold; evolvesAtLevel just encodes it structurally for the engine.
+    evolvesAtLevel: 3,
     unconfirmedFields: [],
     sourceRefs: [communityDex, batodexHomepage],
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
@@ -1794,13 +1820,32 @@ export const creatures: CreatureRecord[] = [
     level: 1,
     baseMulticast: 1,
     shopCost: 10,
-    baseCooldownSeconds: null,
-    baseDamage: null,
-    damageType: null,
+    // 5 is the current Patch 1.2.0 value per the 1.2.0 patch-notes guide's explicit
+    // "Panbud/Bambudo cooldown 5.5 -> 5" changelog entry and batomon.com's own 1.2.0-tagged
+    // page; batodex.com still shows 5.5, recorded below as a conflict rather than silently
+    // dropped (Constitution Principle IV).
+    baseCooldownSeconds: 5,
+    baseDamage: 25,
+    damageType: "Direct",
+    // Confirmed level-3 threshold + target, round 3 (research.md E2.6): both batodex.com and
+    // batomon.com independently state "Evolves into Bambudo at level 3".
+    evolvesInto: "bambudo",
+    evolvesAtLevel: 3,
     abilityText: "Evolves at level 3.",
     abilityTags: [],
-    unconfirmedFields: ["baseCooldownSeconds", "baseDamage", "damageType", "evolvesInto"],
-    sourceRefs: [communityDex, demoTierCostTable],
+    sourceRefs: [communityDex, demoTierCostTable, batodexPanbud, batomonComPanbud, patchNotesGuideSep2026],
+    conflicts: [
+      {
+        field: "baseCooldownSeconds",
+        values: [
+          { value: 5.5, sourceRefs: [batodexPanbud] },
+          { value: 5, sourceRefs: [batomonComPanbud, patchNotesGuideSep2026] },
+        ],
+        resolution:
+          "5 adopted as the current Patch 1.2.0 value (explicit changelog entry); 5.5 appears " +
+          "to be a pre-patch snapshot batodex.com hasn't refreshed.",
+      },
+    ],
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {

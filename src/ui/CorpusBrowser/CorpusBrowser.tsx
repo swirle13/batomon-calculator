@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { corpus, filterCreatures, searchCreatures } from "../../data/corpus";
 import { displayField, isUnconfirmed } from "../../data/display";
 import type { CreatureType, Rarity } from "../../data/types";
+import { TypeTag } from "../shared/TypeTag";
 
 const TYPES: CreatureType[] = [
   "Fire", "Water", "Electric", "Toxic", "Flying", "Rock", "Grass", "Bug",
@@ -80,11 +81,14 @@ export function CorpusBrowser() {
             key={c.id}
             style={{ border: "1px solid #ccc", borderRadius: 4, padding: "0.75rem", marginBottom: "0.75rem" }}
           >
-            <h3>
-              {c.name}{" "}
-              <small>
-                ({displayField(c, "rarity", c.rarity)} — {c.types.length > 0 ? c.types.join(" / ") : "unknown"})
-              </small>
+            <h3 style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
+              {c.name}
+              <small>({displayField(c, "rarity", c.rarity)})</small>
+              {c.types.length > 0 ? (
+                c.types.map((t) => <TypeTag key={t} type={t} />)
+              ) : (
+                <small>unknown type</small>
+              )}
             </h3>
             <p>
               Cost ${displayField(c, "shopCost", c.shopCost)} · Cooldown{" "}
