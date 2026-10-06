@@ -98,8 +98,10 @@ them with `node scripts/vendor-sprites.mjs`.
 2. If multiple sources disagree, add a `FieldConflict` entry rather than overwriting — pick a
    `resolution` only if you have a clear reason to prefer one source, and say why.
 3. Update the record's `patch` field to the new patch identifier.
-4. Update the "Corpus snapshot" label shown in the app header (`src/App.tsx`,
-   `CORPUS_PATCH_LABEL`).
+4. Update the "Corpus snapshot" label, which lives in the **Corpus Browser's** summary line
+   (`src/ui/CorpusBrowser/CorpusBrowser.tsx`, `CORPUS_PATCH_LABEL`). It used to sit in the app
+   header on every view; round 7 moved it here when the header prose was removed (FR-050), and
+   FR-014 was narrowed to "stated somewhere discoverable" rather than dropped.
 5. Re-run `npm run test` — engine tests pin exact numeric expectations (e.g. Bumblebolt's DPS)
    against today's seed values, so a real balance change should make the relevant test fail
    until you update its expected numbers too.

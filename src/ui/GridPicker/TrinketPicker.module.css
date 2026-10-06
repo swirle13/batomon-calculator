@@ -25,11 +25,16 @@
 }
 
 .selectedItem {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.85rem;
+  display: grid;
+  /* FR-052 (item 17): name | effect | remove, with every column TOP-aligned so the remove control
+     sits at a constant vertical position no matter how long the description is. Centring made it
+     drift down on wordy trinkets, so the click target moved row to row. */
+  grid-template-columns: auto 1fr auto auto;
+  align-items: start;
+  gap: var(--space-xs);
+  font-size: var(--font-md);
   text-align: left;
+  padding: var(--space-3xs) 0;
 }
 
 .selectedName {
@@ -111,15 +116,20 @@
 .card {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
-  padding: 0.5rem;
-  border: 2px solid #3a3d48;
-  border-radius: 6px;
-  background: #262833;
+  gap: var(--space-2xs);
+  padding: var(--space-sm);
+  border: 2px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface-3);
   color: inherit;
   text-align: left;
   cursor: pointer;
   font: inherit;
+  /* FR-051 (item 13): one uniform height across the grid, sized to the corpus's longest
+     effectText (110 chars, measured) wrapped at the grid's 15rem minimum column width, so no row
+     is ragged and no text overruns. */
+  height: 9.5rem;
+  overflow: hidden;
 }
 
 .card:hover {

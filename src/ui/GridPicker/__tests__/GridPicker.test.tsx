@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
-import { GridPicker } from "../GridPicker";
+import { GridPicker, POINTER_ACTIVATION_CONSTRAINT } from "../GridPicker";
 import { TeamConfigProvider } from "../../../context/TeamConfigContext";
 import { simulate } from "../../../engine/simulate";
 import { corpus } from "../../../data/corpus";
@@ -56,6 +56,36 @@ describe("GridPicker clear control (FR-033)", () => {
 
     expect(screen.queryByRole("button", { name: /^Bumblebolt, level 1/ })).toBeNull();
     expect(screen.queryByRole("dialog")).toBeNull();
+  });
+});
+
+describe("GridPicker click-to-open (FR-047, 2026-10-06 round 7)", () => {
+  it("opens the creature picker on a single click of an occupied slot", () => {
+    renderWithPlacement();
+    const card = screen.getByRole("button", { name: /^Bumblebolt, level 1/ });
+
+    // The REAL pointer sequence, not a bare fireEvent.click. @dnd-kit suppresses the click by
+    // installing a capture-phase stopPropagation listener on pointerdown, so a click-only test is
+    // green against the broken code and proves nothing (research.md I7).
+    fireEvent.pointerDown(card, { pointerId: 1, button: 0, clientX: 10, clientY: 10 });
+    fireEvent.pointerUp(card, { pointerId: 1, button: 0, clientX: 10, clientY: 10 });
+    fireEvent.click(card, { clientX: 10, clientY: 10 });
+
+    // HONEST LIMITATION: this assertion passes even against the broken code, because jsdom's
+    // synthetic events do not reproduce the browser's real click suppression. It guards the
+    // handler wiring, not the bug. The drag test below is the one that actually goes red for this
+    // fix, and the production behaviour needs a real-browser check (quickstart Scenario 25).
+    expect(screen.getByRole("dialog")).toBeTruthy();
+  });
+
+  it("configures an 8px drag-activation constraint, which is what makes the click reachable", () => {
+    // The BUG was the absence of this constraint: @dnd-kit's default PointerSensor activates on
+    // pointerdown and suppresses the click, so the card's onClick never ran (research.md I7).
+    // Asserted structurally rather than behaviourally because jsdom reproduces NEITHER half --
+    // its synthetic pointer events don't drive @dnd-kit activation, and its fireEvent.click isn't
+    // subject to @dnd-kit's capture-phase suppression. A behavioural test here would be green in
+    // both directions and prove nothing. Real behaviour: quickstart Scenario 25, in a browser.
+    expect(POINTER_ACTIVATION_CONSTRAINT).toEqual({ distance: 8 });
   });
 });
 

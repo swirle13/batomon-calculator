@@ -2,6 +2,7 @@ import { getCreatureByIdAndLevel } from "../../data/corpus";
 import { useTeamConfig } from "../../context/TeamConfigContext";
 import type { GridSlot, SimulationResult } from "../../data/types";
 import { slotKey } from "../../engine/grid";
+import { formatCooldown } from "../../data/format";
 import { BatomonCard, CooldownBlock, StatLines, buildStatLines } from "../shared/BatomonCard/BatomonCard";
 
 interface PlacedCreatureDetailsProps {
@@ -39,7 +40,7 @@ export function PlacedCreatureDetails({ result, highlightedSlot }: PlacedCreatur
   if (config.placements.length === 0) {
     return (
       <p>
-        <em>Place a Banto in the grid to see its stats here.</em>
+        <em>Place a Batomon in the grid to see its stats here.</em>
       </p>
     );
   }
@@ -64,7 +65,7 @@ export function PlacedCreatureDetails({ result, highlightedSlot }: PlacedCreatur
   const effective = result.perCreatureEffectiveStats[`${creature.id}@${slotKey(placement.slot)}`];
 
   return (
-    <BatomonCard creature={creature} levelLabel={`Lv.${placement.level}`}>
+    <BatomonCard creature={creature} levelLabel={`Lv.${placement.level}`} fixedHeight>
       {effective ? (
         <div title="Reflects any active modifiers and selected Trinkets">
           <div
@@ -81,7 +82,7 @@ export function PlacedCreatureDetails({ result, highlightedSlot }: PlacedCreatur
           </div>
           <div style={{ display: "flex", gap: "0.6rem" }}>
             <CooldownBlock
-              seconds={effective.cooldownSeconds !== null ? effective.cooldownSeconds.toFixed(2) : null}
+              seconds={formatCooldown(effective.cooldownSeconds)}
             />
             <StatLines
               lines={buildStatLines({

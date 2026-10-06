@@ -41,10 +41,13 @@
 .rows {
   list-style: none;
   padding: 0;
-  margin: 0.5rem 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
+  margin: var(--space-sm) 0;
+  /* FR-045 (item 5): several per row at desktop width, reflowing to fewer when narrow, instead of
+     one full-width row per creature wasting most of the line. */
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: var(--space-xs);
+  align-items: start;
 }
 
 .row {

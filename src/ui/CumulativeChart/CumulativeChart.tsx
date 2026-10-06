@@ -1,5 +1,6 @@
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { SimulationResult } from "../../data/types";
+import { STAT_COLORS } from "../../data/statColors";
 
 interface CumulativeChartProps {
   result: SimulationResult;
@@ -34,7 +35,9 @@ export function CumulativeChart({ result }: CumulativeChartProps) {
         style={{ width: "100%", height: 320 }}
       >
         <ResponsiveContainer>
-          <LineChart data={data} margin={{ top: 8, right: 24, bottom: 8, left: 0 }}>
+          {/* FR-054 (item 19): `left` was 0, so the rotated Y label had no room and was clipped to
+                "cumulative valu"; `bottom` is raised so the centred X label clears the tick labels. */}
+          <LineChart data={data} margin={{ top: 8, right: 24, bottom: 24, left: 16 }}>
             {/* Recharts' defaults assume a light background; this app is dark-mode-aware
                 (src/index.css prefers-color-scheme: dark), so axis/grid/legend/tooltip colors
                 are set explicitly rather than left to default near-black-on-black. */}
@@ -51,12 +54,23 @@ export function CumulativeChart({ result }: CumulativeChartProps) {
               domain={[0, windowSeconds]}
               stroke="#9ca3af"
               tick={{ fill: "#9ca3af" }}
-              label={{ value: "seconds", position: "insideBottomRight", offset: -4, fill: "#9ca3af" }}
+              height={44}
+              // FR-054: was `insideBottomRight`, i.e. right-justified. Centred now.
+              label={{ value: "seconds", position: "insideBottom", offset: -8, fill: "#9ca3af" }}
             />
             <YAxis
               stroke="#9ca3af"
               tick={{ fill: "#9ca3af" }}
-              label={{ value: "cumulative value", angle: -90, position: "insideLeft", fill: "#9ca3af" }}
+              // FR-054: Recharts anchors `insideLeft` at the text's START at the plot's vertical
+              // midpoint and the rotated text runs upward, so it reads off-centre even once it
+              // fits — `textAnchor: middle` is what actually centres it.
+              label={{
+                value: "cumulative value",
+                angle: -90,
+                position: "insideLeft",
+                fill: "#9ca3af",
+                style: { textAnchor: "middle" },
+              }}
             />
             <Tooltip
               contentStyle={{ background: "#1f2028", border: "1px solid #444857" }}
@@ -66,12 +80,13 @@ export function CumulativeChart({ result }: CumulativeChartProps) {
             <Legend wrapperStyle={{ color: "#9ca3af" }} />
             {/* User-reported: dark gray was unreadable against the app's black background. */}
             <Line type="stepAfter" dataKey="Total" stroke="#f5f5f5" dot={false} />
-            <Line type="monotone" dataKey="Burn" stroke="#e07b39" dot={false} />
-            {/* User-requested: Poison is purple, not green (previously #5b8c3f). */}
-            <Line type="monotone" dataKey="Poison" stroke="#8e44ad" dot={false} />
-            <Line type="monotone" dataKey="Shock" stroke="#d4b106" dot={false} />
-            {/* Shield counters (user-requested): cumulative Shield granted, not absorbed. */}
-            <Line type="monotone" dataKey="Shield" stroke="#2e86de" dot={false} />
+            <Line type="monotone" dataKey="Burn" stroke={STAT_COLORS.burn} dot={false} />
+            <Line type="monotone" dataKey="Poison" stroke={STAT_COLORS.poison} dot={false} />
+            <Line type="monotone" dataKey="Shock" stroke={STAT_COLORS.shock} dot={false} />
+            {/* 2026-10-06 round 7 (FR-041 / Principle VII): these strokes were hard-coded and had
+                already drifted from STAT_COLORS — fixing only statColors.ts would have left Shield
+                blue here while it was silver everywhere else. */}
+            <Line type="monotone" dataKey="Shield" stroke={STAT_COLORS.shield} dot={false} />
           </LineChart>
         </ResponsiveContainer>
       </div>

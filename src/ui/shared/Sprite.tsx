@@ -23,6 +23,18 @@ interface SpriteProps {
   className?: string;
 }
 
+/**
+ * Reads the `--sprite-grid` token (tasks.md T142/T165) rather than hard-coding a size at the call
+ * site. Six call sites each passed their own literal before this; the grid size was an arbitrary
+ * 40 with no reasoning behind it (research.md I11).
+ */
+export function spriteGridSize(): number {
+  if (typeof window === "undefined") return 64;
+  const raw = getComputedStyle(document.documentElement).getPropertyValue("--sprite-grid").trim();
+  const parsed = Number.parseInt(raw, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 64;
+}
+
 export function Sprite({ spriteFile, kind, size = 48, alt, className }: SpriteProps) {
   if (!spriteFile) return null;
   return (

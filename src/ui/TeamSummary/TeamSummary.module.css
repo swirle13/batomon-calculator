@@ -39,3 +39,12 @@
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
+
+.note {
+  max-width: 48rem;
+  margin: var(--space-sm) auto 0;
+  font-size: var(--font-sm);
+  color: var(--text-muted);
+  line-height: 1.45;
+  text-align: left;
+}

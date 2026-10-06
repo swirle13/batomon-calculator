@@ -1,0 +1,91 @@
+/*
+ * Creature picker (2026-10-06 round 7, FR-048/FR-049). Replaces 14 inline style blocks.
+ * Layout follows the in-game shop card the user supplied as reference.
+ */
+
+.filters {
+  display: flex;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.search { flex: 1 1 12rem; }
+
+.count {
+  font-size: var(--font-sm);
+  color: var(--text-muted);
+}
+
+/* One section per rarity: the rarity is conveyed by STRUCTURE here rather than as a label on every
+   card (FR-048). This shows more than the per-card text did — you can see how many of each rarity
+   match the current filter — while taking text off the card. */
+.raritySection { margin-bottom: var(--space-md); }
+
+.rarityHeading {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2xs);
+  /* Left-justified, as the user asked. */
+  text-align: left;
+  font-size: var(--font-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding-bottom: var(--space-3xs);
+  margin-bottom: var(--space-2xs);
+  border-bottom: 1px solid var(--line-subtle);
+}
+
+.rarityCount {
+  font-weight: 400;
+  color: var(--text-muted);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/*
+ * Card proportions are MEASURED from the in-game shop card, not guessed: those are ~175 x 145 px,
+ * i.e. ~1.2:1 — landscape, wider than tall. (An earlier draft of this round specified "~3:4 w:h",
+ * which was both wrong and inverted.) The previous card was far wider than tall and crammed the
+ * sprite, name, rarity and types side by side; this gives the art room and puts the name in a band
+ * across the bottom, as the shop card does.
+ */
+.card {
+  aspect-ratio: var(--picker-card-aspect);
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: var(--radius-md);
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  overflow: hidden;
+}
+
+.card:hover,
+.card:focus-visible {
+  border-color: var(--text-strong);
+}
+
+.cardTile {
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 0;
+}
+
+.clearCard {
+  aspect-ratio: var(--picker-card-aspect);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font: inherit;
+}
+
+.empty {
+  color: var(--text-muted);
+  font-size: var(--font-md);
+}

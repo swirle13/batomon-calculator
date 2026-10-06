@@ -15,16 +15,6 @@ import "./App.css";
 
 type View = "calculator" | "corpus";
 
-/** FR-014: state which corpus/patch snapshot is active, on both views. */
-/**
- * 2026-10-06 round 6 (tasks.md T134): this previously claimed "100% confirmed across levels 1-4",
- * which was wrong — that figure counted cooldowns only. Stated honestly now: cooldowns are complete,
- * damage is published for 89 of 149 species, and the remaining 60 have no damage line in any source
- * reviewed (which is NOT the same as confirmed to deal none — research.md H9).
- */
-const CORPUS_PATCH_LABEL =
-  "Balance 24 / 1.2.0 (community-imported build) — 149 named Batomon × levels 1-4 (596 records); cooldowns complete, damage published for 89 of 149; 23 Trainers, 93 Trinkets; see README";
-
 function CalculatorView() {
   const { config, setSimulationWindowSeconds } = useTeamConfig();
   const result = useMemo(() => simulate(config, corpus), [config]);
@@ -47,7 +37,7 @@ function CalculatorView() {
       <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap", alignItems: "flex-start" }}>
         <GridPicker onHighlightSlot={setHighlightedSlot} result={result} />
         <div style={{ flex: "1 1 16rem", minWidth: "16rem", textAlign: "left" }}>
-          <h3>Placed Banto stats</h3>
+          <h3>Batomon Stats</h3>
           <PlacedCreatureDetails result={result} highlightedSlot={highlightedSlot} />
         </div>
       </div>
@@ -99,9 +89,6 @@ function App() {
             Corpus Browser
           </button>
         </nav>
-        <p>
-          <small>Corpus snapshot: {CORPUS_PATCH_LABEL}</small>
-        </p>
       </header>
       <main>{view === "calculator" ? <CalculatorView /> : <CorpusBrowser />}</main>
     </TeamConfigProvider>

@@ -1,5 +1,13 @@
 import { Fragment, useState, type KeyboardEvent, type MouseEvent, type ReactNode } from "react";
-import { DndContext, useDraggable, useDroppable, type DragEndEvent } from "@dnd-kit/core";
+import {
+  DndContext,
+  PointerSensor,
+  useDraggable,
+  useDroppable,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
 import type {
   CreatureRecord,
   CreatureType,
@@ -8,15 +16,15 @@ import type {
   GridSlot,
   Rarity,
   SimulationResult,
-  StatusEffectType,
 } from "../../data/types";
 import { corpus, distinctCreatures, getCreatureById } from "../../data/corpus";
 import { useTeamConfig } from "../../context/TeamConfigContext";
 import { resolveLevelUp } from "../../engine/evolution";
 import { typeBackground } from "../../data/typeColors";
 import { STAT_COLORS, type StatColorKey } from "../../data/statColors";
+import { STATUS_COLOR_KEY } from "../../data/format";
 import { slotKey, slotsEqual } from "../../engine/grid";
-import { Sprite } from "../shared/Sprite";
+import { Sprite, spriteGridSize } from "../shared/Sprite";
 import { CreatureSearchModal } from "./CreatureSearchModal";
 import styles from "./GridPicker.module.css";
 
@@ -49,12 +57,15 @@ const creaturesByRarity = RARITY_ORDER.map((rarity) => ({
   creatures: distinctCreatures.filter((c) => c.rarity === rarity).sort((a, b) => a.name.localeCompare(b.name)),
 }));
 
-const STATUS_COLOR_KEY: Record<StatusEffectType, StatColorKey> = {
-  Burn: "burn",
-  Poison: "poison",
-  Shock: "shock",
-  Shield: "shield",
-};
+/**
+ * Exported so it can be asserted directly (tasks.md T147). jsdom cannot reproduce either half of
+ * the real click-vs-drag behaviour -- its synthetic pointer events don't drive @dnd-kit's
+ * activation, and its `fireEvent.click` isn't subject to the capture-phase suppression @dnd-kit
+ * installs -- so a behavioural test there would pass for the wrong reason in both directions.
+ * The presence of this constraint IS the fix (its absence was the bug), so it is what gets pinned.
+ * End-to-end behaviour is verified in a real browser per quickstart Scenario 25.
+ */
+export const POINTER_ACTIVATION_CONSTRAINT = { distance: 8 } as const;
 
 interface GridPickerProps {
   /** 2026-10-05 round 3 (FR-021): hovering/focusing an occupied card reports its slot upward so
@@ -187,7 +198,7 @@ function DraggableCard({ slot, creature, level, effective, onHighlight, onOpenSe
       </button>
       <div className={styles.level}>Lv. {level}</div>
       <div className={styles.spriteWrap}>
-        <Sprite spriteFile={creature.spriteFile} kind="monster" size={40} alt={creature.name} />
+        <Sprite spriteFile={creature.spriteFile} kind="monster" size={spriteGridSize()} alt={creature.name} />
       </div>
       <div className={styles.name}>{creature.name}</div>
       <SlotBadges effective={effective} creature={creature} />
@@ -228,6 +239,22 @@ export function GridPicker({ onHighlightSlot, result }: GridPickerProps) {
   const { config, setPlacement, movePlacement } = useTeamConfig();
   const [searchModalSlot, setSearchModalSlot] = useState<GridSlot | null>(null);
 
+  /**
+   * FR-047 (2026-10-06 round 7, research.md I7): WITHOUT an explicit activation constraint,
+   * @dnd-kit's default PointerSensor activates on `pointerdown` and installs a capture-phase
+   * `click` stopPropagation listener -- so the card's own onClick never fires and a placed
+   * creature could only be dragged, never clicked to reassign. Round 4's comment claiming the
+   * sensor "only engages past a drag-distance threshold" was wrong: there is no default threshold,
+   * it has to be configured. 8px absorbs click jitter while keeping an intentional drag immediate.
+   *
+   * No KeyboardSensor is added, and that is deliberate rather than an omission: DraggableCard
+   * spreads {...listeners} and then defines its own onKeyDown, which overrides the sensor's and
+   * already owns Enter/Space (the default keyboard-drag activators). Adding one would change
+   * nothing while implying keyboard dragging worked. Keyboard users press Enter/Space to OPEN THE
+   * PICKER, which is the accessible route to reassignment; keyboard drag is a known limitation.
+   */
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: POINTER_ACTIVATION_CONSTRAINT }));
+
   function handleDragEnd(event: DragEndEvent) {
     const fromSlot = event.active.data.current?.slot as GridSlot | undefined;
     const toSlot = event.over?.data.current?.slot as GridSlot | undefined;
@@ -237,7 +264,7 @@ export function GridPicker({ onHighlightSlot, result }: GridPickerProps) {
 
   return (
     <>
-      <DndContext onDragEnd={handleDragEnd}>
+      <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
         <div className={styles.grid}>
           {ROWS.map((row) => (
             <Fragment key={row}>

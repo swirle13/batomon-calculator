@@ -330,7 +330,30 @@ export interface SimulationResult {
   /** Every event in time order — single source of truth for both UI consumers */
   timeline: TimelineEvent[];
   perCreatureDps: Record<string, number>; // keyed by `${creatureId}@${row}${col}`
+  /** Window-AVERAGE damage per second, by status. See the three fields below before reading this
+   * as "the" rate: for a status whose stacks never decay it understates the end of a fight. */
   perStatusPerSecond: Record<StatusEffectType, number>;
+  /**
+   * 2026-10-06 round 7 (FR-055): status stacks APPLIED per second. Distinct from
+   * `perStatusPerSecond`, which is DAMAGE per second -- a user reading only the damage figure
+   * cannot tell whether it is steady or still climbing.
+   */
+  perStatusAppliedPerSecond: Record<StatusEffectType, number>;
+  /**
+   * The instantaneous damage rate as the window closes (`live layers / tickInterval`). The
+   * interpretable form of the second-order information: "16.00/s average, but 40/s by the end".
+   * Shock is reported as its window average (it deals damage reactively on direct hits, not on a
+   * timer); Shield is always 0 (it deals no damage).
+   */
+  perStatusFinalDamageRate: Record<StatusEffectType, number>;
+  /**
+   * Growth of the damage rate, in damage per second per second:
+   * `(finalRate - initialRate) / windowSeconds`, and the initial rate is always 0.
+   * Computed exactly rather than by curve-fitting -- a least-squares slope over 1-second buckets
+   * was measured against a known-exact case and was both noisy and NaN-prone at a 1s window
+   * (research.md I13). Clearly positive for Poison (stacks never decay), ~0 for Burn (they do).
+   */
+  perStatusDamageGrowthPerSecond: Record<StatusEffectType, number>;
   /**
    * User-requested amendment, 2026-10-05 ("facilitated damage"): per-creature rate of damage
    * *enabled* by that creature's own status grants on OTHER hits — currently just Shock procs,

@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { CreatureType, GridSlot, Rarity } from "../../data/types";
 import { distinctCreatures } from "../../data/corpus";
-import { typeBackground } from "../../data/typeColors";
+import { RARITIES_DESC, RARITY_COLORS } from "../../data/statColors";
 import { slotKey } from "../../engine/grid";
-import { Sprite } from "../shared/Sprite";
+import { CardGrid, CreatureTile, Modal } from "../primitives";
+import styles from "./CreatureSearchModal.module.css";
 
 interface CreatureSearchModalProps {
   /** `null` = closed. Changing to a different slot while already open re-triggers the
@@ -13,13 +14,22 @@ interface CreatureSearchModalProps {
   onSelect: (creatureId: string | null) => void;
 }
 
-const RARITIES: Rarity[] = ["Mythical", "Legendary", "SuperRare", "Rare", "Uncommon", "Common"];
-
 /**
- * FR-018 (2026-10-05 round 3, research.md E2.1): a reference UI left the previous slot's typed
- * query in place when reopened for a different slot, with no autofocus, so the first thing a
- * user saw was a stale, over-filtered result list. This modal clears its query AND moves
- * keyboard focus into the search field every time `slot` changes to a new, non-null value.
+ * FR-018 (round 3): clears its query and refocuses the search field every time it opens for a new
+ * slot, so the first thing a user sees is never a stale, over-filtered list.
+ *
+ * 2026-10-06 round 7 (FR-048/FR-049), rebuilt on the primitives layer — this file had 14 inline
+ * `style={{}}` blocks and now has none:
+ *
+ * - **Rarity is structure, not a label.** Results are grouped into rarity sections with a small
+ *   left-justified heading, instead of each card carrying a `rarity · type/type` line that squeezed
+ *   the sprite. This conveys more (how many of each rarity match the filter) with less text.
+ * - **Cards follow the in-game shop card**: a type-coloured art area with a large centred sprite
+ *   and the name in a band across the bottom, at the shop card's measured ~1.2:1 (landscape)
+ *   proportions. No rarity text and no price — the user excluded price explicitly, it being a shop
+ *   concept rather than a planning one.
+ * - **The type background is `TypeSplit`, not a gradient**, which is what removes the "sliver" of
+ *   the far colour along the card edge (research.md I8).
  */
 export function CreatureSearchModal({ slot, onClose, onSelect }: CreatureSearchModalProps) {
   const [query, setQuery] = useState("");
@@ -27,10 +37,7 @@ export function CreatureSearchModal({ slot, onClose, onSelect }: CreatureSearchM
   const [typeFilter, setTypeFilter] = useState<CreatureType | "">("");
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const allTypes = useMemo(
-    () => Array.from(new Set(distinctCreatures.flatMap((c) => c.types))).sort(),
-    [],
-  );
+  const allTypes = useMemo(() => Array.from(new Set(distinctCreatures.flatMap((c) => c.types))).sort(), []);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally keyed on the slot's
   // identity (slotKey), not the slot object reference, so re-opening for a *different* slot
@@ -44,8 +51,6 @@ export function CreatureSearchModal({ slot, onClose, onSelect }: CreatureSearchM
     return () => window.clearTimeout(id);
   }, [slot ? slotKey(slot) : null]);
 
-  if (slot === null) return null;
-
   const needle = query.trim().toLowerCase();
   const results = distinctCreatures.filter((c) => {
     if (needle !== "" && !c.name.toLowerCase().includes(needle)) return false;
@@ -54,54 +59,24 @@ export function CreatureSearchModal({ slot, onClose, onSelect }: CreatureSearchM
     return true;
   });
 
-  function handleKeyDown(e: KeyboardEvent) {
-    if (e.key === "Escape") onClose();
-  }
+  // Rarest first, and sections with no matches are omitted entirely rather than rendering an empty
+  // heading that implies a filter failure.
+  const sections = RARITIES_DESC.map((rarity) => ({
+    rarity,
+    creatures: results.filter((c) => c.rarity === rarity).sort((a, b) => a.name.localeCompare(b.name)),
+  })).filter((section) => section.creatures.length > 0);
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-label={`Choose a creature for ${slot.row} row, slot ${slot.col + 1}`}
-      onKeyDown={handleKeyDown}
-      style={{
-        position: "fixed",
-        inset: 0,
-        background: "rgba(0,0,0,0.65)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 1000,
-      }}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-    >
-      <div
-        style={{
-          background: "#1f2028",
-          border: "1px solid #444857",
-          borderRadius: 8,
-          padding: "1rem",
-          width: "min(680px, 92vw)",
-          maxHeight: "82vh",
-          display: "flex",
-          flexDirection: "column",
-          gap: "0.6rem",
-        }}
-      >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          {/* 2026-10-06 round 6 (FR-034): the slot position used to be spelled out here
-              ("— back row, slot 2"). Dropped: the user just clicked that slot, and drag-and-drop
-              means the choice isn't slot-bound anyway. It stays in the dialog's aria-label above,
-              for anyone who didn't see the click. */}
-          <h3 style={{ margin: 0 }}>Choose a Banto</h3>
-          <button type="button" onClick={onClose} aria-label="Close">
-            Close
-          </button>
-        </div>
-
-        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+    <Modal
+      isOpen={slot !== null}
+      onClose={onClose}
+      title="Choose a Batomon"
+      // The visible heading drops the slot position (FR-034, round 6) — the user just clicked that
+      // slot — but assistive tech still gets it, for anyone who didn't see the click.
+      ariaLabel={slot ? `Choose a Batomon for ${slot.row} row, slot ${slot.col + 1}` : "Choose a Batomon"}
+      width="880px"
+      toolbar={
+        <div className={styles.filters}>
           <input
             ref={inputRef}
             type="text"
@@ -109,7 +84,7 @@ export function CreatureSearchModal({ slot, onClose, onSelect }: CreatureSearchM
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             aria-label="Search by name"
-            style={{ flex: "1 1 12rem" }}
+            className={styles.search}
           />
           <select
             value={rarityFilter}
@@ -117,7 +92,7 @@ export function CreatureSearchModal({ slot, onClose, onSelect }: CreatureSearchM
             aria-label="Filter by rarity"
           >
             <option value="">All rarities</option>
-            {RARITIES.map((r) => (
+            {RARITIES_DESC.map((r) => (
               <option key={r} value={r}>
                 {r}
               </option>
@@ -135,70 +110,56 @@ export function CreatureSearchModal({ slot, onClose, onSelect }: CreatureSearchM
               </option>
             ))}
           </select>
+          <span className={styles.count}>
+            {results.length} of {distinctCreatures.length}
+          </span>
         </div>
-
-        <p style={{ margin: 0, opacity: 0.75 }}>
-          {results.length} of {distinctCreatures.length}
-        </p>
-
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(96px, 1fr))",
-            gap: "0.5rem",
-            overflowY: "auto",
-            paddingRight: "0.25rem",
+      }
+    >
+      <CardGrid minWidth="var(--picker-card-min-width)">
+        <button
+          type="button"
+          className={styles.clearCard}
+          onClick={() => {
+            onSelect(null);
+            onClose();
           }}
         >
-          <button
-            type="button"
-            onClick={() => {
-              onSelect(null);
-              onClose();
-            }}
-            style={{
-              border: "1px dashed #666",
-              borderRadius: 6,
-              padding: "0.5rem",
-              background: "transparent",
-              color: "#9ca3af",
-              cursor: "pointer",
-            }}
-          >
-            Clear slot
-          </button>
-          {results.map((c) => (
-            <button
-              key={c.id}
-              type="button"
-              onClick={() => {
-                onSelect(c.id);
-                onClose();
-              }}
-              style={{
-                background: typeBackground(c.types),
-                border: "2px solid transparent",
-                borderRadius: 6,
-                padding: "0.4rem",
-                color: "#fff",
-                textAlign: "left",
-                cursor: "pointer",
-                textShadow: "0 1px 2px rgba(0,0,0,0.6)",
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
-                <Sprite spriteFile={c.spriteFile} kind="monster" size={28} alt={c.name} />
-                <div style={{ minWidth: 0 }}>
-                  <div style={{ fontWeight: 600 }}>{c.name}</div>
-                  <div style={{ fontSize: "0.75em", opacity: 0.9 }}>
-                    {c.rarity} · {c.types.join("/")}
-                  </div>
-                </div>
-              </div>
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
+          Clear slot
+        </button>
+      </CardGrid>
+
+      {sections.length === 0 && <p className={styles.empty}>No Batomon match this search.</p>}
+
+      {sections.map((section) => (
+        <section key={section.rarity} className={styles.raritySection}>
+          <h4 className={styles.rarityHeading} style={{ color: RARITY_COLORS[section.rarity] }}>
+            {section.rarity}
+            <span className={styles.rarityCount}>({section.creatures.length})</span>
+          </h4>
+          <CardGrid minWidth="var(--picker-card-min-width)">
+            {section.creatures.map((creature) => (
+              <button
+                key={creature.id}
+                type="button"
+                className={styles.card}
+                onClick={() => {
+                  onSelect(creature.id);
+                  onClose();
+                }}
+              >
+                <CreatureTile
+                  name={creature.name}
+                  types={creature.types}
+                  spriteFile={creature.spriteFile}
+                  spriteSize={48}
+                  className={styles.cardTile}
+                />
+              </button>
+            ))}
+          </CardGrid>
+        </section>
+      ))}
+    </Modal>
   );
 }

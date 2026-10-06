@@ -687,3 +687,89 @@ describe("slot-permutation invariance (FR-040)", () => {
     expect(back.status).toEqual(front.status);
   });
 });
+
+/**
+ * FR-055/056/057 (2026-10-06 round 7, research.md I13): second-order status metrics and DOT
+ * attribution. The user's complaint: a Poison team reports 0.00 DPS and 0.00 facilitated DPS, and
+ * the one averaged status figure hides a damage rate that climbs for the whole battle.
+ */
+describe("second-order status metrics (FR-055/056/057)", () => {
+  /** A lone Drumire: Poison 20, 8s cooldown, no direct damage. */
+  const drumireOnly = (windowSeconds: number): TeamConfiguration => ({
+    placements: [{ slot: { row: "back", col: 0 }, creatureId: "drumire", level: 1 }],
+    trainerId: null,
+    trinketIds: [],
+    itemIds: [],
+    simulationWindowSeconds: windowSeconds,
+  });
+
+  it("records Burn and Poison applications in the timeline, not only their ticks", () => {
+    // Before this round only Shock and Shield applications were recorded, which made application
+    // rates underivable for exactly the two statuses whose rates matter most.
+    const result = simulate(drumireOnly(20), corpus);
+    const applications = result.timeline.filter((e) => e.statusDelta?.type === "Poison");
+    expect(applications.length).toBeGreaterThan(0);
+    expect(applications.reduce((sum, e) => sum + (e.statusDelta?.layerDelta ?? 0), 0)).toBe(40);
+  });
+
+  it("pins the exact worked case so the arithmetic cannot drift (20s)", () => {
+    // Measured, not hand-derived: casts at t=8 and t=16, Poison ticks every 1s and never decays.
+    const result = simulate(drumireOnly(20), corpus);
+    expect(result.perStatusPerSecond.Poison).toBeCloseTo(16.0, 5); // 320 total / 20s
+    expect(result.perStatusFinalDamageRate.Poison).toBeCloseTo(40, 5); // 2 casts x 20 layers
+    expect(result.perStatusDamageGrowthPerSecond.Poison).toBeCloseTo(2.0, 5); // 40 / 20
+    expect(result.perStatusAppliedPerSecond.Poison).toBeCloseTo(2.0, 5); // 40 stacks / 20s
+  });
+
+  it("pins the same case at 60s, where the average and the end-of-window rate diverge further", () => {
+    const result = simulate(drumireOnly(60), corpus);
+    expect(result.perStatusPerSecond.Poison).toBeCloseTo(3920 / 60, 4);
+    expect(result.perStatusFinalDamageRate.Poison).toBeCloseTo(140, 5);
+    expect(result.perStatusDamageGrowthPerSecond.Poison).toBeCloseTo(140 / 60, 5);
+  });
+
+  it("distinguishes a non-decaying status from a decaying one by its growth", () => {
+    // This qualitative difference IS the mechanic, not a tuned constant: applyStatusTick
+    // decrements Burn's layers and explicitly does not decrement Poison's (research.md B2).
+    const poison = simulate(drumireOnly(60), corpus);
+    const burn = simulate(
+      {
+        placements: [{ slot: { row: "back", col: 0 }, creatureId: "brimtoad", level: 1 }],
+        trainerId: null,
+        trinketIds: [],
+        itemIds: [],
+        simulationWindowSeconds: 60,
+      },
+      corpus,
+    );
+    expect(poison.perStatusDamageGrowthPerSecond.Poison).toBeGreaterThan(1);
+    expect(burn.perStatusDamageGrowthPerSecond.Burn).toBeLessThan(0.1);
+  });
+
+  it("attributes DOT damage to the creature that applied it, without inflating its own DPS", () => {
+    const result = simulate(drumireOnly(20), corpus);
+    const key = Object.keys(result.perCreatureFacilitatedDps).find((k) => k.startsWith("drumire@"));
+    expect(key).toBeDefined();
+    // All 320 Poison damage exists because Drumire applied it.
+    expect(result.perCreatureFacilitatedDps[key!]).toBeCloseTo(16.0, 5);
+    // ...but Drumire deals no DIRECT damage, so its own DPS stays zero. Facilitated output is
+    // reported separately rather than folded in, so a DOT team's DPS column stays comparable with
+    // a direct-damage team's.
+    expect(Object.keys(result.perCreatureDps).some((k) => k.startsWith("drumire@"))).toBe(false);
+  });
+
+  it("produces no NaN at a 1-second window (the UI's minimum)", () => {
+    const result = simulate(drumireOnly(1), corpus);
+    for (const record of [
+      result.perStatusAppliedPerSecond,
+      result.perStatusFinalDamageRate,
+      result.perStatusDamageGrowthPerSecond,
+    ]) {
+      for (const value of Object.values(record)) expect(Number.isNaN(value)).toBe(false);
+    }
+  });
+
+  // NOTE: this fixture covers Poison and Burn only. Shock and Shield are NOT exercised here —
+  // Shock's damage arrives via shockProc rather than ticks, and Shield deals no damage at all, so
+  // their entries in these Records carry the documented fallbacks rather than tested values.
+});

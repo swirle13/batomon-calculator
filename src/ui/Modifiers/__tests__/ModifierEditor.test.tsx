@@ -89,6 +89,6 @@ describe("ModifierEditor (FR-039)", () => {
   it("shows an empty state rather than an unusable form when nothing is placed", () => {
     renderEditor(configWith([]));
     fireEvent.click(screen.getByText(/modifiers/i));
-    expect(screen.getByText(/place a banto/i)).toBeTruthy();
+    expect(screen.getByText(/place a batomon/i)).toBeTruthy();
   });
 });

@@ -128,11 +128,28 @@ export function TeamConfigProvider({
       addPlacementModifier: (slot, modifier) =>
         setConfig((prev) => ({
           ...prev,
-          placements: prev.placements.map((p) =>
-            slotsEqual(p.slot, slot)
-              ? { ...p, modifiers: [...(p.modifiers ?? []), { ...modifier, id: freshModifierId() }] }
-              : p,
-          ),
+          placements: prev.placements.map((p) => {
+            if (!slotsEqual(p.slot, slot)) return p;
+            const existing = p.modifiers ?? [];
+            // 2026-10-06 round 7 (FR-045, item 6): ACCUMULATE onto an existing modifier of the
+            // same stat instead of appending a second indistinguishable chip. Adding +10 twice
+            // gave two "+10" chips the user had no way to tell apart and no reason to care about;
+            // the engine already summed them, so this only ever changed the display.
+            const match = existing.find((m) => m.stat === modifier.stat);
+            if (!match) {
+              return { ...p, modifiers: [...existing, { ...modifier, id: freshModifierId() }] };
+            }
+            const total = match.amount + modifier.amount;
+            // Accumulating to zero removes the entry rather than leaving a "+0" chip that renders
+            // but does nothing.
+            if (total === 0) {
+              return { ...p, modifiers: existing.filter((m) => m.id !== match.id) };
+            }
+            return {
+              ...p,
+              modifiers: existing.map((m) => (m.id === match.id ? { ...m, amount: total } : m)),
+            };
+          }),
         })),
       removePlacementModifier: (slot, id) =>
         setConfig((prev) => ({

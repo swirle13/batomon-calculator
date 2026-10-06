@@ -1,0 +1,82 @@
+/*
+ * Design tokens — the single definition site for every spacing, radius, surface, border, type
+ * size, and sprite size the UI uses (2026-10-06 round 7, Constitution Principle VII).
+ *
+ * Component CSS references these by name. A raw literal in a `*.module.css` is a defect from this
+ * point on: by round 6 this project had three independent card treatments, chip styling defined in
+ * three files, and six call sites each hard-coding their own sprite size — which reached the user
+ * as several separate visual bugs that were really one cause (research.md I14).
+ *
+ * These EXTEND the existing palette vars in `src/index.css` (`--bg`, `--text`, `--text-h`,
+ * `--border`) rather than introducing a parallel naming scheme. Values are derived from what the
+ * components already used, so this codifies the current look rather than restyling the app.
+ */
+
+:root {
+  /* --- spacing scale (the 0.15/0.25/0.35/0.5/0.75/1rem family already in use) --- */
+  --space-3xs: 0.15rem;
+  --space-2xs: 0.25rem;
+  --space-xs: 0.35rem;
+  --space-sm: 0.5rem;
+  --space-md: 0.75rem;
+  --space-lg: 1rem;
+  --space-xl: 1.5rem;
+
+  /* --- radii --- */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-pill: 999px;
+
+  /* --- surfaces & borders (dark-theme values the components already used) --- */
+  --surface-1: #1b1d27; /* deepest: header bands, sprite wells */
+  --surface-2: #212330; /* default card body */
+  --surface-3: #262833; /* raised: interactive cards */
+  --surface-4: #343a4d; /* selected / chip fill */
+  --surface-overlay: rgba(0, 0, 0, 0.65);
+  --surface-modal: #1f2028;
+
+  --line-subtle: #2c2f3b;
+  --line: #3a3d48;
+  --line-strong: #444857;
+
+  --text-muted: #9ca3af;
+  --text-body: #d7d9e3;
+  --text-strong: #f3f4f6;
+  --text-warn: #c9a227;
+  --text-accent: #e0a93c;
+
+  /* --- type scale --- */
+  --font-2xs: 0.7rem;
+  --font-xs: 0.75rem;
+  --font-sm: 0.8rem;
+  --font-md: 0.85rem;
+  --font-lg: 0.9rem;
+  --font-xl: 1rem;
+  --font-2xl: 1.05rem;
+
+  /* --- sprite sizes (tasks.md T165 / FR-053) -----------------------------------------------
+   * The source PNGs are 48x48. 64px is therefore a 1.333x NON-INTEGER upscale: with
+   * `image-rendering: pixelated` some source pixels render 1 screen-pixel wide and others 2, so
+   * the pixel grid is subtly uneven. 96px is the exact 2x and is crisper. 64px is used because it
+   * is what the user asked for and what batodex displays at; 96 is recorded as the alternative.
+   * (Before round 7 this was an arbitrary hard-coded 40 with no reasoning behind it.) */
+  --sprite-grid: 64px;
+  --sprite-card: 56px;
+  --sprite-row: 24px;
+  --sprite-picker: 48px;
+
+  /* --- card geometry ------------------------------------------------------------------------
+   * The creature picker's cards follow the in-game shop card's measured proportions:
+   * ~175 x 145 px, i.e. ~1.2:1 (landscape, wider than tall). */
+  --picker-card-min-width: 9.5rem;
+  --picker-card-aspect: 1.2;
+}
+
+/* On narrow viewports the square slot card can't hold a 64px sprite plus the level label, name,
+   and stat badges without clipping (it is `overflow: hidden`), so the sprite scales down. */
+@media (max-width: 640px) {
+  :root {
+    --sprite-grid: 48px;
+  }
+}

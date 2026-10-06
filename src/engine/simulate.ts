@@ -159,6 +159,8 @@ interface ActiveStatus extends Omit<StatusEffectInstance, "type"> {
   // Shield is absorption-only; neither is ever pushed into `activeStatuses`.
   type: "Burn" | "Poison";
   nextTickAt: number;
+  /** `${creatureId}@${slotKey}` of whoever applied this — for facilitated attribution (FR-056). */
+  sourceKey: string;
 }
 
 export function simulate(
@@ -306,6 +308,11 @@ export function simulate(
         damageType: instance.type,
       });
       perStatusDamage[instance.type] += damage;
+      // FR-056: this tick exists because `instance.sourceKey` applied the status, so the damage is
+      // that creature's facilitated output -- the same map Shock procs already feed. Kept SEPARATE
+      // from own-DPS: a DOT applier's contribution is not direct damage, and merging them would
+      // make a DOT team's DPS column incomparable with a direct-damage team's.
+      facilitatedDamage.set(instance.sourceKey, (facilitatedDamage.get(instance.sourceKey) ?? 0) + damage);
       if (nextInstance === null) {
         activeStatuses.splice(earliestIndex, 1);
       } else {
@@ -313,6 +320,7 @@ export function simulate(
           ...nextInstance,
           type: instance.type,
           nextTickAt: roundTime(earliestTime + (instance.type === "Burn" ? BURN_TICK_SECONDS : POISON_TICK_SECONDS)),
+          sourceKey: instance.sourceKey,
         };
       }
     }
@@ -424,6 +432,20 @@ export function simulate(
             targetSlot: placeholderTargetSlot(sourceSlot),
             appliedAtSeconds: tSeconds,
             nextTickAt: roundTime(tSeconds + interval),
+            // 2026-10-06 round 7 (FR-056): remember WHO applied this, so each tick's damage can be
+            // attributed back to them. Without it a pure DOT applier reports 0.00 own DPS and
+            // 0.00 facilitated DPS -- i.e. "contributes nothing".
+            sourceKey: `${creature.id}@${slotKey(sourceSlot)}`,
+          });
+          // 2026-10-06 round 7 (FR-057): Burn/Poison applications were the only status
+          // applications NOT recorded in the timeline -- Shock and Shield already were. That
+          // asymmetry made application rates underivable for exactly the two statuses whose
+          // rates matter most (research.md I13).
+          timeline.push({
+            tSeconds,
+            kind: "ongoingChange",
+            sourceSlot,
+            statusDelta: { type: applied.type, slot: placeholderTargetSlot(sourceSlot), layerDelta: amount },
           });
         } else if (applied.type === "Shield") {
           // Shield counters (data-model.md "Shield counted as an output stat", 2026-10-05):
@@ -467,6 +489,55 @@ export function simulate(
     perCreatureFacilitatedDps[key] = totalFacilitated / windowSeconds;
   }
 
+  // --- 2026-10-06 round 7 (FR-055): second-order status metrics --------------------------------
+  // A single averaged damage/second badly misrepresents a status whose stacks never decay.
+  // `applyStatusTick` decrements Burn but explicitly NOT Poison (research.md B2), so every Poison
+  // application permanently raises a per-tick damage floor and the rate climbs for the whole
+  // battle. Measured on a lone Drumire: 16.00/s average over 20s against 40/s in the final second.
+  //
+  // These are computed EXACTLY, not by fitting a curve. A least-squares slope over 1-second
+  // buckets was tried and rejected: it returned 2.83/2.70 for a case whose exact answer is 2.50,
+  // was sensitive to bucket-edge placement, was polluted by the zero-damage startup, and produced
+  // NaN at a 1-second window (which the UI permits).
+  const appliedTotals: Record<StatusEffectType, number> = { Burn: 0, Poison: 0, Shock: 0, Shield: 0 };
+  for (const event of timeline) {
+    if (event.statusDelta) appliedTotals[event.statusDelta.type] += event.statusDelta.layerDelta;
+  }
+  const perStatusAppliedPerSecond: Record<StatusEffectType, number> = {
+    Burn: appliedTotals.Burn / windowSeconds,
+    Poison: appliedTotals.Poison / windowSeconds,
+    Shock: appliedTotals.Shock / windowSeconds,
+    Shield: appliedTotals.Shield / windowSeconds,
+  };
+
+  // The instantaneous damage rate as the window closes. For a non-decaying DOT this is
+  // `live layers / tickInterval`; Burn's live layers are whatever has not yet decayed away.
+  let livePoisonLayers = 0;
+  let liveBurnLayers = 0;
+  for (const instance of activeStatuses) {
+    if (instance.type === "Poison") livePoisonLayers += instance.layers;
+    else liveBurnLayers += instance.layers;
+  }
+  const perStatusFinalDamageRate: Record<StatusEffectType, number> = {
+    Burn: liveBurnLayers / BURN_TICK_SECONDS,
+    Poison: livePoisonLayers / POISON_TICK_SECONDS,
+    // Shock deals damage reactively on direct hits, not on a timer, so there is no "rate as the
+    // window closes" in the same sense. Reported as its window average rather than a fabricated
+    // instantaneous figure. Shield deals no damage at all.
+    Shock: perStatusDamage.Shock / windowSeconds,
+    Shield: 0,
+  };
+
+  // Growth = (rate at window end - rate at window start) / window. The start rate is always 0
+  // (nothing is applied before t=0), so this reduces to finalRate/window -- exact, and never NaN
+  // for the windowSeconds >= 1 the UI allows.
+  const perStatusDamageGrowthPerSecond: Record<StatusEffectType, number> = {
+    Burn: perStatusFinalDamageRate.Burn / windowSeconds,
+    Poison: perStatusFinalDamageRate.Poison / windowSeconds,
+    Shock: perStatusFinalDamageRate.Shock / windowSeconds,
+    Shield: 0,
+  };
+
   const perStatusPerSecond: Record<StatusEffectType, number> = {
     Burn: perStatusDamage.Burn / windowSeconds,
     Poison: perStatusDamage.Poison / windowSeconds,
@@ -506,6 +577,9 @@ export function simulate(
     perCreatureFacilitatedDps,
     perCreatureEffectiveStats,
     perStatusPerSecond,
+    perStatusAppliedPerSecond,
+    perStatusFinalDamageRate,
+    perStatusDamageGrowthPerSecond,
     cumulativeSeries,
   };
 }

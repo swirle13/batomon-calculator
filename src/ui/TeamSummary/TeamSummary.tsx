@@ -1,6 +1,7 @@
-import type { SimulationResult, TeamConfiguration } from "../../data/types";
+import type { SimulationResult, StatusEffectType, TeamConfiguration } from "../../data/types";
 import { getCreatureById } from "../../data/corpus";
 import { statusColor } from "../../data/statColors";
+import { formatRate } from "../../data/format";
 import styles from "./TeamSummary.module.css";
 
 interface TeamSummaryProps {
@@ -44,7 +45,7 @@ export function TeamSummary({ config, result }: TeamSummaryProps) {
               <th className={styles.numeric}>DPS</th>
               <th
                 className={styles.numeric}
-                title="Damage this creature's own status grants (e.g. Shock) enabled on other hits, not counted in its own DPS"
+                title="Damage this creature caused through the statuses it applied -- Burn/Poison ticks and Shock procs on other creatures' hits. Counted separately from its own direct damage, never folded into it."
               >
                 Facilitated DPS
               </th>
@@ -71,17 +72,28 @@ export function TeamSummary({ config, result }: TeamSummaryProps) {
         </table>
 
         <table>
-          <caption>Status effect output, per second</caption>
+          <caption>Status effect output</caption>
           <thead>
             <tr>
               <th>Status</th>
-              <th className={styles.numeric}>Per second</th>
+              <th className={styles.numeric} title="Damage per second, averaged across the whole simulated window">
+                Dmg/s (avg)
+              </th>
+              <th className={styles.numeric} title="Damage per second as the window closes. For a status whose stacks never decay (Poison) this is much higher than the average, because the rate climbs all battle.">
+                Dmg/s (end)
+              </th>
+              <th className={styles.numeric} title="Status stacks applied per second -- the input rate, NOT damage">
+                Applied/s
+              </th>
+              <th className={styles.numeric} title="How fast the damage rate itself is growing, in damage per second per second. Near zero for a status that decays to a steady state (Burn); clearly positive for one that does not (Poison).">
+                Growth/s²
+              </th>
             </tr>
           </thead>
           <tbody>
             {statusRows.length === 0 && (
               <tr>
-                <td colSpan={2}>No active status effects.</td>
+                <td colSpan={5}>No active status effects.</td>
               </tr>
             )}
             {statusRows.map(([status, value]) => (
@@ -91,14 +103,29 @@ export function TeamSummary({ config, result }: TeamSummaryProps) {
                     status name carries its published colour (FR-029), the same colour the card
                     stat lines and the grid badges use. */}
                 <td style={{ color: statusColor(status as "Burn" | "Poison" | "Shock" | "Shield"), fontWeight: 600 }}>
-                  {status === "Shield" ? "Shield (granted)" : status}
+                  {status}
                 </td>
-                <td className={styles.numeric}>{value.toFixed(2)}</td>
+                <td className={styles.numeric}>{formatRate(value)}</td>
+                <td className={styles.numeric}>
+                  {formatRate(result.perStatusFinalDamageRate[status as StatusEffectType])}
+                </td>
+                <td className={styles.numeric}>
+                  {formatRate(result.perStatusAppliedPerSecond[status as StatusEffectType])}
+                </td>
+                <td className={styles.numeric}>
+                  {formatRate(result.perStatusDamageGrowthPerSecond[status as StatusEffectType])}
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+      <p className={styles.note}>
+        A status whose stacks never decay (Poison) deals more damage every second as the fight goes
+        on, so <strong>Dmg/s (avg)</strong> understates a long battle — compare it with{" "}
+        <strong>Dmg/s (end)</strong>. Burn decays and settles to a steady rate, so its growth is
+        near zero. <strong>Applied/s</strong> is the stack <em>input</em> rate, not damage.
+      </p>
     </section>
   );
 }

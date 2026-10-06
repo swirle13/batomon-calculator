@@ -427,6 +427,48 @@ of why the round-3 investment in component tests was worth it.
 4. **Expected**: any surface this round did **not** migrate is recorded as explicitly outstanding
    rather than left implied complete.
 
+## Validation results (2026-10-06, round 7 implementation — Scenarios 25-31)
+
+102 tests pass (up from 94 mid-round and 86 at round 6's close). Per scenario:
+
+- **Scenario 25 — PARTIAL (structural test + browser check required).** Honest limitation: **jsdom
+  can reproduce neither half** of the click-vs-drag behaviour. Its synthetic pointer events don't
+  drive `@dnd-kit`'s activation, and its `fireEvent.click` isn't subject to the capture-phase
+  suppression `@dnd-kit` installs — so a behavioural test is green in *both* directions and proves
+  nothing. (Verified: a bare `fireEvent.click` passed against the broken code.) What is pinned
+  instead is the thing whose absence *was* the bug: `POINTER_ACTIVATION_CONSTRAINT === { distance: 8 }`.
+  End-to-end behaviour needs a real browser.
+- **Scenario 26 — PASS (code-traced).** `BatomonCard` gains `fixedHeight`, reserving every variable
+  band (identity, output, ability, extra, meta) against the corpus's measured worst case — longest
+  name 12 chars, longest `abilityText` 169, max 2 types. The type column reserves two chips' height
+  so one-type and two-type creatures match. Trinket cards are a uniform 9.5rem.
+- **Scenario 27 — PASS (automated).** Asserted: picker results group into rarity sections (>1 `h4`),
+  no result card contains rarity text, and **no element anywhere renders a `linear-gradient`** —
+  which is the structural guarantee that the sliver is gone, since it came from a gradient painted
+  across the border box.
+- **Scenario 28 — PASS (automated, with exact numbers pinned).** A lone Drumire over 20s: 320 total
+  Poison damage (16.00/s average), 40/s final rate, 2.00 damage/s² growth, 2.00 stacks/s applied —
+  and 16.00 facilitated DPS attributed to Drumire while its own DPS stays absent. Poison's growth
+  > 1 while Burn's < 0.1 over the same window, which is the mechanic (Poison stacks never decay).
+  No `NaN` at a 1-second window.
+- **Scenario 29 — PASS (automated).** Adding `+10` twice yields one `+20` chip; adding `-20` then
+  removes it entirely rather than leaving `+0`. Rows now lay out in an auto-fit grid.
+- **Scenario 30 — PASS (automated, except the chart).** Positively asserted: the picker heading is
+  `Choose a Batomon`, no `Banto` anywhere, no corpus prose in the header while the version lives in
+  the Corpus Browser, grid sprites render at 64px, cooldown reads `2.5` on **both** bands (never
+  `2.50`), and `Shield` has no parenthetical. Shield's colour is now `#9aa1b8`, sampled from the
+  in-game plate. **The chart axis fix is not automated** — `ResponsiveContainer` has zero size in
+  jsdom, so it needs a browser check.
+- **Scenario 31 — PASS (measured).** `style={{` census **31 → 22**, with the worst offender
+  (`CreatureSearchModal`) going **14 → 2**. Of the remaining 22, four are inside the primitives
+  layer itself (where the dynamic colour plumbing belongs) and the rest are data-driven one-offs,
+  not duplicated card/chip/modal chrome.
+
+**Outstanding, recorded rather than implied complete** (Principle VII requires the remainder be
+stated): `TrainerPicker`, `CorpusBrowser`, and `TeamSummary` still carry some local CSS that could
+move onto tokens; `BatomonCard` and `PlacedCreatureDetails` retain a few inline styles for the
+effective-stats band. No surface still defines its own card, chip, modal, grid, or type-split.
+
 ## Validation results (2026-10-06, round 6 implementation — Scenarios 18-24)
 
 86 tests pass (up from 74 at the start of this round's implementation, 64 before it). Per scenario:

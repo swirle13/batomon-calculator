@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { corpus } from "../../data/corpus";
 import { useTeamConfig } from "../../context/TeamConfigContext";
-import { RARITY_COLORS } from "../../data/statColors";
+import { RARITY_COLORS, RARITIES_DESC } from "../../data/statColors";
 import type { Rarity, TrinketRecord } from "../../data/types";
 import { Sprite } from "../shared/Sprite";
+import { Disclosure } from "../primitives";
 import styles from "./TrinketPicker.module.css";
-
-const RARITIES: Rarity[] = ["Mythical", "Legendary", "SuperRare", "Rare", "Uncommon", "Common"];
 
 /**
  * Trinket selection (FR-032, 2026-10-06 round 6).
@@ -70,7 +69,11 @@ export function TrinketPicker() {
         </button>
       </div>
 
+      {/* FR-052 (item 16): collapsed by default. Each selected trinket used to add a full row
+          above the team grid, so with 9 selected the grid was pushed off-screen. Defaulting to
+          OPEN would still displace it on the first add, which is the actual complaint. */}
       {selected.length > 0 && (
+        <Disclosure label="Active trinkets" hint={`(${selected.length})`}>
         <ul className={styles.selectedList}>
           {selected.map((trinket) => (
             <li key={trinket.id} className={styles.selectedItem}>
@@ -90,6 +93,7 @@ export function TrinketPicker() {
             </li>
           ))}
         </ul>
+        </Disclosure>
       )}
 
       {isOpen && (
@@ -127,7 +131,7 @@ export function TrinketPicker() {
                 aria-label="Filter trinkets by rarity"
               >
                 <option value="">All rarities</option>
-                {RARITIES.map((r) => (
+                {RARITIES_DESC.map((r) => (
                   <option key={r} value={r}>
                     {r}
                   </option>

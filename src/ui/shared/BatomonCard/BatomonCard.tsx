@@ -1,7 +1,9 @@
 import type { ReactNode } from "react";
 import type { CreatureRecord, StatusEffectType } from "../../../data/types";
 import { RARITY_COLORS, STAT_COLORS, type StatColorKey } from "../../../data/statColors";
+import { STATUS_COLOR_KEY } from "../../../data/format";
 import { displayField, isUnconfirmed } from "../../../data/display";
+import { formatCooldown } from "../../../data/format";
 import { TypeTag } from "../TypeTag";
 import { Sprite } from "../Sprite";
 import styles from "./BatomonCard.module.css";
@@ -31,13 +33,6 @@ interface StatLine {
 
 /** `StatusEffectType` -> the published stat colour key. Shield/Heal are included; both are real
  * output stats here (data-model.md's "Shield counted as an output stat"). */
-const STATUS_COLOR_KEY: Record<StatusEffectType, StatColorKey> = {
-  Burn: "burn",
-  Poison: "poison",
-  Shock: "shock",
-  Shield: "shield",
-};
-
 /**
  * Builds band 3's stat lines from a record. Exported so the Calculator's "Effective this battle"
  * band can render the modifier-adjusted numbers in the identical shape rather than falling back to
@@ -107,9 +102,16 @@ interface BatomonCardProps {
   children?: ReactNode;
   /** Shown above the name, e.g. "Lv.3". */
   levelLabel?: string;
+  /**
+   * Reserve a constant outer height sized to the corpus's worst case (FR-043). Used by the
+   * Calculator's selected-creature panel, where the card changes contents on every hover and the
+   * reflow is visible. The Corpus Browser leaves it off: its cards sit in a grid whose row height
+   * already equalises them, and freezing each one would waste vertical space across 149 cards.
+   */
+  fixedHeight?: boolean;
 }
 
-export function BatomonCard({ creature, children, levelLabel }: BatomonCardProps) {
+export function BatomonCard({ creature, children, levelLabel, fixedHeight = false }: BatomonCardProps) {
   const rarityColor = RARITY_COLORS[creature.rarity];
   const cooldownUnconfirmed = isUnconfirmed(creature, "baseCooldownSeconds");
   const statLines = buildStatLines({
@@ -122,7 +124,10 @@ export function BatomonCard({ creature, children, levelLabel }: BatomonCardProps
   });
 
   return (
-    <article className={styles.card} style={{ "--rarity-color": rarityColor } as React.CSSProperties}>
+    <article
+      className={`${styles.card} ${fixedHeight ? styles.cardFixed : ""}`}
+      style={{ "--rarity-color": rarityColor } as React.CSSProperties}
+    >
       <header className={styles.header}>
         <h3 className={styles.name}>
           {creature.name}
@@ -133,7 +138,7 @@ export function BatomonCard({ creature, children, levelLabel }: BatomonCardProps
 
       <div className={styles.identity}>
         <div className={styles.spriteFrame}>
-          <Sprite spriteFile={creature.spriteFile} kind="monster" size={44} alt={creature.name} />
+          <Sprite spriteFile={creature.spriteFile} kind="monster" size={72} alt={creature.name} />
         </div>
         <div className={styles.types}>
           {creature.types.length > 0 ? (
@@ -149,7 +154,7 @@ export function BatomonCard({ creature, children, levelLabel }: BatomonCardProps
           seconds={
             creature.baseCooldownSeconds === null || cooldownUnconfirmed
               ? null
-              : creature.baseCooldownSeconds.toFixed(1)
+              : formatCooldown(creature.baseCooldownSeconds)
           }
         />
         <StatLines lines={statLines} />

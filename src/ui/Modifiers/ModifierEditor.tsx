@@ -66,7 +66,7 @@ export function ModifierEditor() {
 
       {config.placements.length === 0 ? (
         <p className={styles.empty}>
-          <em>Place a Banto in the grid to give it a modifier.</em>
+          <em>Place a Batomon in the grid to give it a modifier.</em>
         </p>
       ) : (
         <>

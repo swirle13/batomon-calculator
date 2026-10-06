@@ -15,12 +15,31 @@
 .card {
   display: flex;
   flex-direction: column;
-  border: 1px solid #3a3d48;
-  border-radius: 8px;
-  background: #212330;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface-2);
   overflow: hidden;
   text-align: left;
 }
+
+/*
+ * FR-043 (items 3 + 15): the card reserved nothing, so it resized on every hover — a one-type
+ * creature's card was shorter than a two-type one, the ability band grew with text length, and the
+ * adjacent column visibly jumped. Every variable band now reserves space sized to the corpus's
+ * measured worst case (longest name 12 chars, longest abilityText 169 chars, max 2 types), so the
+ * outer height is constant regardless of which creature is shown.
+ *
+ * This is a fixed HEIGHT at a flexible width: the containing column is `flex: 1 1 16rem`, so
+ * freezing the width would fight the page layout. Text wraps within that width and the reserved
+ * heights are sized for it.
+ */
+.cardFixed { height: 33rem; }
+
+.cardFixed .identity { min-height: 6.5rem; }
+.cardFixed .output { min-height: 5.5rem; }
+.cardFixed .ability { min-height: 6rem; }
+.cardFixed .extra { min-height: 7rem; }
+.cardFixed .meta { min-height: 3.25rem; }
 
 /* --- Band 1: name + rarity, rarity-coloured --- */
 .header {
@@ -66,19 +85,24 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 3.25rem;
-  height: 3.25rem;
-  border: 1px solid #3a3d48;
-  border-radius: 6px;
-  background: #171821;
+  /* item 15: was 3.25rem, which left the two-type column looking half-empty because the chips set
+     a taller band than the sprite filled. */
+  width: 5.25rem;
+  height: 5.25rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface-1);
   flex-shrink: 0;
 }
 
 .types {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: var(--space-2xs);
   align-items: flex-start;
+  /* item 15: reserve two chips' worth so a single-type creature doesn't render a shorter band. */
+  min-height: 3.5rem;
+  justify-content: center;
 }
 
 /* --- Band 3: cooldown block | one line per output stat --- */
