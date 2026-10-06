@@ -120,3 +120,28 @@ class InvalidTeamConfigurationError extends Error {
 - No two-sided battle resolver (shared-HP-pool PvP resolution) — see spec.md Assumptions. `simulate`
   runs the user's team against a configurable idealized target only.
 - No shop/merge economy simulation (research.md B6) — `CreatureRecord.level` is read, not computed.
+
+## 2026-10-06 (round 8) additions
+
+### `SimulationResult.dpsRateSeries`
+
+`{ tSeconds: number; dps: number }[]` — instantaneous damage per second in half-open 1-second
+buckets. Derived from `timeline`; integrating it MUST reproduce `cumulativeSeries`'s final
+`totalDamage` (asserted by test). Consumers MUST render it rather than recomputing a rate.
+
+### `src/engine/optimize.ts` (new module)
+
+Not part of `simulate()`; a pure consumer of it.
+
+- `scoreConfiguration(config, corpus): number` — time-weighted damage, discounting each timeline
+  event by `0.5 ^ (tSeconds / TIME_WEIGHT_HALF_LIFE_SECONDS)`. Raw window totals are deliberately
+  **not** the objective: they over-reward a slow damage-over-time ramp that may only pay off after
+  the team is dead.
+- `suggestPlacement(config, corpus): PlacementSuggestion` — exhaustive over permutations of the
+  currently-placed creatures (≤720). Returns `placements: null` when nothing beat the current
+  layout; it MUST NOT return a cosmetic reshuffle presented as an improvement.
+- `analyzePositionalCoverage(config, corpus): PositionalCoverage` — returns which placed creatures
+  carry a positional tag, which of those the engine can **act on**, and which selected trinkets have
+  unmodelled slot effects. **Contractual requirement**: any UI surfacing `suggestPlacement` MUST
+  also surface this, because the search's inputs are nearly empty (one engine-readable positional
+  ability corpus-wide), so an empty result is a limitation and not a verdict.

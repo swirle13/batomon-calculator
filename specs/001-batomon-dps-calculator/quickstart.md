@@ -544,6 +544,91 @@ Two corrections this round, neither user-reported:
    row to prove the comparison actually detects it — the first version of that guard was a run-length
    heuristic that did **not** detect a shift at all.
 
+## Validation scenario 32 — picker sprite size and name placement (FR-060/FR-061)
+
+1. Open the creature picker.
+2. **Expected**: sprites render at **64×64**, matching the team grid the user compared them against.
+3. **Expected**: each card shows the sprite filling the art area with the name in a band at the
+   card's **bottom edge** — not the name mid-card with an empty colour block beneath it.
+
+## Validation scenario 33 — identical cooldown blocks (FR-059)
+
+1. Select a creature with a confirmed cooldown.
+2. **Expected**: the "SEC" block in the base band and the one in "Effective this battle" are the
+   **same size**. They were already one shared component; the defect was that it had no intrinsic
+   size and inherited its parent's.
+
+## Validation scenario 34 — nothing reflows (FR-062)
+
+1. Hover creatures with short and long names/ability text in turn.
+2. **Expected**: the selected-creature column's **width** does not change.
+3. **Note**: if the chart still redraws, that is a *separate* cause — `#root` is a fixed width and
+   the chart is not a flex item in that row, so the column's width never drove it (research.md J3).
+
+## Validation scenario 35 — display-layer sorting (FR-067)
+
+1. Open the Batomon Browser.
+2. **Expected**: entries are alphabetical from the first one. Specifically, the six seed records
+   (Bumblebolt, Formiqueen, Venopuff, Scorchimp, Pebbler, Onsetra) are **no longer first** — that
+   was file order leaking into the UI.
+3. **Expected**: the Type filter's options are alphabetical, as the picker's already were.
+4. **Expected**: Trainer and Trinket lists and both summary tables are ordered deterministically.
+
+## Validation scenario 36 — DPS over time (FR-068)
+
+1. Build a Poison team and view the new "Damage per second over time" chart.
+2. **Expected**: the curve **rises** across the window.
+3. Replace it with a pure direct-damage team.
+4. **Expected**: the curve is **flat** — which is the comparison the cumulative chart cannot show,
+   since it only ever rises.
+
+## Validation scenario 37 — placement suggestion states its blind spot (FR-069)
+
+1. Place two creatures with no positional abilities and expand "Placement suggestion".
+2. **Expected**: it reports **none of your placed Batomon** have a positional ability the engine can
+   act on — so "no improvement" reads as a limitation, not a verdict.
+3. Place Formiqueen next to a Common creature.
+4. **Expected**: the count of actionable creatures rises to 1.
+5. Add **Onsetra** and **Expected**: it is listed as having a positional ability the engine does
+   *not* read — the distinction between "has a tag" and "the engine acts on it".
+6. Select **Link Cable** and **Expected**: a warning that a slot-based trinket effect may invalidate
+   the result entirely.
+
+## Validation scenario 38 — copy and chrome (FR-063/064/065/066/070)
+
+1. **Expected**: the browser is titled "Batomon Browser" with no "Corpus snapshot" prose, and its
+   cards share one height.
+2. **Expected**: the version still appears — in the page **footer** (FR-014's third home).
+3. **Expected**: no "Batomon Stats" heading; no per-slot "Or choose from dropdown"; Modifiers sits
+   between the grid and Team Summary with no em-dash hint; the summary tables' four edges match.
+
+## Validation results (2026-10-06, round 8 implementation — Scenarios 32-38)
+
+114 tests pass, up from 104. Per scenario:
+
+- **32 — PASS (automated).** `--sprite-picker` is now 64px with a working reader (it was 48px and
+  read by *nothing*, so round 8's first draft of "use the shared token" would have been inert).
+  `.typeSplitContent` now fills the host and carries the layout, so the art area expands and the
+  name band reaches the bottom edge.
+- **33 — PASS (code-traced).** `.cooldown` has a fixed intrinsic size and `align-self: start`.
+- **34 — PARTIAL, honestly.** The column width is now fixed via `--detail-panel-width`, so the
+  visible reflow is gone. **The chart redraw is explicitly not claimed fixed** — the mechanism first
+  asserted for it was wrong (`#root` is a fixed width and the chart is not a flex item in that row),
+  so if the redraw persists it has a different cause and needs separate investigation.
+- **35 — PASS (automated).** A tripwire asserts `distinctCreatures` is name-sorted and that the six
+  seed records are no longer first. Type filter, Trainer/Trinket lists, and both summary tables now
+  sort at display.
+- **36 — PASS (automated).** Three engine tests: the rate rises for a Poison team, stays flat for a
+  direct-damage team, and integrating it reproduces the cumulative total.
+- **37 — PASS (automated).** Five optimiser tests, including that Onsetra is reported as having a
+  positional ability the engine does *not* read, and that Link Cable is flagged as able to
+  invalidate the result.
+- **38 — PASS (code-traced + automated).** Browser renamed and prose removed with the version
+  rehomed to the footer (asserted); heading, dropdown, Modifiers position, and table borders done.
+
+**Not verified in a browser**: scenarios 32, 33, 34 and 38's visual halves are code-traced or
+unit-tested only. jsdom has no layout, so sizes and borders need a real-browser pass.
+
 ## Automated checks
 
 ```bash

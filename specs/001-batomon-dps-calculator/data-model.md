@@ -480,6 +480,31 @@ sums `effectTags` from every trinket in `config.trinketIds`, as an *additional* 
 wide modifier source alongside the user's own manual `teamModifiers` -- additive with it, same
 no-precedence rule the manual carry-over `StatModifier`s already follow with each other.
 
+### 2026-10-06 (round 8) — `SimulationResult.dpsRateSeries`; new `src/engine/optimize.ts` module
+
+Per research.md J6/J7 (FR-068/FR-069). Additive; nothing existing changes shape.
+
+```ts
+interface SimulationResult {
+  // ...existing fields unchanged...
+  /** Instantaneous damage per second in 1-second buckets. The cumulative series is monotonic and
+   * so cannot show whether output is accelerating; this is the rate view. Derived from the same
+   * `timeline`, so integrating it reproduces `cumulativeSeries`'s total (asserted by test). */
+  dpsRateSeries: { tSeconds: number; dps: number }[];
+}
+```
+
+**Bucket size is 1 second, deliberately**: it matches the Poison tick interval and the per-second
+framing used throughout the UI. Finer buckets render as a comb of per-cast spikes; coarser ones
+flatten the ramp the chart exists to show. Buckets are half-open `(k, k+1]` — clamping a boundary
+tick into the final bucket is the bug that inflated round 7's own evidence ~2× (research.md I13).
+
+**New engine module `src/engine/optimize.ts`** (not part of `simulate()`): `suggestPlacement()`
+searches arrangements of the placed creatures (≤720) scored by `scoreConfiguration()`, which
+discounts damage by `0.5 ^ (t / 10s)` so earlier damage counts for more. `analyzePositionalCoverage()`
+returns what the search could and could not reason about, so the UI can state its blind spot — the
+module deliberately exposes its own limits as a first-class return value rather than only a result.
+
 ### 2026-10-06 (round 7) — `SimulationResult` gains second-order status metrics; DOT damage is attributed
 
 Per research.md I13 (FR-055/056/057). Three related changes, all additive — no existing field
