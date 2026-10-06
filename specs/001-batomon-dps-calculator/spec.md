@@ -116,6 +116,10 @@ correct and show their data source citation(s).
   under different, not-yet-individually-confirmed conditions (a "branching" evolution)? It MUST
   NOT guess which branch applies; such a species is treated as having no resolvable evolution
   until a source confirms each branch's specific trigger condition.
+- How does the system handle level 2/3/4 stats when no available source publishes them in a
+  form the project's tooling can extract (e.g., values locked behind a live, JavaScript-driven
+  UI control rather than published as static text)? It MUST be logged as an explicit, cited
+  blocker rather than silently left blank with no explanation, or worse, fabricated.
 
 ## Requirements *(mandatory)*
 
@@ -190,6 +194,14 @@ correct and show their data source citation(s).
 - **FR-022**: When a user sets a placement's level at or beyond a species' documented evolution
   threshold, the system MUST display that species' evolved form at that level (resolved from the
   corpus's evolution data) rather than omitting or disabling the level option.
+- **FR-023**: Clicking anywhere on a grid slot's card (occupied or empty) MUST open the
+  creature-assignment search — no separate button is required to trigger assignment.
+- **FR-024**: The DPS table and the per-creature detail panel MUST NOT display a placement's
+  grid-slot position as text, since the 2x3 grid already shows it visually.
+- **FR-025**: System MUST record each creature's Heal amount and Sell Value as corpus data
+  (browsable in the Corpus Browser), citing sources the same as any other stat, even though
+  neither is simulated in the DPS/status engine (Heal has no modeled target to restore, per the
+  Assumptions section; Sell Value is a shop-economy concept, out of scope for simulation).
 
 ### Key Entities
 
@@ -291,3 +303,19 @@ drag-and-drop semantics).
 batomon.com is an official site. It is not — confirmed via WHOIS, TLS certificate, hosting
 fingerprint, and the site's own FAQ self-disclosure, all cited in research.md E1. It is treated
 here purely as UI/UX inspiration and a potential future corpus citation source, not an authority.
+
+### 2026-10-05 (round 4) — FR-023/024/025 added; two patch-driven mechanic corrections; a hard corpus blocker identified
+
+Added via `/speckit-plan` in response to user-reported items and a user-supplied in-game stat
+reference. Two engine corrections (not new requirements, but corrections to existing behavior):
+`STATUS_VS_SHIELD_REDUCTION` 25% -> 15% (an August 2026 balance patch this project hadn't yet
+picked up) and Multicast repetitions now stagger 0.1s apart instead of firing simultaneously (a
+correction to round 2's own implementation) — see research.md F1/F2. FR-023 (click-anywhere
+assignment) and FR-024 (drop redundant slot labels) are UI cleanup. FR-025 adds Heal/Sell Value
+as corpus data (research.md F3).
+
+**Scope finding, logged rather than attempted with fabricated data**: the user's request to add
+level 2/3/4 stats for all 149 creatures was investigated directly and found to be **blocked**,
+not merely large — no available source publishes those numbers in a form this project's tooling
+can extract (research.md F5). The level-1 damage/cooldown completion task (research.md F6)
+remains large but achievable and continues as tracked, incremental work (`tasks.md` T075).

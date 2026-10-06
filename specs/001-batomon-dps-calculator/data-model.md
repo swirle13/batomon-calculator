@@ -401,6 +401,48 @@ over the existing `setPlacement` mutation:
   rearranging an already-built team to work, and never silently discards a placement's
   modifiers.
 
+### 2026-10-05 (round 4) — `STATUS_VS_SHIELD_REDUCTION` patch supersession: 25% -> 15%
+
+Per research.md F1: superseded by an August 2026 balance pass, corroborated across three
+independent 1.2.0-era guides. `src/engine/shield.ts`'s `STATUS_VS_SHIELD_REDUCTION` constant
+updates from `0.25` to `0.15`, with its `Provenance` updated to cite the new sources and retain
+the 30% -> 25% -> 15% history in a comment (this is the third time this specific value has
+changed — the strongest case yet for keeping it a named, cited constant rather than inline).
+
+### 2026-10-05 (round 4) — Multicast repetitions stagger by 0.1s, not simultaneous
+
+Per research.md F2 — corrects round 2's implementation, which fired every Multicast repetition
+at the same `tSeconds`. Each repetition `i` (0-indexed) now resolves at
+`cast.tSeconds + i * 0.1`, rounded via the existing `roundTime()` helper; a repetition whose
+staggered timestamp would exceed `windowSeconds` is not generated. No type change — this is a
+Phase B engine-logic fix in `simulate.ts`.
+
+### 2026-10-05 (round 4) — New stats: `healAmount`, `sellValue` (data fields only)
+
+Per research.md F3 — both corroborate the user-supplied in-game stat reference text:
+
+```ts
+interface CreatureRecord extends Provenance {
+  // ...existing fields...
+  /** HP restored per cast, resolved after damage in the same tick (per the game's own stat
+   * description) -- not simulated: same "no modeled target/HP pool" gap as Shield absorption
+   * (tasks.md T037). Corpus data only, for display, until/unless a target entity exists. */
+  healAmount?: number;
+  /** Extra gold gained when sold -- shop/economy data (research.md B6, out of scope for the
+   * engine), recorded for Corpus Browser completeness only. */
+  sellValue?: number;
+}
+```
+
+### 2026-10-05 (round 4) — UI: click-anywhere assignment; drop redundant slot labels
+
+Per research.md F4 — no type change. `GridPicker`'s separate "Choose…"/"Change…" button is
+removed; the slot's card/placeholder itself becomes the click target that opens
+`CreatureSearchModal` (coexisting with round 3's drag handlers on the same element, since
+`@dnd-kit/core`'s pointer sensor only engages past a drag-distance threshold). `TeamSummary` and
+`PlacedCreatureDetails` drop their displayed slot-position text (e.g. "Back 1") — the per-slot
+*keying* (`${creatureId}@${slotKey}`) is unchanged, only the label shown to the user.
+
 ### 2026-10-05 (round 3) — Persistent side-panel "highlighted slot" is UI state, not team data
 
 Per research.md E2.7 — the reference UI's hover-anchored detail popup disappears on

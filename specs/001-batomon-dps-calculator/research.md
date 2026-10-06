@@ -405,6 +405,129 @@ defects in the reference implementation to deliberately avoid:
    than nothing. This is explicitly UI-only state, not part of `TeamConfiguration` — see
    data-model.md's note on keeping it out of the persisted team-config shape.
 
+## F. Round 4 follow-ups (2026-10-05 — mechanic corrections, new stats, UI cleanup, corpus scale-up)
+
+### F1. Shield-vs-status reduction: patch supersession, 25% -> 15%
+
+> The 25% figure this project cited (research.md B3, Hotfix 0.6.1) has been superseded by an
+> August 2026 balance pass: status damage (Burn, Poison, and the triggered Shock hit) hitting a
+> Shield is now reduced by **15%** before absorption, not 25%. This is a patch update, not a
+> source disagreement — multiple independent 1.2.0-era guides agree on 15% and explicitly flag
+> 25% as the older value.
+
+- **Sources**: "Batomon Showdown Combat Mechanics" —
+  <https://batomonshowdowngame.wiki/guides/combat/> ("status damage against Shield is reduced
+  (15 percent in the August 2026 notes, down from 25)"); "Batomon Showdown Shock Builds Guide"
+  — <https://batomonshowdowngame.wiki/guides/shock-build/>; "Batomon Showdown Burn Builds Guide"
+  — <https://batomonshowdowngame.wiki/guides/burn-build/>. All retrieved 2026-10-05, corroborating
+  the value the user supplied directly from their own in-game stats reference.
+- **Engine implication**: update `STATUS_VS_SHIELD_REDUCTION` from `0.25` to `0.15` and its
+  `Provenance` to cite the August 2026 patch, keeping the historical 30%/25% lineage in a comment
+  rather than deleting it (this value has now changed three times — Constitution Principle IV's
+  reasoning for keeping it a named, cited constant instead of an inline number applies even more
+  now).
+
+### F2. Multicast: fires 0.1s apart, not simultaneously — corrects round-2's implementation
+
+> Each Multicast repetition is a distinct, separately-timed cast: "Multicast 3" means 3 total
+> casts, the first immediate, the second 0.1s later, the third 0.1s after that — not 3
+> simultaneous hits at one timestamp. Every repetition is still its own full cast (own direct
+> hit, own Shock-proc eligibility, own status-grant application, own `On Cast` trigger).
+
+- **Sources**: "Batomon Showdown Multicast Build: Top Meta Team Guide" —
+  <https://batomon-showdown-wiki.wiki/builds/batomon-showdown-multicast-build> ("Each repeated
+  cast in a multicast sequence is separated by an exact internal spacing of 0.1 seconds...if a
+  monster has Multicast 3, its first cast resolves immediately, its second cast resolves 0.1
+  seconds later, and its third cast resolves 0.1 seconds after that"); "Batomon Showdown
+  Mechanics – Triggers and Evolutions" — <https://batomon.net/guides/mechanics/>. Both retrieved
+  2026-10-05.
+- **Flagged, not implemented**: a Steam Community discussion
+  (<https://steamcommunity.com/app/4557380/discussions/0/564786459586976612/>, retrieved
+  2026-10-05) theorizes that excess Multicast repetitions are silently truncated once their
+  cumulative 0.1s spacing would exceed the creature's own cooldown (so a 1s-cooldown creature
+  "wastes" any Multicast above 10) — but every reply is explicitly self-described as "my
+  understanding"/"guess", with no developer or patch-note confirmation. Per Constitution
+  Principle IV, this is recorded as an open question, not encoded as an engine rule — the engine
+  does not truncate Multicast repetitions against cooldown this round.
+- **Also newly found, recorded for future work, not yet engine-relevant**: "Batomon Showdown
+  Beginner Guide" (<https://batomonshowdown-game.wiki/guide/beginner-guide/>, retrieved
+  2026-10-05) states a fixed same-tick resolution order — "shield, then damage, then statuses,
+  then healing" — relevant once/if a modeled opposing target exists (ties to the Shield-
+  absorption gap already tracked in `tasks.md` T037).
+- **Engine implication**: Phase B's Multicast repetition loop (round 2) must stagger each
+  repetition's `tSeconds` by `+0.1 * repetitionIndex` from the cast's cooldown-triggered
+  timestamp, rounded via the existing `roundTime()` helper (research.md D4), instead of reusing
+  the same `cast.tSeconds` for every repetition. A repetition whose staggered timestamp would
+  fall after `windowSeconds` is simply not generated (same boundary rule as ordinary casts).
+
+### F3. New stats: Heal and Sell Value
+
+> User-supplied in-game stat reference, corroborated: **Heal** restores HP, resolved *after*
+> damage in the same tick (so it can save a target from damage that would otherwise be lethal in
+> that same tick) — a mechanic this engine cannot simulate yet for the same reason Shield
+> absorption isn't wired in (`tasks.md` T037: no modeled opposing HP pool exists under the
+> "idealized target" assumption). **Sell Value** is extra gold gained when a Batomon is sold — a
+> shop/economy concept, explicitly out of scope for the engine (research.md B6).
+
+- **Engine/data implication**: both are recorded as corpus **data** fields
+  (`CreatureRecord.healAmount?: number`, `CreatureRecord.sellValue?: number`) for completeness
+  and Corpus Browser display, same treatment data-model.md already gives Shield (tracked as an
+  output stat where it's a cast effect, but not simulated as absorption against a target) — not
+  wired into `simulate()`'s damage/DPS math this round, with the gap stated explicitly rather
+  than silently doing nothing.
+
+### F4. UI cleanup: click-anywhere assignment; drop redundant slot labels
+
+- **Click-anywhere to assign** (user-reported): the round-3 redesign added a `CreatureSearchModal`
+  but opened it only via a separate "Choose…"/"Change…" button next to each card — the user
+  wants clicking the card (or the empty-slot placeholder) itself to open the modal, with no
+  separate button. **Decision**: make the slot's clickable area the full card/placeholder;
+  dragging (an existing card, round 3) and clicking (to open the modal) must coexist on the same
+  element without conflicting — `@dnd-kit/core`'s pointer sensor only engages past a small drag-
+  distance threshold, so a plain click (no movement) still fires normally.
+- **Redundant slot labels** (user-reported): "slot number for creature in dps table and hovered
+  creature card is not necessary. we can already visually see where it exists" — the 2x3 grid
+  itself already shows position; repeating "Back 1" / "front0" text in `TeamSummary`'s rows and
+  `PlacedCreatureDetails`'s panel is redundant. **Decision**: drop the slot-position text from
+  both displays. The underlying per-slot keying (`${creatureId}@${slotKey}`) is unchanged — only
+  the *displayed* label changes; two placements of the same species will show as two
+  identically-labeled rows, which the user has explicitly accepted as a non-issue.
+
+### F5. Corpus scale-up, part 1: level 2/3/4 stats are NOT accessible via any available static source — a hard blocker, not just a lot of work
+
+> Investigated directly (not merely assumed): every per-creature stats page found across every
+> source cited anywhere in this project exposes **only level-1 numbers** in static HTML/text.
+> Level 2/3/4 values exist only behind a live, JavaScript-driven "Lv 1 / Lv 2 / Lv 3 / Lv 4" tab
+> control that requires actual browser interaction to reveal — fetching the page's static
+> content (confirmed via direct fetch, not just search snippets) never returns those numbers.
+
+- **Evidence**: direct fetch of <https://batodex.com/monsters/bonshell> returns only the Lv 1
+  card (Shield 100, 7.0s cooldown, "+80 Damage and +80 Shield") plus inert tab *labels* ("Lv 1
+  Lv 2 Lv 3 Lv 4") with no associated values. <https://batomon.net/batomon/dracana/> and
+  <https://batomon.net/batomon/bonshell/> both say outright: *"This page deliberately keeps
+  normal level 1 separate from levels 2, 3 and 4... the in-game inspect panel gives you the
+  current numbers directly"* — i.e. even that source's authors only have level-1 numbers to
+  publish. No source found (across ~10 distinct fan sites cited in this document) publishes a
+  level 2/3/4 numeric table for the general creature roster; the handful of specific values this
+  project already cites (Pyronade Burn 20/40/60, Coalem Shield 550/1100/1650, etc. — research.md
+  D2) are rare exceptions some *guide* authors chose to manually transcribe for a few popular
+  units, not a systematically available dataset.
+- **Engine/data implication**: "Add all level 2/3/4 stats for all 149 creatures" is **blocked**
+  by this project's tooling (no browser automation available/authorized this round — Constitution
+  doesn't forbid it, but it hasn't been requested) rather than merely large. The `CreatureRecord`
+  shape already supports multi-level records (round 2's `level: 1 | 2 | 3 | 4` widening) and
+  nothing structural needs to change — there is simply no accessible source for the numbers
+  themselves beyond the rare already-cited exceptions. Logged honestly as a blocked task, not
+  attempted with fabricated numbers (Constitution Principle IV).
+
+### F6. Corpus scale-up, part 2: level-1 damage/cooldown for all remaining creatures — large but achievable
+
+Unlike F5, level-1 `baseDamage`/`baseCooldownSeconds` *is* accessible via individual
+batodex.com-style pages (confirmed working for the 9 creatures already completed across prior
+rounds). This remains a large, multi-source-citation task — continuing `tasks.md` T075's
+existing "one cited batch at a time" pattern, scaled up substantially this round, not claimed
+as 100% complete in one pass unless it genuinely is.
+
 ## C. Resolved Technical Context (feeds plan.md)
 
 | Field | Resolution |

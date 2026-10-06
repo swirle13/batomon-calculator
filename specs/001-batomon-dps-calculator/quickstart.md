@@ -178,6 +178,28 @@ unverified by an automated test as of this round — tracked as follow-up test c
 spirit as this project's other honestly-logged scope gaps (e.g. the Shield-absorption gap noted
 below).
 
+## Validation scenario 13 — click-anywhere assignment, no separate button (FR-023)
+
+1. Click directly on an empty slot's placeholder card (not any button).
+2. **Expected**: the creature-assignment search modal opens for that slot.
+3. Click directly on an occupied slot's card (not any button).
+4. **Expected**: the modal opens for that slot too, pre-selected to its current creature's slot.
+
+## Validation scenario 14 — no redundant slot-position text (FR-024)
+
+1. Place any creature and view both the DPS table and the per-creature side panel.
+2. **Expected**: neither displays the slot's row/column as text (e.g. "Back 1") — position is
+   conveyed only by the grid itself.
+
+## Validation scenario 15 — corrected mechanic values
+
+1. Simulate a team including a Shield-granting creature and a status-applying creature long
+   enough for a status tick to land while Shield is still up.
+2. **Expected**: the status damage is reduced by 15% against Shield, not 25%.
+3. Place a creature with `baseMulticast` > 1.
+4. **Expected**: its repeated casts land 0.1s apart in the timeline, not at the identical
+   timestamp.
+
 ## Automated checks
 
 ```bash
