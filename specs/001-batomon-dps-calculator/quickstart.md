@@ -47,6 +47,13 @@ Opens the Vite dev server. Navigate to the Calculator view.
 2. **Expected**: the conflicting values and their sources are both visible on that entry's detail
    view, not silently merged into one number (spec.md FR-004, SC-004).
 
+> **SUPERSEDED by round 6 (2026-10-06).** FR-030 removes citations and conflicts from the corpus
+> browser UI at the user's request, so step 2 is no longer achievable through the browser and this
+> scenario is **not** to be re-run as written. SC-004's enforcement surface moved to an automated
+> corpus-provenance test (`src/data/__tests__/provenance.test.ts`, tasks.md T118) — run that
+> instead. The underlying `conflicts`/`sourceRefs` data is unchanged and still required; see
+> spec.md's round 6 Amendment for why this is a surface change, not an abandoned criterion.
+
 ## Validation scenario 5 — Trainer roster + placement (FR-015)
 
 1. Open the Calculator view without selecting anything.
@@ -249,6 +256,11 @@ Frillet→Dewlotl, all at level 3).
    4-creature formation, 2.20 → 2.40 in a 2-creature control.)
 5. **Also expected**: the timeline's event ordering at a shared timestamp may still differ between
    the two layouts — only the computed values must be invariant (research.md H8).
+6. **Repeat the whole scenario with the Shock-applier set to a level where its Multicast is > 1**
+   (e.g. Bumblebolt at level 4, Multicast 2). This is a *second, separate* manifestation of the same
+   root cause and is not fixed by the per-timestamp snapshot alone — before the fix it reproduced
+   Shock 20.55/s at `front-1` versus 21.60/s at `back-1`. Both parts of the fix must be in place
+   (research.md H8).
 
 ## Validation scenario 19 — game-faithful card bands, in both places (FR-028/FR-029)
 

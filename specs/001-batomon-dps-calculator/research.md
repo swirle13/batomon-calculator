@@ -624,6 +624,13 @@ team panel, and two before/after captures of the DPS bug in item 14.
   from per-cast output (one labelled, colour-coded line each). Shop cost is **not** on the game
   card at all — it is a shop property, not a battle stat — so it moves to a secondary line
   rather than competing with battle stats for the reader's attention.
+- **Band 4 has two parts, not one** (caught during this round's review): the in-game card renders
+  the ability **trigger** (`On Battle Start`) as its own emphasised line *above* the description
+  (`+4 Burn and +4 Poison permanently.`). This corpus's `abilityText` holds only the description —
+  the trigger is a separate field in the extracted payload (`ability.trigger`) that rounds 2-5
+  never captured. Faithfully reproducing band 4 therefore needs a small schema addition
+  (`abilityTrigger`), not just a layout change; see data-model.md's round-6 amendment. Without it
+  the card silently drops information the reference card shows.
 - **Key difference from the game kept deliberately**: this project's `PlacedCreatureDetails`
   additionally shows "Effective this battle" (modifier-adjusted) values, which no in-game card
   has. That stays — it is this project's own differentiator (research.md E1's "preserve this
@@ -672,10 +679,22 @@ and rarity, so item 8's "color coordinated" requirement needs no invented palett
   from, when, and that they remain the game author's property. Flagged for the user as the one
   item this round with a non-technical (licensing/courtesy) dimension rather than silently
   bundling someone else's art.
-- **Slug reconciliation**: batodex slugs differ from this corpus's ids for 4 known species
-  (`alpinine`/`craghorn`, `dragonarch`/`draconarch`, `galvanade`/`electranade`,
-  `scorbble`/`scorubble` — round 5's name-matching finding). The sprite filename must therefore
-  be stored **per record** as data, not derived from `id` by convention.
+- **Slug reconciliation — 11 species, not 4** (corrected during this round's review; the initial
+  draft of this section wrongly carried over round 5's *id*-reconciliation count of 4):
+
+  ```text
+  craghorn    -> alpinine.png      draconarch -> dragonarch.png    dragonegg  -> dragon_egg_0.png
+  electranade -> galvanade.png     missingn   -> missing_no.png    null00     -> null_00.png
+  null7f      -> null_7f.png       nullff     -> null_ff.png       purpleegg  -> purple_egg.png
+  pyronade    -> infernade.png     scorubble  -> scorbble.png
+  ```
+
+  Round 5's 4 were genuine *id* divergences; the other 7 are publishing-convention differences
+  (underscored multiword slugs for the Egg/NULL families) plus one further real rename
+  (`pyronade` is published as `infernade`). **Matching on `name` (case-insensitive) resolves all
+  149/149**, which is the same technique round 5 used to reconcile ids — so the mapping is done by
+  name match, and the resulting filename stored **per record** as data. Deriving the filename from
+  `id` by convention would silently 404 for 11 species.
 
 ### H4. Trinket presentation — reuse the creature picker, don't invent a second pattern
 
@@ -781,6 +800,27 @@ Bumblebolt at `front-1` vs **2.40** at `back-0`.
   tells users position matters when the corpus says it doesn't; (c) *sub-order by creature id
   instead of slot* — rejected, it only relabels the arbitrary tie-break without removing the
   position/order coupling for other permutations.
+- **Second, independent manifestation of the same root cause — found during this round's review,
+  and NOT fixed by the snapshot rule alone.** Phase B expands Multicast repetitions *inline inside
+  the cast loop*, so a cast at t=5.0 with a repetition at t=5.1 is fully processed before another
+  creature's cast at t=5.0 that happens to sort later. Phase B therefore does not walk events in
+  global chronological order at all, and round 4's 0.1 s stagger does not save it — "repetitions
+  occupy distinct timestamps" is true but irrelevant if the loop never visits timestamps in order.
+  Reproduced: Panbud + Bumblebolt **at level 4** (where Bumblebolt's Multicast is 2) yields
+  **Shock 20.55/s** with Bumblebolt at `front-1` versus **21.60/s** at `back-1`. 7 creature records
+  in the corpus have Multicast > 1 *and* apply Shock (Humbolt at all 4 levels, Bumblebolt Lv4,
+  Frizzly Lv4), so this is reachable with real data, not a synthetic edge case.
+  **Therefore the fix has two parts**: (a) flatten every cast's repetitions into a single event
+  list and sort it by `(tSeconds, stableSlotIndex)` *before* walking it, so Phase B is genuinely
+  chronological; (b) then apply the per-timestamp snapshot rule. Part (a) alone is not sufficient
+  (the original front-1/back-2 case is a true same-timestamp collision), and part (b) alone is not
+  sufficient (the Multicast case above). A regression test must cover **both** shapes.
+- **The snapshot must cover `shockLayersBySource`, not just `shockLayers`.** Facilitated damage is
+  attributed by each source's *share* of the live layer total
+  (`shockDamage * sourceLayers / shockLayers`). Snapshotting only the scalar total while leaving
+  the per-source map live would leave attribution order-dependent even once the total is not —
+  i.e. it would fix the symptom the user reported (`Shock/sec`) while leaving the column they
+  reported it *in* (`Facilitated DPS`) still wrong in other configurations.
 - **Honest limitation to record**: no source documents how the real game resolves two abilities
   landing on the same frame. The snapshot rule is chosen because it is *invariant* (the property
   the user is actually asserting: a creature with no positional ability must not change output

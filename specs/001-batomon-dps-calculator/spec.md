@@ -236,8 +236,10 @@ correct and show their data source citation(s).
 - **FR-028**: Every creature card — in both the corpus browser and the team-builder's
   selected-creature panel — MUST present its information in the same band order the in-game card
   uses: name and rarity together, then sprite and types, then cooldown shown separately from a
-  **one-line-per-stat** breakdown of per-cast output, then ability text. Cost, cooldown, and
-  damage MUST NOT be rendered as a single combined line.
+  **one-line-per-stat** breakdown of per-cast output, then the ability's trigger label above its
+  description. Cost, cooldown, and damage MUST NOT be rendered as a single combined line — and
+  this applies to every stat line on the card, including the modifier-adjusted "effective" values,
+  not only the base-stat band.
 - **FR-029**: Each per-cast output stat MUST be rendered in the game's own published colour for
   that stat, consistently everywhere it appears (card stat lines and grid-slot badges alike).
 - **FR-030**: The corpus browser MUST NOT display source citations, patch tags, or recorded

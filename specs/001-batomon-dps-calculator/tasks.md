@@ -641,13 +641,19 @@ like a manual `StatModifier` would.
 - **Round 6 (Phase 11)**: depends on Phase 10 (T125 replaces T110's `TrinketPicker`; T123 keeps
   T108's `distinctCreatures` listing source; T132's team-wide removal must not break T107's
   trinket path). Within the phase:
-  - T114 blocks T116; T114+T115 block T122; T116 blocks T125/T128/T129
+  - T114 blocks T116 and T137; T114+T115+T137 block T122; T116+T137 block T125/T128/T129
+  - T118 must be written and passing **before** T123 deletes the provenance UI (SC-004 handover)
   - T122 blocks T123 and T124 (both render through it)
-  - T126 blocks T127 and T128 (both restructure the same slot card)
+  - T126 blocks T127 and T128 (both restructure the same slot card); T128 changes `GridPicker`'s
+    props, so T119's test render must be updated in the same pass
   - Tests before their implementation, per Principle III: T117→T121, T119→T127, T120→T132
+  - T138 blocks T132 (per-mon modifiers must survive a level change before they become *the*
+    modifier workflow)
+  - T130 and T132 must be coordinated — both decide where `ModifierEditor` sits relative to the
+    simulation-window control and the chart
   - T121 (engine) is **independent of every UI task** — land it first and separately, so a
     regression in the large UI pass can never be mistaken for the engine fix, or vice versa
-  - T130, T131, T133, T134 have no intra-phase dependencies and are parallelizable with the rest
+  - T131, T133, T134, T139 have no intra-phase dependencies and are parallelizable with the rest
 
 ### User Story Dependencies
 
@@ -730,28 +736,64 @@ and 1 reported bug (FR-028..FR-040), plus the two data defects this round's inve
 | 1 | Corpus cards + DPS "selected mon" card follow the game's layout; stop putting cost/cooldown/damage on one line | T122, T123, T124 | FR-028/029 | 19 |
 | 2 | Corpus browser: remove all "Sources & patch" and "Recorded source conflicts" | T123 (+T118 safety net) | FR-030 | 20 |
 | 3 | Corpus browser: 3–4 columns instead of too-wide rows | T123 | FR-031 | 20 |
-| 4 | Trinkets presented like the Batomon picker, not a dropdown, so effects are visible | T125 | FR-032 | 21 |
+| 4 | Trinkets presented like the Batomon picker, not a dropdown, so effects are visible | T125, T139 | FR-032 | 21 |
 | 5 | Can't clear a populated slot — add a small × top-right of each mon's icon | T119, T127 | FR-033 | 22 |
-| 6 | Remove "back row"/"front row" labels | T126 | FR-034 | 23 |
+| 6 | Remove "back row"/"front row" labels | T126, T139 | FR-034 | 23 |
 | 7 | Make the mon icons more square | T126 | FR-035 | 22 |
-| 8 | Show each mon's current stats as floating colour-coded squares at the bottom of its pane | T128 | FR-035/029 | 22 |
+| 8 | Show each mon's current stats as floating colour-coded squares at the bottom of its pane | T128, T139 | FR-035/029 | 22 |
 | 9 | Move "Simulation window (seconds)" to just above the chart, below the DPS tables | T130 | FR-037 | 23 |
-| 10 | Make the two DPS tables side by side | T131 | FR-038 | 23 |
-| 11 | Modifiers: collapsible, per-mon, integrated, no team-wide option, trim the cooldown prose into subtext | T120, T132 | FR-039 | 24 |
-| 12 | Each mon's sprite assets from batodex, in the picker, team display, and corpus | T114, T116, T123, T125, T128, T129 | FR-036 | 19/21/22 |
-| 13 | "Choose a Banto" heading: drop "— back row, slot 2" | T129 | FR-034 | 23 |
+| 10 | Make the two DPS tables side by side | T131, T139 | FR-038 | 23 |
+| 11 | Modifiers: collapsible, per-mon, integrated, no team-wide option, trim the cooldown prose into subtext | T120, T132, T138 | FR-039 | 24 |
+| 12 | Each mon's sprite assets from batodex, in the picker, team display, and corpus | T114, T116, T137, T122, T123, T125, T128, T129 | FR-036 | 19/21/22 |
+| 13 | "Choose a Banto" heading: drop "— back row, slot 2" | T129, T139 | FR-034 | 23 |
 | 14 | Bug: facilitated DPS changes 4.10→4.30 when Bumblebolt is dragged, though it has no positional ability | T117, T121 | FR-040 | 18 |
 | + | *Not requested* — round 5's "100% confirmed" claim is wrong (research.md H9) | T134 | — | — |
 | + | *Not requested* — 10 species' level-1 values contradict their own level 2-4 series (research.md H10) | T133 | — | — |
+| + | *Not requested* — per-mon modifiers are silently wiped whenever a placement's level changes | T138 | — | 22 |
+
+**Review record (2026-10-06)**: this phase was audited against the user's verbatim 14 items by a
+separate reviewing agent after first being drafted, and the audit's empirical claims were then
+independently re-verified before being accepted. Four findings were confirmed and are now folded
+into the tasks above, so they are recorded here rather than lost:
+
+1. **The sprite-slug count was wrong** — the draft said 4 species publish under a different slug
+   than their corpus id; it is **11** (re-verified directly against the extracted data). Fixed in
+   T114/T116, which now mandate name-matching rather than id-matching.
+2. **The engine fix was half a fix** — the per-timestamp snapshot alone leaves a second,
+   independently reproducible manifestation via Multicast (Bumblebolt Lv4: Shock 20.55/s vs
+   21.60/s across a slot permutation, re-verified). T121 now has two required parts and T117 must
+   cover both shapes.
+3. **Item 1's run-on line would have survived** in the very card the user complained about — T124
+   originally passed the existing `Damage 3 · Cooldown 2.50s · Multicast ×1 · …` block through
+   unchanged. T124 and FR-028 now require reformatting it too.
+4. **Item 11's "integrated into the UI" sub-request was satisfiable by renaming a dropdown** —
+   T132(d) now specifies one row per placed creature and forbids a global scope dropdown.
+
+Also added from the audit: the keyboard path for item 5's `×` (T119/T127), the ability-trigger line
+the reference card shows but the schema had no field for (T114/T122), `ItemRecord` in the provenance
+test (T118), a shared sprite renderer so four call sites cannot drift (T137), the level-change
+modifier wipe (T138), and tripwire assertions for the six items that had no automated coverage
+(T139).
 
 ### Foundational for Phase 11 (blocking — no story label, same as Phase 2)
 
-- [ ] T114 Add `spriteFile?: string` to **both** `CreatureRecord` and `TrinketRecord` in
-      `src/data/types.ts` per data-model.md's round-6 amendment. Store the **published filename**,
-      not a URL and not a value derived from `id` — 4 species publish under a different slug than
-      their corpus id (`craghorn`→`alpinine.png`, `draconarch`→`dragonarch.png`,
-      `electranade`→`galvanade.png`, `scorubble`→`scorbble.png`, research.md H3). Optional:
-      absent MUST mean "render the existing text presentation", never a broken `<img>`.
+- [ ] T114 Add `spriteFile?: string` to **both** `CreatureRecord` and `TrinketRecord`, and
+      `abilityTrigger?: string` to `CreatureRecord`, in `src/data/types.ts` per data-model.md's
+      round-6 amendment.
+      - `spriteFile` stores the **published filename**, not a URL and not a value derived from
+        `id`: **11 of 149** species publish under a different slug than their corpus id
+        (`craghorn`→`alpinine`, `draconarch`→`dragonarch`, `dragonegg`→`dragon_egg_0`,
+        `electranade`→`galvanade`, `missingn`→`missing_no`, `null00`→`null_00`,
+        `null7f`→`null_7f`, `nullff`→`null_ff`, `purpleegg`→`purple_egg`,
+        `pyronade`→`infernade`, `scorubble`→`scorbble` — research.md H3). Deriving from `id`
+        would 404 for all 11.
+      - `abilityTrigger` holds the in-game card's trigger line (e.g. `"On Battle Start"`), which
+        the game renders *above* the description and which `abilityText` does not contain — the
+        extracted payload has it as `ability.trigger` and rounds 2-5 never captured it
+        (research.md H1). Without this, T122's band 4 silently drops information the reference
+        card shows.
+      - Both optional: absent MUST mean "render the existing presentation" (no broken `<img>`, no
+        empty trigger line).
 - [ ] T115 [P] Create `src/data/statColors.ts` exporting `STAT_COLORS` and `RARITY_COLORS`,
       following `src/data/typeColors.ts`'s existing pattern. Use the game's **own published**
       values verbatim (research.md H2), not substitutes: damage `#ef426b`, burn `#ed6b3a`,
@@ -765,9 +807,22 @@ and 1 reported bug (FR-028..FR-040), plus the two data defects this round's inve
       48×48 PNG of ~0.8 KB, so the whole set is <250 KB). Download from
       `https://batodex.com<sprite path>`, then populate `spriteFile` on **every** record in
       `src/data/creatures.ts` (all 4 level records of a species share one sprite) and
-      `src/data/trinkets.ts`. Resolve at render time against `import.meta.env.BASE_URL` — the app
-      is served from `/batomon-calculator/`, so a root-relative `/sprites/...` path will 404 in
-      production. Do **not** hot-link batodex at runtime (Principle V). (depends on T114)
+      `src/data/trinkets.ts`, **and** populate `abilityTrigger` from each entry's `ability.trigger`
+      in the same pass. Specific requirements, because this is where it goes wrong quietly:
+      - **Map by `name` (case-insensitive), not by `id`** — that resolves 149/149 and
+        automatically covers all 11 slug divergences; id-matching silently misses 11
+        (research.md H3).
+      - **Commit the extraction/download script** into `scripts/` rather than leaving it in
+        `/tmp` — `/tmp/monsters_extracted.json` and `/tmp/trinkets_extracted.json` exist right
+        now but are ephemeral, and round 5 already left this pipeline unreproducible once.
+      - Resolve at render time against `import.meta.env.BASE_URL` — the app is served from
+        `/batomon-calculator/`, so a root-relative `/sprites/...` path will 404 in production.
+      - Do **not** hot-link batodex at runtime (Principle V).
+      - Add an assertion (fold into T118's test file) that **every** record's `spriteFile`, where
+        present, names a file that actually exists under `public/sprites/...`, and report how many
+        of 149 creatures and 93 trinkets ended up with a sprite. A missing-file typo is otherwise
+        invisible until a user sees a broken image.
+      (depends on T114)
 
 ### Tests for Phase 11 ⚠️ write first, confirm failing before implementing (Constitution Principle III, NON-NEGOTIABLE)
 
@@ -779,21 +834,39 @@ and 1 reported bug (FR-028..FR-040), plus the two data defects this round's inve
       byte-for-byte identical**. Assert the **invariant**, not a specific number — research.md H8
       is explicit that neither 4.10 nor 4.30 is confirmed to be the game's real answer, so pinning
       either would encode a guess as a requirement. Confirm it fails before T121.
+      **Cover BOTH shapes of the defect** — a fixture with only shape (a) will pass while shape (b)
+      is still broken, which is exactly how this would ship half-fixed:
+      - (a) **same-timestamp collision**: Multicast 1, two creatures whose cooldowns coincide
+        (2.5s + 5s collide at t=5/10/15/20). This is the user's reported case.
+      - (b) **Multicast interleaving**: the Shock-applier has `baseMulticast > 1`, so its
+        repetitions interleave with another creature's casts. Verified reachable with real data —
+        Bumblebolt at level 4 (Multicast 2) gives Shock **20.55/s** at `front-1` vs **21.60/s** at
+        `back-1` today, and 7 corpus records have Multicast > 1 *and* apply Shock. The
+        per-timestamp snapshot alone does **not** fix this (research.md H8).
 - [ ] T118 [P] Write a corpus-provenance test in `src/data/__tests__/provenance.test.ts` (new
-      file) asserting every `CreatureRecord`/`TrainerRecord`/`TrinketRecord` has at least one
-      `sourceRef` with a non-empty `url`/`title`/`retrievedAt` and a non-empty `patch`, and that
-      every entry in any `conflicts` array is well-formed (non-empty `field`, ≥2 `values`, each
-      with ≥1 `sourceRef`). **This is SC-004's replacement enforcement surface** — T123 removes the
-      UI that was satisfying it, and spec.md's round-6 Amendment commits to this test taking over
-      rather than to abandoning the criterion. Do not skip this task on the grounds that it tests
-      data rather than behaviour.
+      file) asserting every `CreatureRecord`/`TrainerRecord`/`TrinketRecord`/**`ItemRecord`** (all
+      four record types Principle IV names — `ItemRecord` is currently an empty seed stub, so write
+      the assertion so it holds vacuously now and starts guarding the moment items are added) has
+      at least one `sourceRef` with a non-empty `url`/`title`/`retrievedAt` and a non-empty
+      `patch`, and that every entry in any `conflicts` array is well-formed (non-empty `field`,
+      ≥2 `values`, each with ≥1 `sourceRef`). Also add the `spriteFile`-exists assertion T116
+      requires. **This is SC-004's replacement enforcement surface** — T123 removes the UI that was
+      satisfying it, and spec.md's round-6 Amendment commits to this test taking over rather than
+      to abandoning the criterion. Do not skip this task on the grounds that it tests data rather
+      than behaviour. Note this one legitimately **passes on first run** (unlike T117/T119/T120, it
+      is a guard against future regression, not a red test for a pending fix) — but it MUST be
+      written and passing **before** T123 deletes the UI, so the handover is never a gap.
 - [ ] T119 [P] Write a **failing** component test in
       `src/ui/GridPicker/__tests__/GridPicker.test.tsx` (new file) for FR-033 / the user's item 5:
       with a creature placed, activating the slot's clear control empties that slot **and** does
       not open `CreatureSearchModal`. The no-modal assertion is the substantive half — the control
       sits on an element that is simultaneously a `@dnd-kit` drag handle and the click target that
       opens the picker (research.md H5), so a naive implementation clears the slot *and* pops the
-      picker open over it.
+      picker open over it. **Test the keyboard path too, not just the mouse path**: the card's own
+      `onKeyDown` calls `preventDefault()` + `onOpenSearch()` on Enter/Space, so pressing Enter on a
+      nested `×` button will bubble to the card, have its own click suppressed, and open the picker
+      instead of clearing the slot — a click-only test passes while keyboard users get the opposite
+      of the requested behaviour.
 - [ ] T120 [P] Write **failing** component tests in
       `src/ui/Modifiers/__tests__/ModifierEditor.test.tsx` (new file) for FR-039 / the user's item
       11: the section is collapsed by default; once expanded with a creature placed, no option
@@ -806,41 +879,67 @@ and 1 reported bug (FR-028..FR-040), plus the two data defects this round's inve
 
 ### Implementation for Phase 11
 
-- [ ] T121 [US1] Fix `src/engine/simulate.ts` Phase B per data-model.md's round-6 "common
-      pre-cast status snapshot" amendment: resolve every cast sharing a timestamp against the
-      Shock layer count as of the **start** of that timestamp, applying layers granted at that
-      timestamp from the next distinct timestamp onward. Keep `timeline`'s existing sort and
-      `stableSlotIndex` tie-break exactly as-is — they remain correct for display ordering; the
-      defect was that they also decided damage (research.md H8). Multicast repetitions already
-      occupy distinct timestamps (0.1s stagger, round 4), so a burst must still escalate its own
-      Shock layers across its repetitions — verify that existing test still passes. (depends on
-      T117)
+- [ ] T121 [US1] Fix `src/engine/simulate.ts` Phase B per data-model.md's round-6 "common pre-cast
+      status snapshot" amendment. **Two required parts — part 1 alone leaves the Multicast case
+      broken, part 2 alone leaves the user's reported case broken:**
+      1. **Make Phase B genuinely chronological.** Flatten every cast's Multicast repetitions into
+         the event list and sort by `(tSeconds, stableSlotIndex)` *before* walking it. Today
+         repetitions are expanded inline inside the cast loop, so a cast at t=5.0 with a repetition
+         at t=5.1 is fully processed before another creature's t=5.0 cast that sorts later — Phase B
+         never visited timestamps in order, and round 4's 0.1s stagger did not make it do so.
+      2. **Snapshot per timestamp.** Resolve every cast sharing a timestamp against the Shock layer
+         state as of the **start** of that timestamp; layers granted at *T* take effect from the next
+         distinct timestamp. **Snapshot both `shockLayers` and `shockLayersBySource`** — facilitated
+         damage is attributed by each source's share of the live total, so snapshotting only the
+         scalar would fix `perStatusPerSecond.Shock` while leaving `perCreatureFacilitatedDps` (the
+         exact column the user reported) still order-dependent.
+      Keep `timeline`'s existing sort and `stableSlotIndex` tie-break — they remain correct for
+      display ordering; the defect was that they also decided damage (research.md H8). A Multicast
+      burst must still escalate its own Shock layers across its own repetitions (they occupy
+      distinct timestamps); confirm round 4's existing Multicast stagger test still passes.
+      Satisfies both halves of T117. (depends on T117)
 - [ ] T122 [US1] Create a shared card component `src/ui/shared/BatomonCard/BatomonCard.tsx`
       (+ `.module.css`) rendering the in-game card's four bands in order, per research.md H1's
       transcription: (1) name + rarity, rarity in its `RARITY_COLORS` colour; (2) sprite beside
       type badges; (3) cooldown as its **own** block, separate from **one line per output stat**,
       each line in that stat's `STAT_COLORS` colour; (4) ability text. Shop cost moves to
       secondary metadata — it is not on the game card at all (it's a shop property, not a battle
-      stat). Accept an optional extra band via `children` so the Calculator can append its
-      "Effective this battle" panel without the Corpus Browser inheriting it. Keep
-      `displayField`/`isUnconfirmed` so unknown values still render as "unknown", never `0`
-      (existing data-model.md rule). (depends on T114, T115)
+      stat; and (4) the ability's **`abilityTrigger` as its own emphasised line above**
+      `abilityText`, matching the reference card's "On Battle Start" line (omit the line entirely
+      when `abilityTrigger` is absent). Accept an optional extra band via `children` so the
+      Calculator can append its "Effective this battle" panel without the Corpus Browser inheriting
+      it. Keep `displayField`/`isUnconfirmed` so unknown values still render as "unknown", never
+      `0` (existing data-model.md rule). **Carry over the two secondary lines the current cards
+      already show, rather than dropping them silently**: the `Unconfirmed: …` line (which the
+      Corpus Browser's own intro prose points users at, and which the never-show-a-misleading-value
+      rule depends on) and `Evolves into: …`. (depends on T114, T115, T137)
 - [ ] T123 [US3] Rewrite `src/ui/CorpusBrowser/CorpusBrowser.tsx` to render each result through
       `BatomonCard` (item 1) and, in the same pass: **delete** the "Sources & patch" and
       "⚠ Recorded source conflicts" `<details>` blocks entirely (item 2 / FR-030 — the underlying
       `sourceRefs`/`patch`/`conflicts` **data stays untouched** in `src/data/*.ts`; only the
       rendering goes), and lay the cards out in a responsive grid,
       `repeat(auto-fill, minmax(17rem, 1fr))` capped at 4 columns (item 3 / FR-031) instead of one
-      full-width `<article>` per row. Keep the existing search/type/rarity filters and the
-      `distinctCreatures` listing source (round 5 — do not revert to `corpus.creatures`, which
-      would show 4 duplicate cards per species). (depends on T122)
+      full-width `<article>` per row — put the grid CSS in a new
+      `src/ui/CorpusBrowser/CorpusBrowser.module.css` (the component is currently all inline
+      styles; the project's convention is CSS modules per research.md A4). Note `auto-fill` alone
+      cannot enforce a 4-column *cap* — pair it with a `max-width` on the grid container, and verify
+      the actual rendered column count at ~1280px and ~2560px rather than assuming. Keep the
+      existing search/type/rarity filters and the `distinctCreatures` listing source (round 5 — do
+      not revert to `corpus.creatures`, which would show 4 duplicate cards per species). Update the
+      intro prose's corpus-completeness sentence to match T134's corrected figures. (depends on
+      T118, T122)
 - [ ] T124 [US1] Rewrite `src/ui/TeamSummary/PlacedCreatureDetails.tsx` to render through the
       **same** `BatomonCard` (item 1 explicitly names this card too, not just the corpus one),
-      passing its existing "Effective this battle" modifier-adjusted block as the extra band so it
-      stays visually separate from the base-stat lines rather than merged into them (research.md
-      H1 — this is the project's own differentiator and must not be dropped in the name of
-      matching the game card). Preserve the round-3 sticky-highlight behaviour and the
-      `getCreatureByIdAndLevel` level-aware lookup. (depends on T122)
+      passing its "Effective this battle" modifier-adjusted block as the extra band so it stays
+      visually separate from the base-stat lines rather than merged into them (research.md H1 — this
+      is the project's own differentiator and must not be dropped in the name of matching the game
+      card). **Reformat that block, don't pass it through as-is**: it currently reads
+      `Damage 3 · Cooldown 2.50s · Multicast ×1 · Applies: 1 Shock` — which is the *exact* run-on
+      pattern the user complained about in item 1, visible in their own screenshot. Render it in the
+      same cooldown-block-plus-one-line-per-stat shape as band 3, in the same stat colours, per
+      FR-028's explicit "including the modifier-adjusted effective values" clause. Preserve the
+      round-3 sticky-highlight behaviour and the `getCreatureByIdAndLevel` level-aware lookup.
+      (depends on T122)
 - [ ] T125 [US1] Replace `src/ui/GridPicker/TrinketPicker.tsx`'s `<select>` with a searchable,
       card-grid picker reusing `CreatureSearchModal`'s interaction pattern (item 4 / FR-032 —
       research.md H4 requires reusing the existing idiom, not inventing a second one). Each
@@ -848,28 +947,48 @@ and 1 reported bug (FR-028..FR-040), plus the two data defects this round's inve
       its **full `effectText`** — the effect text is the entire basis for choosing a trinket, which
       a `<select>` option cannot show. Keep the existing "affects DPS" distinction between the 6
       engine-wired trinkets and the 87 reference-only ones, and keep add/remove via
-      `addTrinketId`/`removeTrinketId`. (depends on T116)
+      `addTrinketId`/`removeTrinketId`. Two decisions to make explicitly rather than by accident:
+      (a) trinkets are **multi-select**, unlike the single-select creature slot — so the picker must
+      stay open across selections (or clearly support picking several), not close after the first
+      like `CreatureSearchModal` does; (b) state whether you generalise `CreatureSearchModal` or add
+      a sibling component, and put shared grid/modal styling in one place either way.
+      (depends on T115, T116, T137)
 - [ ] T126 [US1] In `src/ui/GridPicker/GridPicker.tsx` + `GridPicker.module.css`: delete the
       `BACK ROW`/`FRONT ROW` `.rowLabel` elements and their CSS (item 6 / FR-034 — `GridSlot.row`
       stays `"back" | "front"` as *data*; adjacency, `aboveSlot`, and `behindSlot` all depend on
       it, so this is a text-only removal), and give the slot cards `aspect-ratio: 1` so they are
       square (item 7 / FR-035), matching the in-game team panel and giving T128's badges a stable
-      area to anchor in.
+      area to anchor in. Apply the square aspect to **empty** slots too, not just occupied ones —
+      square cards beside non-square placeholders would make the grid look broken in exactly the
+      way item 7 is trying to fix.
 - [ ] T127 [US1] Add a per-slot clear control to each **occupied** slot card in
       `src/ui/GridPicker/GridPicker.tsx`: a small `×` in the card's top-right (item 5 / FR-033).
       It MUST call `setPlacement(slot, null, 1)` and MUST NOT also open the picker or start a
-      drag — stop propagation on **both** the pointer-down/`@dnd-kit` listeners and the click
-      (research.md H5). Give it a discrete `aria-label` (e.g. `Remove {name} from this slot`).
-      Satisfies T119. (depends on T119, T126)
+      drag — stop propagation on the pointer-down/`@dnd-kit` listeners, the click, **and `keydown`**
+      (research.md H5). The `keydown` case is the one that is easy to miss: the card's own
+      `onKeyDown` fires `preventDefault()` + `onOpenSearch()` on Enter/Space, so without stopping it
+      a keyboard user pressing Enter on the `×` gets the picker opened and the slot *not* cleared.
+      Give it a discrete `aria-label` (e.g. `Remove {name} from this slot`). Satisfies T119 including
+      its keyboard assertion. (depends on T119, T126)
 - [ ] T128 [US1] Render each occupied slot's contents as the in-game team pane does (item 8 /
       FR-035, user screenshot 2): the creature's **sprite** (item 12), a `Lv. N` badge, and the
       creature's **current per-cast stats as compact colour-coded badges along the bottom of the
       square pane**, each in its `STAT_COLORS` colour. Drive the badge values from
       `result.perCreatureEffectiveStats` (the modifier-adjusted values `simulate()` already
-      resolves and `PlacedCreatureDetails` already consumes) so the badges can never disagree with
+      resolves and       `PlacedCreatureDetails` already consumes) so the badges can never disagree with
       the tables — do **not** recompute stats in the component (data-model.md's single-source-of-
-      truth rule). This requires threading the `SimulationResult` into `GridPicker`, which
-      currently does not receive it. (depends on T115, T116, T126)
+      truth rule). This requires threading the `SimulationResult` into `GridPicker`, which currently
+      does not receive it — **update T119's test render when you change the props**, or that test
+      breaks on an unrelated signature change. Decide and state these three explicitly (the in-game
+      pane in the user's screenshot shows **number-only** pills, no labels):
+      - **Which stats get a badge**: damage and each applied status at minimum; say whether cooldown
+        and Multicast do (the game shows cooldown separately on the card, not as a bottom pill).
+      - **Number-only vs labelled** pills, and how a reader tells a pink 40 from an orange 4 —
+        colour alone is the game's answer, so keep an accessible `title`/`aria-label` per badge.
+      - **How an unknown/`null` damage renders**: omit the badge entirely. Do **not** show `0` —
+        that is the existing never-show-a-misleading-value rule, and 62 of 149 species still have
+        `baseDamage: null` (T134), so this path is common, not an edge case.
+      (depends on T115, T116, T126)
 - [ ] T129 [US1] In `src/ui/GridPicker/CreatureSearchModal.tsx`: add each creature's **sprite** to
       its result card (item 12 / FR-036), and change the visible heading from
       `Choose a Banto — {row} row, slot {col + 1}` to just `Choose a Banto` (item 13 / FR-034).
@@ -879,11 +998,20 @@ and 1 reported bug (FR-028..FR-040), plus the two data defects this round's inve
 - [ ] T130 [US1] In `src/App.tsx`'s `CalculatorView`, move the "Simulation window (seconds)"
       control out of its current position (between the grid and `TeamSummary`) to sit **below**
       `TeamSummary` and **immediately above** `CumulativeChart` (item 9 / FR-037) — it governs the
-      chart's time axis, not the per-second summary values.
+      chart's time axis, not the per-second summary values. The current order is
+      `TeamSummary → ModifierEditor → CumulativeChart`, so **state where the collapsed Modifiers
+      section goes** and keep it out from between the control and the chart — otherwise "just above
+      the chart" is satisfied on paper while a (collapsed, but still present) Modifiers block sits
+      between them. Recommended final order: `TeamSummary` → `ModifierEditor` (collapsed) →
+      simulation-window control → `CumulativeChart`. (coordinate with T132)
 - [ ] T131 [US1] In `src/ui/TeamSummary/TeamSummary.tsx`, present the "Damage per second, by
       creature" and "Status effect output, per second" tables **side by side** as one aligned unit
-      (item 10 / FR-038) instead of two separately left-justified block tables. Keep both
-      `<caption>`s and the existing empty-state rows.
+      (item 10 / FR-038) instead of two separately left-justified block tables. Name the mechanism
+      rather than nudging inline styles: a flex/grid row in a new
+      `src/ui/TeamSummary/TeamSummary.module.css`, with the two tables top-aligned, sharing a gap,
+      and wrapping to stacked on narrow viewports. The user's complaint was both "different divs"
+      and "left justified … ugly", so **aligning** them is part of the ask, not just placing them
+      adjacently. Keep both `<caption>`s and the existing empty-state rows.
 - [ ] T132 [US1] Redesign `src/ui/Modifiers/ModifierEditor.tsx` per research.md H7's four distinct
       changes (item 11 / FR-039), none of which may be skipped: (a) wrap the whole section in a
       **collapsed-by-default** disclosure; (b) **remove the `"Team-wide (every placed Banto)"`
@@ -891,9 +1019,15 @@ and 1 reported bug (FR-028..FR-040), plus the two data defects this round's inve
       `TeamConfiguration.teamModifiers` or `simulate()`'s team-wide summation**, which round 5
       routes trinket `effectTags` through and which T120's companion test guards; (c) shorten the
       stat labels (`"Cooldown Speed (+decimal, e.g. 0.2 = +20%)"` → `"Cooldown Speed"`) and move
-      the unit/format explanation to a subtext line beneath the form; (d) present each modifier
-      against the creature it applies to rather than as a free-floating scope dropdown the user
-      must re-bind to a slot mentally. Satisfies T120. (depends on T120)
+      the unit/format explanation to a subtext line beneath the form; (d) **integrate the controls
+      per mon** — the user's words were "integrated into the ui, not just a bunch of individual drop
+      downs or text fields", so renaming the scope dropdown does **not** satisfy this. Concretely:
+      inside the expanded section, render **one row per placed creature** (name + sprite, its
+      current modifiers as removable chips, and that row's own add-control), so the creature a
+      modifier belongs to is structural rather than something the user selects and must keep track
+      of. There must be no global scope dropdown left. Also handle the empty case: with zero
+      placements, show an explanatory empty state rather than a form with no valid target.
+      Satisfies T120. (depends on T120, T138)
 - [ ] T133 [US3] Reconcile the 10 species whose level-1 record contradicts their own level 2-4
       series (research.md H10): `brimtoad`, `cordycant`, `dragonegg`, `nullff`, `omnichrome`,
       `ratacomb`, `rigalord`, `spinarai`, `steamscuttle`, `bambudo`. Re-derive level 1 from the
@@ -904,7 +1038,12 @@ and 1 reported bug (FR-028..FR-040), plus the two data defects this round's inve
       Poison 1, not the recorded Burn 5 / Poison 5. Handle `bambudo` separately and note the
       finding — as Panbud's level-3 evolution it may have no legitimate level-1/2 record at all,
       which is a different defect (a spurious record) from a wrong value; do not silently delete
-      records to make a progression look monotonic.
+      records to make a progression look monotonic. **Note the limit of this fix honestly**: the
+      authoritative per-level series omits a damage line for some creatures (Brimtoad among them),
+      so re-deriving level 1 from it will *not* supply the "Deal 5 damage" the user's screenshot
+      shows — that value is only attested by the screenshot. Either cite the screenshot as the
+      source for it or leave it `null`; do not silently infer it, and do not let T134's corrected
+      figures imply this gap was closed.
 - [ ] T134 [P] Correct the overstated corpus-completeness claim (research.md H9) everywhere it
       appears: `README.md`'s round-5 status prose and `src/App.tsx`'s `CORPUS_PATCH_LABEL` both
       say "100% confirmed across levels 1-4", which is **wrong** — that figure counted
@@ -913,6 +1052,34 @@ and 1 reported bug (FR-028..FR-040), plus the two data defects this round's inve
       `null` currently conflates "source confirms no damage line" with "our source didn't publish
       it" (proven by the user's Brimtoad screenshot reading "Deal 5 damage" where the corpus says
       `null`). Do not round up and do not quietly drop the earlier claim without correcting it.
+
+- [ ] T137 Create one shared sprite renderer `src/ui/shared/Sprite.tsx` (+ module CSS) used by
+      T122/T125/T128/T129 — all four need the identical `import.meta.env.BASE_URL`-aware URL
+      construction **and** the identical absent-`spriteFile` fallback, and four independent
+      implementations will drift (one will forget the base path and 404 only in production, which is
+      exactly the failure T136 has to hunt for). Props: the record's `spriteFile`, a kind
+      (`"monster" | "trinket"`) selecting the subdirectory, a size, and the alt text derived from
+      `name`. Renders nothing (not a broken `<img>`, not a placeholder box that shifts layout) when
+      `spriteFile` is absent. **Foundational — do this before T122.** (depends on T114)
+- [ ] T138 [US1] Fix per-placement modifiers being silently discarded when a creature's level
+      changes. `setPlacement` always constructs a fresh `TeamPlacement` with no `modifiers` (its own
+      comment in `src/context/TeamConfigContext.tsx` acknowledges this), and `GridPicker`'s level
+      `<select>` calls it — so changing a mon's level today wipes every modifier the user attached to
+      it. This is pre-existing, but item 11 promotes per-mon modifiers to *the* modifier workflow and
+      quickstart Scenario 22 step 5 walks straight into it. Preserve `modifiers` across a
+      level/species change for the same slot (an evolution keeps the carry-over the user recorded),
+      and add a unit test in `src/context/__tests__/TeamConfigContext.test.tsx` or the existing
+      context test file. Found during this round's review; not user-reported.
+- [ ] T139 [P] Add cheap component assertions for the presentation items that otherwise have **no**
+      automated coverage at all — items 4, 6, 7, 8, 10 and 13 are currently verified only by T135's
+      manual walk, which is the same "verified by eye, silently regresses later" pattern that led to
+      this round's audit. In the existing/new component test files, assert: no `/back row|front row/i`
+      text renders in `GridPicker` (item 6); `CreatureSearchModal`'s heading is exactly
+      `Choose a Banto` with no slot suffix while its dialog `aria-label` still contains the slot
+      (item 13); the trinket picker renders a selected trinket's `effectText` (item 4); a placed
+      creature's slot renders at least one stat badge with its stat's colour (item 8); both summary
+      tables render within one shared container element (item 10). These are 1-3 lines each — the
+      point is a tripwire, not exhaustive coverage.
 
 ### Polish for Phase 11
 

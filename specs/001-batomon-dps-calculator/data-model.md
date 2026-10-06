@@ -491,11 +491,18 @@ interface CreatureRecord extends Provenance {
   // ...existing fields unchanged...
   /**
    * Vendored sprite filename, resolved against `${import.meta.env.BASE_URL}sprites/monster/`.
-   * Stored per record because the publishing slug is not always this record's `id`
-   * (e.g. id `craghorn` is published as `alpinine.png`) -- research.md H3.
+   * Stored per record because the publishing slug is not always this record's `id` -- 11 of 149
+   * species differ (e.g. `craghorn` publishes as `alpinine.png`, `pyronade` as
+   * `infernade.png`, `null00` as `null_00.png`) -- research.md H3.
    * Absent = render the existing text-only card; never a broken <img>.
    */
   spriteFile?: string;
+  /**
+   * The ability's trigger label, shown as its own line above the description on the in-game card
+   * (e.g. "On Battle Start", "On Cast", "Ongoing") -- research.md H1. `abilityText` continues to
+   * hold only the description. Absent = render the description alone, with no empty trigger line.
+   */
+  abilityTrigger?: string;
 }
 ```
 
@@ -533,17 +540,34 @@ shared `shockLayers` counter, so a Shock layer applied by one creature at time *
 another creature's hit at the *same* time *T* if and only if the applier happened to sort first.
 Slot position therefore changed damage output for creatures with no positional ability at all.
 
-New rule: **within one timestamp, every cast's Shock proc resolves against the layer count as of
-the moment that timestamp began.** Layers granted at *T* take effect from the next distinct
-timestamp onward. Consequences:
+New rule, in **two** required parts (research.md H8 — part 1 alone leaves a second, reproducible
+manifestation via Multicast, and part 2 alone does not fix same-timestamp collisions):
+
+1. **Phase B walks a genuinely chronological event list.** Multicast repetitions are flattened into
+   the cast list and the whole list sorted by `(tSeconds, stableSlotIndex)` *before* walking it.
+   Today repetitions are expanded inline inside the cast loop, so a cast at t=5.0 with a repetition
+   at t=5.1 is processed entirely before another creature's t=5.0 cast that sorts later — meaning
+   Phase B never visited timestamps in order, and round 4's 0.1 s stagger did not make it do so.
+2. **Within one timestamp, every cast's Shock proc resolves against the layer state as of the
+   moment that timestamp began.** Layers granted at *T* take effect from the next distinct
+   timestamp onward. The snapshot covers **both** `shockLayers` (the scalar total) **and**
+   `shockLayersBySource` (the per-source attribution map) — snapshotting only the total would fix
+   `perStatusPerSecond.Shock` while leaving `perCreatureFacilitatedDps`, the column the user
+   actually reported, still order-dependent.
+
+Consequences:
 
 - `SimulationResult` keeps its exact shape; `timeline` keeps its documented stable ordering and
   tie-break (which remain correct for *display* — they just no longer decide damage).
 - The invariant this establishes, and which the regression test asserts: **permuting the slots of
   creatures that have no positional `abilityTags` must leave every number in
   `perCreatureDps`, `perCreatureFacilitatedDps`, and `perStatusPerSecond` unchanged.**
-- Multicast repetitions are already staggered 0.1 s apart (round 4), so they occupy distinct
-  timestamps and a burst still escalates its own Shock layers across repetitions — unchanged.
+- Multicast repetitions still occupy distinct timestamps 0.1 s apart (round 4) and a burst still
+  escalates its own Shock layers across its repetitions — but they are now *sorted into* the global
+  event order rather than expanded inline, which is what makes a Multicast creature's output
+  permutation-invariant too. Verified reachable with real data: 7 creature records have Multicast
+  > 1 *and* apply Shock, and Bumblebolt at level 4 reproduced 20.55/s vs 21.60/s across a slot
+  permutation before this fix.
 - Not chosen as "what the game does frame-for-frame" (undocumented, research.md H8); chosen
   because it is invariant under the permutation the user correctly says should not matter.
 
