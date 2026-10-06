@@ -356,6 +356,95 @@ closed; corpus-completeness work tracked and progressing (T075), not expected do
 
 ---
 
+## Phase 8: Round 3 — Reference-Site-Inspired Redesign (2026-10-05, via `/speckit-tasks`)
+
+**Goal**: Implement plan.md's "Amendment: Round 3" and research.md section E / data-model.md's
+matching 2026-10-05 (round 3) amendments — a creature-search modal that autofocuses and clears
+per slot (FR-018), drag-and-drop placement editing via `@dnd-kit/core` (FR-019), one canonical
+type-color mapping used everywhere a type is rendered as a color (FR-020), a persistent
+non-overlapping detail side panel (FR-021), and evolution-aware leveling (FR-022).
+
+**Independent Test**: quickstart.md Validation Scenarios 8–12.
+
+### Foundational (blocking — no story label, same as Phase 2)
+
+- [ ] T076 Add `evolvesAtLevel?: 2 | 3 | 4` to `CreatureRecord` in `src/data/types.ts`, paired
+      with the existing `evolvesInto` — data-model.md: "Required whenever `evolvesInto` is set;
+      a species with no evolution has neither field"
+- [ ] T077 [P] Add `@dnd-kit/core` to `package.json` dependencies (plan.md Technical Context —
+      chosen over native HTML5 Drag-and-Drop for built-in keyboard/screen-reader support)
+- [ ] T078 [P] Create `src/data/typeColors.ts`: `TYPE_COLORS: Record<CreatureType, string>` (one
+      hex color per `CreatureType`, including `"All"`) + `typeColor(type): string` — data-model.md's
+      "Canonical `CreatureType` color mapping" amendment, the single source every UI component
+      below must import rather than defining its own color per type
+
+### Tests for Phase 8 ⚠️ write first, confirm failing before implementing (Constitution Principle III, NON-NEGOTIABLE)
+
+- [ ] T079 [P] Write failing unit tests for `resolveLevelUp(corpus, baseSpeciesId, targetLevel)`
+      in a new `src/engine/__tests__/evolution.test.ts` (contracts/engine-api.md): Panbud at
+      level 3 resolves to Bambudo; Scorchimp at level 3 resolves to Sunsage; a species with no
+      `evolvesInto` resolves to itself at any level; resolving to a species/level pair absent
+      from the corpus returns `null` (never falls back to a different level's record)
+
+### Implementation for Phase 8
+
+- [ ] T080 [US1] Implement `resolveLevelUp()` in a new `src/engine/evolution.ts` to satisfy T079
+      (depends on T076)
+- [ ] T081 [US3] Update `src/data/creatures.ts`: add `evolvesAtLevel: 3` to Beetbud and Scorchimp
+      (both already have `evolvesInto` and an "Evolves at level 3" `abilityText`); add
+      `evolvesInto: "bambudo"` + `evolvesAtLevel: 3` to Panbud and remove `"evolvesInto"` from
+      its `unconfirmedFields`, cited via <https://batodex.com/monsters/panbud> and
+      <https://batomon.com/batomon/panbud> (research.md E2.6) (depends on T076)
+- [ ] T082 [US1] Build a creature-search modal (`src/ui/GridPicker/CreatureSearchModal.tsx`)
+      satisfying FR-018: every time it opens, for any slot, it MUST clear any previously-entered
+      search text and move keyboard focus into the search field immediately
+- [ ] T083 [US1] Wire `CreatureSearchModal` into `src/ui/GridPicker/GridPicker.tsx` as the
+      primary assignment flow; keep the existing `<select>` fully functional as an
+      always-available fallback (FR-019's note that the search/modal flow must remain available
+      for users who don't use drag-and-drop — same keyboard/screen-reader parity reasoning)
+      (depends on T082)
+- [ ] T084 [US1] Add drag-and-drop between grid slots in `src/ui/GridPicker/GridPicker.tsx`
+      using `@dnd-kit/core`'s `DndContext`/`useDraggable`/`useDroppable`: dropping a placement
+      onto an **empty** slot moves it; dropping onto an **occupied** slot **swaps** the two
+      placements, each keeping its own level and modifiers (data-model.md's "Drag-and-drop
+      placement editing" amendment, FR-019) (depends on T077)
+- [ ] T085 [US1] Wire `resolveLevelUp()` into the per-placement level selector in
+      `src/ui/GridPicker/GridPicker.tsx` (the selector added in T072): selecting a level resolves
+      through evolution, updating the slot's `creatureId` to the resolved species whenever it
+      differs from the currently-placed one (FR-022) (depends on T080, T081)
+- [ ] T086 [US3] Build a `TypeTag` component (`src/ui/shared/TypeTag.tsx`) using `typeColor()`
+      from `src/data/typeColors.ts`; replace the plain-text type rendering in
+      `src/ui/TeamSummary/PlacedCreatureDetails.tsx` and `src/ui/CorpusBrowser/CorpusBrowser.tsx`
+      with it (FR-020) (depends on T078)
+- [ ] T087 [US1] Apply `typeColor()` to each placed creature's card background in
+      `src/ui/GridPicker/GridPicker.tsx` (and in `CreatureSearchModal`'s result tiles): a
+      split/gradient background using both colors for dual-typed creatures, per data-model.md's
+      "Dual-typed creatures render a split/gradient background... each type stays individually
+      identifiable" (FR-020) (depends on T078, T082)
+- [ ] T088 [US1] Refactor `PlacedCreatureDetails` (`src/ui/TeamSummary/PlacedCreatureDetails.tsx`)
+      into a persistent side panel driven by a `highlightedSlot: GridSlot | null` state lifted
+      into `CalculatorView` (`src/App.tsx`): hovering/focusing a placed creature's card updates
+      `highlightedSlot`; hover/focus **leaving** a card MUST NOT clear it (sticky); the panel
+      defaults to the first placement (or an empty-state message if none) — explicitly transient
+      UI state, never added to `TeamConfiguration`/`TeamConfigContext` (data-model.md's
+      "Persistent side-panel... is UI state, not team data" amendment, FR-021)
+
+### Polish for Phase 8
+
+- [ ] T089 [P] Re-run quickstart.md Validation Scenarios 8–12 end-to-end; record results in
+      quickstart.md's Validation results section
+- [ ] T090 Verify `npx tsc -b --noEmit`, full `npx vitest run`, and `npm run build` all pass
+- [ ] T091 [P] Accessibility check for `CreatureSearchModal` (focus trap, Escape-to-close) and
+      the drag-and-drop interaction (keyboard-equivalent reachable via the fallback `<select>`
+      flow from T083) — ties into the still-open `tasks.md` T054 accessibility pass
+
+**Checkpoint**: Search modal autofocuses/clears per slot; drag-and-drop swap works alongside the
+existing dropdown; one canonical type-color mapping used everywhere; the detail panel is
+persistent and never overlaps another card; leveling a placement past its evolution threshold
+shows the evolved species.
+
+---
+
 ## Future Enhancements (user-requested 2026-10-05, explicitly deferred: "once we get all of the
 ## mechanics working" — not scheduled into a phase yet)
 
@@ -379,6 +468,9 @@ closed; corpus-completeness work tracked and progressing (T075), not expected do
 - **Round 2 (Phase 7)**: depends on Phases 1–6 being complete (it amends/extends their outputs,
   notably T027's `simulate()` and T038's `CumulativeChart`); its own Foundational sub-block
   (T057–T061) blocks every other Phase 7 task the same way Phase 2 blocks Phases 3–5
+- **Round 3 (Phase 8)**: depends on Phase 7 being complete (T085 depends on T072's level
+  selector; T088 depends on T073's `PlacedCreatureDetails`); its own Foundational sub-block
+  (T076–T078) blocks every other Phase 8 task
 
 ### User Story Dependencies
 
@@ -390,6 +482,10 @@ closed; corpus-completeness work tracked and progressing (T075), not expected do
 - **Phase 7's US1/US2/US3-labeled tasks**: amend/extend the same-numbered story's existing surface
   rather than opening a new story; order within Phase 7 is Foundational (T057–T061) → Tests
   (T062–T065) → Implementation (T066–T074) → Corpus research (T075), same shape as Phases 2–5
+- **Phase 8's US1/US3-labeled tasks**: same amend/extend pattern; order is Foundational
+  (T076–T078) → Tests (T079) → Implementation (T080–T088) → Polish (T089–T091). T085 (evolution-
+  aware level selector) depends on both T080 (`resolveLevelUp`) and T081 (the corpus data it
+  reads); T087/T088 depend on T082's modal and T078's color map respectively
 
 ### Within Each User Story
 
@@ -428,6 +524,17 @@ Task: "Failing (id, level) lookup test in src/engine/__tests__/simulate.test.ts"
 
 ---
 
+## Parallel Example: Phase 8
+
+```bash
+# Foundational tasks for Phase 8 (independent files, safe to parallelize):
+Task: "Add evolvesAtLevel to CreatureRecord in src/data/types.ts"
+Task: "Add @dnd-kit/core to package.json"
+Task: "Create src/data/typeColors.ts with TYPE_COLORS + typeColor()"
+```
+
+---
+
 ## Implementation Strategy
 
 ### MVP First (User Story 1 Only)
@@ -445,6 +552,9 @@ Task: "Failing (id, level) lookup test in src/engine/__tests__/simulate.test.ts"
 6. Phase 7 → validate against quickstart.md Scenarios 5–7 → Trainer roster, per-creature
    breakdown, chart axis, and level/Multicast data-model gaps closed; T075 (corpus completeness)
    continues as ongoing work beyond this feature's initial delivery.
+7. Phase 8 → validate against quickstart.md Scenarios 8–12 → search modal, drag-and-drop,
+   canonical type colors, persistent side panel, and evolution-aware leveling all land together
+   as this round's team-builder redesign.
 
 ### Notes
 
