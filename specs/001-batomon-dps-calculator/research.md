@@ -1240,6 +1240,147 @@ trinket badges; and six call sites each passing their own literal sprite size (I
   A full migration of every file is not attempted in one pass, and the remainder is recorded as
   explicitly outstanding rather than implied complete.
 
+## J. Round 8 (2026-10-06, via `/speckit-orchestrate`) — primitives defects, display-layer sorting, DPS-rate chart, placement optimiser
+
+Eighteen atomic work items (ledger: `orchestration/round-1-items.md`). Most are fallout from round
+7's own primitives work — which is itself the finding worth leading with.
+
+### J1. WI-003 answered: yes, the picker uses the shared components — and that was not enough
+
+The user asked directly whether the picker uses the reusable components "as they should". **Answer:
+yes — `Modal`, `CardGrid`, `CreatureTile`, and `TypeSplit` are all the shared ones.** Composition was
+not the problem. Two other things were, and they are worth separating because they fail differently:
+
+1. **The shared component itself was broken.** `CreatureTile` passes `styles.creatureTile`
+   (`display: flex; flex-direction: column`) as `className` to `TypeSplit`, which puts it on the
+   **host** element — but the children are rendered inside `TypeSplit`'s own `.typeSplitContent`
+   wrapper, a plain block that shrinks to its content. So the flex column never governs the art and
+   name at all: `.creatureTileArt`'s `flex: 1` has no effect, the name band lands directly under the
+   sprite instead of at the bottom, and the bare coloured halves show through the remaining height.
+   That is exactly SS1. **Using a shared component bought consistency, not correctness — every call
+   site inherited the same defect.**
+2. **The call site bypassed the token.** The picker passes `spriteSize={48}` as a literal, so WI-001's
+   "still not 64×64" is a token-discipline violation that Principle VII is meant to prevent, sitting
+   right next to correct usage.
+
+**Decision**: `TypeSplit` must apply layout classes to the element that actually contains the
+children, and `CreatureTile` must default to the sprite token rather than a magic number. Both fixes
+land in the primitive, so every consumer benefits — which is the upside of the shared layer, now that
+the downside has been paid.
+
+### J2. WI-004/WI-005 — the user's diagnosis is half right, and the real cause matters more
+
+The user said the two "3.0 SEC" blocks "should be the same reusable component with a different value
+provided to it". **They already are**: `CooldownBlock` is one component, used by both bands. So the
+stated fix was already in place and the symptom persisted anyway.
+
+**Real cause**: `CooldownBlock` has no intrinsic size. `.cooldown` sets `min-width` but no height, so
+it inherits whatever its parent's layout imposes — in the base band the parent `.output` carries
+`min-height: 5.5rem` (from round 7's `.cardFixed` reservations) and stretches it; in the effective
+band the parent is a plain flex row with no min-height, so it stays short. Same component, two
+heights, entirely decided by context.
+
+**This is still a design-system failure, just not the one named**: a primitive whose appearance is
+determined by its parent is not actually reusable. **Decision**: give the block a fixed intrinsic
+size and `align-self: start` so it renders identically wherever it is placed. Generalised rule for
+Principle VII: a primitive must look the same in every container, or it is a fragment, not a
+primitive.
+
+### J3. WI-007 — the width shift and the chart redraw are the same bug
+
+The selected-creature column is `flex: 1 1 16rem`, so its width is computed from its content. Round 7
+fixed the card's *height* and explicitly left width flexible ("freezing the width would fight the page
+layout" — I3). That was wrong in one respect the user has now caught: a flexible width means a longer
+creature name or ability text changes the column's width, which changes the sibling chart's width,
+which makes Recharts' `ResponsiveContainer` re-measure and redraw. **Decision**: fix the column's
+width (`flex: 0 0 <token>`), which resolves the visible reflow and the chart redraw together.
+
+### J4. WI-014 vs FR-014 — the version stamp is now homeless, and this is the second time
+
+Round 7 removed the corpus/patch prose from the app header (FR-050) and **moved it into the Corpus
+Browser's summary line** specifically so FR-014 ("state which corpus/patch snapshot is active") kept a
+home. WI-014 now asks to remove it from there too.
+
+- **This cannot be silently dropped.** Doing so would leave FR-014 unmet with no surface at all —
+  precisely the failure a review caught in round 7 before it shipped.
+- **Decision**: honour the user's ask (the prose goes) and **narrow FR-014 again, explicitly**, to a
+  single unobtrusive footer line. The user's objection both times has been to *prose at the top of a
+  view*, not to the version being recorded anywhere. A footer satisfies the requirement's intent
+  without reintroducing what they asked to remove.
+- If a future round removes that too, FR-014 should be **retired outright with a stated rationale**
+  rather than quietly unmet.
+
+### J5. WI-016 — sorting must move to the display layer, and the ask is site-wide
+
+The user's diagnosis is exactly right: `distinctCreatures` is
+`corpus.creatures.filter((c) => c.level === 1)`, which preserves **file order**. `creatures.ts` opens
+with the six original seed records (Bumblebolt, Formiqueen, Venopuff, Scorchimp, Pebbler, Onsetra)
+and only then runs alphabetically — which is precisely the "first 6 are not alphabetical" pattern in
+SS5.
+
+- **Scope correction**: the ask says "the lists **anywhere** in this site". The Corpus Browser is the
+  visible offender, but the fix must be systemic, and an audit of every list surface is part of the
+  work, not just the one screenshot.
+- **Decision**: sort at the point of display. `distinctCreatures` is sorted by name once so every
+  consumer inherits a deterministic order regardless of file order, and surfaces that want a
+  different grouping (the picker's rarity sections) keep their own explicit sort on top. Relying on
+  file order anywhere is the defect; a corpus edit must never be able to change display order.
+- The user also asked for organisation "in types or in an alphabetical manner" — alphabetical is the
+  safe default since type is already a filter; a type grouping would fight the existing Type control.
+
+### J6. WI-017 — a DPS-rate chart is a genuinely different view, not a restyle
+
+The existing chart plots **cumulative** damage, which is monotonic and therefore cannot show the
+"ebb and flow" the user wants. A rate chart answers a different question: how hard is the team hitting
+*at this moment*.
+
+- **Decision**: a second chart plotting instantaneous DPS against time, derived from the same
+  `timeline` the cumulative series already uses — damage bucketed into fixed intervals and divided by
+  the interval. Same single-source-of-truth rule: it must not recompute anything `simulate()` didn't
+  produce.
+- **Why this pairs with round 7's work**: the status table now reports end-of-window rate and growth
+  as *numbers*; this is the same information as a curve, and it is where a Poison or Shock ramp
+  becomes legible at a glance.
+- **Bucket choice matters and must be stated**: too fine and the chart is a comb of spikes at each
+  cast; too coarse and the ramp flattens. A 1-second bucket matches the Poison tick interval and the
+  per-second framing used everywhere else in the UI.
+
+### J7. WI-018 — the placement optimiser is feasible, but only honestly at a stated scope
+
+The user pre-flagged this as "a bit too far out". It is implementable, with a real caveat:
+
+- **Search space is trivial**: ≤6 creatures in 6 slots = at most 720 permutations, and `simulate()`
+  is fast. Exhaustive search is viable with no heuristics.
+- **The objective must be time-weighted**, as the user argued: raw total damage over the window
+  over-rewards a slow Poison ramp that may arrive after the team is dead. **Decision**: score with an
+  exponential decay on damage timing, so earlier damage counts for more, and expose the weighting so
+  the user can see what it optimised for rather than trusting a black box.
+- **The honest limitation, which must be stated prominently rather than buried**: positional effects
+  are *barely modelled*. Only **one** creature in the entire 596-record corpus has an engine-read
+  positional ability (Formiqueen's adjacency aura — research.md H11/T140). The chaining effects the
+  user describes ("speeds up mon in front", "mon in slot X gets multicast Y") are recorded as
+  `abilityText` but have no `AbilityTag`, so the engine cannot see them. **An optimiser today would
+  therefore report "no improvement found" for almost every team, and that is a corpus-coverage
+  limit, not an optimiser bug.** Shipping it while implying otherwise would be worse than not
+  shipping it.
+- **Decision**: build it, and have it state its own blind spot in the UI — reporting how many of the
+  placed creatures have positional abilities it can actually reason about. That turns a misleading
+  "no suggestions" into an informative one, and makes the corpus gap visible rather than hidden.
+
+### J8. The rest (WI-006, 008, 009, 010, 011, 012, 013, 015)
+
+Bounded presentation changes with no design tension: drop the `Unconfirmed: shopCost` marker; give
+the summary tables a bottom border matching their other edges; remove the "Batomon Stats" heading and
+align the card's top with the grid; remove the per-slot `<details>` dropdown fallback; move Modifiers
+between the grid and Team Summary; drop the Modifiers em-dash hint; give browser cards a uniform
+height (round 7 deliberately left `fixedHeight` off there — I3 — and the user has now asked for the
+opposite, so that decision is reversed, not forgotten); rename the view to "Batomon Browser".
+
+One note on removing the per-slot dropdown (WI-010): it was added in round 3 as the
+keyboard/screen-reader fallback for the drag-and-drop picker (research.md E2.5). Removing it is fine
+**because round 7 restored click-to-open** — Enter/Space on a slot opens the picker, so the accessible
+path survives. Worth recording so a future round doesn't "restore" it as a regression fix.
+
 ## C. Resolved Technical Context (feeds plan.md)
 
 | Field | Resolution |

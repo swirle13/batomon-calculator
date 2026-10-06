@@ -1468,6 +1468,163 @@ colours, labels, sprite size, and chart axes all say what the user actually aske
 
 ---
 
+## Phase 13: Round 8 — Primitives Defects, Display-Layer Sorting, DPS-Rate Chart, Placement Optimiser (2026-10-06)
+
+**Goal**: Implement the 18 work items in `orchestration/round-1-items.md` (FR-059..FR-070).
+
+**Independent Test**: quickstart.md Validation Scenarios 32–38.
+
+### Traceability — every work item maps to a task, and each task cites its WI id
+
+| WI | Ask (abbreviated) | Task(s) | FR |
+|---|---|---|---|
+| WI-001 | Picker sprites still not 64×64 | T175, T177 | FR-060 |
+| WI-002 | Picker name alignment broken | T175, T177 | FR-061 |
+| WI-003 | *Question*: do these use the shared components? | T176 (answer recorded in research.md J1) | — |
+| WI-004 | Two cooldown blocks formatted differently | T178 | FR-059 |
+| WI-005 | Top block too tall, bottom too short | T178 | FR-059 |
+| WI-006 | Remove "Unconfirmed: shopCost" | T179 | FR-070 |
+| WI-007 | Selected tile shifts width, chart redraws | T180 | FR-062 |
+| WI-008 | Table bottom border faint | T181 | FR-063 |
+| WI-009 | Remove "Batomon Stats" heading | T182 | FR-064 |
+| WI-010 | Remove per-slot "or choose from dropdown" | T183 | FR-065 |
+| WI-011 | Move Modifiers above Team Summary | T184 | FR-066 |
+| WI-012 | Drop the em-dash hint | T184 | FR-066 |
+| WI-013 | Browser cards not fixed height | T185 | FR-070 |
+| WI-014 | Remove Corpus snapshot prose | T186 | FR-070/FR-014 |
+| WI-015 | Rename to "Batomon Browser" | T187 | FR-070 |
+| WI-016 | Sort at display time, site-wide | T188, T189 | FR-067 |
+| WI-017 | DPS-over-time graph | T190, T191 | FR-068 |
+| WI-018 | Placement optimiser | T192, T193, T194 | FR-069 |
+
+### Foundational — fix the primitives first (blocking)
+
+- [ ] T175 **[WI-001, WI-002]** Fix `CreatureTile`/`TypeSplit` in `src/ui/primitives/index.tsx` +
+      `primitives.module.css`. Root cause: `CreatureTile` passes its flex-column class to
+      `TypeSplit` as `className`, which lands on the **host**, while the children render inside
+      `TypeSplit`'s own `.typeSplitContent` wrapper — a plain block that shrinks to content. So
+      `.creatureTileArt`'s `flex: 1` governs nothing, the name band sits directly under the sprite,
+      and the bare coloured halves show through the rest of the card (SS1). Make `.typeSplitContent`
+      fill the host and carry the layout, so the art area expands and the name band reaches the
+      bottom edge. Also default `CreatureTile`'s `spriteSize` to the **shared token**, not the
+      literal `48` it currently defaults to (FR-060).
+      **This is the round's headline lesson — record it in the component's comment**: every call site
+      inherited one defect identically, so shared components bought consistency, not correctness.
+- [ ] T176 **[WI-003]** Record the answer to the user's question in `research.md` J1 (already
+      drafted — verify it is accurate after T175 lands): **yes**, the picker uses `Modal`,
+      `CardGrid`, `CreatureTile`, and `TypeSplit`, all shared. Composition was never the problem;
+      the shared component was internally broken and the call site passed a literal sprite size.
+      Confirm no remaining picker-specific duplicate of a shared pattern exists.
+
+### Implementation — UI
+
+- [ ] T177 **[WI-001, WI-002]** In `src/ui/GridPicker/CreatureSearchModal.tsx`, remove the hard-coded
+      `spriteSize={48}` so the card inherits the token (FR-060), and verify the card renders
+      sprite-in-art-area / name-at-bottom with no empty colour block (FR-061). (depends on T175)
+- [ ] T178 **[WI-004, WI-005]** Give `CooldownBlock` an intrinsic fixed size in
+      `src/ui/shared/BatomonCard/BatomonCard.module.css` (`.cooldown`) plus `align-self: start`, so
+      it renders identically in both the base and "Effective this battle" bands (FR-059).
+      **State the real cause in the task's commit/comment, because the user's diagnosis was half
+      right**: the two blocks are *already* one shared component. The divergence came from
+      `.cooldown` having no height of its own — the base band's parent carries
+      `min-height: 5.5rem` and stretches it, the effective band's parent does not. A primitive whose
+      appearance depends on its container is not reusable; that is the generalised rule FR-059 adds.
+- [ ] T179 **[WI-006]** Remove the `Unconfirmed: …` marker from the stats card's meta row in
+      `BatomonCard.tsx`. Keep `unconfirmedFields` in the data and keep rendering unknown values as
+      "unknown" rather than `0` — the user objected to the *marker*, not to honest unknowns.
+- [ ] T180 **[WI-007]** Fix the selected-creature column's width in `src/App.tsx` (currently
+      `flex: 1 1 16rem`) to a constant (`flex: 0 0 <token>`) (FR-062). Round 7 deliberately left
+      width flexible (research.md I3, "freezing the width would fight the page layout"); that is now
+      superseded — a content-derived width changes the sibling chart's width, which makes Recharts'
+      `ResponsiveContainer` re-measure and redraw. The visible reflow and the chart redraw are one
+      bug.
+- [ ] T181 **[WI-008]** Give the summary tables a bottom border matching the weight of their other
+      edges in `src/ui/TeamSummary/TeamSummary.module.css` (FR-063). Currently each `td`/`th` has a
+      faint `border-bottom` and the table's outer edge inherits it, so the bottom reads unfinished.
+- [ ] T182 **[WI-009]** Remove the `<h3>Batomon Stats</h3>` heading in `src/App.tsx` and align the
+      panel's top edge with the team grid's top (FR-064).
+- [ ] T183 **[WI-010]** Remove the per-slot `<details>` "Or choose from dropdown" fallback from
+      `src/ui/GridPicker/GridPicker.tsx` and its CSS (FR-065). **Record why this is now safe**: it
+      was round 3's keyboard/screen-reader fallback (research.md E2.5), and removing it is only
+      acceptable because round 7 restored click-to-open — Enter/Space on a slot opens the picker, so
+      the accessible path survives. Note it so a future round doesn't "restore" it as a regression.
+- [ ] T184 **[WI-011, WI-012]** In `src/App.tsx`, move `<ModifierEditor />` to sit between the team
+      grid and `<TeamSummary />` (FR-066), and drop the em-dash hint
+      (`— optional carry-over bonuses`) from the Modifiers disclosure summary in
+      `src/ui/Modifiers/ModifierEditor.tsx`. Keep the active-count hint, which is not redundant.
+- [ ] T185 **[WI-013]** Pass `fixedHeight` to `BatomonCard` from `CorpusBrowser.tsx` so browser cards
+      share one height (FR-070). **This reverses a round 7 decision** (research.md I3 deliberately
+      left it off there, reasoning the grid already equalises rows and freezing 149 cards wastes
+      space) — record it as superseded by the user's explicit request, not as an oversight. Size the
+      fixed height for the browser's narrower cards, not the side panel's.
+- [ ] T186 **[WI-014]** Remove the "Corpus snapshot" prose from `CorpusBrowser.tsx` **and relocate
+      the version to a single footer line** so FR-014 keeps a home (FR-070). Round 7 moved this text
+      *into* the browser precisely to satisfy FR-014 after removing it from the header; dropping it
+      outright would leave the requirement unmet with no surface — the exact failure review caught
+      last round. Update the README maintainer note to point at the new location.
+- [ ] T187 **[WI-015]** Rename the view to **"Batomon Browser"** everywhere: the `<h2>`, the nav
+      button, and any `aria-label`/title (FR-070). Grep for "Corpus Browser" rather than editing only
+      the heading.
+- [ ] T188 **[WI-016]** Sort `distinctCreatures` by name in `src/data/corpus.ts` so every consumer
+      inherits a deterministic order regardless of file order (FR-067). Root cause confirmed:
+      `distinctCreatures` is a `filter()` over `corpus.creatures`, which preserves **file order**, and
+      `creatures.ts` opens with the six original seed records (Bumblebolt, Formiqueen, Venopuff,
+      Scorchimp, Pebbler, Onsetra) before running alphabetically — exactly the "first 6 are not
+      alphabetical" pattern in SS5.
+- [ ] T189 **[WI-016]** Audit **every** list surface for reliance on source order and fix each —
+      the ask says lists "anywhere in this site", so this is not limited to the browser. Check at
+      minimum `CorpusBrowser`, `CreatureSearchModal`, `GridPicker`'s dropdown, `TrinketPicker`, and
+      `TrainerPicker`; add an automated assertion that a displayed list is sorted, so a future corpus
+      edit cannot reintroduce file-order dependence. (depends on T188)
+
+### Implementation — engine & charts
+
+- [ ] T190 **[WI-017]** Add an instantaneous damage-rate series to `SimulationResult` in
+      `src/engine/simulate.ts` + `src/data/types.ts` (FR-068): total damage bucketed into 1-second
+      intervals divided by the interval, derived from the existing `timeline` so it cannot diverge
+      from the cumulative series. **State the bucket choice and why**: 1 second matches the Poison
+      tick interval and the per-second framing used throughout the UI; finer buckets render as a comb
+      of per-cast spikes, coarser ones flatten the ramp the user wants to see. Write the failing test
+      first (Constitution Principle III): a Poison team's rate series must **rise** across the window
+      while a pure direct-damage team's stays flat.
+- [ ] T191 **[WI-017]** Add a `DpsRateChart` component rendering that series, placed alongside the
+      cumulative chart (FR-068). Reuse the existing chart's axis/colour treatment — including round
+      7's `STAT_COLORS` sourcing and the FR-054 axis-label fixes — rather than writing a second
+      chart's styling from scratch (Principle VII). (depends on T190)
+- [ ] T192 **[WI-018]** Add a placement optimiser in `src/engine/optimize.ts` (FR-069): enumerate
+      arrangements of the **currently placed** creatures (≤6 creatures in 6 slots = ≤720
+      permutations; `simulate()` is fast enough for exhaustive search, so no heuristics) and score
+      each with a **time-weighted** objective that discounts later damage. The user's reasoning is
+      the requirement: raw window total over-rewards a slow Poison ramp that may arrive after the
+      team is dead. Expose the weighting rather than hiding it. Write the failing test first: a team
+      with a known positional interaction (Formiqueen's adjacency aura) must be reported as
+      improvable when its beneficiary is moved out of range.
+- [ ] T193 **[WI-018]** Surface the optimiser in the UI with its **blind spot stated** (FR-069).
+      **Non-negotiable honesty requirement**: only **one** creature in the entire 596-record corpus
+      (Formiqueen) has an engine-readable positional `AbilityTag`. The chaining effects that motivated
+      the request — "speeds up mon in front", "mon in slot X gets multicast Y" — exist only as
+      `abilityText`. The optimiser will therefore find no improvement for almost every team, and the
+      UI MUST report how many placed creatures have positional abilities it can actually reason
+      about, so an empty result reads as "I can't see these effects yet" rather than "your placement
+      is optimal". (depends on T192)
+- [ ] T194 **[WI-018]** Record the corpus-coverage limitation behind T193 in `README.md`'s known-gaps
+      list, so the optimiser's weakness is documented alongside the other honest scope gaps rather
+      than discoverable only by using it.
+
+### Polish
+
+- [ ] T195 [P] Walk quickstart.md Validation Scenarios 32–38 and record results, stating per scenario
+      whether it was verified by automated test or by code-trace/browser check.
+- [ ] T196 Verify `npx tsc -b --noEmit`, full `npx vitest run`, and `npm run build` all pass; report
+      the final test count and any item left incomplete.
+
+**Checkpoint**: the primitives layer is correct as well as shared; the picker renders as designed;
+cooldown blocks are identical everywhere; nothing reflows the charts; lists sort themselves; the
+browser is the "Batomon Browser" with uniform cards; a DPS-rate chart shows the ramp the numbers
+already implied; and the optimiser ships stating what it cannot yet see.
+
+---
+
 ## Implementation Strategy
 
 ### MVP First (User Story 1 Only)

@@ -188,7 +188,7 @@ correct and show their data source citation(s).
   Trainer/ability triggers.
 - **FR-013**: Users MUST be able to search the corpus by name and filter it by creature type and by
   rarity.
-- **FR-014**: System MUST clearly display, for the active corpus snapshot, which game patch/version
+- **FR-014** *(narrowed twice; see the round 7 and round 8 Amendments)*: System MUST clearly display, for the active corpus snapshot, which game patch/version
   it reflects.
 - **FR-015**: System MUST provide the full documented Trainer roster (not a partial seed), and the
   Trainer-selection control MUST be presented before/above the creature grid-placement controls in
@@ -321,6 +321,33 @@ correct and show their data source citation(s).
 - **FR-058**: All UI MUST be composed from the shared primitives layer and design tokens described
   in Constitution Principle VII. Introducing a bespoke duplicate of an existing visual pattern is a
   defect.
+
+- **FR-059**: A shared UI primitive MUST render identically regardless of the container it is placed
+  in. A primitive whose size or appearance is determined by its parent's layout is a defect, not a
+  reusable component.
+- **FR-060**: Every creature sprite MUST take its size from the shared token. A literal size at a
+  call site is a defect (WI-001).
+- **FR-061**: The creature picker's result cards MUST place the sprite in the art area and the name
+  in a band at the card's bottom edge, with no unfilled background between them.
+- **FR-062**: The selected-creature panel MUST hold a constant width as its contents change, so that
+  sibling content (notably the charts) is never re-laid-out by a creature selection.
+- **FR-063**: Data tables MUST have a uniform border weight on all four edges.
+- **FR-064**: The application MUST NOT display a "Batomon Stats" heading above the selected-creature
+  panel; the panel MUST align with the top of the team grid.
+- **FR-065**: Grid slots MUST NOT render a per-slot fallback dropdown. (The accessible path to
+  reassignment is Enter/Space on the slot, restored in FR-047.)
+- **FR-066**: Modifier editing MUST be positioned between the team grid and the summary tables.
+- **FR-067**: Every list of corpus records MUST be sorted at the point of display, never inheriting
+  the order records happen to occupy in their source file. A corpus edit MUST NOT be able to change
+  display order.
+- **FR-068**: System MUST provide a chart of instantaneous damage-per-second over time, distinct from
+  the cumulative chart, so that a rising or falling output rate is visible rather than implied.
+- **FR-069**: System SHOULD offer a placement suggestion that searches arrangements of the currently
+  placed creatures for higher time-weighted output. Where the corpus lacks the positional ability
+  data such a search depends on, the feature MUST state that limitation in the UI rather than
+  reporting "no improvement" as though the search were conclusive.
+- **FR-070**: The corpus browser MUST be titled "Batomon Browser", MUST use fixed-height cards, and
+  MUST NOT display corpus/patch provenance prose.
 
 ### Key Entities
 
@@ -531,3 +558,35 @@ as several *separate* visual bugs that are really one cause.
   was wrong — it would show at the card's centre, not its edge. The real cause is
   `background-origin: padding-box` with `background-clip: border-box` repeating the gradient into a
   transparent 2px border.
+
+
+### 2026-10-06 (round 8) — FR-059..FR-070 added; FR-014 narrowed a second time; round 7's fixed-height decision reversed
+
+Eighteen atomic work items from a `/speckit-orchestrate` run (ledger:
+`orchestration/round-1-items.md`). The majority are defects in round 7's own primitives layer, which
+is the finding worth stating plainly: **adopting shared components bought consistency, not
+correctness.** `CreatureTile` applied its flex-column class to `TypeSplit`'s host element while the
+children rendered inside `TypeSplit`'s inner wrapper, so the layout class governed nothing — and
+every call site inherited that one defect identically. `CooldownBlock` had no intrinsic size and so
+rendered at two different heights purely from its parents' layouts. FR-059 is the generalised rule
+these produce.
+
+**FR-014 is narrowed for the second time, explicitly.** Round 7 removed the corpus/patch prose from
+the app header (FR-050) and relocated it to the Corpus Browser's summary line *specifically* so
+FR-014 kept a home. WI-014 asks to remove it from there too. Rather than leave the requirement unmet
+with no surface — the exact failure a review caught in round 7 before it shipped — the version moves
+to a single unobtrusive footer line. The user's objection both times has been to provenance **prose
+at the top of a view**, not to the version being recorded at all. If a future round removes the
+footer too, FR-014 should be **retired outright with a stated rationale** rather than quietly unmet.
+
+**A round 7 decision is reversed, not forgotten.** Round 7 deliberately left `fixedHeight` off the
+Corpus Browser's cards, reasoning that its grid already equalises row heights and that freezing 149
+cards would waste vertical space (research.md I3). WI-013 asks for the opposite. The user's
+preference governs; the earlier rationale is recorded as superseded.
+
+**FR-069 ships with a stated blind spot.** Only **one** creature in the 596-record corpus
+(Formiqueen) has an engine-readable positional ability. The chaining effects motivating the request —
+"speeds up mon in front", "mon in slot X gets multicast Y" — exist as `abilityText` with no
+`AbilityTag`, so the engine cannot reason about them. An optimiser will therefore find no improvement
+for almost every team, and the UI must say *why* rather than presenting an empty result as a
+conclusion.
