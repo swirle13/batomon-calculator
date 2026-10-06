@@ -177,6 +177,15 @@
 .typeSplitContent {
   position: relative;
   z-index: 1;
+  /* 2026-10-06 round 8 (FR-061): this wrapper must FILL the host and carry the layout.
+     Previously it was a plain block that shrank to its content, while the flex-column class was
+     applied to the host -- so `.creatureTileArt { flex: 1 }` had no flex parent, the name band
+     sat directly under the sprite, and the bare colour halves showed through the rest of the
+     card. Every CreatureTile call site inherited that one defect identically, which is the
+     round's lesson: shared components bought consistency, not correctness. */
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 /* ---------- StatLine: the ONE coloured "label value" row ---------- */

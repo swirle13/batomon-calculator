@@ -48,7 +48,8 @@ export function TrinketPicker() {
   }, [isOpen]);
 
   const needle = query.trim().toLowerCase();
-  const results = corpus.trinkets.filter((t) => {
+  // FR-067 (WI-016): sorted at the point of display, like every other list.
+  const results = [...corpus.trinkets].sort((a, b) => a.name.localeCompare(b.name)).filter((t) => {
     if (needle !== "" && !t.name.toLowerCase().includes(needle) && !t.effectText.toLowerCase().includes(needle)) {
       return false;
     }

@@ -27,10 +27,15 @@
   white-space: nowrap;
 }
 
+/* 2026-10-06 round 8 (FR-063 / WI-008): the bottom edge read as unfinished because this rule
+   overrode only `border-bottom`, with a near-background `#2c2f3b`, while the other three edges came
+   from the global `th, td { border: 1px solid #ccc }` in App.css. All four edges were already 1px --
+   it was never a weight problem, so "match the weight" would have changed nothing. All four edges
+   are now set coherently from one token. */
 .tables th,
 .tables td {
-  padding: 0.25rem 0.6rem;
-  border-bottom: 1px solid #2c2f3b;
+  padding: var(--space-2xs) var(--space-sm);
+  border: 1px solid var(--line);
   text-align: left;
 }
 

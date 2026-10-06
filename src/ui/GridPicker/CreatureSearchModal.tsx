@@ -152,7 +152,6 @@ export function CreatureSearchModal({ slot, onClose, onSelect }: CreatureSearchM
                   name={creature.name}
                   types={creature.types}
                   spriteFile={creature.spriteFile}
-                  spriteSize={48}
                   className={styles.cardTile}
                 />
               </button>

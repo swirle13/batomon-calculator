@@ -28,11 +28,15 @@ interface SpriteProps {
  * site. Six call sites each passed their own literal before this; the grid size was an arbitrary
  * 40 with no reasoning behind it (research.md I11).
  */
-export function spriteGridSize(): number {
-  if (typeof window === "undefined") return 64;
-  const raw = getComputedStyle(document.documentElement).getPropertyValue("--sprite-grid").trim();
+export function spriteSizeFromToken(token: string, fallback = 64): number {
+  if (typeof window === "undefined") return fallback;
+  const raw = getComputedStyle(document.documentElement).getPropertyValue(token).trim();
   const parsed = Number.parseInt(raw, 10);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : 64;
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+export function spriteGridSize(): number {
+  return spriteSizeFromToken("--sprite-grid");
 }
 
 export function Sprite({ spriteFile, kind, size = 48, alt, className }: SpriteProps) {

@@ -6,12 +6,26 @@ import { TrinketPicker } from "./ui/GridPicker/TrinketPicker";
 import { TeamSummary } from "./ui/TeamSummary/TeamSummary";
 import { PlacedCreatureDetails } from "./ui/TeamSummary/PlacedCreatureDetails";
 import { ModifierEditor } from "./ui/Modifiers/ModifierEditor";
+import { PlacementAdvisor } from "./ui/TeamSummary/PlacementAdvisor";
 import { CumulativeChart } from "./ui/CumulativeChart/CumulativeChart";
+import { DpsRateChart } from "./ui/CumulativeChart/DpsRateChart";
 import { CorpusBrowser } from "./ui/CorpusBrowser/CorpusBrowser";
 import { corpus } from "./data/corpus";
 import { simulate } from "./engine/simulate";
 import type { GridSlot } from "./data/types";
 import "./App.css";
+
+/**
+ * FR-014's home as of round 8, and its third relocation — recorded because the pattern matters.
+ * Round 7 removed this from the app header (FR-050) and put it in the Corpus Browser's summary
+ * line specifically so the requirement kept a surface; round 8 (WI-014) asked for that prose gone
+ * too. The user's objection both times was to provenance PROSE AT THE TOP OF A VIEW, not to the
+ * version being recorded at all, so it moves to one unobtrusive footer line rather than being
+ * silently dropped — which would leave FR-014 unmet everywhere, the exact failure review caught
+ * last round. If a future round removes this too, FR-014 should be RETIRED with a stated
+ * rationale rather than quietly unmet.
+ */
+const CORPUS_PATCH_LABEL = "Balance 24 / 1.2.0 (community-imported build)";
 
 type View = "calculator" | "corpus";
 
@@ -36,15 +50,14 @@ function CalculatorView() {
       </p>
       <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap", alignItems: "flex-start" }}>
         <GridPicker onHighlightSlot={setHighlightedSlot} result={result} />
-        <div style={{ flex: "1 1 16rem", minWidth: "16rem", textAlign: "left" }}>
-          <h3>Batomon Stats</h3>
+        <div style={{ flex: "0 0 var(--detail-panel-width)", textAlign: "left" }}>
           <PlacedCreatureDetails result={result} highlightedSlot={highlightedSlot} />
         </div>
       </div>
-      <TeamSummary config={config} result={result} />
-      {/* 2026-10-06 round 6 (FR-039): collapsed by default, so it sits between the tables and the
-          chart without pushing them apart. */}
+      {/* 2026-10-06 round 8 (FR-066 / WI-011): Modifiers sits between the grid and the summary. */}
       <ModifierEditor />
+      <PlacementAdvisor />
+      <TeamSummary config={config} result={result} />
       {/* FR-037: the simulation window governs the chart's time axis, not the per-second summary
           values, so it sits immediately above the chart and below the tables. Order matters here —
           leaving ModifierEditor between this control and the chart would satisfy "below the tables"
@@ -62,6 +75,7 @@ function CalculatorView() {
         </label>
       </p>
       <CumulativeChart result={result} />
+      <DpsRateChart result={result} />
     </div>
   );
 }
@@ -91,6 +105,9 @@ function App() {
         </nav>
       </header>
       <main>{view === "calculator" ? <CalculatorView /> : <CorpusBrowser />}</main>
+      <footer style={{ fontSize: "0.7rem", color: "var(--text-muted)", padding: "1rem 0 0.5rem" }}>
+        Corpus: {CORPUS_PATCH_LABEL}
+      </footer>
     </TeamConfigProvider>
   );
 }

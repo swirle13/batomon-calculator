@@ -1,14 +1,17 @@
 import { useMemo, useState } from "react";
-import { corpus, distinctCreatures, filterCreatures, searchCreatures } from "../../data/corpus";
+import { filterCreatures, searchCreatures } from "../../data/corpus";
 import type { CreatureType, Rarity } from "../../data/types";
 import { RARITIES_ASC } from "../../data/statColors";
 import { BatomonCard } from "../shared/BatomonCard/BatomonCard";
 import styles from "./CorpusBrowser.module.css";
 
+/* FR-067 (WI-016): sorted at the point of display. This was a hard-coded, non-alphabetical array --
+   a list in the very view the user screenshotted, while the picker's equivalent list WAS sorted, so
+   the app contradicted itself. The ask covers lists "anywhere in this site", not just creature lists. */
 const TYPES: CreatureType[] = [
   "Fire", "Water", "Electric", "Toxic", "Flying", "Rock", "Grass", "Bug",
   "Steel", "Dragon", "Ghost", "Fighting", "Curio", "NULL", "All",
-];
+].sort() as CreatureType[];
 
 /**
  * User Story 3: search/filter the corpus (FR-013).
@@ -26,16 +29,6 @@ const TYPES: CreatureType[] = [
  * Listings iterate `distinctCreatures` (one record per species), not `corpus.creatures` — since
  * round 5 the latter holds up to 4 level records per species and would show duplicate cards.
  */
-/**
- * FR-014's home as of round 7 (tasks.md T162). The corpus/patch version used to sit in the app
- * header on every view; FR-050 removed that at the user's request. A first draft of the plan
- * claimed FR-014 was "already satisfied by the Corpus Browser's summary line" -- it was not, that
- * line carried entry counts only, so removing the header as drafted would have left FR-014 unmet
- * everywhere. It lives here now. This is a corpus-LEVEL version stamp, which is not the per-record
- * citation/conflict rendering FR-030 removed.
- */
-const CORPUS_PATCH_LABEL = "Balance 24 / 1.2.0 (community-imported build)";
-
 export function CorpusBrowser() {
   const [query, setQuery] = useState("");
   const [type, setType] = useState<CreatureType | "">("");
@@ -50,15 +43,7 @@ export function CorpusBrowser() {
 
   return (
     <div>
-      <h2>Corpus Browser</h2>
-      <p className={styles.summary}>
-        <strong>Corpus snapshot:</strong> {CORPUS_PATCH_LABEL}. {distinctCreatures.length} creatures, each with level 1-4 records ({corpus.creatures.length} in
-        total), {corpus.trainers.length} trainers, {corpus.trinkets.length} trinkets,{" "}
-        {corpus.items.length} items. Cooldowns are confirmed for every level record; damage is still
-        unpublished for some species and is shown as no damage line rather than a misleading 0 — see
-        each card's "Unconfirmed" note.
-      </p>
-
+      <h2>Batomon Browser</h2>
       <p className={styles.filters}>
         <label>
           Search:{" "}
@@ -92,7 +77,7 @@ export function CorpusBrowser() {
 
       <div className={styles.results}>
         {results.map((creature) => (
-          <BatomonCard key={creature.id} creature={creature} />
+          <BatomonCard key={creature.id} creature={creature} fixedHeight="browser" />
         ))}
       </div>
     </div>

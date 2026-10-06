@@ -14,10 +14,9 @@ import type {
   GridCol,
   GridRow,
   GridSlot,
-  Rarity,
   SimulationResult,
 } from "../../data/types";
-import { corpus, distinctCreatures, getCreatureById } from "../../data/corpus";
+import { corpus, getCreatureById } from "../../data/corpus";
 import { useTeamConfig } from "../../context/TeamConfigContext";
 import { resolveLevelUp } from "../../engine/evolution";
 import { typeBackground } from "../../data/typeColors";
@@ -51,11 +50,6 @@ const COLS: GridCol[] = [0, 1, 2];
  * rarity via native <optgroup> needs no extra UI surface and keeps the plain dropdown the user
  * asked to keep, while making it much faster to visually scan for a specific rarity.
  */
-const RARITY_ORDER: Rarity[] = ["Mythical", "Legendary", "SuperRare", "Rare", "Uncommon", "Common"];
-const creaturesByRarity = RARITY_ORDER.map((rarity) => ({
-  rarity,
-  creatures: distinctCreatures.filter((c) => c.rarity === rarity).sort((a, b) => a.name.localeCompare(b.name)),
-}));
 
 /**
  * Exported so it can be asserted directly (tasks.md T147). jsdom cannot reproduce either half of
@@ -326,34 +320,6 @@ export function GridPicker({ onHighlightSlot, result }: GridPickerProps) {
                       </select>
                     )}
 
-                    {/* FR-018/FR-019 parity: the original plain <select> stays fully functional
-                        for keyboard/screen-reader users who don't use the search modal or
-                        drag-and-drop (research.md E2.5). */}
-                    <details className={styles.fallbackDetails}>
-                      <summary>Or choose from dropdown</summary>
-                      <select
-                        value={placement?.creatureId ?? ""}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          setPlacement(slot, value === "" ? null : value, 1);
-                        }}
-                        aria-label={`${row} row, slot ${col + 1}`}
-                      >
-                        <option value="">— empty —</option>
-                        {creaturesByRarity.map(
-                          ({ rarity, creatures }) =>
-                            creatures.length > 0 && (
-                              <optgroup key={rarity} label={rarity}>
-                                {creatures.map((c) => (
-                                  <option key={c.id} value={c.id}>
-                                    {c.name}
-                                  </option>
-                                ))}
-                              </optgroup>
-                            ),
-                        )}
-                      </select>
-                    </details>
                   </div>
                 );
               })}

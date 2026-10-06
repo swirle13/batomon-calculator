@@ -571,8 +571,27 @@ export function simulate(
     return { tSeconds: t, totalDamage, byStatus };
   });
 
+  // --- FR-068 (2026-10-06 round 8): instantaneous DPS over time ------------------------------
+  // The cumulative series is monotonic and so cannot show whether output is rising or falling;
+  // this is the rate view. Derived from the same `timeline`, so the two can never disagree.
+  //
+  // 1-second buckets, chosen deliberately: it matches the Poison tick interval and the per-second
+  // framing used everywhere else in the UI. Finer buckets render as a comb of spikes at each cast;
+  // coarser ones flatten the very ramp this exists to show. Buckets are half-open `(k, k+1]` so a
+  // tick landing exactly on a boundary is counted once -- clamping it into the final bucket is the
+  // bug that inflated round 7's own evidence by ~2x (research.md I13).
+  const bucketCount = Math.max(1, Math.ceil(windowSeconds));
+  const damageBuckets = new Array<number>(bucketCount).fill(0);
+  for (const event of timeline) {
+    if (event.damage === undefined || event.damageType === undefined) continue;
+    const index = Math.max(0, Math.ceil(event.tSeconds) - 1);
+    if (index < bucketCount) damageBuckets[index] = (damageBuckets[index] ?? 0) + event.damage;
+  }
+  const dpsRateSeries = damageBuckets.map((damage, i) => ({ tSeconds: i + 1, dps: damage }));
+
   return {
     timeline,
+    dpsRateSeries,
     perCreatureDps,
     perCreatureFacilitatedDps,
     perCreatureEffectiveStats,

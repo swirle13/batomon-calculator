@@ -113,6 +113,16 @@ them with `node scripts/vendor-sprites.mjs`.
   *user's team's own outgoing damage* against one implicit "idealized target" (see spec.md's
   Assumptions) — there's no modeled opposing HP/Shield pool for it to reduce yet. See `tasks.md`
   T037.
+- **The placement suggester is limited by corpus coverage, not by its search.** It evaluates every
+  arrangement of your placed Batomon (at most 720) against a time-weighted damage score, but the
+  engine can only *act on* one kind of positional ability: `cooldownSpeedModifier` with an
+  `adjacent`/`allAllies` target. In practice that means **one creature in the whole corpus**
+  (Formiqueen). Onsetra carries a `behind` tag — "the ally behind applies its Ongoing abilities 1
+  additional time" — that is recorded, correctly typed, and read by nothing. Six trinkets have
+  slot-scoped effects with no `abilityTags` at all, and one of them (Link Cable, "all of your team's
+  monsters are now considered adjacent") would invalidate the single interaction that *is* visible.
+  So "no improvement found" usually means "the effects that would make position matter aren't
+  modelled yet". The UI says so rather than implying your layout is optimal.
 - **Items are still an empty seed stub.** Trinkets were completed in round 5 (`tasks.md` T109);
   Items have not been — see `tasks.md` T046.
 - **Only 6 of 93 Trinkets' effects are wired into the DPS simulation.** The rest are real,

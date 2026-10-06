@@ -33,13 +33,23 @@
  * freezing the width would fight the page layout. Text wraps within that width and the reserved
  * heights are sized for it.
  */
-.cardFixed { height: 33rem; }
+/* "panel": the Calculator's selected-creature card, which also carries the effective-stats band. */
+.cardFixedPanel { height: 33rem; }
 
-.cardFixed .identity { min-height: 6.5rem; }
-.cardFixed .output { min-height: 5.5rem; }
-.cardFixed .ability { min-height: 6rem; }
-.cardFixed .extra { min-height: 7rem; }
-.cardFixed .meta { min-height: 3.25rem; }
+.cardFixedPanel .identity { min-height: 6.5rem; }
+.cardFixedPanel .output { min-height: 5.5rem; }
+.cardFixedPanel .ability { min-height: 6rem; }
+.cardFixedPanel .extra { min-height: 7rem; }
+.cardFixedPanel .meta { min-height: 3.25rem; }
+
+/* "browser": the narrower grid card (FR-070 / WI-013). Shorter, because it has no effective band --
+   forcing the panel's 33rem onto 149 browser cards would waste most of each one. */
+.cardFixedBrowser { height: 21rem; }
+
+.cardFixedBrowser .identity { min-height: 6.5rem; }
+.cardFixedBrowser .output { min-height: 4.5rem; }
+.cardFixedBrowser .ability { min-height: 5.5rem; overflow: hidden; }
+.cardFixedBrowser .meta { min-height: 2rem; }
 
 /* --- Band 1: name + rarity, rarity-coloured --- */
 .header {
@@ -118,6 +128,15 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  /* 2026-10-06 round 8 (FR-059): an INTRINSIC size, so the block renders identically wherever it
+     is placed. It previously had only `min-width` and inherited its height from its parent -- the
+     base band's parent carries `min-height: 5.5rem` and stretched it, the effective band's parent
+     did not, so one shared component rendered at two sizes. A primitive whose appearance is
+     decided by its container is not reusable; that is the rule FR-059 generalises. */
+  width: 3.75rem;
+  height: 3.25rem;
+  align-self: start;
+  flex-shrink: 0;
   min-width: 3.25rem;
   padding: 0.3rem;
   border: 1px solid #3a3d48;

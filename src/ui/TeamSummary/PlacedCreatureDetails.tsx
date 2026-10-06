@@ -65,7 +65,7 @@ export function PlacedCreatureDetails({ result, highlightedSlot }: PlacedCreatur
   const effective = result.perCreatureEffectiveStats[`${creature.id}@${slotKey(placement.slot)}`];
 
   return (
-    <BatomonCard creature={creature} levelLabel={`Lv.${placement.level}`} fixedHeight>
+    <BatomonCard creature={creature} levelLabel={`Lv.${placement.level}`} fixedHeight="panel">
       {effective ? (
         <div title="Reflects any active modifiers and selected Trinkets">
           <div

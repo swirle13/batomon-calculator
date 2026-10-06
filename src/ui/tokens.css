@@ -64,13 +64,19 @@
   --sprite-grid: 64px;
   --sprite-card: 56px;
   --sprite-row: 24px;
-  --sprite-picker: 48px;
+  /* 64px, matching --sprite-grid: the user compared the picker against the team grid
+     directly (WI-001). Was 48px, which is why "still not 64x64" survived round 7. */
+  --sprite-picker: 64px;
 
   /* --- card geometry ------------------------------------------------------------------------
    * The creature picker's cards follow the in-game shop card's measured proportions:
    * ~175 x 145 px, i.e. ~1.2:1 (landscape, wider than tall). */
   --picker-card-min-width: 9.5rem;
   --picker-card-aspect: 1.2;
+
+  /* FR-062 (WI-007): the selected-creature column is a FIXED width. A content-derived width
+     (previously `flex: 1 1 16rem`) visibly resized the column on every hover. */
+  --detail-panel-width: 22rem;
 }
 
 /* On narrow viewports the square slot card can't hold a 64px sprite plus the level label, name,

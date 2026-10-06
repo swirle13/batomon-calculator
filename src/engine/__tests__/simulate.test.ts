@@ -808,3 +808,49 @@ describe("second-order status metrics (FR-055/056/057)", () => {
   // Shock's damage arrives via shockProc rather than ticks, and Shield deals no damage at all, so
   // their entries in these Records carry the documented fallbacks rather than tested values.
 });
+
+
+/**
+ * FR-068 (WI-017, 2026-10-06 round 8): an instantaneous DPS series, so a rising output rate is
+ * visible as a curve rather than implied by a number. The cumulative chart is monotonic and so can
+ * never show the "ebb and flow" the user asked for.
+ */
+describe("instantaneous DPS series (FR-068)", () => {
+  function teamOf(ids: string[], windowSeconds: number): TeamConfiguration {
+    const slots = [
+      { row: "back", col: 0 }, { row: "back", col: 1 }, { row: "back", col: 2 },
+    ] as const;
+    return {
+      placements: ids.map((creatureId, i) => ({ creatureId, level: 1 as const, slot: slots[i]! })),
+      trainerId: null,
+      trinketIds: [],
+      itemIds: [],
+      simulationWindowSeconds: windowSeconds,
+    };
+  }
+
+  it("rises across the window for a Poison team, whose stacks never decay", () => {
+    const series = simulate(teamOf(["drumire"], 40), corpus).dpsRateSeries;
+    expect(series.length).toBeGreaterThan(2);
+    const first = series[1]!.dps;
+    const last = series[series.length - 1]!.dps;
+    expect(last).toBeGreaterThan(first);
+  });
+
+  it("stays flat for a pure direct-damage team, whose output does not compound", () => {
+    // Rubbin: 40 damage every 6.5s, no status. Its rate is steady once casting begins, so the
+    // second half's average must not exceed the first half's by a meaningful margin.
+    const series = simulate(teamOf(["rubbin"], 60), corpus).dpsRateSeries;
+    const mid = Math.floor(series.length / 2);
+    const avg = (xs: { dps: number }[]) => xs.reduce((s, x) => s + x.dps, 0) / Math.max(1, xs.length);
+    expect(avg(series.slice(mid))).toBeLessThan(avg(series.slice(1, mid)) * 1.5);
+  });
+
+  it("agrees with the cumulative series it is derived from", () => {
+    // Single source of truth: integrating the rate must reproduce the cumulative total.
+    const result = simulate(teamOf(["drumire", "rubbin"], 20), corpus);
+    const integrated = result.dpsRateSeries.reduce((sum, p) => sum + p.dps, 0);
+    const cumulative = result.cumulativeSeries[result.cumulativeSeries.length - 1]!.totalDamage;
+    expect(integrated).toBeCloseTo(cumulative, 5);
+  });
+});

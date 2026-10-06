@@ -103,15 +103,17 @@ interface BatomonCardProps {
   /** Shown above the name, e.g. "Lv.3". */
   levelLabel?: string;
   /**
-   * Reserve a constant outer height sized to the corpus's worst case (FR-043). Used by the
-   * Calculator's selected-creature panel, where the card changes contents on every hover and the
-   * reflow is visible. The Corpus Browser leaves it off: its cards sit in a grid whose row height
-   * already equalises them, and freezing each one would waste vertical space across 149 cards.
+   * Reserve a constant outer height (FR-043). A VARIANT rather than a boolean, because the two
+   * surfaces need different heights: `"panel"` is the Calculator's selected-creature card (wide,
+   * with an extra "Effective this battle" band), `"browser"` is the narrower grid card.
+   *
+   * Round 7 deliberately left the browser unfixed, reasoning its grid already equalised rows
+   * (research.md I3). The user asked for the opposite in round 8 (WI-013), so that is superseded.
    */
-  fixedHeight?: boolean;
+  fixedHeight?: "panel" | "browser";
 }
 
-export function BatomonCard({ creature, children, levelLabel, fixedHeight = false }: BatomonCardProps) {
+export function BatomonCard({ creature, children, levelLabel, fixedHeight }: BatomonCardProps) {
   const rarityColor = RARITY_COLORS[creature.rarity];
   const cooldownUnconfirmed = isUnconfirmed(creature, "baseCooldownSeconds");
   const statLines = buildStatLines({
@@ -125,7 +127,7 @@ export function BatomonCard({ creature, children, levelLabel, fixedHeight = fals
 
   return (
     <article
-      className={`${styles.card} ${fixedHeight ? styles.cardFixed : ""}`}
+      className={`${styles.card} ${fixedHeight === "panel" ? styles.cardFixedPanel : ""} ${fixedHeight === "browser" ? styles.cardFixedBrowser : ""}`}
       style={{ "--rarity-color": rarityColor } as React.CSSProperties}
     >
       <header className={styles.header}>
@@ -170,16 +172,18 @@ export function BatomonCard({ creature, children, levelLabel, fixedHeight = fals
       {children ? <div className={styles.extra}>{children}</div> : null}
 
       <div className={styles.meta}>
-        <span>Cost ${displayField(creature, "shopCost", creature.shopCost)}</span>
+        {/* 2026-10-06 round 8 (WI-006): the Cost line is omitted entirely when the value is
+            unconfirmed, rather than printing "Cost $unknown". Removing only the "Unconfirmed:"
+            marker would have left an unexplained "unknown" -- strictly less information than
+            before. The `unconfirmedFields` DATA is untouched; this is a display decision, and no
+            cost is ever fabricated. Other unknown stats still render as "unknown". */}
+        {!isUnconfirmed(creature, "shopCost") && <span>Cost ${creature.shopCost}</span>}
         {creature.sellValue != null && <span>Sell ${creature.sellValue}</span>}
         {creature.evolvesInto && (
           <span>
             Evolves into <code>{creature.evolvesInto}</code>
             {creature.evolvesAtLevel ? ` at Lv.${creature.evolvesAtLevel}` : " (not by levelling)"}
           </span>
-        )}
-        {creature.unconfirmedFields && creature.unconfirmedFields.length > 0 && (
-          <span className={styles.unconfirmed}>Unconfirmed: {creature.unconfirmedFields.join(", ")}</span>
         )}
       </div>
     </article>

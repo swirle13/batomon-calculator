@@ -13,7 +13,7 @@ export function TrainerPicker() {
         onChange={(e) => setTrainerId(e.target.value === "" ? null : e.target.value)}
       >
         <option value="">— none —</option>
-        {corpus.trainers.map((t) => (
+        {[...corpus.trainers].sort((a, b) => a.name.localeCompare(b.name)).map((t) => (
           <option key={t.id} value={t.id}>
             {t.name}
           </option>

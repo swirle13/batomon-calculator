@@ -338,6 +338,13 @@ export interface SimulationResult {
    * `perStatusPerSecond`, which is DAMAGE per second -- a user reading only the damage figure
    * cannot tell whether it is steady or still climbing.
    */
+  /**
+   * 2026-10-06 round 8 (FR-068): instantaneous damage per second, in 1-second buckets.
+   * The cumulative series only ever rises, so it cannot show whether the team's output is
+   * accelerating; this is the rate view that makes a Poison or Shock ramp legible. Derived from
+   * the same `timeline` as `cumulativeSeries`, so integrating this reproduces that.
+   */
+  dpsRateSeries: { tSeconds: number; dps: number }[];
   perStatusAppliedPerSecond: Record<StatusEffectType, number>;
   /**
    * The instantaneous damage rate as the window closes (`live layers / tickInterval`). The

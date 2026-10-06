@@ -28,7 +28,18 @@ export function getCreatureById(id: string) {
  * the canonical representative; level-specific stats are resolved separately via
  * `getCreatureByIdAndLevel`/`resolveLevelUp` once a specific placement's level is known.
  */
-export const distinctCreatures: CreatureRecord[] = corpus.creatures.filter((c) => c.level === 1);
+/**
+ * One record per species, SORTED BY NAME (FR-067, 2026-10-06 round 8).
+ *
+ * The sort is the point: this used to be a bare `filter()`, which preserves **file order** --
+ * and `creatures.ts` opens with the six original seed records (Bumblebolt, Formiqueen, Venopuff,
+ * Scorchimp, Pebbler, Onsetra) before running alphabetically, so every consumer rendered those six
+ * first. Display order must never be an accident of where a record sits in a source file; a corpus
+ * edit must not be able to reorder the UI.
+ */
+export const distinctCreatures: CreatureRecord[] = corpus.creatures
+  .filter((c) => c.level === 1)
+  .sort((a, b) => a.name.localeCompare(b.name));
 
 /**
  * 2026-10-05 round 2 — level-aware lookup, matching the (id, level) key `simulate()` now

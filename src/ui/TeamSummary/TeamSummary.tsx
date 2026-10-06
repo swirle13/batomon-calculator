@@ -18,7 +18,8 @@ interface TeamSummaryProps {
  * than two separately left-justified blocks in different divs.
  */
 export function TeamSummary({ config, result }: TeamSummaryProps) {
-  const dpsRows = config.placements.map((placement) => {
+  // FR-067: placements follow insertion order, so sort for a stable, readable table.
+  const dpsRows = [...config.placements].map((placement) => {
     const creature = getCreatureById(placement.creatureId);
     const key = `${placement.creatureId}@${placement.slot.row}${placement.slot.col}`;
     const dps = result.perCreatureDps[key] ?? 0;
@@ -29,9 +30,13 @@ export function TeamSummary({ config, result }: TeamSummaryProps) {
     // 2026-10-05 round 4 (FR-024): no longer carries `slot` for display -- the grid already
     // shows position, so repeating it as text here was redundant (user-reported).
     return { key, name: creature?.name ?? placement.creatureId, dps, facilitatedDps };
-  });
+  }).sort((a, b) => a.name.localeCompare(b.name));
 
-  const statusRows = Object.entries(result.perStatusPerSecond).filter(([, value]) => value > 0);
+  // FR-067 (WI-016): sorted at the point of display. These followed `Object.entries` key order,
+  // i.e. the order the engine happened to build the record in -- a list whose order was an accident.
+  const statusRows = Object.entries(result.perStatusPerSecond)
+    .filter(([, value]) => value > 0)
+    .sort(([a], [b]) => a.localeCompare(b));
 
   return (
     <section>

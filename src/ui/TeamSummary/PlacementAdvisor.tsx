@@ -1,0 +1,126 @@
+import { useMemo } from "react";
+import { corpus } from "../../data/corpus";
+import { useTeamConfig } from "../../context/TeamConfigContext";
+import {
+  analyzePositionalCoverage,
+  suggestPlacement,
+  TIME_WEIGHT_HALF_LIFE_SECONDS,
+} from "../../engine/optimize";
+import { getCreatureById } from "../../data/corpus";
+import { Disclosure } from "../primitives";
+
+/**
+ * FR-069 (WI-018): suggests a rearrangement of the placed creatures with higher time-weighted
+ * output — and, just as importantly, states what it cannot see.
+ *
+ * The honesty requirement is not decoration. Positional effects are barely modelled: only one
+ * placed creature's positional ability is ever actionable (Formiqueen's adjacency aura), Onsetra's
+ * `behind` tag is read by nothing, and six trinkets have slot-scoped effects the engine ignores
+ * entirely. So "no improvement found" nearly always means "I can't see the effects that would make
+ * position matter" — and presenting that as "your placement is optimal" would be a lie the user
+ * could act on.
+ */
+export function PlacementAdvisor() {
+  const { config, movePlacement } = useTeamConfig();
+
+  const { suggestion, coverage } = useMemo(
+    () => ({
+      suggestion: suggestPlacement(config, corpus),
+      coverage: analyzePositionalCoverage(config, corpus),
+    }),
+    [config],
+  );
+
+  if (config.placements.length < 2) return null;
+
+  const blindTags = coverage.withPositionalTag.filter((n) => !coverage.actionable.includes(n));
+  const gain = suggestion.bestScore - suggestion.currentScore;
+  const gainPercent = suggestion.currentScore > 0 ? (gain / suggestion.currentScore) * 100 : 0;
+
+  return (
+    <Disclosure
+      label="Placement suggestion"
+      hint={suggestion.placements ? `(+${gainPercent.toFixed(1)}% weighted output available)` : "(no improvement found)"}
+    >
+      <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", lineHeight: 1.45 }}>
+        Searched <strong>{suggestion.evaluated}</strong> arrangements of your placed Batomon, scoring
+        each by damage weighted toward the start of the fight — damage {TIME_WEIGHT_HALF_LIFE_SECONDS}s
+        in counts half as much as damage at the opening, since a slow ramp may arrive after you are
+        already dead.
+      </p>
+
+      {suggestion.placements ? (
+        <div style={{ fontSize: "0.85rem" }}>
+          <p>
+            A different arrangement scores <strong>{gainPercent.toFixed(1)}% higher</strong>:
+          </p>
+          <ul>
+            {suggestion.placements.map((p) => (
+              <li key={`${p.creatureId}-${p.slot.row}${p.slot.col}`}>
+                {getCreatureById(p.creatureId)?.name ?? p.creatureId} → {p.slot.row} row, slot{" "}
+                {p.slot.col + 1}
+              </li>
+            ))}
+          </ul>
+          <button
+            type="button"
+            onClick={() => {
+              // Apply by moving each creature to its suggested slot, in order.
+              for (const target of suggestion.placements ?? []) {
+                const from = config.placements.find((p) => p.creatureId === target.creatureId)?.slot;
+                if (from) movePlacement(from, target.slot);
+              }
+            }}
+          >
+            Apply this arrangement
+          </button>
+        </div>
+      ) : (
+        <p style={{ fontSize: "0.85rem" }}>No arrangement scored higher than your current one.</p>
+      )}
+
+      {/* The blind-spot disclosure. This is mandatory, not a nicety (FR-069). */}
+      <p
+        style={{
+          fontSize: "0.78rem",
+          color: "var(--text-warn)",
+          borderTop: "1px solid var(--line-subtle)",
+          paddingTop: "0.5rem",
+          marginTop: "0.5rem",
+          lineHeight: 1.45,
+        }}
+      >
+        <strong>What this search can actually see:</strong>{" "}
+        {coverage.actionable.length === 0 ? (
+          <>
+            <strong>none of your placed Batomon</strong> have a positional ability this engine can
+            reason about, so a result of &ldquo;no improvement&rdquo; reflects that limit rather than
+            your placement being optimal.
+          </>
+        ) : (
+          <>
+            {coverage.actionable.length} of {config.placements.length} placed Batomon (
+            {coverage.actionable.join(", ")}) have a positional ability the engine acts on.
+          </>
+        )}
+        {blindTags.length > 0 && (
+          <>
+            {" "}
+            {blindTags.join(", ")} {blindTags.length === 1 ? "has" : "have"} a positional ability
+            recorded in the corpus that the engine does <strong>not</strong> yet read, so it was
+            ignored here.
+          </>
+        )}
+        {coverage.unmodelledTrinkets.length > 0 && (
+          <>
+            {" "}
+            Your selected {coverage.unmodelledTrinkets.join(", ")}{" "}
+            {coverage.unmodelledTrinkets.length === 1 ? "has a" : "have"} slot-based effect
+            {coverage.unmodelledTrinkets.length === 1 ? "" : "s"} the engine cannot model, which may
+            invalidate this result entirely.
+          </>
+        )}
+      </p>
+    </Disclosure>
+  );
+}

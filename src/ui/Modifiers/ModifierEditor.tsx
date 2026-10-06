@@ -54,7 +54,7 @@ export function ModifierEditor() {
         <span className={styles.summaryHint}>
           {countModifiers(config.placements) > 0
             ? ` — ${countModifiers(config.placements)} active`
-            : " — optional carry-over bonuses"}
+            : ""}
         </span>
       </summary>
 

@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { corpus } from "../corpus";
+import { corpus, distinctCreatures } from "../corpus";
 import type { Provenance } from "../types";
 
 /**
@@ -110,5 +110,24 @@ describe("vendored sprites (FR-036)", () => {
     const creaturesWithout = corpus.creatures.filter((c) => !c.spriteFile).map((c) => `${c.id}@L${c.level}`);
     const trinketsWithout = corpus.trinkets.filter((t) => !t.spriteFile).map((t) => t.id);
     expect({ creaturesWithout, trinketsWithout }).toEqual({ creaturesWithout: [], trinketsWithout: [] });
+  });
+});
+
+/**
+ * FR-067 (WI-016, 2026-10-06 round 8): display order must never be inherited from source-file
+ * order. `distinctCreatures` was a bare `filter()`, and `creatures.ts` opens with six seed records
+ * before running alphabetically — so every list in the app showed those six first.
+ */
+describe("display ordering (FR-067)", () => {
+  it("distinctCreatures is sorted by name, not by position in the source file", () => {
+    const names = distinctCreatures.map((c) => c.name);
+    expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b)));
+  });
+
+  it("the six seed records are no longer first", () => {
+    // The exact symptom from the user's screenshot: Bumblebolt/Formiqueen/Venopuff/Scorchimp/
+    // Pebbler/Onsetra led the list because they lead the file.
+    const firstSix = distinctCreatures.slice(0, 6).map((c) => c.name);
+    expect(firstSix).not.toEqual(["Bumblebolt", "Formiqueen", "Venopuff", "Scorchimp", "Pebbler", "Onsetra"]);
   });
 });

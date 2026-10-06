@@ -2,7 +2,7 @@ import { useEffect, useRef, type KeyboardEvent, type ReactNode } from "react";
 import type { CreatureType } from "../../data/types";
 import { STAT_COLORS, type StatColorKey } from "../../data/statColors";
 import { typeColor } from "../../data/typeColors";
-import { Sprite } from "../shared/Sprite";
+import { Sprite, spriteSizeFromToken } from "../shared/Sprite";
 import styles from "./primitives.module.css";
 
 /**
@@ -281,7 +281,7 @@ export function CreatureTile({
   name,
   types,
   spriteFile,
-  spriteSize = 48,
+  spriteSize,
   overlay,
   showName = true,
   className = "",
@@ -289,7 +289,7 @@ export function CreatureTile({
   return (
     <TypeSplit types={types} className={`${styles.creatureTile} ${className}`}>
       <div className={styles.creatureTileArt}>
-        <Sprite spriteFile={spriteFile} kind="monster" size={spriteSize} alt={name} />
+        <Sprite spriteFile={spriteFile} kind="monster" size={spriteSize ?? spriteSizeFromToken("--sprite-picker")} alt={name} />
       </div>
       {showName && <div className={styles.creatureTileName}>{name}</div>}
       {overlay}

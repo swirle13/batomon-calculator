@@ -4,6 +4,7 @@ import { TrinketPicker } from "../GridPicker/TrinketPicker";
 import { CreatureSearchModal } from "../GridPicker/CreatureSearchModal";
 import { TeamSummary } from "../TeamSummary/TeamSummary";
 import { CorpusBrowser } from "../CorpusBrowser/CorpusBrowser";
+import App from "../../App";
 import { TeamConfigProvider } from "../../context/TeamConfigContext";
 import { PlacedCreatureDetails } from "../TeamSummary/PlacedCreatureDetails";
 import { GridPicker } from "../GridPicker/GridPicker";
@@ -125,13 +126,14 @@ describe("round 7 presentation fixes", () => {
     expect(document.body.textContent).not.toMatch(/Banto\b/);
   });
 
-  it("shows no corpus-snapshot prose in the header, but keeps the version in the Corpus Browser (FR-050/FR-014)", () => {
+  it("shows no corpus-snapshot prose in the browser, and keeps the version in the footer (FR-014/FR-070)", () => {
+    // Round 8 (WI-014): the prose the user objected to is gone from the browser. FR-014 still needs
+    // a home, so the version moved to a footer rather than being dropped -- its third relocation.
     const { unmount } = render(<CorpusBrowser />);
-    // FR-014 kept a real home rather than being silently dropped when FR-050 removed the header
-    // prose — an earlier draft of the plan wrongly claimed this line already carried it.
-    expect(screen.getByText(/Corpus snapshot:/)).toBeTruthy();
-    expect(document.body.textContent).toMatch(/Balance 24/);
+    expect(screen.queryByText(/Corpus snapshot:/)).toBeNull();
     unmount();
+    render(<App />);
+    expect(screen.getByText(/Balance 24/)).toBeTruthy();
   });
 
   it("renders the split type background without a gradient (FR-049, item 11)", () => {
