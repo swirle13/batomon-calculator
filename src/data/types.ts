@@ -165,6 +165,24 @@ export interface CreatureRecord extends Provenance {
    * `evolvesInto` is set; a species with no evolution has neither field.
    */
   evolvesAtLevel?: 2 | 3 | 4;
+  /**
+   * The ability's trigger label, which the in-game card renders as its own emphasised line
+   * *above* the description (e.g. "On Battle Start", "On Cast", "Ongoing") -- 2026-10-06 round 6,
+   * research.md H1. `abilityText` holds only the description, so without this the card silently
+   * drops a line the reference card shows. Absent = render the description alone, never an empty
+   * trigger line.
+   */
+  abilityTrigger?: string;
+  /**
+   * Vendored sprite filename (2026-10-06 round 6, research.md H3), resolved at render time
+   * against `${import.meta.env.BASE_URL}sprites/monster/` -- see `src/ui/shared/Sprite.tsx`.
+   *
+   * Stored per record rather than derived from `id` because 11 of 149 species publish under a
+   * different slug than their corpus id (e.g. `craghorn` -> `alpinine.png`, `pyronade` ->
+   * `infernade.png`, `null00` -> `null_00.png`). Absent = render the text-only presentation,
+   * never a broken <img>.
+   */
+  spriteFile?: string;
 }
 
 export interface TrainerRecord extends Provenance {
@@ -191,6 +209,12 @@ export interface TrinketRecord extends Provenance {
    * unconditionally, so there is no positional targeting to encode.
    */
   effectTags?: { stat: ModifierStat; amount: number }[];
+  /**
+   * Vendored sprite filename (2026-10-06 round 6, research.md H3), resolved against
+   * `${import.meta.env.BASE_URL}sprites/trinket/` -- see `src/ui/shared/Sprite.tsx`.
+   * Absent = render the text-only presentation, never a broken <img>.
+   */
+  spriteFile?: string;
 }
 
 export interface ItemRecord extends Provenance {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { simulate } from "../simulate";
 import { corpus } from "../../data/corpus";
-import type { Corpus, CreatureRecord, TeamConfiguration, TrinketRecord } from "../../data/types";
+import type { Corpus, CreatureRecord, GridSlot, TeamConfiguration, TrinketRecord } from "../../data/types";
 import { InvalidTeamConfigurationError } from "../errors";
 
 /** Minimal synthetic corpus for isolating "facilitated damage" attribution from real game data. */
@@ -326,12 +326,20 @@ describe("simulate", () => {
     const attackerKey = Object.keys(result.perCreatureDps).find((k) => k.startsWith("attacker@"));
     expect(result.perCreatureDps[attackerKey!]).toBeCloseTo(5, 5);
 
-    // Casts at t=1,2,3,4 for both. shockApplier (front0) is processed before attacker
-    // (front1) at each tied timestamp (stable slot order), so it grants +2 Shock before
-    // attacker's same-tick hit: t=1 -> layers 0->2, proc 2; t=2 -> 2->4, proc 4; t=3 -> 4->6,
-    // proc 6; t=4 -> 6->8, proc 8. Total proc damage = 20 over a 4s window = 5/s, all
-    // attributed to shockApplier (the only Shock source).
-    expect(result.perCreatureFacilitatedDps[shockApplierKey!]).toBeCloseTo(5, 5);
+    // 2026-10-06 round 6 (FR-040, research.md H8): this expectation changed from 5 to 3, and the
+    // change is the point of the fix rather than a regression. This assertion used to read 5
+    // *because* "shockApplier (front0) is processed before attacker (front1) at each tied
+    // timestamp (stable slot order), so it grants +2 Shock before attacker's same-tick hit" --
+    // i.e. the old expected value was derived from the very slot-ordering dependency the user
+    // reported as a bug. Swapping these two creatures' slots would have changed it.
+    //
+    // Under the per-timestamp snapshot rule, a layer granted at T takes effect from the next
+    // distinct timestamp, so both orderings now agree: casts at t=1,2,3,4 give snapshots of
+    // 0/2/4/6 layers -> procs of 0+2+4+6 = 12 over a 4s window = 3/s, all attributed to
+    // shockApplier (the only Shock source). The alternative semantic (apply all status at T, then
+    // all hits at T) is also order-independent but inflates output by letting a layer empower a
+    // hit it was simultaneous with -- explicitly considered and rejected in research.md H8.
+    expect(result.perCreatureFacilitatedDps[shockApplierKey!]).toBeCloseTo(3, 5);
   });
 
   /**
@@ -547,5 +555,135 @@ describe("simulate", () => {
     const key = Object.keys(result.perCreatureDps)[0]!;
     // No bonus -> 3 hits of 5 = 15 total over 1.2s, not 45.
     expect(result.perCreatureDps[key]).toBeCloseTo(15 / 1.2, 5);
+  });
+});
+
+/**
+ * FR-040 (2026-10-06 round 6, research.md H8): slot position must not change any computed value
+ * for creatures that have no position-dependent ability. User-reported: dragging Bumblebolt
+ * between slots moved its Facilitated DPS from 4.10 to 4.30.
+ *
+ * These assert the INVARIANT (permuting slots changes nothing), not a specific number --
+ * research.md H8 is explicit that no source documents how the real game resolves two abilities
+ * landing on the same frame, so pinning either observed value would encode a guess as a
+ * requirement.
+ */
+describe("slot-permutation invariance (FR-040)", () => {
+  /**
+   * A Shock applier that also hits, plus a bigger hitter on a multiple of its cooldown, so the
+   * two collide on exactly the same timestamps (t=2,4,6... vs t=4,8...). `multicast` is a
+   * parameter because Multicast is a SECOND, independent manifestation of the same root cause
+   * (Phase B expanded repetitions inline, so it never walked timestamps in global order) --
+   * the per-timestamp snapshot alone does not fix it.
+   */
+  function collidingCorpus(multicast: number): Corpus {
+    const shockHitter: CreatureRecord = {
+      id: "shockHitter",
+      name: "Shock Hitter",
+      rarity: "Common",
+      types: ["Electric"],
+      level: 1,
+      shopCost: 10,
+      baseCooldownSeconds: 2,
+      baseDamage: 3,
+      damageType: "Direct",
+      baseMulticast: multicast,
+      appliesStatus: [{ type: "Shock", amount: 1 }],
+      abilityText: "test fixture -- no positional ability",
+      abilityTags: [],
+      sourceRefs: [],
+      patch: "test",
+    };
+    const bigHitter: CreatureRecord = {
+      id: "bigHitter",
+      name: "Big Hitter",
+      rarity: "Common",
+      types: ["Fire"],
+      level: 1,
+      shopCost: 10,
+      baseCooldownSeconds: 4,
+      baseDamage: 25,
+      damageType: "Direct",
+      baseMulticast: 1,
+      abilityText: "test fixture -- no positional ability",
+      abilityTags: [],
+      sourceRefs: [],
+      patch: "test",
+    };
+    return { creatures: [shockHitter, bigHitter], trainers: [], trinkets: [], items: [] };
+  }
+
+  /**
+   * Re-keys the per-creature maps from `id@slot` to just `id`, so results from two different
+   * layouts are comparable (the slot is part of the key by design).
+   */
+  function outputsByCreature(corpusToUse: Corpus, slots: Record<string, GridSlot>) {
+    const config: TeamConfiguration = {
+      placements: Object.entries(slots).map(([creatureId, slot]) => ({ slot, creatureId, level: 1 })),
+      trainerId: null,
+      trinketIds: [],
+      itemIds: [],
+      simulationWindowSeconds: 20,
+    };
+    const result = simulate(config, corpusToUse);
+    const strip = (record: Record<string, number>) =>
+      Object.fromEntries(Object.entries(record).map(([key, value]) => [key.split("@")[0]!, value]));
+    return {
+      dps: strip(result.perCreatureDps),
+      facilitated: strip(result.perCreatureFacilitatedDps),
+      status: result.perStatusPerSecond,
+    };
+  }
+
+  it("moving a creature with no positional ability does not change any output (same-timestamp collision)", () => {
+    const synthetic = collidingCorpus(1);
+    // The reported case: the Shock applier sorts AFTER the big hitter in one layout (front-1)
+    // and BEFORE it in the other (back-2), because STABLE_SLOT_ORDER puts all of `back` first.
+    const before = outputsByCreature(synthetic, {
+      bigHitter: { row: "front", col: 0 },
+      shockHitter: { row: "front", col: 1 },
+    });
+    const after = outputsByCreature(synthetic, {
+      bigHitter: { row: "front", col: 0 },
+      shockHitter: { row: "back", col: 2 },
+    });
+
+    expect(after.facilitated).toEqual(before.facilitated);
+    expect(after.dps).toEqual(before.dps);
+    expect(after.status).toEqual(before.status);
+  });
+
+  it("moving a MULTICAST creature with no positional ability does not change any output", () => {
+    // Shape (b): repetitions were expanded inline inside the cast loop, so a cast at t=4.0 with
+    // a repetition at 4.1 was fully processed before another creature's t=4.0 cast that sorted
+    // later -- Phase B was never chronological. Reproduced with real data before the fix:
+    // Bumblebolt Lv4 (Multicast 2) gave Shock 20.55/s at front-1 vs 21.60/s at back-1.
+    const synthetic = collidingCorpus(2);
+    const before = outputsByCreature(synthetic, {
+      bigHitter: { row: "front", col: 0 },
+      shockHitter: { row: "front", col: 1 },
+    });
+    const after = outputsByCreature(synthetic, {
+      bigHitter: { row: "front", col: 0 },
+      shockHitter: { row: "back", col: 1 },
+    });
+
+    expect(after.facilitated).toEqual(before.facilitated);
+    expect(after.dps).toEqual(before.dps);
+    expect(after.status).toEqual(before.status);
+  });
+
+  it("holds against the real corpus for the user's reported Bumblebolt formation", () => {
+    const front = outputsByCreature(corpus, {
+      panbud: { row: "front", col: 0 },
+      bumblebolt: { row: "front", col: 1 },
+    });
+    const back = outputsByCreature(corpus, {
+      panbud: { row: "front", col: 0 },
+      bumblebolt: { row: "back", col: 0 },
+    });
+
+    expect(back.facilitated).toEqual(front.facilitated);
+    expect(back.status).toEqual(front.status);
   });
 });

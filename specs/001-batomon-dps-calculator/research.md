@@ -821,6 +821,14 @@ Bumblebolt at `front-1` vs **2.40** at `back-0`.
   the per-source map live would leave attribution order-dependent even once the total is not —
   i.e. it would fix the symptom the user reported (`Shock/sec`) while leaving the column they
   reported it *in* (`Facilitated DPS`) still wrong in other configurations.
+- **One pre-existing test's expected value changes, and that is the fix working rather than a
+  regression.** `simulate.test.ts`'s facilitated-damage attribution test asserted 5/s, and its own
+  comment explained why: *"shockApplier (front0) is processed before attacker (front1) at each tied
+  timestamp (stable slot order), so it grants +2 Shock before attacker's same-tick hit."* That
+  expected value was derived from the exact slot-ordering dependency the user reported — swapping
+  the two creatures' slots would have changed it. Under the snapshot rule both orderings agree at
+  3/s (snapshots of 0/2/4/6 layers → procs 0+2+4+6 = 12 over 4 s). Updated with the reasoning
+  recorded inline, not silently re-baselined.
 - **Honest limitation to record**: no source documents how the real game resolves two abilities
   landing on the same frame. The snapshot rule is chosen because it is *invariant* (the property
   the user is actually asserting: a creature with no positional ability must not change output

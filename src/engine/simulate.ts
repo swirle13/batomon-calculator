@@ -318,28 +318,59 @@ export function simulate(
     }
   }
 
-  for (const cast of casts) {
-    const { creature, sourceSlot, modifiers } = cast;
-
-    // Multicast (2026-10-05 round 2, research.md D3; corrected round 4, research.md F2): a cast
-    // with Multicast > 1 resolves as multiple full, independent repetitions — each repetition
-    // has its own direct-damage event (own potential Shock proc) AND its own status-grant
-    // application, not just a damage multiplier. Repetitions are staggered 0.1s apart (round 4
-    // correction — round 2 incorrectly fired them all at the same timestamp), confirmed by
-    // multiple independent 1.2.0-era sources: "its first cast resolves immediately, its second
-    // cast resolves 0.1 seconds later, and its third cast resolves 0.1 seconds after that."
-    // Every existing corpus record defaults to baseMulticast: 1, so this loop runs exactly once
-    // (no behavior change, no stagger) for every creature not explicitly granted Multicast.
-    const multicastCount = Math.max(1, creature.baseMulticast + modifiers.multicastAdd);
-
+  // Multicast (2026-10-05 round 2, research.md D3; corrected round 4, research.md F2): a cast
+  // with Multicast > 1 resolves as multiple full, independent repetitions — each repetition has
+  // its own direct-damage event (own potential Shock proc) AND its own status-grant application,
+  // not just a damage multiplier. Repetitions are staggered 0.1s apart (round 4 correction),
+  // confirmed by multiple independent 1.2.0-era sources: "its first cast resolves immediately,
+  // its second cast resolves 0.1 seconds later, and its third cast resolves 0.1 seconds after
+  // that." Every existing corpus record defaults to baseMulticast: 1, so most casts expand to
+  // exactly one event with no stagger.
+  //
+  // 2026-10-06 round 6 (FR-040, research.md H8, part 1 of 2): repetitions are flattened into a
+  // single list and sorted chronologically BEFORE Phase B walks it. They used to be expanded
+  // inline inside the cast loop, which meant a cast at t=4.0 with a repetition at t=4.1 was
+  // fully processed before another creature's cast at t=4.0 that happened to sort later — so
+  // Phase B never actually visited timestamps in order, and grid position changed Shock output
+  // for creatures with no positional ability at all (user-reported).
+  const castEvents = casts.flatMap((cast) => {
+    const multicastCount = Math.max(1, cast.creature.baseMulticast + cast.modifiers.multicastAdd);
+    const events: Cast[] = [];
     for (let rep = 0; rep < multicastCount; rep++) {
-      // A repetition staggered past the simulation window simply doesn't happen — same
-      // boundary rule as ordinary cast generation in Phase A.
+      // A repetition staggered past the simulation window simply doesn't happen — same boundary
+      // rule as ordinary cast generation in Phase A.
       const repTSeconds = roundTime(cast.tSeconds + rep * 0.1);
       if (repTSeconds > windowSeconds + 1e-9) break;
-      // Each repetition's own timestamp, including any Burn/Poison ticks landing strictly
-      // between two repetitions of the same multicast burst — not just once per whole burst.
-      runTicksUpTo(repTSeconds);
+      events.push({ ...cast, tSeconds: repTSeconds });
+    }
+    return events;
+  });
+  castEvents.sort((a, b) => a.tSeconds - b.tSeconds || stableSlotIndex(a.sourceSlot) - stableSlotIndex(b.sourceSlot));
+
+  // Walk the events in timestamp *groups*, not one at a time (FR-040, research.md H8, part 2 of
+  // 2): every event sharing a timestamp resolves its Shock proc against the layer state as of the
+  // moment that timestamp began, so whether creature X's layer empowers creature Y's simultaneous
+  // hit no longer depends on which slot each occupies. Layers granted at T take effect from the
+  // next distinct timestamp onward.
+  for (let i = 0; i < castEvents.length; ) {
+    const tSeconds = castEvents[i]!.tSeconds;
+    let groupEnd = i;
+    while (groupEnd < castEvents.length && castEvents[groupEnd]!.tSeconds === tSeconds) groupEnd++;
+
+    // Any Burn/Poison ticks landing at or before this timestamp — including ticks strictly
+    // between two repetitions of the same Multicast burst — are processed first, once per
+    // timestamp rather than once per event.
+    runTicksUpTo(tSeconds);
+
+    // The snapshot covers BOTH the scalar total and the per-source attribution map. Snapshotting
+    // only the total would make `perStatusPerSecond.Shock` order-independent while leaving
+    // `perCreatureFacilitatedDps` — the exact column the user reported — still dependent on slot
+    // order, since a proc's damage is split by each source's *share* of the live total.
+    const snapshotShockLayers = shockLayers;
+    const snapshotShockLayersBySource = new Map(shockLayersBySource);
+
+    for (let e = i; e < groupEnd; e++) {
+      const { creature, sourceSlot, modifiers } = castEvents[e]!;
       // Modifiers can only scale an effect the creature already has (data-model.md's "Known
       // limitation" on StatModifiers) — a damageFlatAdd modifier never fabricates a new attack
       // on a creature whose baseDamage is null.
@@ -348,27 +379,27 @@ export function simulate(
       if (isDirectHit) {
         const effectiveDamage = creature.baseDamage! + modifiers.damageFlatAdd;
         const shockInstance: StatusEffectInstance | null =
-          shockLayers > 0
-            ? { type: "Shock", layers: shockLayers, sourceSlot, targetSlot: placeholderTargetSlot(sourceSlot), appliedAtSeconds: repTSeconds }
+          snapshotShockLayers > 0
+            ? { type: "Shock", layers: snapshotShockLayers, sourceSlot, targetSlot: placeholderTargetSlot(sourceSlot), appliedAtSeconds: tSeconds }
             : null;
         const procResult = applyShockProc({ damage: effectiveDamage, damageType: "Direct" }, shockInstance);
         if (procResult.shockDamage > 0) {
-          timeline.push({ tSeconds: repTSeconds, kind: "shockProc", sourceSlot, damage: procResult.shockDamage, damageType: "Shock" });
+          timeline.push({ tSeconds, kind: "shockProc", sourceSlot, damage: procResult.shockDamage, damageType: "Shock" });
           perStatusDamage.Shock += procResult.shockDamage;
-          // Split this proc's damage proportionally across every creature currently
-          // contributing Shock layers, by their share of the total — see "Facilitated damage".
-          for (const [sourceKey, sourceLayers] of shockLayersBySource) {
-            const share = (procResult.shockDamage * sourceLayers) / shockLayers;
+          // Split this proc's damage proportionally across every creature contributing Shock
+          // layers as of this timestamp's start, by their share — see "Facilitated damage".
+          for (const [sourceKey, sourceLayers] of snapshotShockLayersBySource) {
+            const share = (procResult.shockDamage * sourceLayers) / snapshotShockLayers;
             facilitatedDamage.set(sourceKey, (facilitatedDamage.get(sourceKey) ?? 0) + share);
           }
         }
-        timeline.push({ tSeconds: repTSeconds, kind: "attack", sourceSlot, damage: effectiveDamage, damageType: "Direct" });
+        timeline.push({ tSeconds, kind: "attack", sourceSlot, damage: effectiveDamage, damageType: "Direct" });
         const key = `${creature.id}@${slotKey(sourceSlot)}`;
         perCreatureDamage.set(key, (perCreatureDamage.get(key) ?? 0) + effectiveDamage);
       } else {
         // A cast with no direct-damage component still occupies a timeline entry (it happened),
         // but contributes nothing to perCreatureDps.
-        timeline.push({ tSeconds: repTSeconds, kind: "attack", sourceSlot });
+        timeline.push({ tSeconds, kind: "attack", sourceSlot });
       }
 
       for (const applied of creature.appliesStatus ?? []) {
@@ -378,7 +409,7 @@ export function simulate(
           const sourceKey = `${creature.id}@${slotKey(sourceSlot)}`;
           shockLayersBySource.set(sourceKey, (shockLayersBySource.get(sourceKey) ?? 0) + amount);
           timeline.push({
-            tSeconds: repTSeconds,
+            tSeconds,
             kind: "ongoingChange",
             sourceSlot,
             statusDelta: { type: "Shock", slot: placeholderTargetSlot(sourceSlot), layerDelta: amount },
@@ -391,8 +422,8 @@ export function simulate(
             layers: amount,
             sourceSlot,
             targetSlot: placeholderTargetSlot(sourceSlot),
-            appliedAtSeconds: repTSeconds,
-            nextTickAt: roundTime(repTSeconds + interval),
+            appliedAtSeconds: tSeconds,
+            nextTickAt: roundTime(tSeconds + interval),
           });
         } else if (applied.type === "Shield") {
           // Shield counters (data-model.md "Shield counted as an output stat", 2026-10-05):
@@ -402,7 +433,7 @@ export function simulate(
           // against an opposing target (still unmodeled, see the T037 note below).
           const amount = applied.amount + modifiers.shieldAmountAdd;
           timeline.push({
-            tSeconds: repTSeconds,
+            tSeconds,
             kind: "ongoingChange",
             sourceSlot,
             statusDelta: { type: "Shield", slot: placeholderTargetSlot(sourceSlot), layerDelta: amount },
@@ -418,6 +449,8 @@ export function simulate(
         // it. Wiring that in is deferred until/unless the spec grows a real target entity.
       }
     }
+
+    i = groupEnd;
   }
 
   runTicksUpTo(windowSeconds);

@@ -1070,6 +1070,29 @@ modifier wipe (T138), and tripwire assertions for the six items that had no auto
       level/species change for the same slot (an evolution keeps the carry-over the user recorded),
       and add a unit test in `src/context/__tests__/TeamConfigContext.test.tsx` or the existing
       context test file. Found during this round's review; not user-reported.
+- [ ] T140 [US3] Populate `abilityTags` on level 2-4 records where a level-1 record has them.
+      **Found while writing T118, not user-reported**: only 6 of 149 level-1 records carry
+      `abilityTags` at all (a long-standing, documented scope limit — research.md B6), but **zero**
+      of the 447 level 2-4 records do, because round 5's bulk population never emitted them. The
+      functional consequence: `Formiqueen`'s cooldown-speed aura is the one engine-read tag kind
+      (`resolveCooldownSpeedTotal`), so **levelling Formiqueen up silently deletes its aura** —
+      its level-1 record buffs adjacent Common allies by +25% and its level-2/3/4 records buff them
+      by nothing. The authoritative per-level series gives the real values: Formiqueen
+      **25% / 50% / 75% / 225%** across levels 1-4. Populate those, and record honestly in
+      `creatures.ts`'s header comment that the other 5 tagged species' per-level abilities
+      (Pebbler's +15/30/45/90 Shield, Onsetra's 1/2/3/24 extra Ongoing applications) are captured
+      as by-level `abilityText` but still have no engine-read tag kind — same pre-existing scope
+      gap, now stated per level rather than implied.
+- [ ] T141 [US3] Remove `formiqueen`'s misfiled `conflicts` entry. It has a single `value`, and its
+      own `resolution` text admits it is **not** a source disagreement ("No disagreement on the
+      Common-only filter itself; recorded because the exact cooldown-speed value differs by
+      creature LEVEL (25/50/75%), not by source"). It was a placeholder for data the model couldn't
+      express in round 2, and its stated blocker ("until the data model grows a per-level stat
+      table") is closed by round 5's per-level records plus T140's per-level tags. Delete the entry
+      rather than relaxing T118's "a conflict needs ≥2 values" rule — that rule is precisely what
+      SC-004 means, and weakening it to accommodate one misfiled note would hollow out the
+      criterion. Keep the post-nerf provenance note (25/50/75% down from 33/67/100%), which is a
+      real, separate citation already recorded in `patch`.
 - [ ] T139 [P] Add cheap component assertions for the presentation items that otherwise have **no**
       automated coverage at all — items 4, 6, 7, 8, 10 and 13 are currently verified only by T135's
       manual walk, which is the same "verified by eye, silently regresses later" pattern that led to
