@@ -1290,10 +1290,21 @@ primitive.
 
 The selected-creature column is `flex: 1 1 16rem`, so its width is computed from its content. Round 7
 fixed the card's *height* and explicitly left width flexible ("freezing the width would fight the page
-layout" — I3). That was wrong in one respect the user has now caught: a flexible width means a longer
-creature name or ability text changes the column's width, which changes the sibling chart's width,
-which makes Recharts' `ResponsiveContainer` re-measure and redraw. **Decision**: fix the column's
-width (`flex: 0 0 <token>`), which resolves the visible reflow and the chart redraw together.
+layout" — I3). The user has now asked for a fixed width, and that is the right call: a
+content-derived width means a longer creature name or ability text visibly resizes the column.
+
+**CORRECTION (validation pass 1, retained here rather than only in the task):** this section first
+claimed the column's width "changes the sibling chart's width, which makes Recharts'
+`ResponsiveContainer` re-measure and redraw", and concluded the reflow and the redraw were one bug.
+**That mechanism is not supported by the DOM.** `#root` is a fixed `width: 1126px`
+(`src/index.css:55-57`) and `CumulativeChart` — while a sibling of the flex row in the `.App` tree —
+is not a flex *item inside* that row, so its width is already independent of the column's basis.
+
+**Decision**: fix the column's width via a new `--detail-panel-width` token, which resolves the
+visible reflow (FR-062). **Do not assume it cures the redraw.** If the redraw persists, the cause
+lies elsewhere — most likely `result` being recomputed on every config change, or a scrollbar
+appearing as page height changes — and should be investigated separately rather than the item being
+declared done.
 
 ### J4. WI-014 vs FR-014 — the version stamp is now homeless, and this is the second time
 
@@ -1355,11 +1366,23 @@ The user pre-flagged this as "a bit too far out". It is implementable, with a re
   over-rewards a slow Poison ramp that may arrive after the team is dead. **Decision**: score with an
   exponential decay on damage timing, so earlier damage counts for more, and expose the weighting so
   the user can see what it optimised for rather than trusting a black box.
-- **The honest limitation, which must be stated prominently rather than buried**: positional effects
-  are *barely modelled*. Only **one** creature in the entire 596-record corpus has an engine-read
-  positional ability (Formiqueen's adjacency aura — research.md H11/T140). The chaining effects the
-  user describes ("speeds up mon in front", "mon in slot X gets multicast Y") are recorded as
-  `abilityText` but have no `AbilityTag`, so the engine cannot see them. **An optimiser today would
+- **The honest limitation, which must be stated prominently rather than buried** — **with a count
+  corrected in validation, because the first version of this paragraph was wrong in a way that would
+  have propagated into the UI.** It originally read "only one creature has an engine-read positional
+  ability … the chaining effects the user describes have no `AbilityTag`". In fact **two** creatures
+  carry positional-target tags: Formiqueen (`adjacent`, 8 tag instances across its four level
+  records) and **Onsetra** (`behind`, `extraOngoingApplications: 1`) — and Onsetra's ability text,
+  "the ally behind applies its Ongoing abilities 1 additional time", is *literally one of the
+  chaining effects the user described*. What is true is narrower: `simulate.ts:107-108` reads **only**
+  `cooldownSpeedModifier` tags, so Onsetra's tag is present, correctly typed, and silently ignored —
+  and Onsetra's level 2-4 records have empty `abilityTags` at all, so the count is level-dependent.
+  **Why the distinction is load-bearing rather than pedantic**: FR-069 requires the UI to report how
+  many placed creatures the optimiser can reason about. Implemented as "has a positional tag" it
+  would report a reassuring **2** for a team where only **1** is actionable — the exact misleading
+  outcome the requirement exists to prevent. The count must derive from what the engine acts on.
+  Positional **trinkets** are a second blind spot: six slot-scoped trinket effects exist (Quick Flag,
+  Earth Crest, Power Crown, Rally Flag, Link Cable and others), several altering Cooldown Speed or
+  Damage — the optimiser's own objective — and none carry `abilityTags`. **An optimiser today would
   therefore report "no improvement found" for almost every team, and that is a corpus-coverage
   limit, not an optimiser bug.** Shipping it while implying otherwise would be worse than not
   shipping it.

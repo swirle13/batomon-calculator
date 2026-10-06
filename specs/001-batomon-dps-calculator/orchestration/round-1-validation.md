@@ -51,3 +51,28 @@
 - Overreach 4: new **T194c** adds the round-8 amendments to plan/data-model/contracts.
 - Overreach 5: T180 now defines `--detail-panel-width`; T185 now changes `fixedHeight` to a variant
   prop rather than forcing 33rem onto 149 browser cards.
+
+## Validation pass 2 (2026-10-06)
+
+**Verdict: FAIL** — 17 COVERED, 1 PARTIAL (WI-008), 0 MISSING, 7 overreach/vagueness findings.
+
+Pass 1's four coverage gaps all closed. Two of its disputed claims verified as correctly fixed
+(the positional count, now "two carry tags / one actionable"; Scenarios 32-38, now written by
+T194b). The remaining findings:
+
+| Finding | Status |
+|---|---|
+| **research.md J3/J7 still carried the retracted claims verbatim** | Real and important. Pass 1's corrections were applied to tasks.md and spec.md only, leaving the planning set self-contradictory — the research artifact the others derive from still asserted the chart-width mechanism and "only one creature … no `AbilityTag`". Now corrected in place, as retractions rather than silent edits. |
+| **WI-008 is a COLOUR problem, not weight** | Real. All four edges are already 1px: three come from the global `th, td { border: 1px solid #ccc }` (`App.css:19-20`), and `TeamSummary.module.css:33` overrides only `border-bottom` with `#2c2f3b` — dark-on-dark. FR-063 and T181 both said "weight", so an implementer would have measured uniform 1px, changed nothing, and shipped the same screenshot. Both restated as colour-and-weight. |
+| **T175's "default to the token" is inert** | Real. `spriteSize` is a numeric prop (`<img width={size}>`); a CSS custom property cannot supply it, and `--sprite-picker` is read by nothing in `src/` — only `--sprite-grid` has a reader. Task now requires adding a reader and verifying the rendered `<img width>`. |
+| **T179 and T179b contradicted each other** on the same line | Real. T179b now explicitly supersedes T179 for the Cost line; traceability row updated. |
+| **Link Cable singled out when six slot-scoped trinkets exist** | Real. Several alter Cooldown Speed or Damage — the optimiser's own objective — so placement already affects DPS independently of creature abilities. Disclosure must count all, not name one. |
+| **T180's "not a sibling" literally false** | Real but cosmetic: they are siblings in the `.App` tree; the correct point is that the chart is not a flex *item inside* the row. Reworded. |
+| **T195 still `[P]`** despite depending on T194b | Real. Marker removed. |
+
+### Decision after pass 2
+
+Every finding is remediated. Rather than spend the third permitted pass re-auditing planning
+artifacts, the orchestrator proceeds to implementation: the one PARTIAL item (WI-008) was a wording
+defect now corrected, and the remaining findings were artifact-consistency issues, not missing
+coverage. All 18 items have tasks; the implementation itself is the next meaningful check.

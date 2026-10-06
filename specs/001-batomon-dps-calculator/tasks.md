@@ -1483,7 +1483,7 @@ colours, labels, sprite size, and chart axes all say what the user actually aske
 | WI-003 | *Question*: do these use the shared components? | T176 (answer recorded in research.md J1) | — |
 | WI-004 | Two cooldown blocks formatted differently | T178 | FR-059 |
 | WI-005 | Top block too tall, bottom too short | T178 | FR-059 |
-| WI-006 | Remove "Unconfirmed: shopCost" | T179 | FR-070 |
+| WI-006 | Remove "Unconfirmed: shopCost" | T179, T179b | FR-070 |
 | WI-007 | Selected tile shifts width, chart redraws | T180 | FR-062 |
 | WI-008 | Table bottom border faint | T181 | FR-063 |
 | WI-009 | Remove "Batomon Stats" heading | T182 | FR-064 |
@@ -1511,7 +1511,13 @@ colours, labels, sprite size, and chart axes all say what the user actually aske
       sprite tokens and the one named for this surface is `--sprite-picker: 48px`
       (`src/ui/tokens.css:67`), while the 64px one the team grid uses is `--sprite-grid`. `Sprite`'s
       own default is also 48. Set `--sprite-picker: 64px` so the picker matches the grid the user
-      compared it against, and make `CreatureTile` default to that token rather than a literal.
+      compared it against.
+      **A token change alone is inert and "default to the token" is not executable as written**:
+      `spriteSize` is a numeric prop rendered as `<img width={size}>`, and a CSS custom property
+      cannot supply it. `--sprite-picker`, `--sprite-card`, and `--sprite-row` are currently read by
+      **nothing** in `src/` — only `--sprite-grid` has a reader (`spriteGridSize()`). So either
+      generalise that reader to take a token name, or have `CreatureTile` call it. Verify the
+      rendered `<img width>` is actually 64; do not assume the token resolved.
       **This is the round's headline lesson — record it in the component's comment**: every call site
       inherited one defect identically, so shared components bought consistency, not correctness.
 - [ ] T176 **[WI-003]** Record the answer to the user's question in `research.md` J1 (already
@@ -1553,15 +1559,23 @@ colours, labels, sprite size, and chart axes all say what the user actually aske
       superseded by the user's explicit request.
       **Correction to this task's first draft, which asserted a mechanism the DOM does not support**:
       it claimed the column's width drives the chart's width via `ResponsiveContainer`. It does not —
-      `#root` is a fixed `1126px` (`src/index.css:55-57`) and `CumulativeChart` is not a sibling of
-      the flex row (it sits outside it), so the chart's width is already independent of this column.
+      `#root` is a fixed `1126px` (`src/index.css:55-57`) and `CumulativeChart`, while a sibling of
+      the flex row in the `.App` tree, is **not a flex item inside that row** — so its width is
+      already independent of this column's basis.
       Fixing the width is still correct for FR-062 and still removes the reflow the user can see, but
       **do not assume it eliminates the redraw**. If the redraw persists, investigate the real cause
       separately (likely `result` being recomputed on every config change, or a scrollbar appearing
       as the page height changes) and report it rather than declaring the item done.
-- [ ] T181 **[WI-008]** Give the summary tables a bottom border matching the weight of their other
-      edges in `src/ui/TeamSummary/TeamSummary.module.css` (FR-063). Currently each `td`/`th` has a
-      faint `border-bottom` and the table's outer edge inherits it, so the bottom reads unfinished.
+- [ ] T181 **[WI-008]** Make the summary tables' bottom edge **visually indistinguishable from the
+      other three** (FR-063).
+      **Corrected diagnosis — this is a COLOUR problem, not a weight problem**, and the first draft
+      of this task would have left the user's complaint in place. All four edges are already `1px`:
+      the three that read as "bold" come from the **global** rule `th, td { border: 1px solid #ccc }`
+      in `src/App.css:19-20`, while `TeamSummary.module.css:33` overrides only
+      `border-bottom: 1px solid #2c2f3b` — a near-background dark grey on a dark theme, which is why
+      it disappears. An implementer matching *weight* would measure 1px everywhere, change nothing,
+      and ship the same screenshot. Match `#ccc`'s contrast (or restyle all four edges coherently
+      from tokens, which is the Principle VII-aligned option).
 - [ ] T182 **[WI-009]** Remove the `<h3>Batomon Stats</h3>` heading in `src/App.tsx` and align the
       panel's top edge with the team grid's top (FR-064).
 - [ ] T183 **[WI-010]** Remove the per-slot `<details>` "Or choose from dropdown" fallback from
@@ -1644,9 +1658,13 @@ colours, labels, sprite size, and chart axes all say what the user actually aske
       prevent. Note the count is also level-dependent: Onsetra's level 2-4 records have empty
       `abilityTags` while Formiqueen's do not.
       **Also disclose unmodelled positional TRINKETS**, which the ask named ("trinkets make effects
-      for certain slots") and the first draft omitted entirely. Known case: **Link Cable** — "All of
-      your team's monsters are now considered adjacent to each other" — has empty `abilityTags`, so
-      selecting it would silently invalidate the one positional interaction the optimiser *can* see.
+      for certain slots") and the first draft omitted entirely. **There are six, not one** — Quick
+      Flag (leftmost column, +4% Cooldown Speed), Earth Crest, Power Crown (+20 Damage), Rally Flag
+      (+12 Damage), Link Cable ("All of your team's monsters are now considered adjacent to each
+      other"), and one further slot-scoped effect — and several alter Cooldown Speed or Damage, i.e.
+      **the optimiser's own objective**, which means placement already affects DPS independently of
+      creature abilities. None carry `abilityTags`. The disclosure must count all selected trinkets
+      with unmodelled positional text, not name a single example.
       (depends on T192)
 - [ ] T194 **[WI-018]** Record the corpus-coverage limitation behind T193 in `README.md`'s known-gaps
       list, so the optimiser's weakness is documented alongside the other honest scope gaps rather
@@ -1665,7 +1683,7 @@ colours, labels, sprite size, and chart axes all say what the user actually aske
       that file documents), and `contracts/engine-api.md` (T190's field and T192's entirely new
       `src/engine/optimize.ts` module both fall under that contract, which currently mentions
       neither).
-- [ ] T195 [P] Walk quickstart.md Validation Scenarios 32–38 and record results, stating per scenario
+- [ ] T195 Walk quickstart.md Validation Scenarios 32–38 (not `[P]`: depends on T194b and writes the same file) and record results, stating per scenario
       whether it was verified by automated test or by code-trace/browser check.
 - [ ] T196 Verify `npx tsc -b --noEmit`, full `npx vitest run`, and `npm run build` all pass; report
       the final test count and any item left incomplete.

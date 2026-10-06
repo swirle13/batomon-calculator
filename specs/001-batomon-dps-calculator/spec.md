@@ -333,7 +333,10 @@ correct and show their data source citation(s).
   in a band at the card's bottom edge, with no unfilled background between them.
 - **FR-062**: The selected-creature panel MUST hold a constant width as its contents change, so that
   sibling content (notably the charts) is never re-laid-out by a creature selection.
-- **FR-063**: Data tables MUST have a uniform border weight on all four edges.
+- **FR-063**: Data tables MUST have all four edges **visually indistinguishable in both colour and
+  weight**. (Stated as colour-and-weight deliberately: the observed defect was a 1px bottom border in
+  a near-background colour, so a weight-only requirement would have been satisfied by changing
+  nothing.)
 - **FR-064**: The application MUST NOT display a "Batomon Stats" heading above the selected-creature
   panel; the panel MUST align with the top of the team grid.
 - **FR-065**: Grid slots MUST NOT render a per-slot fallback dropdown. (The accessible path to
