@@ -17,10 +17,23 @@ interface SpriteProps {
   /** Selects the subdirectory under `public/sprites/`. */
   kind: "monster" | "trinket" | "trainer";
   /**
-   * Rendered size in px for SQUARE sprites (monsters and trinkets are uniformly 48x48), scaled with
-   * `imageRendering: pixelated`. Ignored when `width`/`height` are given.
+   * Rendered size in px for SQUARE sprites. Ignored when `width`/`height` are given.
+   *
+   * Prefer `sizeVar` where a design token governs the size: a number read from CSS in JS is frozen
+   * at render time, so a media query that changes the token has no effect until something else
+   * re-renders.
    */
   size?: number;
+  /**
+   * A CSS custom property that governs the rendered size, e.g. `--sprite-grid`.
+   *
+   * The size is then applied in CSS rather than read into JS, which matters for two reasons the
+   * JS route gets wrong: a `@media` rule changing the token takes effect immediately, on resize,
+   * with no re-render; and there is no window in which styles have not yet resolved and a fallback
+   * number is rendered instead. The `width`/`height` attributes stay at the intrinsic 48x48 so the
+   * browser still reserves the right aspect ratio before the image loads.
+   */
+  sizeVar?: string;
   /**
    * Explicit dimensions, for art that is not square. Trainer icons are **120x80**, so passing a
    * single `size` would letterbox or stretch them.
@@ -32,36 +45,31 @@ interface SpriteProps {
   className?: string;
 }
 
-/**
- * Reads the `--sprite-grid` token (tasks.md T142/T165) rather than hard-coding a size at the call
- * site. Six call sites each passed their own literal before this; the grid size was an arbitrary
- * 40 with no reasoning behind it (research.md I11).
+/*
+ * `spriteSizeFromToken` and `spriteGridSize` were removed 2026-10-07.
+ *
+ * They read a CSS custom property into JS at render time, which has two defects the `sizeVar` prop
+ * above does not: the value is FROZEN at first render, so a `@media` rule changing the token had no
+ * effect until something unrelated re-rendered; and before styles resolve the property reads empty,
+ * so a fallback number rendered instead — which is how a stale 64 survived a token change to 96.
+ *
+ * Leaving them alongside `sizeVar` would have left two ways to size a sprite, one of which is
+ * quietly wrong.
  */
-/**
- * The fallback is 96, not 64. It is used whenever the custom property cannot be read — in jsdom,
- * and before styles resolve — so a stale value here silently renders a size that exists nowhere in
- * the app. 64 was also a fractional 1.333x of the 48px source art, so the fallback was the one
- * remaining place that could still produce uneven pixels.
- */
-export function spriteSizeFromToken(token: string, fallback = 96): number {
-  if (typeof window === "undefined") return fallback;
-  const raw = getComputedStyle(document.documentElement).getPropertyValue(token).trim();
-  const parsed = Number.parseInt(raw, 10);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
-}
 
-export function spriteGridSize(): number {
-  return spriteSizeFromToken("--sprite-grid");
-}
-
-export function Sprite({ spriteFile, kind, size = 48, width, height, alt, className }: SpriteProps) {
+export function Sprite({ spriteFile, kind, size = 48, sizeVar, width, height, alt, className }: SpriteProps) {
   if (!spriteFile) return null;
+  const sized = sizeVar
+    ? { width: `var(${sizeVar})`, height: `var(${sizeVar})` }
+    : { width: `${width ?? size}px`, height: `${height ?? size}px` };
   return (
     <img
       src={`${import.meta.env.BASE_URL}sprites/${kind}/${spriteFile}`}
       alt={alt}
-      width={width ?? size}
-      height={height ?? size}
+      // Intrinsic source dimensions, so the browser reserves the correct aspect ratio before load.
+      // The DISPLAYED size comes from the style below.
+      width={48}
+      height={48}
       className={className}
       loading="lazy"
       /*
@@ -74,7 +82,7 @@ export function Sprite({ spriteFile, kind, size = 48, width, height, alt, classN
        *
        * A 112px size was tried and produced exactly that (2.333x); see --sprite-picker in tokens.css.
        */
-      style={{ imageRendering: "pixelated", flexShrink: 0 }}
+      style={{ ...sized, imageRendering: "pixelated", flexShrink: 0 }}
     />
   );
 }

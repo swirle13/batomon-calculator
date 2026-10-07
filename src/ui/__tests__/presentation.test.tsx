@@ -174,10 +174,15 @@ describe("round 7 presentation fixes", () => {
       </TeamConfigProvider>,
     );
     const sprite = screen.getByRole("img", { name: "Bumblebolt" });
-    // 96 is the token default — jsdom resolves no CSS custom property, so this exercises the
-    // FALLBACK rather than the token. It was 64, which is a fractional 1.333x of the 48px source
-    // art; every sprite size is now an integer multiple (48/96/144/192) so pixel art stays crisp.
-    expect(sprite.getAttribute("width")).toBe("96");
+    // The DISPLAYED size now comes from CSS (`width: var(--sprite-grid)`), not from a number read
+    // into JS — so a media query changing the token applies on resize, and there is no window in
+    // which a fallback number renders instead. That JS read is how a stale 64 survived a token
+    // change to 96.
+    //
+    // The width ATTRIBUTE is the intrinsic 48x48 of the source art, which is what lets the browser
+    // reserve the right aspect ratio before the image loads.
+    expect(sprite.getAttribute("width")).toBe("48");
+    expect((sprite as HTMLElement).style.width).toBe("var(--sprite-grid)");
   });
 
   it("shows cooldown at one decimal on both bands (FR-044, item 4)", () => {

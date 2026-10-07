@@ -23,26 +23,32 @@ import styles from "./CreatureSprite.module.css";
  */
 interface CreatureSpriteProps {
   spriteFile: string | undefined;
-  size: number;
+  /** Fixed px size. Prefer `sizeVar` when a token governs it — see `Sprite`. */
+  size?: number;
+  /** CSS custom property governing the size, e.g. `--sprite-grid`. Wins over `size`. */
+  sizeVar?: string;
   alt: string;
   /** Painted by Painter, or natively `All`-typed. */
   painted?: boolean;
   className?: string;
 }
 
-export function CreatureSprite({ spriteFile, size, alt, painted, className }: CreatureSpriteProps) {
+export function CreatureSprite({ spriteFile, size, sizeVar, alt, painted, className }: CreatureSpriteProps) {
   if (!spriteFile) return null;
 
   const url = `${import.meta.env.BASE_URL}sprites/monster/${spriteFile}`;
+  // The wrapper carries the painted overlay, so it must track the image exactly. Sizing both from
+  // the same source — a var or a number — is what keeps the mask aligned to the artwork.
+  const box = sizeVar ? `var(${sizeVar})` : `${size ?? 48}px`;
 
   return (
     <span
       className={`${styles.wrap} ${painted ? styles.painted : ""} ${className ?? ""}`}
       // The mask needs the same URL the <img> resolves, so it is passed as a custom property
       // rather than duplicating the path-building that `Sprite` already owns.
-      style={{ width: size, height: size, "--sprite-url": `url("${url}")` } as CSSProperties}
+      style={{ width: box, height: box, "--sprite-url": `url("${url}")` } as CSSProperties}
     >
-      <Sprite spriteFile={spriteFile} kind="monster" size={size} alt={alt} />
+      <Sprite spriteFile={spriteFile} kind="monster" size={size} sizeVar={sizeVar} alt={alt} />
     </span>
   );
 }

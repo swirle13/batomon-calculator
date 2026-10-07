@@ -23,7 +23,6 @@ import { typeBackground } from "../../data/typeColors";
 import { STAT_COLORS, type StatColorKey } from "../../data/statColors";
 import { STATUS_COLOR_KEY } from "../../data/format";
 import { slotKey, slotsEqual } from "../../engine/grid";
-import { spriteGridSize } from "../shared/Sprite";
 import { CreatureSprite } from "../shared/CreatureSprite";
 import { perCastOutputOf } from "../shared/BatomonCard/BatomonCard";
 import { CreatureSearchModal } from "./CreatureSearchModal";
@@ -213,7 +212,9 @@ function DraggableCard({ slot, creature, level, modifiers, painted, onHighlight,
             place and plain in the other — which is precisely what happened before. */}
         <CreatureSprite
           spriteFile={creature.spriteFile}
-          size={spriteGridSize()}
+          // The token drives the size in CSS, so the 640px breakpoint applies on resize with no
+          // re-render — reading it into JS froze it at first render.
+          sizeVar="--sprite-grid"
           alt={creature.name}
           painted={painted}
         />
