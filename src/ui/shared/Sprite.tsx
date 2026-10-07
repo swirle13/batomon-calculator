@@ -16,8 +16,17 @@ interface SpriteProps {
   spriteFile: string | undefined;
   /** Selects the subdirectory under `public/sprites/`. */
   kind: "monster" | "trinket" | "trainer";
-  /** Rendered size in px. Sprites are uniformly 48x48, so scale with `imageRendering: pixelated`. */
+  /**
+   * Rendered size in px for SQUARE sprites (monsters and trinkets are uniformly 48x48), scaled with
+   * `imageRendering: pixelated`. Ignored when `width`/`height` are given.
+   */
   size?: number;
+  /**
+   * Explicit dimensions, for art that is not square. Trainer icons are **120x80**, so passing a
+   * single `size` would letterbox or stretch them.
+   */
+  width?: number;
+  height?: number;
   /** Usually the record's `name`. */
   alt: string;
   className?: string;
@@ -39,14 +48,14 @@ export function spriteGridSize(): number {
   return spriteSizeFromToken("--sprite-grid");
 }
 
-export function Sprite({ spriteFile, kind, size = 48, alt, className }: SpriteProps) {
+export function Sprite({ spriteFile, kind, size = 48, width, height, alt, className }: SpriteProps) {
   if (!spriteFile) return null;
   return (
     <img
       src={`${import.meta.env.BASE_URL}sprites/${kind}/${spriteFile}`}
       alt={alt}
-      width={size}
-      height={size}
+      width={width ?? size}
+      height={height ?? size}
       className={className}
       loading="lazy"
       // 48x48 source art: keep the pixel grid crisp when scaled up rather than blurring it.

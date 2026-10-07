@@ -368,12 +368,6 @@ export interface TrainerRecord extends Provenance {
   /** Vendored trainer sprite filename (T255/FR-102), under `public/sprites/trainer/`. */
   spriteFile?: string;
   abilityText: string;
-  /**
-   * An earlier recorded ability that turned out to be wrong, kept so the correction is auditable
-   * rather than a silent overwrite (T228a). Painter's original text came from a fan sheet and was
-   * flagged `unconfirmedFields` at the time; the flag was right and nobody followed it up.
-   */
-  supersededText?: string;
   abilityTags: AbilityTag[];
 }
 

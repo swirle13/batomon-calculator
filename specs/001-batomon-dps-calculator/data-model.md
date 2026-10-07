@@ -790,8 +790,11 @@ paintedCreatureIds: string[];
 smuggledCreatureIds: string[];
 ```
 
-`TrainerRecord` also gains `supersededText?: string` so T228's Painter correction has somewhere to
-record what it replaced — pass-1 found the field did not exist.
+> **`TrainerRecord.supersededText` was added for T228's Painter correction and has since been
+> removed** (2026-10-06). The card rendered it as a "Previously recorded (corrected)" disclosure,
+> which the user called useless info on the card — and once nothing rendered it, the field was
+> unread data. The correction itself is fully recorded in research.md M1, which is where provenance
+> belongs.
 
 Both sets are **user-chosen, never generated**. The app models a run the player is already looking
 at; randomising would produce a board they cannot reconcile with their screen (WI-006).

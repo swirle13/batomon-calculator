@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { TrainerRecord } from "../../../data/types";
-import { Disclosure, Surface } from "../../primitives";
+import { Surface } from "../../primitives";
 import { Sprite } from "../Sprite";
 import { AffectedCreaturePicker } from "./AffectedCreaturePicker";
 import styles from "./TrainerCard.module.css";
@@ -53,24 +53,24 @@ export function TrainerCard({ trainer }: TrainerCardProps) {
     <Surface className={styles.card}>
       <div className={styles.header}>
         {/* T255/FR-102 */}
-        <Sprite spriteFile={trainer.spriteFile} kind="trainer" size={40} alt={trainer.name} />
-        <h3 className={styles.name}>{trainer.name}</h3>
-        {unconfirmed && (
-          <span className={styles.unconfirmed} title="This ability text is not yet confirmed against a primary source">
-            unconfirmed
-          </span>
-        )}
+        <Sprite
+          spriteFile={trainer.spriteFile}
+          kind="trainer"
+          width={120}
+          height={80}
+          alt={trainer.name}
+        />
+        <div className={styles.titles}>
+          <h3 className={styles.name}>{trainer.name}</h3>
+          {unconfirmed && (
+            <span className={styles.unconfirmed} title="This ability text is not yet confirmed against a primary source">
+              unconfirmed
+            </span>
+          )}
+        </div>
       </div>
 
       <p className={styles.ability}>{trainer.abilityText}</p>
-
-      {/* An ability we previously recorded wrongly stays visible rather than vanishing, so a user
-          who remembers the old text can see it was corrected rather than wonder if we lost it. */}
-      {trainer.supersededText && (
-        <Disclosure label="Previously recorded (corrected)" hint="(superseded)">
-          <p className={styles.superseded}>{trainer.supersededText}</p>
-        </Disclosure>
-      )}
 
       {designation && (
         <>

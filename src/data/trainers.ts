@@ -201,13 +201,11 @@ export const trainers: TrainerRecord[] = [
       "Nine random species are painted with every type. Whenever a painted species appears in " +
       "your shop or on your board, it counts as every type for any effect that checks typing.",
     // 2026-10-06 (T228 / FR-085). The previous text was a DIFFERENT ABILITY entirely, taken from a
-    // fan trainer sheet. The record already carried `unconfirmedFields: ["abilityText"]` — the
+    // fan trainer sheet; the record already carried `unconfirmedFields: ["abilityText"]`, so the
     // doubt was recorded correctly and simply never followed up. Corrected against two independent
-    // sources plus the user's own play (research.md M1); the flag is cleared because the text is
-    // now sourced, and the old text is retained so the correction is auditable.
-    supersededText:
-      "Your monsters gain +1 to all stats for each different type they have (dual-typed " +
-      "monsters get a bigger bonus than single-typed ones).",
+    // sources plus the user's own play — the full before/after is in research.md M1, which is where
+    // provenance belongs. (The superseded text was briefly carried on the record and shown on the
+    // card; removed 2026-10-06 as clutter, since nothing read it once the card stopped rendering it.)
     abilityTags: [],
     sourceRefs: [trainerGuidePlayersPage],
     patch: NAMED_ONLY_1_0_0,
