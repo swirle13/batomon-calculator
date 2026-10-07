@@ -106,3 +106,19 @@
   color: var(--text-muted);
   text-align: center;
 }
+
+/*
+ * Clear button (2026-10-07). The rarity and type filters persist between opens, which saves
+ * re-selecting "Common" for every slot — this is the escape hatch for when the remembered filter
+ * is the wrong one. Shown only when something is actually set, so it is never a dead control.
+ */
+.clear {
+  font-size: var(--font-xs);
+  padding: 0.2rem 0.5rem;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-sm);
+  background: var(--surface-sunken);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.clear:hover { border-color: var(--line-strong); color: var(--text-primary); }

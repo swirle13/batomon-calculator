@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { CreatureType, GridSlot, Rarity } from "../../data/types";
 import { distinctCreatures } from "../../data/corpus";
-import { RARITIES_DESC, RARITY_COLORS } from "../../data/statColors";
+import { RARITIES_ASC, RARITY_COLORS } from "../../data/statColors";
 import { slotKey } from "../../engine/grid";
 import { CardGrid, CreatureTile, Modal } from "../primitives";
 import styles from "./CreatureSearchModal.module.css";
@@ -52,9 +52,14 @@ export function CreatureSearchModal({ slot, onClose, onSelect, config}: Creature
   // re-runs this even if the slot prop happens to be a new object with the same row/col.
   useEffect(() => {
     if (slot === null) return;
+    // The QUERY still clears on every open — that is FR-018, and the original complaint was
+    // reopening onto a stale search for a creature you already placed.
     setQuery("");
-    setRarityFilter("");
-    setTypeFilter("");
+    // The rarity and type DROPDOWNS deliberately persist (2026-10-07). Filling six slots usually
+    // means six picks from the same tier, and re-selecting "Common" each time is pure friction.
+    // They differ from the query in kind: a query names ONE creature you have already found, a
+    // filter describes the KIND you are shopping for, and that rarely changes between slots.
+    // The Clear button exists for when it does.
     const id = window.setTimeout(() => inputRef.current?.focus(), 0);
     return () => window.clearTimeout(id);
   }, [slot ? slotKey(slot) : null]);
@@ -73,7 +78,11 @@ export function CreatureSearchModal({ slot, onClose, onSelect, config}: Creature
 
   // Rarest first, and sections with no matches are omitted entirely rather than rendering an empty
   // heading that implies a filter failure.
-  const sections = RARITIES_DESC.map((rarity) => ({
+  // Common FIRST (FR-018 amendment, 2026-10-07). The list opened Mythical-first, which put the
+  // rarest creatures — the ones you pick least — at the top and pushed Commons below the fold. The
+  // ordering now matches how often a tier is actually chosen. Alphabetical within each tier is
+  // unchanged.
+  const sections = RARITIES_ASC.map((rarity) => ({
     rarity,
     creatures: results.filter((c) => c.rarity === rarity).sort((a, b) => a.name.localeCompare(b.name)),
   })).filter((section) => section.creatures.length > 0);
@@ -95,6 +104,16 @@ export function CreatureSearchModal({ slot, onClose, onSelect, config}: Creature
             placeholder="Name or ID"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            // Enter commits when the filters have narrowed to EXACTLY one creature. Only one,
+            // because picking "the first of several" would silently choose for the user; with one
+            // result there is nothing to choose between and reaching for the mouse is pure cost.
+            onKeyDown={(e) => {
+              if (e.key !== "Enter") return;
+              if (results.length !== 1) return;
+              e.preventDefault();
+              onSelect(results[0]!.id);
+              onClose();
+            }}
             aria-label="Search by name"
             className={styles.search}
           />
@@ -104,7 +123,7 @@ export function CreatureSearchModal({ slot, onClose, onSelect, config}: Creature
             aria-label="Filter by rarity"
           >
             <option value="">All rarities</option>
-            {RARITIES_DESC.map((r) => (
+            {RARITIES_ASC.map((r) => (
               <option key={r} value={r}>
                 {r}
               </option>
@@ -122,6 +141,21 @@ export function CreatureSearchModal({ slot, onClose, onSelect, config}: Creature
               </option>
             ))}
           </select>
+          {(rarityFilter !== "" || typeFilter !== "" || query !== "") && (
+            <button
+              type="button"
+              className={styles.clear}
+              title="Clear the search and both filters"
+              onClick={() => {
+                setQuery("");
+                setRarityFilter("");
+                setTypeFilter("");
+                inputRef.current?.focus();
+              }}
+            >
+              Clear
+            </button>
+          )}
           <span className={styles.count}>
             {results.length} of {distinctCreatures.length}
           </span>

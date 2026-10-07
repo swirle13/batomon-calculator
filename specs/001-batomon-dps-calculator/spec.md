@@ -739,3 +739,23 @@ useful: v1.3.0 touched 15 creatures, so a single app-wide label would have been 
 
 `src/App.tsx` carried a comment instructing that a third removal should trigger exactly this
 retirement rather than silence. That is what happened.
+
+
+### FR-018 AMENDED (2026-10-07) — the picker's filters persist, its query does not
+
+> **FR-018** (round 3): the search modal clears its query and refocuses on every open, "so the first
+> thing a user sees is never a stale, over-filtered list".
+
+The **query** still clears, and the original defect it was written against stands: reopening onto a
+search for a creature you have already placed is useless.
+
+The **rarity and type dropdowns now persist**. They differ from the query in kind — a query names
+ONE creature you have already found, a filter describes the KIND you are shopping for — and filling
+six slots usually means six picks from the same tier, so re-selecting "Common" each time is pure
+friction. A **Clear** button resets all three, and appears only when something is set so it is never
+a dead control.
+
+Also: rarity sections now run **Common → Mythical** rather than Mythical-first, which had put the
+creatures picked least at the top and pushed Commons below the fold. Alphabetical within each tier
+is unchanged. And **Enter selects when exactly one creature matches** — only one, because choosing
+"the first of several" would decide for the user.
