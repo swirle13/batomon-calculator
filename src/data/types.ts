@@ -122,7 +122,34 @@ export type AbilityTag =
   | { kind: "chargeOnAllyStatus"; status: StatusEffectType; seconds: number }
   /** "When a <typeFilter> ally casts, give it +<amount> Cooldown Speed for this battle."
    * Recorded for completeness; see `effects.ts` for current coverage. */
-  | { kind: "cooldownSpeedOnAllyCast"; typeFilter?: CreatureType; amount: number };
+  | { kind: "cooldownSpeedOnAllyCast"; typeFilter?: CreatureType; amount: number }
+  /**
+   * 2026-10-06 round 10 (T219). Two scaling shapes that the selector-based tags above cannot
+   * express, because their magnitude depends on the board rather than being a fixed amount.
+   *
+   * Count scaling: "+<effect> for each <typeFilter> ally [in <rowFilter>]". `effect` is applied
+   * once per match, to whoever `target` selects.
+   */
+  | {
+      kind: "statFromCount";
+      target: TargetSelector;
+      effect: EffectDescriptor;
+      typeFilter?: CreatureType;
+      rowFilter?: GridRow;
+      /** Default false: "each ally" excludes the creature itself, matching `effects.ts` ally rule. */
+      includeSelf?: boolean;
+    }
+  /**
+   * Stat scaling: "gain <effect> equal to <multiplier>x the <sourceStat> of <sourceSelector>".
+   * Reads BASE values of the pool, so two creatures scaling off each other cannot feed back.
+   */
+  | {
+      kind: "statFromStat";
+      sourceSelector: TargetSelector;
+      sourceStat: StatusEffectType | "damage" | "multicast";
+      multiplier: number;
+      effect: EffectDescriptor;
+    };
 
 // ---------------------------------------------------------------------------
 // Corpus entities

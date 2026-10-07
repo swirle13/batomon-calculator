@@ -417,7 +417,14 @@ export function simulate(
     // Queue each firing creature's remaining repetitions and its next cast before resolving, so a
     // charge landing in this instant adjusts a next-cast time that already exists.
     for (const entry of dueCasts) {
-      const multicastCount = Math.max(1, entry.creature.baseMulticast + entry.modifiers.multicastAdd);
+      // Round 10 (T219): the RESOLVED multicast, so a multicast-granting ally actually produces
+      // extra repetitions. This read `entry.creature.baseMulticast`, which meant every
+      // multicast-grant ability resolved correctly in `effects.ts` and then changed nothing here.
+      const resolvedEntry = resolvedByKey.get(`${entry.creature.id}@${slotKey(entry.sourceSlot)}`);
+      const multicastCount = Math.max(
+        1,
+        (resolvedEntry?.multicast ?? entry.creature.baseMulticast) + entry.modifiers.multicastAdd,
+      );
       for (let rep = 1; rep < multicastCount; rep++) {
         const repT = roundTime(tSeconds + rep * STEP);
         if (repT > windowSeconds + 1e-9) break;
@@ -467,7 +474,16 @@ export function simulate(
 
       // RESOLVED status amounts, not the creature's base ones — this is what makes the simulation
       // actually use the resolution layer rather than merely report it (T202).
-      for (const applied of effective?.appliesStatus ?? creature.appliesStatus ?? []) {
+      // Round 10 (T219): "applies its Ongoing abilities N additional time(s)" repeats the whole
+      // status application, so a grant of 1 doubles this creature's status output per cast. Applied
+      // by repeating the list rather than multiplying amounts, because the two differ for Burn:
+      // separate applications are separate decaying instances, whereas one doubled application is a
+      // single instance that sheds the same 1 layer per tick.
+      const ongoingReps = 1 + (effective?.extraOngoingApplications ?? 0);
+      const appliedList = Array.from({ length: ongoingReps }, () =>
+        effective?.appliesStatus ?? creature.appliesStatus ?? [],
+      ).flat();
+      for (const applied of appliedList) {
         if (applied.type === "Shock") {
           const amount = applied.amount + modifiers.shockAmountAdd;
           shockLayers += amount;

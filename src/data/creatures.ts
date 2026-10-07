@@ -216,9 +216,7 @@ export const creatures: CreatureRecord[] = [
     appliesStatus: [{ type: "Shock", amount: 1 }],
     abilityText:
       "Deals 3 direct damage every 2.5 seconds and applies 1 Shock. \"The poster Common: 2.5s, Shock, cheap.\"",
-    abilityTags: [
-      { kind: "statusGrant", target: { kind: "self" }, status: "Shock", amount: 1 },
-    ],
+    abilityTags: [],
     spriteFile: "bumblebolt.png",
     sourceRefs: [shockBuildGuide, communityDex, tierListGuide],
     patch: "Balance 24 / 1.2.0 (community-imported build)",
@@ -273,9 +271,7 @@ export const creatures: CreatureRecord[] = [
     appliesStatus: [{ type: "Poison", amount: 4 }],
     abilityText:
       "Applies 4 Poison per cast (scaling to 8 at level 2 and 12 at level 3). No separate direct-damage line is published for this creature.",
-    abilityTags: [
-      { kind: "statusGrant", target: { kind: "self" }, status: "Poison", amount: 4 },
-    ],
+    abilityTags: [],
     spriteFile: "venopuff.png",
     sourceRefs: [batodexVenopuff, poisonBuildGuide, communityDex],
     patch: "Balance 24 / 1.2.0 (community-imported build)",
@@ -308,9 +304,7 @@ export const creatures: CreatureRecord[] = [
     damageType: "Direct",
     appliesStatus: [{ type: "Burn", amount: 5 }],
     abilityText: "Deals 5 direct damage and applies 5 Burn every 5.5 seconds. Evolves at level 3 into Sunsage.",
-    abilityTags: [
-      { kind: "statusGrant", target: { kind: "self" }, status: "Burn", amount: 5 },
-    ],
+    abilityTags: [],
     evolvesInto: "sunsage",
     // Confirmed level-3 threshold, round 3 (research.md E2.6): corroborated independently by
     // batodex.com and batomon.com's per-creature Scorchimp pages, both retrieved 2026-10-05.
@@ -331,9 +325,7 @@ export const creatures: CreatureRecord[] = [
     baseDamage: null,
     damageType: null,
     abilityText: "+15 Shield for this battle.",
-    abilityTags: [
-      { kind: "statusGrant", target: { kind: "self" }, status: "Shield", amount: 15 },
-    ],
+    abilityTags: [],
     spriteFile: "pebbler.png",
     abilityTrigger: "On Cast",
     appliesStatus: [{ type: "Shield", amount: 20 }],
@@ -3238,9 +3230,7 @@ export const creatures: CreatureRecord[] = [
     damageType: "Direct",
     appliesStatus: [{ type: "Shock", amount: 2 }],
     abilityText: "No ability text shown",
-    abilityTags: [
-      { kind: "statusGrant", target: { kind: "self" }, status: "Shock", amount: 2 },
-    ],
+    abilityTags: [],
     spriteFile: "bumblebolt.png",
     sourceRefs: [batodexExtracted("bumblebolt", "Bumblebolt")],
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
@@ -3258,9 +3248,7 @@ export const creatures: CreatureRecord[] = [
     damageType: "Direct",
     appliesStatus: [{ type: "Shock", amount: 3 }],
     abilityText: "No ability text shown",
-    abilityTags: [
-      { kind: "statusGrant", target: { kind: "self" }, status: "Shock", amount: 3 },
-    ],
+    abilityTags: [],
     spriteFile: "bumblebolt.png",
     sourceRefs: [batodexExtracted("bumblebolt", "Bumblebolt")],
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
@@ -3278,9 +3266,7 @@ export const creatures: CreatureRecord[] = [
     damageType: "Direct",
     appliesStatus: [{ type: "Shock", amount: 3 }],
     abilityText: "No ability text shown",
-    abilityTags: [
-      { kind: "statusGrant", target: { kind: "self" }, status: "Shock", amount: 3 },
-    ],
+    abilityTags: [],
     spriteFile: "bumblebolt.png",
     sourceRefs: [batodexExtracted("bumblebolt", "Bumblebolt")],
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
@@ -3373,9 +3359,7 @@ export const creatures: CreatureRecord[] = [
     damageType: null,
     appliesStatus: [{ type: "Poison", amount: 8 }],
     abilityText: "No ability text shown",
-    abilityTags: [
-      { kind: "statusGrant", target: { kind: "self" }, status: "Poison", amount: 8 },
-    ],
+    abilityTags: [],
     spriteFile: "venopuff.png",
     sourceRefs: [batodexExtracted("venopuff", "Venopuff")],
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
@@ -3393,9 +3377,7 @@ export const creatures: CreatureRecord[] = [
     damageType: null,
     appliesStatus: [{ type: "Poison", amount: 12 }],
     abilityText: "No ability text shown",
-    abilityTags: [
-      { kind: "statusGrant", target: { kind: "self" }, status: "Poison", amount: 12 },
-    ],
+    abilityTags: [],
     spriteFile: "venopuff.png",
     sourceRefs: [batodexExtracted("venopuff", "Venopuff")],
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
@@ -3413,9 +3395,7 @@ export const creatures: CreatureRecord[] = [
     damageType: null,
     appliesStatus: [{ type: "Poison", amount: 12 }],
     abilityText: "No ability text shown",
-    abilityTags: [
-      { kind: "statusGrant", target: { kind: "self" }, status: "Poison", amount: 12 },
-    ],
+    abilityTags: [],
     spriteFile: "venopuff.png",
     sourceRefs: [batodexExtracted("venopuff", "Venopuff")],
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
@@ -3435,9 +3415,7 @@ export const creatures: CreatureRecord[] = [
     evolvesInto: "sunsage",
     evolvesAtLevel: 3,
     abilityText: "Evolves at level 3.",
-    abilityTags: [
-      { kind: "statusGrant", target: { kind: "self" }, status: "Burn", amount: 10 },
-    ],
+    abilityTags: [],
     spriteFile: "scorchimp.png",
     sourceRefs: [batodexExtracted("scorchimp", "Scorchimp")],
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
@@ -3457,9 +3435,7 @@ export const creatures: CreatureRecord[] = [
     evolvesInto: "sunsage",
     evolvesAtLevel: 3,
     abilityText: "Evolves at level 3.",
-    abilityTags: [
-      { kind: "statusGrant", target: { kind: "self" }, status: "Burn", amount: 15 },
-    ],
+    abilityTags: [],
     spriteFile: "scorchimp.png",
     sourceRefs: [batodexExtracted("scorchimp", "Scorchimp")],
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
@@ -3479,9 +3455,7 @@ export const creatures: CreatureRecord[] = [
     evolvesInto: "sunsage",
     evolvesAtLevel: 3,
     abilityText: "Evolves at level 3.",
-    abilityTags: [
-      { kind: "statusGrant", target: { kind: "self" }, status: "Burn", amount: 15 },
-    ],
+    abilityTags: [],
     spriteFile: "scorchimp.png",
     sourceRefs: [batodexExtracted("scorchimp", "Scorchimp")],
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
@@ -3499,9 +3473,7 @@ export const creatures: CreatureRecord[] = [
     damageType: null,
     appliesStatus: [{ type: "Shield", amount: 40 }],
     abilityText: "+30 Shield for this battle.",
-    abilityTags: [
-      { kind: "statusGrant", target: { kind: "self" }, status: "Shield", amount: 40 },
-    ],
+    abilityTags: [],
     spriteFile: "pebbler.png",
     abilityTrigger: "On Cast",
     sourceRefs: [batodexExtracted("pebbler", "Pebbler")],
@@ -3520,9 +3492,7 @@ export const creatures: CreatureRecord[] = [
     damageType: null,
     appliesStatus: [{ type: "Shield", amount: 60 }],
     abilityText: "+45 Shield for this battle.",
-    abilityTags: [
-      { kind: "statusGrant", target: { kind: "self" }, status: "Shield", amount: 60 },
-    ],
+    abilityTags: [],
     spriteFile: "pebbler.png",
     abilityTrigger: "On Cast",
     sourceRefs: [batodexExtracted("pebbler", "Pebbler")],
@@ -3541,9 +3511,7 @@ export const creatures: CreatureRecord[] = [
     damageType: null,
     appliesStatus: [{ type: "Shield", amount: 120 }],
     abilityText: "+90 Shield for this battle.",
-    abilityTags: [
-      { kind: "statusGrant", target: { kind: "self" }, status: "Shield", amount: 120 },
-    ],
+    abilityTags: [],
     spriteFile: "pebbler.png",
     abilityTrigger: "On Cast",
     sourceRefs: [batodexExtracted("pebbler", "Pebbler")],

@@ -1705,3 +1705,42 @@ notes. Excluding them is not a dodge — it is the project's own long-standing s
 | Scale/Scope | On the order of 100–150 creature records + trainers/trinkets/items; single active team of ≤6 creatures simulated at a time |
 
 No `NEEDS CLARIFICATION` markers remain — all Technical Context fields above are resolved.
+
+### L5 — Why the "Unclassified" bucket resisted classification (round 10, found during T219)
+
+The round-10 taxonomy's largest row was a 49-creature "Unclassified" catch-all. Sampling it while
+looking for creatures to tag showed it is not a grab-bag at all — it is **one coherent mechanism the
+resolver structurally cannot express**:
+
+| Creature | Ability text | Trigger |
+|---|---|---|
+| Mosslug | "+20 Damage for this battle." | **On Cast** |
+| Bonshell | "+80 Damage and +80 Shield for this battle." | **On Cast** |
+| Aerophim | "Give adjacent allies +1 Multicast permanently…" | **On Cast** |
+| Shelldra | "Every 4 seconds, +1 Multicast for this battle." | periodic |
+
+These read like static self-buffs, which is why they were first classed as "+N for this battle"
+one-shots. They are not. The trigger is **On Cast**, so the bonus **accumulates every time the
+creature fires**: Mosslug is at +20 after its first cast, +40 after its second, and so on. "For this
+battle" scopes how long the bonus persists, not how often it is granted.
+
+`effects.ts` is a **pre-battle static resolver** — it runs once, before `simulate()` starts, and
+returns fixed effective stats. It cannot represent a stat that changes during the window. So this
+family needs the **simulation loop** (a per-cast buff application mutating the acting creature's
+effective stats mid-battle), not another resolver pass.
+
+**Consequences for the round-10 plan, which assumed otherwise:**
+
+1. T218(a) proposed splitting "Unclassified" into `self-buff-for-this-battle` / `self-buff-permanent`
+   / `team-buff-permanent`. That split is along the wrong axis — the distinction that matters is
+   **one-shot vs per-cast accumulating**, and nearly all of them are the latter.
+2. T219 listed "self-buff families" as in-scope for the selector-based resolver. They are not
+   reachable from it at all.
+3. This is also why the corpus had **16 tags restating `appliesStatus`** (see
+   `families.test.ts`'s guard): a previous pass tried to encode these accumulating buffs as static
+   grants, which is both wrong and a double-count the moment a resolver acts on them.
+
+**Estimated reach**: accumulating On-Cast buffs appear in roughly 40 of the 49 unclassified
+creatures, making this the single largest unlocked family in the corpus — larger than all seven
+selector families combined. It is a well-defined piece of work, but it is engine work in
+`simulate.ts`, and it was not scoped this round.

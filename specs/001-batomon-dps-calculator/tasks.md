@@ -1959,7 +1959,7 @@ rounding artifact. **~22 of the 135 are not battle calculations at all** (10 sho
       catch-all that hides a third of the corpus.
       (b) **Trainers (23) and trinkets (93) are named as unmodelled but never taxonomised.** The ask
       was not limited to creatures. Classify them on the same axes.
-- [ ] T219 **[WI-012]** Implement the mechanism families from L1. Families first, because there are
+- [x] T219 **[WI-012]** Implement the mechanism families from L1. Families first, because there are
       17 of them versus 132 unsupported creatures: families are bounded, well-specified work, while
       tagging scales linearly and has twice produced silent misalignment (research.md H11; round 9b's
       level-1-only tag bug).
@@ -1978,7 +1978,7 @@ rounding artifact. **~22 of the 135 are not battle calculations at all** (10 sho
 - [ ] T220 **[WI-012]** Tag creatures family by family against T219's kinds, **at every level**
       (round 9b's per-level guard already enforces this). Report the coverage figure after each
       family rather than only at the end.
-- [ ] T221 **[WI-012]** Make the coverage figure self-reporting and honest (FR-084): compute it from
+- [x] T221 **[WI-012]** Make the coverage figure self-reporting and honest (FR-084): compute it from
       the data, show battle-relevant coverage as the headline, and name the excluded shop/economy,
       evolution and knockout counts separately so the denominator is never quietly shrunk.
       **Fix the predicate while you are here**: `analyzePositionalCoverage` counts creatures that
@@ -2031,3 +2031,15 @@ rounding artifact. **~22 of the 135 are not battle calculations at all** (10 sho
 - Every engine mechanics task cites the exact research.md subsection it implements — do not
   re-derive the formula from memory; read research.md B1-B6 and contracts/engine-api.md first.
 - Commit after each task or logical group.
+
+- [ ] T224 **[WI-010, WI-012]** Build **per-cast accumulating buffs** in `simulate.ts` (research.md L5).
+      Discovered during T219: the 49-creature "Unclassified" bucket is not a grab-bag of static
+      self-buffs but one mechanism — "+N Damage for this battle" with an **On Cast** trigger, which
+      accumulates on every cast. A pre-battle resolver cannot express it; it needs the event loop to
+      mutate the acting creature's effective stats mid-battle. Est. ~40 creatures, the largest single
+      family in the corpus, larger than all seven selector families combined. NOT scoped in round 10.
+- [ ] T225 **[WI-010]** Extend `TargetSelector` before mass tagging. Real ability text needs filters
+      the vocabulary lacks: **rarity** ("This and Common allies gain +10 Damage" — Brawlmantis),
+      **level** ("for each ally of level 3 or above" — Orcana), and **"in front"** as a direction
+      distinct from `behind`/`above` (Saberhorn). Tagging before this means either skipping those
+      creatures or encoding them wrongly.

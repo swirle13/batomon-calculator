@@ -44,8 +44,15 @@ describe("placement optimiser (FR-069)", () => {
     const coverage = analyzePositionalCoverage(withOnsetra, corpus);
     expect(coverage.withPositionalTag).toContain("Onsetra");
     expect(coverage.withPositionalTag).toContain("Formiqueen");
-    // ...but only Formiqueen's is actionable.
-    expect(coverage.actionable).toEqual(["Formiqueen"]);
+    // 2026-10-06 round 10 (T219): Onsetra's `behind` grant WAS inert and is now resolved by the
+    // general selector-based resolver, so it joins `actionable`. This assertion previously read
+    // `["Formiqueen"]`; the change is the point of the round, not a regression.
+    //
+    // The two lists still differ in general -- `withPositionalTag` is "the data records something
+    // positional", `actionable` is "the engine computes it" -- and that gap is what the coverage
+    // note in the UI reports. Keeping them separate is what stops a working resolver from implying
+    // full coverage.
+    expect(coverage.actionable).toEqual(["Formiqueen", "Onsetra"]);
   });
 
   it("flags selected trinkets whose positional effect the engine cannot model", () => {

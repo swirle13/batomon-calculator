@@ -1,11 +1,13 @@
 import type {
   Corpus,
   CreatureRecord,
+  EffectDescriptor,
   GridSlot,
   StatusEffectType,
+  TargetSelector,
   TeamConfiguration,
 } from "../data/types";
-import { slotKey } from "./grid";
+import { aboveSlot, behindSlot, isAdjacent, slotKey, slotsEqual } from "./grid";
 
 /**
  * Effect resolution (FR-073/FR-074, 2026-10-06 round 9).
@@ -55,17 +57,83 @@ export interface ResolvedPlacement {
   multicast: number;
   /** Seconds removed from this creature's remaining cooldown per matching **ally** application. */
   chargeRules: { status: StatusEffectType; seconds: number }[];
+  /**
+   * Extra repetitions of this creature's ongoing (status) applications per cast, granted by an
+   * ally — e.g. Onsetra's "the ally behind applies its Ongoing abilities 1 additional time".
+   */
+  extraOngoingApplications: number;
   /** Abilities recorded on this creature that the engine cannot act on, for honest reporting. */
   unmodelledAbilities: string[];
 }
 
+/**
+ * Tag kinds this resolver acts on.
+ *
+ * 2026-10-06 round 10 (T219). **This list is exported and is the single source of truth for
+ * "supported".** The round-10 audit reported "9 of 135 abilities modelled" — a figure that counted
+ * creatures carrying a *tag* rather than creatures the engine actually *resolves*. Only three were
+ * genuinely working. The two tests drifted because "supported" was defined twice, so the coverage
+ * reporter now derives its predicate from this constant instead of keeping its own copy.
+ */
+export const RESOLVED_TAG_KINDS = [
+  "battleStartStatusFromAllies",
+  "chargeOnAllyStatus",
+  "cooldownSpeedModifier",
+  // Round 10: the general positional/aura resolver below.
+  "ongoing",
+  "statusGrant",
+  "onEvent",
+  "statFromCount",
+  "statFromStat",
+] as const;
+
 /** True when `tag` is one this resolver understands. Keeps the "can we act on it?" test in one place. */
 export function isResolvableTag(tag: { kind: string }): boolean {
-  return (
-    tag.kind === "battleStartStatusFromAllies" ||
-    tag.kind === "chargeOnAllyStatus" ||
-    tag.kind === "cooldownSpeedModifier"
-  );
+  return (RESOLVED_TAG_KINDS as readonly string[]).includes(tag.kind);
+}
+
+/**
+ * The creatures a `TargetSelector` picks out, relative to `source`.
+ *
+ * All six selectors in the vocabulary resolve here, which is what turns seven separate "mechanism
+ * families" (adjacency auras, positional grants, row-wide effects, on-battle-start team grants,
+ * self-buffs, and the two cooldown-speed grant shapes) into one code path. They were only ever
+ * distinct families in the *ability text*; structurally they differ just by selector.
+ *
+ * Board geometry is `grid.ts`'s, so "adjacent" stays side-sharing and never diagonal (research.md
+ * B5) in exactly one place.
+ */
+function selectTargets<T extends { slot: GridSlot; key: string; creature: CreatureRecord }>(
+  selector: TargetSelector,
+  source: T,
+  all: T[],
+): T[] {
+  const others = all.filter((m) => m.key !== source.key);
+  const byType = (list: T[]) =>
+    selector.kind === "adjacent" || selector.kind === "allAllies"
+      ? list.filter((m) => !selector.typeFilter || m.creature.types.includes(selector.typeFilter))
+      : list;
+
+  switch (selector.kind) {
+    case "self":
+      return [source];
+    case "adjacent":
+      return byType(others.filter((m) => isAdjacent(source.slot, m.slot)));
+    case "row":
+      return others.filter((m) => m.slot.row === source.slot.row);
+    case "behind": {
+      const slot = behindSlot(source.slot);
+      return slot ? others.filter((m) => slotsEqual(m.slot, slot)) : [];
+    }
+    case "above": {
+      const slot = aboveSlot(source.slot);
+      return slot ? others.filter((m) => slotsEqual(m.slot, slot)) : [];
+    }
+    case "allAllies":
+      return byType(others);
+    default:
+      return [];
+  }
 }
 
 export function resolveEffects(config: TeamConfiguration, corpus: Corpus): ResolvedPlacement[] {
@@ -90,6 +158,7 @@ export function resolveEffects(config: TeamConfiguration, corpus: Corpus): Resol
     cooldownSeconds: creature.baseCooldownSeconds,
     multicast: creature.baseMulticast,
     chargeRules: [] as { status: StatusEffectType; seconds: number }[],
+    extraOngoingApplications: 0,
     unmodelledAbilities: [] as string[],
   }));
 
@@ -112,6 +181,127 @@ export function resolveEffects(config: TeamConfiguration, corpus: Corpus): Resol
       if (existing) existing.amount += gained;
       else resolved.appliesStatus.push({ type: tag.status, amount: gained });
     }
+  }
+
+  // --- Pass 2b: general positional / aura / team effects (round 10, T219) ---
+  //
+  // Deltas accumulate against the PASS-1 BASE snapshot and are applied only after every source has
+  // been read. Without that, two creatures buffing each other would resolve differently depending on
+  // which happened to sit earlier in the placement array — the same ordering hazard pass 2 avoids,
+  // and the reason these are not applied inline.
+  //
+  // Deliberately NOT handled here: `cooldownSpeedModifier`, which `simulate()` already sums in
+  // `resolveCooldownSpeedTotal`. Resolving it in both places would double-count it.
+  const deltas = new Map(
+    base.map((r) => [
+      r.key,
+      {
+        damage: 0,
+        multicast: 0,
+        extraOngoing: 0,
+        status: new Map<StatusEffectType, number>(),
+      },
+    ]),
+  );
+
+  const addStatus = (key: string, type: StatusEffectType, amount: number) => {
+    const d = deltas.get(key);
+    if (!d || amount === 0) return;
+    d.status.set(type, (d.status.get(type) ?? 0) + amount);
+  };
+
+  const applyEffect = (targetKey: string, effect: EffectDescriptor, scale = 1) => {
+    const d = deltas.get(targetKey);
+    if (!d) return;
+    if (effect.statChange) {
+      const amount = effect.statChange.amount * scale;
+      // "cooldownSpeed" is intentionally absent — see the double-counting note above.
+      if (effect.statChange.stat === "damage") d.damage += amount;
+      else if (effect.statChange.stat === "multicast") d.multicast += amount;
+    }
+    if (effect.statusGrant) {
+      addStatus(targetKey, effect.statusGrant.type, effect.statusGrant.amount * scale);
+    }
+    if (effect.extraOngoingApplications) {
+      d.extraOngoing += effect.extraOngoingApplications * scale;
+    }
+  };
+
+  for (const source of base) {
+    for (const tag of source.creature.abilityTags) {
+      switch (tag.kind) {
+        case "ongoing":
+          for (const target of selectTargets(tag.target, source, base)) {
+            applyEffect(target.key, tag.effect);
+          }
+          break;
+
+        case "statusGrant":
+          for (const target of selectTargets(tag.target, source, base)) {
+            addStatus(target.key, tag.status, tag.amount);
+          }
+          break;
+
+        case "onEvent":
+          // Only OnBattleStart is resolvable: it is the one event whose timing is known before the
+          // simulation runs. OnCast/OnVictory/OnKnockout depend on battle state this engine either
+          // schedules itself (OnCast) or does not model at all (victory, knockout — there is no
+          // death or HP system), so acting on them here would fabricate output.
+          if (tag.event === "OnBattleStart") applyEffect(source.key, tag.effect);
+          break;
+
+        case "statFromCount": {
+          // Count scaling: "+N Damage for each <type> ally", "for each ally in the back row", etc.
+          const matches = base.filter((m) => {
+            if (m.key === source.key && !tag.includeSelf) return false;
+            if (tag.typeFilter && !m.creature.types.includes(tag.typeFilter)) return false;
+            if (tag.rowFilter && m.slot.row !== tag.rowFilter) return false;
+            return true;
+          }).length;
+          if (matches > 0) {
+            for (const target of selectTargets(tag.target, source, base)) {
+              applyEffect(target.key, tag.effect, matches);
+            }
+          }
+          break;
+        }
+
+        case "statFromStat": {
+          // Stat scaling: "+Damage equal to 50% of the Shield of your allies".
+          const pool = selectTargets(tag.sourceSelector, source, base);
+          const total = pool.reduce((sum, m) => {
+            if (tag.sourceStat === "damage") return sum + (m.baseDamage ?? 0);
+            if (tag.sourceStat === "multicast") return sum + m.multicast;
+            return sum + (m.appliesStatus.find((s) => s.type === tag.sourceStat)?.amount ?? 0);
+          }, 0);
+          if (total !== 0) {
+            applyEffect(source.key, tag.effect, total * tag.multiplier);
+          }
+          break;
+        }
+      }
+    }
+  }
+
+  for (const resolved of base) {
+    const d = deltas.get(resolved.key);
+    if (!d) continue;
+    if (d.damage !== 0 && resolved.baseDamage !== null) {
+      resolved.baseDamage = Math.round(resolved.baseDamage + d.damage);
+    }
+    // Multicast is a repetition count: it must stay a whole number >= 1, and a debuff must never
+    // silence a creature entirely.
+    if (d.multicast !== 0) resolved.multicast = Math.max(1, Math.round(resolved.multicast + d.multicast));
+    resolved.extraOngoingApplications = Math.max(0, Math.round(d.extraOngoing));
+    for (const [type, amount] of d.status) {
+      const rounded = Math.round(amount);
+      if (rounded === 0) continue;
+      const existing = resolved.appliesStatus.find((s) => s.type === type);
+      if (existing) existing.amount += rounded;
+      else resolved.appliesStatus.push({ type, amount: rounded });
+    }
+    // A status application cannot go negative — a debuff at worst removes the application.
+    for (const s of resolved.appliesStatus) s.amount = Math.max(0, s.amount);
   }
 
   // --- Pass 3: collect charge rules and record what we could NOT model ---
