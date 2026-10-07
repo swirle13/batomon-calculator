@@ -26,21 +26,32 @@ export function CumulativeChart({ result }: CumulativeChartProps) {
           stated once on the axis instead of in every hover card. */}
       <SeriesChart
         xValues={xValues}
+        /*
+          EVERY series is `stepAfter`, not just Total and Direct.
+          
+          Cumulative damage is a step function: it changes at an instant — a cast, a tick — and
+          holds until the next one. Only Total and Direct said so; Burn, Poison, Shock and Shield
+          fell back to straight-line interpolation, which drew a DIAGONAL between samples and made
+          damage look like it accrued continuously in between.
+          
+          That was not cosmetic. Magmite casts at t=4.5, and the Shield line sloped up from (4, 0)
+          to (4.5, 40) — so the chart appeared to show the cast beginning at t=4.0, and the engine
+          looked half a second wrong when it was right. A chart that invents intermediate values is
+          worse than a coarse one, because it reads as evidence.
+        */
         series={[
-          // `stepAfter` for Total: cumulative damage changes discretely, at casts and ticks, so a
-          // straight interpolation would imply damage accruing smoothly between events.
           { name: "Total", values: series.map((p) => p.totalDamage), color: "#f5f5f5", lineType: "stepAfter" },
           // Direct damage as its own line: it was previously only inside Total, so on a mixed team
           // you could see the Total move without being able to tell what moved it. Cyan is far
           // from Burn's orange and from the white Total it used to hide inside.
           { name: "Direct", values: series.map((p) => p.directDamage), color: "#4dd0e1", lineType: "stepAfter" },
-          { name: "Burn", values: series.map((p) => p.byStatus.Burn), color: STAT_COLORS.burn },
-          { name: "Poison", values: series.map((p) => p.byStatus.Poison), color: STAT_COLORS.poison },
-          { name: "Shock", values: series.map((p) => p.byStatus.Shock), color: STAT_COLORS.shock },
+          { name: "Burn", values: series.map((p) => p.byStatus.Burn), color: STAT_COLORS.burn, lineType: "stepAfter" },
+          { name: "Poison", values: series.map((p) => p.byStatus.Poison), color: STAT_COLORS.poison, lineType: "stepAfter" },
+          { name: "Shock", values: series.map((p) => p.byStatus.Shock), color: STAT_COLORS.shock, lineType: "stepAfter" },
           // Shield's published colour (#9aa1b8) is a grey-blue that sat too close to the white
           // Total line to tell apart. Shifted blue for legibility ONLY on this chart; the stat
           // badges and chips keep the game's own colour, which is what players match against.
-          { name: "Shield", values: series.map((p) => p.byStatus.Shield), color: "#5b8dd9" },
+          { name: "Shield", values: series.map((p) => p.byStatus.Shield), color: "#5b8dd9", lineType: "stepAfter" },
         ]}
         xLabel="seconds (0.5s increments)"
         yLabel="cumulative value"

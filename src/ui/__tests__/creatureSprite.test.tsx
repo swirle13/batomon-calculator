@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { render } from "@testing-library/react";
 import { CreatureSprite } from "../shared/CreatureSprite";
@@ -55,5 +56,24 @@ describe("CreatureSprite", () => {
     // the type chips, or the rainbow covers the whole card window again.
     expect(treated.querySelectorAll("img")).toHaveLength(1);
     expect(treated.textContent).toBe("");
+  });
+});
+
+describe("cumulative chart draws steps, not slopes (2026-10-06)", () => {
+  it("every series on the cumulative chart is stepAfter", () => {
+    // Cumulative damage changes at an instant and holds. Straight-line interpolation drew a
+    // diagonal between samples: Magmite casts at t=4.5, and the Shield line sloped up from (4, 0)
+    // to (4.5, 40), so the chart appeared to show the cast starting at t=4.0 and the engine looked
+    // half a second wrong when it was right.
+    //
+    // Asserted against the source rather than the DOM because Recharts renders an SVG path whose
+    // `type` is not recoverable from the markup.
+    const src = readFileSync("src/ui/CumulativeChart/CumulativeChart.tsx", "utf8");
+    const seriesEntries = src.match(/\{ name: "[^"]+", values:[^}]+\}/g) ?? [];
+    expect(seriesEntries.length).toBe(6); // Total, Direct, Burn, Poison, Shock, Shield
+    for (const entry of seriesEntries) {
+      const name = /name: "([^"]+)"/.exec(entry)![1];
+      expect(entry, `${name} is not stepAfter`).toContain('lineType: "stepAfter"');
+    }
   });
 });
