@@ -12,7 +12,7 @@ import { ModifierEditor } from "../Modifiers/ModifierEditor";
 import { TrainerPicker } from "../GridPicker/TrainerPicker";
 import { TrainerCard } from "../shared/TrainerCard/TrainerCard";
 import { regionsOf } from "../../data/typing";
-import { buildStatLines, perCastOutputOf } from "../shared/BatomonCard/BatomonCard";
+import { BatomonCard, buildStatLines, perCastOutputOf } from "../shared/BatomonCard/BatomonCard";
 import { GridPicker } from "../GridPicker/GridPicker";
 import { simulate } from "../../engine/simulate";
 import { corpus } from "../../data/corpus";
@@ -166,6 +166,70 @@ describe("TrinketPicker duplicates and the Selected section (2026-10-07)", () =>
     fireEvent.click(screen.getByRole("button", { name: "Done" }));
     expect(screen.queryByText("Bargain Bin")).toBeNull();
     expect(panel().textContent).toMatch(/1 selected/);
+  });
+});
+
+/**
+ * WI-003 (orchestration round 6): a crowded output band overflows into a second column instead of
+ * growing past the card's reserved height, which — the card being `overflow: hidden` — pushed the
+ * ability text and the level pips out of view.
+ *
+ * The threshold is 4 because 3 is the published maximum across all 596 records (research.md Q2), so 4
+ * is exactly the count only modifiers, trinkets, abilities or manual triggers can produce.
+ *
+ * jsdom does no layout, so what is assertable is the row count the grid flows down — which is also why
+ * the mechanism is an explicit `grid-template-rows` rather than `columns: 2`, whose balancing jsdom
+ * could not report even if it applied to a flex container, which it does not.
+ */
+describe("the card's output band overflows into a second column (WI-003)", () => {
+  const shelldra = corpus.creatures.find((c) => c.id === "shelldra" && c.level === 1)!;
+
+  function statLinesElement(modifiers: TeamConfiguration["teamModifiers"]): HTMLElement {
+    render(<BatomonCard creature={shelldra} modifiers={modifiers} />);
+    // The band is the element holding the "Deal …" line; found by that line's parent rather than by a
+    // hashed CSS-module class name.
+    return screen.getByText(/Deal \d+ damage/).parentElement as HTMLElement;
+  }
+
+  it("keeps one column for the three lines Shelldra publishes", () => {
+    const band = statLinesElement([]);
+    expect(band.style.getPropertyValue("--stat-rows")).toBe("");
+    expect(Array.from(band.children).map((c) => c.textContent)).toEqual([
+      "Deal 15 damage",
+      "Heal 15",
+      "Multicast ×3",
+    ]);
+  });
+
+  it("splits the ask's six-line example into 3 rows, in the published order", () => {
+    // The ask: "col 1: Deal 15 damage, POison 3, shock 3. col 2: shield 4, heal 15, multicast x3".
+    const band = statLinesElement([
+      { id: "p", stat: "poisonAmountAdd", amount: 3 },
+      { id: "s", stat: "shockAmountAdd", amount: 3 },
+      { id: "h", stat: "shieldAmountAdd", amount: 4 },
+    ]);
+    expect(band.style.getPropertyValue("--stat-rows")).toBe("3");
+    expect(Array.from(band.children).map((c) => c.textContent)).toEqual([
+      "Deal 15 damage",
+      "Poison 3",
+      "Shock 3",
+      "Shield 4",
+      "Heal 15",
+      "Multicast ×3",
+    ]);
+  });
+
+  it("holds the 7-line worst case as 4 rows, never a third column", () => {
+    // Seven is the ceiling: damage + all four statuses + heal + multicast (research.md Q2).
+    const band = statLinesElement([
+      { id: "b", stat: "burnAmountAdd", amount: 2 },
+      { id: "p", stat: "poisonAmountAdd", amount: 3 },
+      { id: "s", stat: "shockAmountAdd", amount: 3 },
+      { id: "h", stat: "shieldAmountAdd", amount: 4 },
+    ]);
+    expect(band.children.length).toBe(7);
+    // 7 items over 4 rows is two columns of 4 and 3. A third column cannot arise from ceil(n/2).
+    expect(band.style.getPropertyValue("--stat-rows")).toBe("4");
   });
 });
 

@@ -171,8 +171,13 @@ describe("the trainer card holds one height for every trainer", () => {
  * It is invisible in review — the line looks correct — which is exactly the kind of thing to pin.
  */
 describe("every custom property referenced without a fallback is defined", () => {
-  /** Set from JS via a `style` prop, so no stylesheet declares them. */
-  const SET_INLINE = new Set(["--sprite-url", "--rarity-color"]);
+  /**
+   * Set from JS via a `style` prop, so no stylesheet declares them.
+   *
+   * `--stat-rows` is the output band's row count, which `StatLines` computes as `ceil(n / 2)` — the
+   * one part of the two-column grid that has to come from the data (WI-003).
+   */
+  const SET_INLINE = new Set(["--sprite-url", "--rarity-color", "--stat-rows"]);
 
   it("has no dangling var() references", () => {
     const cssFiles = cssFilesUnder(join(__dirname, "..", ".."));

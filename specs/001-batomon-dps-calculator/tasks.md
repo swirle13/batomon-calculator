@@ -2379,3 +2379,131 @@ Source brief: `orchestration/engine-handoff-gameplay-capture.md`.
       Report coverage before/after AND state plainly that the **three** newly-tagged mons (T246 —
       Noxnimbus was already resolved) represent new
       mechanism families, not incremental instances.
+
+---
+
+## Orchestration round 6 (2026-10-07) — affected-species picker, and the card's output band
+
+Ledger: `specs/001-batomon-dps-calculator/orchestration/round-6-items.md`.
+Design: plan.md "Amendment: Orchestration round 6"; research.md Q1-Q2; data-model.md's two round-6
+sections; quickstart.md scenarios 45-48. No engine or data-schema change, so `contracts/engine-api.md`
+is unaffected this round.
+
+### User Story 3 (P3) — the affected-species picker (WI-001, WI-002)
+
+- [x] T259 [US3] **[WI-001]** Rebuild `src/ui/shared/TrainerCard/AffectedCreaturePicker.tsx` out of the
+      parts the trinket picker already uses: `Modal`, `FilterBar`, `TextField` (`type="search"`),
+      `ResultCount`, `PickerSection` with `columns={OVERLAY_COLUMNS}`, `PickerCard`, `SpriteTile` and
+      `EmptyNote` from `src/ui/primitives`. Species become **cards in a 3-column grid**, grouped into
+      rarity sections running **Common -> Mythical, alphabetical within each** (FR-048, FR-067), not
+      the current single-column `<ul>` of up to 149 rows. The ask: "the painted species and smuggled
+      species UI needs to reuse the trinkets component. … Another DRY principle violation."
+      **State explicitly what becomes of the three non-list parts** rather than leaving them to
+      chance: the intro paragraph (`.pickerIntro`) and the region warning (`.pickerWarn`) are kept as
+      the modal's leading copy, and the rarity-shape row (`.shapeRow`) is kept as guidance — with the
+      key bug T270 fixes.
+- [x] T260 [US3] **[WI-001]** Delete the rules T259 supersedes from
+      `src/ui/shared/TrainerCard/TrainerCard.module.css`: `.pickerList`, `.pickerItem`,
+      `.pickerItemOn`, `.pickerName`, `.pickerMeta`, `.pickerEmpty`, `.pickerSearch`. **Keep**
+      `.pickerIntro`, `.pickerWarn`, `.shapeRow`, `.shapeChip`, `.shapeMet` — none of those is a list
+      rule, so none is superseded by T259. A rule left behind here is the duplication WI-001 is about.
+      Keeping the shape row's CSS is **not** a clean bill of health for the row itself: its keys are
+      broken, which is T270's job.
+- [x] T261 [US3] **[WI-002]** Replace `TARGET_SIZE` with an exported `MAX_AFFECTED_SPECIES = 9` and
+      render the selection as a **`PickerSection` of nine slots in 3 columns** — a 3x3 block of
+      selected cards plus **empty placeholders for the unused slots**, the way the Modifiers overlay
+      renders all six board slots including empty ones — with the heading count reading `N/9`. The
+      ask: "Both trainer abilities only allow a max of 9 mons to be painted/smuggled, so those should
+      be represented in the 3xN pop up UI."
+      **`PickerSection` cannot render `N/9` today**: its `count: number` prop renders `({count})`
+      (`src/ui/primitives/index.tsx`). Widen that one prop to `count: number | string` so a caller can
+      pass `"4/9"`, rather than adding a second heading component beside it — a parallel heading is the
+      duplication this round exists to remove.
+- [x] T262 [US3] **[WI-002]** Enforce the cap in `AffectedCreaturePicker`, per data-model.md: "**At
+      most `MAX_AFFECTED_SPECIES` (9) ids per set.** Enforced in the UI that writes them …, not in
+      `simulate()`". A tenth selection MUST be **refused with a stated reason** and MUST NOT silently
+      drop or replace any of the nine already chosen; removing one MUST free the slot again.
+      **Painter's rarity shape stays guidance and is NOT enforced** (round 4: its source says
+      "typically") — the count is enforced, the shape is not.
+- [x] T263 [P] [US3] **[WI-002]** Record in `spec.md` that the cap's provenance is **split**: published
+      for Painter ("Nine random species are painted with every type") and **assumed for Smuggler**,
+      whose published text states no count at all and whose `abilityText` is itself in
+      `unconfirmedFields` (research.md Q1). Report this to the user rather than leaving the UI
+      implying both numbers are cited.
+- [x] T264 [US3] **[WI-001, WI-002]** Add `src/ui/shared/TrainerCard/__tests__/AffectedCreaturePicker.test.tsx`
+      — the surface has **no automated coverage today**, so migrating it without tests would be
+      unverifiable. Assert: (a) results render as cards in a 3-column grid with rarity section
+      headings, not as a single-column list; (b) nine slots are rendered including empty ones, and the
+      count reads `N/9`; (c) a tenth selection is refused and the nine survive; (d) removing one frees
+      a slot; (e) Smuggler offers **only opposite-region** species — "in the other region and not in
+      this one", never the set complement (FR-088); (f) a selection persists across close/reopen
+      (FR-090, user-chosen never generated).
+
+### User Story 1 (P1) — the card's output band (WI-003)
+
+- [x] T265 [US1] **[WI-003]** MEASURE first, in a real browser, and record the numbers in research.md
+      Q2: the height of `BatomonCard`'s output band at 1..7 stat lines in one column and in two, and
+      the card's own reserved height in each variant. **Name which reservation you are measuring**:
+      `.cardFixedBrowser` reserves `.output { min-height: 4.5rem }` (BatomonCard.module.css:53) while
+      `.cardFixedPanel` reserves only a whole-card `29rem` (line 37) with its `.output` reservation
+      **commented out** (line 40) — one real number and one absent one, and the absent one is part of
+      why the panel variant breaks first. The measurement decides the band's height, NOT the switch
+      threshold: that is already fixed at 4 by research.md Q2 and must not be re-derived here.
+      **ACT on the measurement in this task, do not merely record it**: if a two-column band at 7 lines
+      (4 rows) exceeds what the card reserves, raise the reservation in
+      `src/ui/shared/BatomonCard/BatomonCard.module.css` — including **un-commenting and re-sizing
+      `.cardFixedPanel`'s `.output` reservation** (line 40), which is the variant that can reach 7 —
+      and record the before/after numbers. If it fits, say so explicitly and change nothing. Either way
+      the round must not end with a measurement nothing acted on.
+- [x] T266 [US1] **[WI-003]** Lay `StatLines` out in **two columns at 4 or more lines** — the threshold
+      is 4 because 3 is the published maximum across all 596 records (research.md Q2), so 4 is the
+      first count only modifiers can produce. 1-3 lines keep today's single column, so no existing card
+      changes shape. **Add** a modifier class to `src/ui/shared/BatomonCard/BatomonCard.module.css`
+      declaring `display: grid; grid-auto-flow: column; grid-template-rows: repeat(var(--stat-rows),
+      auto)` — keeping the band's existing `gap` — and **apply** it in `StatLines` in
+      `src/ui/shared/BatomonCard/BatomonCard.tsx` when `lines.length >= 4`, setting `--stat-rows` to
+      `Math.ceil(lines.length / 2)` inline.
+      **NOT `columns: 2`.** That was this round's first specification and it is inert: `.statLines` is
+      `display: flex; flex-direction: column` (BatomonCard.module.css:167-174), and CSS multi-column
+      does not apply to a flex container, so a class carrying only `columns`/`column-gap` would ship a
+      no-op that T268's class assertion could not catch (validation pass 3). The grid also fills the
+      **first column before the second by construction** rather than by trusting a balancer, which is
+      the order the ask gives — "col 1: Deal 15 damage, POison 3, shock 3. col 2: shield 4, heal 15,
+      multicast x3" — and makes a **third column arithmetically unreachable**: n items over ceil(n/2)
+      rows is at most 2 columns.
+- [x] T267 [US1] **[WI-003]** Verify FR-043 ("MUST NOT resize or reflow as their contents change … Text
+      MUST NOT overflow its container") holds, and that the **"Effective this battle"** band gets the
+      same treatment — it renders through the same `StatLines`, so this is a check, not a second
+      implementation. **Per variant, at the count each can actually reach**: the `panel` variant at the
+      full 7 lines, since the Calculator passes `modifiers`; the `browser` variant at **3**, its real
+      maximum, because `CorpusBrowser` renders `BatomonCard` with no `modifiers` prop
+      (CorpusBrowser.tsx:83) and therefore cannot reach 4+ in the running app. Do not record a 7-line
+      browser-variant check as done — it is unreachable there; T268's render test is what covers 4+
+      structurally. The reported symptom to confirm gone: with many statuses the ability text and the
+      level/shiny bubbles were pushed out of an `overflow: hidden` card.
+- [x] T268 [P] [US1] **[WI-003]** Test in `src/ui/__tests__/presentation.test.tsx`: a creature carrying
+      damage, all four statuses, heal and multicast renders all 7 lines, in the published order, with
+      the two-column class applied **and `--stat-rows` equal to 4**; the ask's own 6-line example gives
+      3 rows; and a 1-3 line creature gets neither the class nor the property. jsdom does no layout, so
+      the row count is what makes this assertable at all — assert it rather than measured positions,
+      which is also why the mechanism is a grid with an explicit row count rather than a balancer whose
+      result jsdom cannot see.
+
+### Found in validation, not in the ask
+
+- [x] T270 [US3] **[validation pass 1 finding — NOT a ledger item]** Fix the rarity-shape key mismatch
+      in `src/ui/shared/TrainerCard/AffectedCreaturePicker.tsx`: `PAINTER_RARITY_SHAPE` is keyed
+      `"Super Rare"` (with a space) while the corpus's `Rarity` union and `RARITIES_DESC` use
+      `"SuperRare"`, so the Super Rare chip is filtered out and the guidance row sums to **7 of 9**
+      instead of 9. Key it off the `Rarity` union — `Record<Rarity, number>` with the five entries that
+      have a target — so the compiler rejects the next misspelling rather than silently dropping a
+      chip. `statColors.ts` already documents this exact trap ("the deliberate spelling bridge"). The
+      user's screenshot of the picker shows the four surviving chips, so this is visible in the
+      evidence attached to the ask without being part of it; **report it as a by-product, not as
+      something they asked for** (research.md Q3).
+
+### Verification
+
+- [x] T269 **[WI-001, WI-002, WI-003]** `npx tsc -b --noEmit`, `npx vitest run`, `npm run lint`,
+      `npm run build`, then walk quickstart scenarios 45-48 in a real browser. Report the measured
+      numbers from T265 and state plainly whether any item was left partially done.

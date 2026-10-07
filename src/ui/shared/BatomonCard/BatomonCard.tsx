@@ -109,13 +109,26 @@ export function buildStatLines(input: PerCastOutput): StatLine[] {
   return lines;
 }
 
+/**
+ * Four or more output lines spill into a second column rather than making the band taller
+ * (2026-10-07, WI-003). See `.statLinesTwoColumn` for why the threshold is 4 and why this is a grid
+ * rather than `columns: 2`.
+ */
+const TWO_COLUMN_FROM = 4;
+
 /** Renders band 3's right-hand column. Shared between the base and effective bands. */
 export function StatLines({ lines }: { lines: StatLine[] }) {
   if (lines.length === 0) {
     return <div className={styles.noOutput}>No published per-cast output</div>;
   }
+  const twoColumn = lines.length >= TWO_COLUMN_FROM;
   return (
-    <div className={styles.statLines}>
+    <div
+      className={`${styles.statLines} ${twoColumn ? styles.statLinesTwoColumn : ""}`}
+      // The row count is what makes the first column fill before the second, and the only part of
+      // this that jsdom can see — layout it does not do, an inline custom property it does.
+      style={twoColumn ? ({ ["--stat-rows" as string]: Math.ceil(lines.length / 2) } as React.CSSProperties) : undefined}
+    >
       {lines.map((line) => (
         <div key={`${line.key}-${line.label}`} className={styles.statLine} style={{ color: STAT_COLORS[line.key] }}>
           {line.label}

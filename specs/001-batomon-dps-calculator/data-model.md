@@ -1055,3 +1055,33 @@ give one chip at double the amount rather than two chips.
 these as unmodelled, or the counter would claim abilities the engine does not compute. The audit
 script reports them in their own category rather than as "inert", which previously meant "read by
 nothing" and would have mislabelled nine working creatures.
+
+## Affected-species sets: a cap, and where it lives (2026-10-07, WI-002)
+
+`TeamConfiguration.paintedCreatureIds` and `smuggledCreatureIds` (round 4) gain one validation rule:
+
+- **At most `MAX_AFFECTED_SPECIES` (9) ids per set.** Enforced in the UI that writes them
+  (`AffectedCreaturePicker`), not in `simulate()` — the engine reads these sets to answer "does this
+  species count as every type" and a longer list makes no arithmetic invalid, so a cap in the engine
+  would reject an imported build for a cosmetic reason. The constant is exported from one module so
+  the counter, the 3x3 selected block and the refusal all read the same number.
+- **No ordering significance.** Both remain sets in meaning and arrays in representation; `share.ts`
+  already sorts them when canonicalising, so two builds with the same 9 species in different click
+  orders hash identically.
+- **Provenance of the number**: published for Painter ("Nine random species"), assumed for Smuggler
+  (its text states no count, and its `abilityText` is itself in `unconfirmedFields`). See research.md
+  Q1. Changing it for one trainer and not the other means splitting this constant, and that is the
+  change to make if play contradicts the assumption — not a silent widening of both.
+
+## PerCastOutput display: line count, not just values (2026-10-07, WI-003)
+
+`buildStatLines(PerCastOutput)` produces between 0 and **7** lines — damage, one per applied status
+(Burn, Poison, Shock, Shield), heal, and multicast above 1. The published corpus reaches at most 3
+(research.md Q2); 4 and above are produced only once modifiers, trinket `effectTags`, ally abilities or
+manual triggers have added statuses the creature does not publish, which `applyModifiers` permits by
+design (FR-078 as amended).
+
+This makes the line count a **display-layout input**, not an incidental: the band that renders it
+reserves a fixed height (FR-043), so the number of lines decides whether that reservation holds. It is
+recorded here because the constraint belongs to the shape, not to the component that happens to draw
+it today.

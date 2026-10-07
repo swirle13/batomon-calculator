@@ -792,3 +792,47 @@ npm run build
 3. Filter the Corpus Browser by **Fire**. **Expect**: Bumblebolt appears.
 4. **Expect**: **Omnichrome** also appears under every type filter — it is natively `All`, and
    before this round it matched *no* type filter at all.
+
+## Validation scenarios 45-48 — round 6 (2026-10-07)
+
+### Scenario 45 — the affected-species picker is the trinket picker's shape (WI-001)
+
+1. Choose **Painter** in the Trainer select, then press **Painted species** on the trainer card.
+2. Expect the overlay to be the same furniture as **Choose trinkets**: one search field in a filter
+   row with a result count, species as **cards** in a **3-column** grid (not a single-column list of
+   rows), and rarity section headings running Common -> Mythical.
+3. Expect no hand-rolled list to remain: `TrainerCard.module.css` contains none of `.pickerList`,
+   `.pickerItem`, `.pickerName`, `.pickerMeta`, `.pickerSearch`, `.pickerEmpty`.
+4. Select four species, close, reopen: the same four are still selected (FR-090 — user-chosen, never
+   generated).
+
+### Scenario 46 — nine slots, shown and enforced (WI-002)
+
+1. With Painter chosen, open **Painted species**.
+2. Expect a **Selected** section laid out as a **3x3 block of nine slots**, with the unused ones
+   rendered as empty placeholders rather than omitted, and a count reading `0/9`.
+3. Select nine species. Expect the block to be full and the count to read `9/9`.
+4. Attempt a tenth. Expect the selection to be **refused with a stated reason**, and the nine already
+   chosen to be untouched.
+5. Remove one. Expect the tenth to become selectable again.
+6. Switch the trainer to **Smuggler** and open **Smuggled species**: the same nine slots, and only
+   opposite-region species offered (FR-088 — "in the other region and not in this one", never the set
+   complement).
+
+### Scenario 47 — a crowded output band keeps its structure (WI-003)
+
+1. Place **Shelldra** (publishes Deal 15 damage, Heal 15, Multicast x3).
+2. In **Modifiers**, add Poison 3, Shock 3 and Shield 4 to it.
+3. Expect the selected-creature card's output band to render **two columns**, the first filled before
+   the second — `Deal 15 damage / Poison 3 / Shock 3` then `Shield 4 / Heal 15 / Multicast x3`.
+4. Expect the card to hold its declared height, with the ability text and the level/shiny bubbles
+   still visible (FR-043). Nothing is clipped and the cooldown block stays beside the lines, not above
+   them.
+5. Expect the same two-column treatment in the **Effective this battle** band, which renders through
+   the same component.
+
+### Scenario 48 — the worst case, measured (WI-003)
+
+1. Add a damage modifier and all four statuses to a creature that also heals and multicasts, for the
+   full 7 lines.
+2. Expect 4 lines in the first column and 3 in the second, no third column, and no clipping.

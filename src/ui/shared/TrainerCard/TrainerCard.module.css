@@ -87,10 +87,17 @@
 .showButton { align-self: flex-start; margin-top: auto; }
 .hint { color: var(--text-muted); font-weight: 400; }
 
+/*
+ * The affected-species picker is the trinket picker's shape now (2026-10-07, WI-001): `Modal`,
+ * `FilterBar`, `PickerSection`, `PickerCard`, `CreatureTile`, `EmptyNote`. The rules that used to draw
+ * its own single-column list — `.pickerList`, `.pickerItem`, `.pickerItemOn`, `.pickerName`,
+ * `.pickerMeta`, `.pickerEmpty`, `.pickerSearch` — are deleted, because keeping a second
+ * implementation of a picker's results is precisely the duplication that item was about.
+ *
+ * What is left is the copy above the results and the two things a species slot needs.
+ */
 .pickerIntro { font-size: var(--font-sm); color: var(--text-secondary); margin: 0 0 var(--space-xs); }
 .pickerWarn { font-size: var(--font-sm); color: var(--text-warn); margin: 0 0 var(--space-xs); }
-/* `TextField block` carries the look; the gap below it is this layout's business. */
-.pickerSearch { margin-bottom: var(--space-xs); }
 .shapeRow { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-bottom: var(--space-xs); }
 .shapeChip {
   font-size: 0.65rem; padding: 0.15rem 0.4rem; border-radius: 999px;
@@ -99,14 +106,39 @@
 /* Met is a quiet confirmation, not a reward — the shape is guidance and may be ignored. */
 .shapeMet { border-style: solid; color: var(--text-secondary); }
 
-.pickerList { list-style: none; margin: 0; padding: 0; max-height: 50vh; overflow-y: auto; }
-.pickerItem {
-  display: flex; align-items: center; gap: var(--space-xs); width: 100%;
-  padding: 0.25rem 0.4rem; background: none; border: 1px solid transparent;
-  border-radius: var(--radius-sm); color: var(--text-primary); cursor: pointer; text-align: left;
+/* A species slot's tile, sized from the same token the Modifiers cells use: nine of these plus a
+   full browse grid is a tall overlay, so the tile identifies the species rather than displaying it. */
+.slotTile {
+  height: calc(var(--sprite-modifier) + 2rem);
+  flex: none;
 }
-.pickerItem:hover { background: var(--surface-sunken); }
-.pickerItemOn { border-color: var(--accent, #8ab4f8); background: var(--surface-sunken); }
-.pickerName { flex: 1; font-size: var(--font-sm); }
-.pickerMeta { font-size: var(--font-xs); color: var(--text-muted); }
-.pickerEmpty { font-size: var(--font-sm); color: var(--text-muted); padding: var(--space-sm); }
+
+/* The nine slots include the EMPTY ones, so the cap is the section's shape rather than a number in a
+   sentence — the same reason the Modifiers overlay draws all six board slots. */
+.emptySlot {
+  border: 1px dashed var(--line-subtle);
+  border-radius: var(--radius-md);
+  min-height: calc(var(--sprite-modifier) + 2rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-xs);
+  color: var(--text-muted);
+}
+
+/* Over the tile's art, as in the trinket picker's Selected section: this card removes. */
+.removeMark {
+  position: absolute;
+  top: var(--space-2xs);
+  right: var(--space-2xs);
+  min-width: 1.25rem;
+  height: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-pill);
+  background: rgba(176, 42, 55, 0.85);
+  color: #fff;
+  font-size: var(--font-sm);
+  font-weight: 700;
+}

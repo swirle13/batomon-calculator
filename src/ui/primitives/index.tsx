@@ -316,7 +316,13 @@ export function PickerSection({
 }: {
   heading: string;
   color?: string;
-  count: number;
+  /**
+   * `number` for "how many matched"; a STRING for a count against a cap, e.g. `"4/9"` — the
+   * affected-species picker fills nine fixed slots, so its heading has to say how many of nine
+   * rather than how many exist. A second heading component for that one difference is the
+   * duplication this layer exists to prevent.
+   */
+  count: number | string;
   /** Auto-fit column sizing. Mutually exclusive with `columns`; `columns` wins. */
   cardMinWidth?: string;
   columns?: number;
@@ -325,7 +331,9 @@ export function PickerSection({
   return (
     <section className={styles.pickerSection}>
       <h4 className={styles.pickerSectionHeading} style={color ? { color } : undefined}>
-        {heading}
+        {/* The space is for the ACCESSIBLE NAME, not the layout — the heading is a flex row with its
+            own gap, so sighted readers already saw one while screen readers heard "Common(19)". */}
+        {heading}{" "}
         <span className={styles.pickerSectionCount}>({count})</span>
       </h4>
       <CardGrid minWidth={cardMinWidth} columns={columns}>

@@ -173,6 +173,29 @@
   min-width: 0;
 }
 
+/*
+ * Four or more lines overflow into a SECOND COLUMN (2026-10-07, WI-003).
+ *
+ * The published corpus reaches 3 lines at most — a census of all 596 records gives 16/373/181/26 for
+ * 0/1/2/3 and nothing above (research.md Q2) — so 4 is exactly the count that only modifiers,
+ * trinkets, abilities or manual triggers can produce, and the count this band was never sized for. At
+ * 6 or 7 it grew past the card's reserved height, and the card is `overflow: hidden`, so the ability
+ * text and the level pips below were pushed out of view: the reported "loses structure".
+ *
+ * A column-flow GRID, not `columns: 2`. CSS multi-column does not apply to a flex container, so a
+ * `columns` declaration here would have been inert — and it would have ignored the `gap` above in
+ * favour of its own gutter. The grid keeps the gap, fills the first column before the second BY
+ * CONSTRUCTION rather than by trusting a balancer (which is the order the ask specifies), and makes a
+ * third column arithmetically unreachable: n items over ceil(n/2) rows is at most two columns.
+ */
+.statLinesTwoColumn {
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: repeat(var(--stat-rows), auto);
+  column-gap: var(--space-sm);
+  align-content: center;
+}
+
 .statLine {
   font-size: 0.9rem;
   font-weight: 600;

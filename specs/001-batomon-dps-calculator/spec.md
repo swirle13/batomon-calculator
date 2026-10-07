@@ -979,3 +979,28 @@ than by a per-trinket badge (see the retired "★ affects DPS" marker).
 - **The page frame is removed.** `#root` drew 1px vertical rules down both edges and `header` a 1px
   `#ddd` rule beneath it — a light-theme grey that read as the brightest line on a dark page. Both
   framed the app on a wide desktop and crowded it on a phone, where the frame is the viewport.
+
+### Round 6 requirements (2026-10-07)
+
+- **FR-107**: The affected-species picker (Painter's painted set, Smuggler's smuggled set) MUST be
+  built from the same components as the trinket picker — modal chrome, filter bar, rarity-sectioned
+  card grid at the overlays' three columns, and the shared creature tile. A second implementation of a
+  picker's results is a defect (Principle VII), which is what this replaced: a single-column list of up
+  to 149 rows with its own list, item, name, meta, search and empty-state rules.
+- **FR-108**: Each affected-species set MUST be capped at **9**, and the cap MUST be visible as the
+  shape of the UI — nine slots in three columns, empty ones included — not merely as a counter. A
+  selection beyond the cap MUST be refused with a stated reason, and MUST NOT silently drop or replace
+  a species the user chose. Removing one MUST free a slot.
+  **The cap's provenance is split, and the UI must not imply otherwise**: Painter's nine is published
+  ("Nine random species are painted with every type"), while **Smuggler's is this project's
+  assumption** — its published text states no count at all and is itself flagged in
+  `unconfirmedFields` (research.md Q1). One constant covers both so that a future correction is a
+  one-line change for one trainer.
+- **FR-109**: Painter's rarity shape (2 Common / 2 Uncommon / 2 Rare / 2 Super Rare / 1 Legendary)
+  remains **guidance, never enforced** — its source says "typically". The count is enforced; the shape
+  is not. These are different claims with different evidence.
+- **FR-110**: A creature's per-cast output band MUST render **four or more lines in two columns**,
+  filling the first column before the second, rather than growing past the height its card reserves.
+  A third column MUST NOT be reachable. The published corpus reaches at most 3 lines; 4 to 7 arise only
+  once modifiers, trinket effects, ally abilities or manual triggers have added statuses the creature
+  does not publish (research.md Q2), and 7 — damage, four statuses, heal, multicast — is the ceiling.

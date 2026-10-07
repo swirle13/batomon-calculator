@@ -2367,3 +2367,134 @@ someone records one.
 The default window is now **30s**, justified by something the data does support: enemy HP grows
 ~25% per day and keeps growing, so later-day fights take substantially longer. A window that ends
 before a team has done its work makes a slow, scaling build look worse than it is.
+
+## Q. Orchestration round 6 (2026-10-07) — the affected-species picker and the card's output band
+
+### Q1. WI-002 ANSWERED, and the "both abilities" premise is half-sourced
+
+The ask states "**Both** trainer abilities only allow a max of 9 mons to be painted/smuggled". The
+corpus supports that for one of the two:
+
+| Trainer | Published `abilityText` (src/data/trainers.ts) | Says "nine"? |
+| --- | --- | --- |
+| **Painter** | "**Nine random species** are painted with every type. Whenever a painted species appears in your shop or on your board, it counts as every type for any effect that checks typing." | **Yes** |
+| **Smuggler** | "Batomon from other regions appear in your shop and cost 25% less." | **No — no count at all** |
+
+Smuggler's record also carries `unconfirmedFields: ["abilityText"]`, so its text is itself flagged as
+unverified. The "9 species from the opposite region" string the UI shows for Smuggler comes from
+`SET_DESIGNATING_TRAINERS` in `TrainerCard.tsx` — written in round 4, sourced to nothing. Round 4's own
+note says as much: "The shape is Painter's only; Smuggler's text mentions neither 9 creatures nor
+rarity."
+
+**Decision**: apply the cap of 9 to both, from one `MAX_AFFECTED_SPECIES` constant, because that is
+what the ask asserts and it matches the only published count we have. **Record the asymmetry rather
+than hiding it**: Smuggler's 9 is this project's assumption, not a cited fact, and the spec amendment
+and the round report both say so. If play shows otherwise for Smuggler, the constant is the single
+place to change.
+
+**Not changed**: Painter's rarity shape (2/2/2/2/1) stays **guidance, never enforced** — its source
+says "typically", and round 4's reasoning for not hard-locking a soft constraint is unaffected by a
+count the text states outright.
+
+### Q2. WI-003 — the base corpus cannot produce "too many statuses"; modifiers can
+
+Census of output lines per creature record, over all 596 level-records. **Corrected in validation pass
+1**: the first version of this table reported 348 one-line and 206 two-line records, counted by regex
+over `creatures.ts`, which mis-handled `unconfirmedFields` and nested status entries. The figures below
+come from running the real `buildStatLines(perCastOutputOf(creature))` over `corpus.creatures`, which
+is the only count that can be trusted because it is the code that draws the band:
+
+| Lines | Records |
+| --- | --- |
+| 0 | 16 |
+| 1 | 373 |
+| 2 | 181 |
+| 3 | 26 |
+| **4+** | **0** |
+
+So no published creature reaches four lines, and the reported breakage cannot come from base stats.
+It comes from everything that ADDS output: user modifiers, trinket `effectTags`, ally abilities and
+manual triggers — all of which flow through `perCastOutputOf`/`applyModifiers`, and `applyModifiers`
+can create any of the four statuses on a creature that publishes none (FR-078 as amended).
+
+**The real worst case is 7 lines**, and it is built rather than inferred. Shelldra Lv1
+(`baseDamage: 15`) with four status modifiers — Burn 2, Poison 3, Shock 3, Shield 4 — renders exactly:
+
+```text
+Deal 15 damage | Burn 2 | Poison 3 | Shock 3 | Shield 4 | Heal 15 | Multicast ×3
+```
+
+and the ask's own six-line example reproduces from the same creature with Poison, Shock and Shield only:
+
+```text
+Deal 15 damage | Poison 3 | Shock 3 | Shield 4 | Heal 15 | Multicast ×3
+```
+
+(Validation pass 2 caught a `Deal 20 damage` here: the first run carried an extra `damageFlatAdd: 5`
+the prose did not mention, so the recorded string did not match the stated setup. Both strings above
+are the output of a run with exactly the modifiers named.)
+
+Seven is a hard ceiling, not a sample: `StatusEffectType` has four members, no record publishes a
+duplicate status type, and `buildStatLines` emits at most one damage, one heal and one multicast line.
+The user's example is 6 of those 7 ("Deal 15 damage, Poison 3, shock 3 | shield 4, heal 15, multicast
+x3") — a Shelldra with three statuses added.
+
+**Decisions**:
+
+- Design the band for **7**, not for the 3 the corpus publishes.
+- **Switch to two columns at 4 or more lines.** 3 is the published maximum, so 4 is the first count
+  that only modifiers, trinkets, abilities or manual triggers can produce — which makes it both the
+  first count the band was never sized for and a threshold derived from the data rather than chosen.
+- Two columns hold 7 as 4+3, one row taller than the 3-line maximum the band reserves today, so the
+  reservation is re-measured rather than assumed to still fit.
+- **The two columns are a column-flow GRID, not CSS multi-column.** `columns: 2` was specified first
+  and is inert here: `.statLines` is `display: flex`, and multi-column does not apply to a flex
+  container (validation pass 3). `grid-auto-flow: column` with `grid-template-rows: repeat(ceil(n/2),
+  auto)` fills the first column before the second by construction, keeps the band's existing `gap`,
+  and makes a third column arithmetically impossible.
+
+### Q4. T265 MEASURED: the band at 3 to 7 lines, and why no reservation changed
+
+Shelldra Lv1 in the Calculator's panel card, statuses added one at a time in a real browser:
+
+| Lines | Rows | Band height | Card height | Card scrollHeight | Overflowing? | Ability text visible? |
+| --- | --- | --- | --- | --- | --- | --- |
+| 3 (published) | 1 column | 81.9px | 522px | 520px | no | yes |
+| 4 | 2 | 58.5px | 522px | 520px | no | yes |
+| 5 | 3 | 81.9px | 522px | 520px | no | yes |
+| 6 (the ask's example) | 3 | 81.9px | 522px | 520px | no | yes |
+| 7 (worst case) | 4 | 109.8px | 522px | 520px | no | yes |
+
+**No reservation needed changing**, which T265 required to be stated explicitly rather than assumed:
+`.cardFixedPanel`'s 29rem absorbs the 4-row band with the ability text and the level pips still in view,
+so `.output`'s commented-out reservation stays commented out and nothing was re-sized.
+
+Two things worth noting from the table. **Two columns make the band SHORTER for 4-6 lines than three
+one-column lines were** (58.5px and 81.9px against 81.9px), so the common crowded cases cost nothing at
+all; only the 7-line ceiling is taller, by 27.9px. And the card's `scrollHeight` is 520px at every
+count, which is what "no overflow" means here — the band grows into slack the fixed height already had.
+
+The **Corpus Browser** was checked at its real maximum rather than at 7, as the task states: 149 cards,
+worst case 3 lines, no card overflowing its 378px. It passes no `modifiers`, so 4+ is unreachable there.
+
+The **"Effective this battle"** band needed no separate check and could not have had one: it renders
+through the same `StatLines`, and it correctly hides when it would duplicate the base band — which is
+exactly the case here, since manual modifiers are folded into the base figure. One component is what
+guarantees the two agree.
+
+### Q3. A defect found in validation, not in the ask: the Super Rare shape chip never renders
+
+`PAINTER_RARITY_SHAPE` in `AffectedCreaturePicker.tsx` is keyed `"Super Rare"` (with a space), while the
+corpus's `Rarity` union and `RARITIES_DESC` use `"SuperRare"`. The chip row is built by filtering
+`RARITIES_DESC` against those keys, so the Super Rare entry is silently dropped: the guidance row shows
+four chips summing to **7 of 9**, not five summing to 9. The user's own screenshot of the picker shows
+exactly four chips — "Legendary 0/1  Rare 1/2  Uncommon 0/2  Common 1/2" — so the defect is visible in
+the evidence attached to the ask without being part of it.
+
+`statColors.ts` already documents this exact trap: "the deliberate spelling bridge: this corpus's
+`Rarity` union uses `SuperRare` while the published data uses `Super Rare`". The map was written against
+the published spelling instead of the union's.
+
+Recorded here, and fixed by a task, because WI-001 rebuilds this file: carrying the bug across a rewrite
+is how it would become permanent. It is **not** a ledger item and is reported to the user as a
+by-product, not as something they asked for.
