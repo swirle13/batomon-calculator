@@ -208,6 +208,39 @@ export type AbilityTag =
    * the ally-cast hook from T213. Chains are depth-capped; see `MAX_CHAIN_DEPTH` in `simulate.ts`.
    */
   | { kind: "triggerOnAllyCast"; target: TargetSelector }
+  /**
+   * 2026-10-06 (T240 / FR-094). Multiplicative stat scaling — "+70% to mons with cooldown >= 5s".
+   * The tag vocabulary could not express a multiplier at all; the capture shows one driving the
+   * board's largest numbers.
+   */
+  | { kind: "statMultiplier"; target: TargetSelector; stat: "damage" | "status" | "all"; factor: number }
+  /**
+   * 2026-10-06 (T244 / FR-098). "additional Damage equal to 200% of the Poison stacks on the
+   * enemy" — Fumungus. Read from the SHARED TARGET's accumulated status, recomputed every cast and
+   * never persisted. `statFromStat` cannot express it: that reads a selector over **allies**.
+   *
+   * This was the captured team's largest damage term (14K+ by t~6.3, against Thorntail's 7994) and
+   * it grows superlinearly, because Poison stacks only ever accumulate.
+   */
+  | { kind: "statFromTargetStatus"; status: StatusEffectType; multiplier: number }
+  /**
+   * 2026-10-06 (T245 / FR-099). "Trigger this when adjacent Toxic allies trigger" — Puffloon.
+   *
+   * Distinct from `triggerOnAllyCast`: this fires on an ally's TRIGGER and **must not reset or
+   * consume the reactor's own cooldown**. The capture is unambiguous — Puffloon's bar climbed
+   * monotonically 13 -> 19px through a four-hit cascade and it still cast off its own 10s cycle
+   * afterwards.
+   */
+  | { kind: "triggerOnAllyTrigger"; target: TargetSelector }
+  /**
+   * 2026-10-06 (T241 / FR-095). "When allies inflict <status>, this gains +N <stat> permanently" —
+   * Thorntail.
+   *
+   * The gain is **never scaled**. Thorntail entered the recorded battle at 7082 displayed damage
+   * against a listed base of 50 — so it carried enormous modifiers — and every single increment was
+   * still exactly its listed +24. It therefore lands in `postMultiplierFlatAdd`, not `base`.
+   */
+  | { kind: "gainOnAllyStatus"; status: StatusEffectType; stat: "damage"; amount: number }
   | { kind: "statFromUniqueTypes"; target: TargetSelector; effect: EffectDescriptor }
   /**
    * 2026-10-06 (T220). "Knockout adjacent allies and gain <effect> for each ally knocked out" —

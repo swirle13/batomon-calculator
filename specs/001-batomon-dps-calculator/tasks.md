@@ -2232,12 +2232,12 @@ Source brief: `orchestration/engine-handoff-gameplay-capture.md`.
 
 ### Engine — the load-bearing refactor first (the handoff's own sequencing)
 
-- [ ] T240 **[WI-002]** `StatValue` + a single `read()` helper (FR-094). "This is the load-bearing
+- [x] T240 **[WI-002]** `StatValue` + a single `read()` helper (FR-094). "This is the load-bearing
       refactor. Findings 1, 3 and 4 all depend on it existing." Add a `statMultiplier` tag kind —
       the +70% effect "needs adding to the tag vocabulary… to express the +70% trinket at all".
       Pin the capture's arithmetic: `(604 + 6) × 1.7 = 1037` and `(11 + 6) × 1.7 = 29`. Assert the
       wrong models fail: snapshot-then-add gives 1033 and 25.
-- [ ] T241 **[WI-003]** `postMultiplierFlatAdd` (FR-095). Thorntail's `+24 Damage permanently` must
+- [x] T241 **[WI-003]** `postMultiplierFlatAdd` (FR-095). Thorntail's `+24 Damage permanently` must
       add exactly 24 per infliction "regardless of its multipliers" — it entered at 7082 displayed
       damage against a listed base of 50 and "Every step is 24". Adding it to `base` inflates it
       "by roughly 140x per stack".
@@ -2245,7 +2245,7 @@ Source brief: `orchestration/engine-handoff-gameplay-capture.md`.
       7082 entry value is unexplained by its base stats plus anything visible in the footage, so
       this board's damage cannot be reproduced end-to-end and "somebody should work out where 7082
       comes from."
-- [ ] T242 **[WI-001]** Three-phase battle-start resolution (FR-096), each phase reading the
+- [x] T242 **[WI-001]** Three-phase battle-start resolution (FR-096), each phase reading the
       completed output of the previous. Classify EVERY tag kind by phase; an unclassified kind is a
       bug, not a default. Pin the phase ordering on **synthetic values that exercise phase 1 -> 3
       directly**. The captured board's **Miasmaw = 1080 CANNOT be pinned end-to-end this round**
@@ -2257,7 +2257,7 @@ Source brief: `orchestration/engine-handoff-gameplay-capture.md`.
       would encode a guess as a fixture; the 657-vs-1080 gap remains the stated motivation.
       Remove the superseded "must read their BASE values" comment in `effects.ts`
       and record why it is superseded rather than deleting it silently.
-- [ ] T243 **[WI-004]** Time-varying resolution (FR-097): `resolveEffects` returns initial state
+- [x] T243 **[WI-004]** Time-varying resolution (FR-097): `resolveEffects` returns initial state
       plus handlers keyed by trigger; the event loop invokes them. "Largest piece of work."
       **DOUBLE-APPLICATION HAZARD, which did not exist when the handoff was written** (research.md
       N6): round 11's `buffOnCast` path and round 4's ally-cast hook ALREADY fire on-cast abilities,
@@ -2266,10 +2266,10 @@ Source brief: `orchestration/engine-handoff-gameplay-capture.md`.
       handlers are simply added alongside, Noxnimbus's +6 fires twice per cast.
       Noxnimbus's `Adjacent Toxic allies gain +6 Poison for this battle` must fire on EVERY cast and
       compound. Self-exclusion must be preserved — "Noxnimbus's own badge never moves."
-- [ ] T244 **[WI-005]** `statFromTargetStatus` (FR-098) — "additional Damage equal to 200% of the
+- [x] T244 **[WI-005]** `statFromTargetStatus` (FR-098) — "additional Damage equal to 200% of the
       Poison stacks on the enemy", recomputed per cast and NOT persisted. Requires tracking the
       shared target's accumulated Poison, which `poisonLayers` (added T215) already provides.
-- [ ] T245 **[WI-007]** `triggerOnAllyTrigger` (FR-099). 7a: reacts to EACH ally trigger
+- [x] T245 **[WI-007]** `triggerOnAllyTrigger` (FR-099). 7a: reacts to EACH ally trigger
       independently. 7b: "**it must not touch the reactor's cooldown**". 7c is already correct —
       do not re-implement it.
       Carry the handoff's open item forward WITHOUT acting on it: whether a mon's own infliction
@@ -2280,7 +2280,7 @@ Source brief: `orchestration/engine-handoff-gameplay-capture.md`.
       `tSeconds + STEP` (`simulate.ts:662`) and firing then resets its cooldown (`:485`) — exactly
       what 7b forbids. Either correct it under 7b, or record why a cast-triggered reaction
       legitimately differs from a status-triggered one. Do not leave the two kinds disagreeing.
-- [ ] T246 **[WI-001..WI-005, WI-007]** Tag the inert mons: **Thorntail, Puffloon, Fumungus** —
+- [x] T246 **[WI-001..WI-005, WI-007]** Tag the inert mons: **Thorntail, Puffloon, Fumungus** —
       **three, not the handoff's four** (research.md N6). Noxnimbus was tagged in round 11 and
       resolves at every level; the handoff's board table predates that. "the engine is not slightly
       wrong, it is modelling a different team" still stands for the other three.
@@ -2290,14 +2290,14 @@ Source brief: `orchestration/engine-handoff-gameplay-capture.md`.
 
 ### Engine — test-locking only, NO behaviour change (the handoff's explicit gates)
 
-- [ ] T247 **[WI-006]** Test-lock charge stacking: grants "stack additively within a single tick"
+- [x] T247 **[WI-006]** Test-lock charge stacking: grants "stack additively within a single tick"
       (+18 = 3 × 6), already correct. **Do NOT change the `T` vs `T + 0.1` firing offset** — 0.1s
       battle-time is ~38ms of video and "sits inside the render-lag noise floor". The handoff
       classifies Findings 6 and 9 as "test-locking exercises, not implementation".
-- [ ] T248 **[WI-009]** Test-lock same-instant snapshot behaviour: Cobrex used **1027, not 1037**.
+- [x] T248 **[WI-009]** Test-lock same-instant snapshot behaviour: Cobrex used **1027, not 1037**.
       "**Do not implement a propagation delay on this evidence.**" FR-040's existing rule may
       already produce this "for the right reason"; the test locks it either way.
-- [ ] T249 **[WI-008]** Record Finding 8 and its gate. **`STABLE_SLOT_ORDER` MUST NOT be changed**
+- [x] T249 **[WI-008]** Record Finding 8 and its gate. **`STABLE_SLOT_ORDER` MUST NOT be changed**
       (FR-104): medium confidence, "Consistent with all evidence, proven by none of it", and every
       observed gap was 2 frames rather than 0 so **no tie was ever exhibited**. Record the
       front-row-first hypothesis and the 1x recording that would settle it.

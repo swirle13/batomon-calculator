@@ -11,6 +11,7 @@ import type {
 import { aboveSlot, behindSlot, isAdjacent, slotKey, slotsEqual } from "./grid";
 import { applyShinyOverlay } from "../data/corpus";
 import { creatureHasType } from "../data/typing";
+import { addFlat, addPostMultiplier, applyMultiplier, readRounded, statValue, type StatValue } from "./statValue";
 import { TYPE_COLORS } from "../data/typeColors";
 
 /**
@@ -66,6 +67,19 @@ export interface ResolvedPlacement {
    * ally — e.g. Onsetra's "the ally behind applies its Ongoing abilities 1 additional time".
    */
   extraOngoingApplications: number;
+  /**
+   * The evaluable form of this creature's stats (T240/T241, FR-094/FR-095).
+   *
+   * `baseDamage` / `appliesStatus` above remain the READ values, kept so existing consumers keep
+   * working; these are the structure those are read from. A caller that needs to add a scaling
+   * grant must go through `stats`, not the flattened numbers, or the multiplier is lost.
+   */
+  stats: {
+    damage: StatValue;
+    status: Map<StatusEffectType, StatValue>;
+  };
+  /** "Damage equal to N% of <status> on the enemy" — recomputed per cast, never persisted (T244). */
+  targetStatusScaling: { status: StatusEffectType; multiplier: number }[];
   /** Abilities recorded on this creature that the engine cannot act on, for honest reporting. */
   unmodelledAbilities: string[];
 }
@@ -97,6 +111,11 @@ export const RESOLVED_TAG_KINDS = [
   // T213/T214: resolved by `simulate()`'s ally-cast hook, not by the static resolver.
   "cooldownSpeedOnAllyCast",
   "triggerOnAllyCast",
+  // Round 5 (gameplay-capture handoff).
+  "statMultiplier",
+  "statFromTargetStatus",
+  "triggerOnAllyTrigger",
+  "gainOnAllyStatus",
 ] as const;
 
 /** True when `tag` is one this resolver understands. Keeps the "can we act on it?" test in one place. */
@@ -161,6 +180,24 @@ export function selectTargets<T extends { slot: GridSlot; key: string; creature:
   }
 }
 
+/**
+ * Flattens `stats` (the evaluable structure) into `baseDamage` / `appliesStatus` (the read values).
+ *
+ * Called between phases so each phase reads the completed output of the previous, and once at the
+ * end so existing consumers — `simulate`, the UI, the optimiser — keep seeing plain numbers.
+ */
+function syncReadValues(placements: ResolvedPlacement[]): void {
+  for (const p of placements) {
+    p.baseDamage =
+      p.creature.baseDamage === null && readRounded(p.stats.damage) === 0
+        ? null
+        : readRounded(p.stats.damage);
+    p.appliesStatus = [...p.stats.status.entries()]
+      .map(([type, v]) => ({ type, amount: Math.max(0, readRounded(v)) }))
+      .filter((s) => s.amount !== 0 || (p.creature.appliesStatus ?? []).some((b) => b.type === s.type));
+  }
+}
+
 export function resolveEffects(config: TeamConfiguration, corpus: Corpus): ResolvedPlacement[] {
   const members = config.placements
     .map((placement) => {
@@ -177,9 +214,25 @@ export function resolveEffects(config: TeamConfiguration, corpus: Corpus): Resol
     })
     .filter((m): m is NonNullable<typeof m> => m !== null);
 
-  // --- Pass 1: base stats, untouched. Resolution order is explicit (see the doc comment): every
-  //     battle-start effect that reads *other* creatures' values must read their BASE values, or
-  //     the result would depend on which creature happened to resolve first. ---
+  // --- PHASE 1: base stats, then MULTIPLIERS (T242 / FR-096) ---
+  //
+  // 2026-10-06: this previously read "every battle-start effect that reads other creatures' values
+  // must read their BASE values, or the result would depend on which creature happened to resolve
+  // first". **That rule is superseded, and the comment is kept here rather than deleted so the
+  // reversal is visible.**
+  //
+  // The order-dependence hazard it names is real. But a recorded battle shows the game solving it
+  // by PHASE ORDERING, not by reading base values: Miasmaw's on-battle-start copy summed its
+  // allies' POST-multiplier values, landing on 1080. Reading base values gives 657 — a 39%
+  // understatement on that board's largest Poison application, which then propagates into two more
+  // abilities that read it.
+  //
+  // Three phases, each reading the COMPLETED output of the previous. Writers before readers:
+  //   1. multiplier stat scaling
+  //   2. position-based battle-start effects
+  //   3. dynamic battle-start abilities that read team state, over a fully-buffed board
+  //
+  // Every tag kind must be classified into a phase. An unclassified kind is a bug, not a default.
   const base = members.map(({ placement, creature }) => ({
     key: `${creature.id}@${slotKey(placement.slot)}`,
     slot: placement.slot,
@@ -190,12 +243,37 @@ export function resolveEffects(config: TeamConfiguration, corpus: Corpus): Resol
     multicast: creature.baseMulticast,
     chargeRules: [] as { status: StatusEffectType; seconds: number }[],
     extraOngoingApplications: 0,
+    stats: {
+      damage: statValue(creature.baseDamage ?? 0),
+      status: new Map<StatusEffectType, StatValue>(
+        (creature.appliesStatus ?? []).map((s) => [s.type, statValue(s.amount)]),
+      ),
+    },
+    targetStatusScaling: [] as { status: StatusEffectType; multiplier: number }[],
     /** Filled by the knockout pass, applied with the other deltas so ordering stays uniform. */
     pendingKnockoutGrants: [] as { effect: EffectDescriptor; count: number }[],
     unmodelledAbilities: [] as string[],
   }));
 
-  // --- Pass 2: battle-start grants scaled from allies' base totals ---
+  // --- PHASE 1b: multipliers, applied before ANY reader runs (T240/T242) ---
+  //
+  // This is the ordering that makes Miasmaw land on 1080. Cobrex is 604 -> 1027 here, and phase 3
+  // then sums the 1027.
+  for (const source of base) {
+    for (const tag of source.creature.abilityTags) {
+      if (tag.kind !== "statMultiplier") continue;
+      for (const target of selectTargets(tag.target, source, base, config)) {
+        if (tag.stat === "damage" || tag.stat === "all") applyMultiplier(target.stats.damage, tag.factor);
+        if (tag.stat === "status" || tag.stat === "all") {
+          for (const v of target.stats.status.values()) applyMultiplier(v, tag.factor);
+        }
+      }
+    }
+  }
+  // Flatten phase 1 so phase 2 and 3 read post-multiplier values, not base ones.
+  syncReadValues(base);
+
+  // --- PHASE 2/3: battle-start grants, now summing allies' POST-MULTIPLIER totals ---
   for (const resolved of base) {
     for (const tag of resolved.creature.abilityTags) {
       if (tag.kind !== "battleStartStatusFromAllies") continue;
@@ -203,6 +281,9 @@ export function resolveEffects(config: TeamConfiguration, corpus: Corpus): Resol
         .filter((other) => other.key !== resolved.key)
         // "(Except other Miasmaw)" — same-species allies are excluded too, per the ability text.
         .filter((other) => other.creature.id !== resolved.creature.id)
+        // Phase 3 reads the COMPLETED phase-1 output: `appliesStatus` has been re-synced from
+        // `stats` above, so this sums post-multiplier values. Summing base values here is the
+        // 657-vs-1080 bug.
         .reduce(
           (sum, other) =>
             sum + (other.appliesStatus.find((s) => s.type === tag.status)?.amount ?? 0),
@@ -210,11 +291,15 @@ export function resolveEffects(config: TeamConfiguration, corpus: Corpus): Resol
         );
       const gained = Math.round(allyTotal * tag.multiplier);
       if (gained === 0) continue;
-      const existing = resolved.appliesStatus.find((s) => s.type === tag.status);
-      if (existing) existing.amount += gained;
-      else resolved.appliesStatus.push({ type: tag.status, amount: gained });
+      // Into `stats`, not the flattened array: `syncReadValues` re-derives `appliesStatus` from
+      // `stats` after the delta pass, so a grant written only to the array would be discarded.
+      const existing = resolved.stats.status.get(tag.status);
+      if (existing) addFlat(existing, gained);
+      else resolved.stats.status.set(tag.status, statValue(gained));
     }
   }
+
+  syncReadValues(base);
 
   // --- Pass 2a: self-inflicted battle-start knockouts (T220, Petrirex) ---
   //
@@ -289,7 +374,17 @@ export function resolveEffects(config: TeamConfiguration, corpus: Corpus): Resol
   // Knockout rewards, applied through the same delta path as everything else.
   for (const source of base) {
     for (const grant of source.pendingKnockoutGrants) {
-      applyEffect(source.key, grant.effect, grant.count);
+      // "+20 Shield **permanently** for each ally Knockout" is a reactive gain, so by Finding 3 it
+      // is never scaled — it lands after the multiplier rather than being folded into base.
+      if (grant.effect.statusGrant) {
+        const v = source.stats.status.get(grant.effect.statusGrant.type);
+        const amount = grant.effect.statusGrant.amount * grant.count;
+        if (v) addPostMultiplier(v, amount);
+        else source.stats.status.set(grant.effect.statusGrant.type, { ...statValue(0), postMultiplierFlatAdd: amount });
+      }
+      if (grant.effect.statChange?.stat === "damage") {
+        addPostMultiplier(source.stats.damage, grant.effect.statChange.amount * grant.count);
+      }
     }
   }
 
@@ -374,22 +469,34 @@ export function resolveEffects(config: TeamConfiguration, corpus: Corpus): Resol
   for (const resolved of base) {
     const d = deltas.get(resolved.key);
     if (!d) continue;
-    if (d.damage !== 0 && resolved.baseDamage !== null) {
-      resolved.baseDamage = Math.round(resolved.baseDamage + d.damage);
-    }
+    // T240/T241: deltas go into the STRUCTURE, not onto the flattened number, so a later
+    // multiplier still scales them. `addFlat` — these are battle-start/ally grants, which the
+    // capture shows being scaled (Noxnimbus's +6 became +10 on multiplied creatures).
+    if (d.damage !== 0) addFlat(resolved.stats.damage, d.damage);
     // Multicast is a repetition count: it must stay a whole number >= 1, and a debuff must never
     // silence a creature entirely.
     if (d.multicast !== 0) resolved.multicast = Math.max(1, Math.round(resolved.multicast + d.multicast));
     resolved.extraOngoingApplications = Math.max(0, Math.round(d.extraOngoing));
     for (const [type, amount] of d.status) {
-      const rounded = Math.round(amount);
-      if (rounded === 0) continue;
-      const existing = resolved.appliesStatus.find((s) => s.type === type);
-      if (existing) existing.amount += rounded;
-      else resolved.appliesStatus.push({ type, amount: rounded });
+      if (amount === 0) continue;
+      const existing = resolved.stats.status.get(type);
+      if (existing) addFlat(existing, amount);
+      else resolved.stats.status.set(type, statValue(amount));
     }
-    // A status application cannot go negative — a debuff at worst removes the application.
-    for (const s of resolved.appliesStatus) s.amount = Math.max(0, s.amount);
+  }
+  syncReadValues(base);
+
+  // --- T244: target-status scaling, collected for per-cast evaluation by `simulate()` ---
+  //
+  // NOT flattened into a number here: "Damage equal to 200% of the Poison stacks on the enemy" is
+  // recomputed every cast from a counter that only grows, so a resolved-once value would be wrong
+  // from the second cast onward.
+  for (const resolved of base) {
+    for (const tag of resolved.creature.abilityTags) {
+      if (tag.kind === "statFromTargetStatus") {
+        resolved.targetStatusScaling.push({ status: tag.status, multiplier: tag.multiplier });
+      }
+    }
   }
 
   // --- Pass 3: collect charge rules and record what we could NOT model ---

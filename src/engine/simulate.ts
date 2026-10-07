@@ -421,6 +421,15 @@ export function simulate(
   /** T213 (FR-080): cooldown-speed granted by ally casts, which COMPOUNDS as the battle runs. */
   const allyCastSpeedBonus = new Map<string, number>();
 
+  /**
+   * T245/FR-099: reactive casts, queued WITHOUT touching the reactor's schedule.
+   *
+   * Kept separate from `pendingReps` (multicast repetitions) only for readability — both are
+   * "a cast that is not a scheduled cast". The distinction that matters is that neither advances
+   * `schedule[].nextAt`.
+   */
+  const reactions: Cast[] = [];
+
   const runtimeBuffs = new Map<string, { damage: number; multicast: number; status: Map<StatusEffectType, number> }>();
   const buffFor = (key: string) => {
     let b = runtimeBuffs.get(key);
@@ -437,7 +446,7 @@ export function simulate(
       if (entry.nextAt > windowSeconds + 1e-9) continue;
       if (best === null || entry.nextAt < best) best = entry.nextAt;
     }
-    for (const rep of pendingReps) {
+    for (const rep of [...pendingReps, ...reactions]) {
       if (rep.tSeconds > windowSeconds + 1e-9) continue;
       if (best === null || rep.tSeconds < best) best = rep.tSeconds;
     }
@@ -451,10 +460,15 @@ export function simulate(
     // Everything due at exactly this instant, in the documented stable order.
     const dueReps = pendingReps.filter((r) => r.tSeconds === tSeconds);
     for (const r of dueReps) pendingReps.splice(pendingReps.indexOf(r), 1);
+    // T245: reactive casts resolve as ordinary casts — they apply status, charge allies and
+    // trigger further reactions — they simply never advance their own `schedule[].nextAt`.
+    const dueReactions = reactions.filter((r) => r.tSeconds === tSeconds);
+    for (const r of dueReactions) reactions.splice(reactions.indexOf(r), 1);
     const dueCasts = schedule.filter((e) => e.nextAt === tSeconds);
 
     const group: Cast[] = [
       ...dueReps,
+      ...dueReactions,
       ...dueCasts.map((e) => ({
         tSeconds,
         sourceSlot: e.sourceSlot,
@@ -512,8 +526,19 @@ export function simulate(
       // from `buffOnCast` ability tags; `modifiers.damageFlatAdd` is applied separately below and
       // is still unable to fabricate an attack.
       const accruedDamage = accrued?.damage ?? 0;
+      // T244/FR-098: damage scaled off the SHARED TARGET's accumulated status, recomputed every
+      // cast. Fumungus's "additional Damage equal to 200% of the Poison stacks on the enemy" was
+      // the captured team's largest damage term and grows superlinearly, because Poison stacks only
+      // ever accumulate. Evaluated here rather than resolved once, since a stored value would be
+      // wrong from the second cast onward.
+      let targetScaled = 0;
+      for (const rule of effective?.targetStatusScaling ?? []) {
+        const stacks = rule.status === "Poison" ? poisonLayers : rule.status === "Shock" ? shockLayers : 0;
+        targetScaled += stacks * rule.multiplier;
+      }
+      const extra = accruedDamage + Math.round(targetScaled);
       const resolvedDamage =
-        resolvedBase === null ? (accruedDamage > 0 ? accruedDamage : null) : resolvedBase + accruedDamage;
+        resolvedBase === null ? (extra > 0 ? extra : null) : resolvedBase + extra;
       // A creature with no published damageType that has ACCRUED damage hits directly: Bonshell's
       // damageType is null because its base card has no attack, but the ability grants one.
       const isDirectHit =
@@ -650,17 +675,52 @@ export function simulate(
               const speed = 1 + (allyCastSpeedBonus.get(casterKey) ?? 0);
               entry.cooldown = roundTime(entry.baseCooldown / speed);
             }
-          } else if (tag.kind === "triggerOnAllyCast") {
+          } else if (tag.kind === "triggerOnAllyTrigger" || tag.kind === "triggerOnAllyCast") {
             if (!selectTargets(tag.target, listener, resolved, config).some((t) => t.key === casterKey)) continue;
             if (chainDepth >= MAX_CHAIN_DEPTH) {
               chainCapHits++;
               continue;
             }
-            const entry = schedule.find((e) => e.key === listener.key);
-            // Pull the chained creature's next cast to the following step rather than firing it
-            // inside this instant, so the snapshot rule still holds for what it reads.
-            if (entry) entry.nextAt = roundTime(tSeconds + STEP);
+            // 2026-10-06 (T245 / FR-099) — FINDING 7b FIX.
+            //
+            // This previously set the listener's own `nextAt` to `tSeconds + STEP`, which pulled
+            // its next scheduled cast forward; firing then reset its cooldown. The recorded battle
+            // shows that is wrong: through a four-hit reactive cascade Puffloon's cooldown bar
+            // "climbs monotonically 13 -> 19 px with no reset", and it later cast off its OWN 10s
+            // cycle. A reaction is an EXTRA cast, not a rescheduled one.
+            //
+            // So the reaction is queued as a standalone repetition and the schedule is left alone.
+            const reactT = roundTime(tSeconds + STEP);
+            if (reactT <= windowSeconds + 1e-9) {
+              reactions.push({
+                tSeconds: reactT,
+                sourceSlot: listener.slot,
+                creature: listener.creature,
+                modifiers: schedule.find((e) => e.key === listener.key)!.modifiers,
+              });
+            }
           }
+        }
+      }
+    }
+
+    // --- T241/FR-095: reactive "permanently" gains from ally status inflictions ---
+    //
+    // Thorntail's "When allies inflict Poison, this gains +24 Damage permanently". Accumulated into
+    // `runtimeBuffs.damage`, which `simulate` adds AFTER the resolved (already-multiplied) base —
+    // so the gain is never scaled, which is what the capture shows: every step was exactly +24
+    // despite Thorntail carrying modifiers worth ~140x.
+    for (const entry of schedule) {
+      const gains = entry.creature.abilityTags.filter((t) => t.kind === "gainOnAllyStatus");
+      if (gains.length === 0) continue;
+      for (const application of appliedThisInstant) {
+        // "when ALLIES inflict" — a creature's own infliction does not count. The capture has one
+        // ambiguous frame suggesting otherwise; the handoff is explicit that it must not be changed
+        // on that evidence, and the Cobrex charge data supports exclusion.
+        if (application.sourceKey === entry.key) continue;
+        for (const g of gains) {
+          if (g.kind !== "gainOnAllyStatus" || g.status !== application.type) continue;
+          buffFor(entry.key).damage += g.amount;
         }
       }
     }
