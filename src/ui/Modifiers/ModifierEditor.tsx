@@ -17,23 +17,85 @@ import {
 import { slotKey } from "../../engine/grid";
 import styles from "./ModifierEditor.module.css";
 
+interface StatOption {
+  value: ModifierStat;
+  /** The option in the select. Carries its unit, because typing is where the unit matters. */
+  label: string;
+  /** The chip's prefix. Shorter than `label` — the formatted value already carries the unit. */
+  chip: string;
+  /**
+   * What the user typed, converted to what the ENGINE stores. Identity for every stat whose unit is
+   * already the engine's.
+   */
+  store: (typed: number) => number;
+  /** A stored amount, as the chip shows it. The inverse of `store`, including its sign. */
+  show: (stored: number) => string;
+  step: string;
+}
+
 /**
- * Short labels only (FR-039c). The unit/format explanation that used to live inside the Cooldown
- * Speed option's own text now sits in one supporting line below the list, where it is readable
- * without opening a dropdown and doesn't stretch the control.
+ * Short labels (FR-039c), and the one place the user's units are translated into the engine's
+ * (2026-10-07).
+ *
+ * Two conversions, both user-reported, both because the engine's unit is a bad thing to type:
+ *
+ * 1. **Cooldown Speed is a whole percentage.** It was the raw decimal the formula uses, so +20%
+ *    meant typing `0.2` — and `0.2` looks like a typo for a stat every other field takes as a plain
+ *    number. The engine still stores 0.2; only the keyboard and the chip changed.
+ * 2. **Cooldown seconds are a REDUCTION.** A positive entry made the creature slower, which is
+ *    never what a user means: the game's own "+20% Cooldown Speed" wording describes casting
+ *    sooner, so "1" here now means one second sooner. A negative entry still adds time, which is
+ *    what keeps "give a creature with no published cooldown a cast cycle" reachable.
+ *
+ * The rule the two share, and the one the supporting note states: a POSITIVE number always means
+ * better output.
  */
-const STAT_OPTIONS: { value: ModifierStat; label: string }[] = [
-  { value: "damageFlatAdd", label: "Damage" },
-  { value: "cooldownFlatAddSeconds", label: "Cooldown (seconds)" },
-  { value: "cooldownSpeedAdd", label: "Cooldown Speed" },
-  { value: "burnAmountAdd", label: "Burn applied" },
-  { value: "poisonAmountAdd", label: "Poison applied" },
-  { value: "shockAmountAdd", label: "Shock applied" },
-  { value: "shieldAmountAdd", label: "Shield applied" },
+const STAT_OPTIONS: StatOption[] = [
+  { value: "damageFlatAdd", label: "Damage", chip: "Damage", store: same, show: signed, step: "any" },
+  {
+    value: "cooldownFlatAddSeconds",
+    label: "Cooldown reduction (sec)",
+    chip: "Cooldown",
+    // Typed 1 = one second SOONER. The engine adds seconds, so a reduction is stored negative.
+    store: (typed) => -typed,
+    show: (stored) => `${signed(stored)}s`,
+    step: "any",
+  },
+  {
+    value: "cooldownSpeedAdd",
+    label: "Cooldown Speed (%)",
+    chip: "Cooldown Speed",
+    store: (typed) => typed / 100,
+    // Rounded through a tenth of a percent: 0.2 stored is "+20%", and a fractional 0.125 is
+    // "+12.5%" rather than 13 significant digits of binary float.
+    show: (stored) => `${signed(Math.round(stored * 1000) / 10)}%`,
+    step: "1",
+  },
+  { value: "burnAmountAdd", label: "Burn applied", chip: "Burn applied", store: same, show: signed, step: "any" },
+  { value: "poisonAmountAdd", label: "Poison applied", chip: "Poison applied", store: same, show: signed, step: "any" },
+  { value: "shockAmountAdd", label: "Shock applied", chip: "Shock applied", store: same, show: signed, step: "any" },
+  { value: "shieldAmountAdd", label: "Shield applied", chip: "Shield applied", store: same, show: signed, step: "any" },
 ];
 
-function statLabel(stat: ModifierStat): string {
-  return STAT_OPTIONS.find((o) => o.value === stat)?.label ?? stat;
+function same(typed: number): number {
+  return typed;
+}
+
+/** Modifiers are signed deltas, so a positive one is shown with its sign. */
+function signed(amount: number): string {
+  return amount > 0 ? `+${amount}` : String(amount);
+}
+
+function optionFor(stat: ModifierStat): StatOption {
+  // Every `ModifierStat` the UI can produce is in the table; `multicastAdd` is engine/trigger-only,
+  // so it falls back to its own key rather than rendering `undefined`.
+  return STAT_OPTIONS.find((o) => o.value === stat) ?? { value: stat, label: stat, chip: stat, store: same, show: signed, step: "any" };
+}
+
+/** A chip's full text: "Damage +40", "Cooldown -1s", "Cooldown Speed +20%". */
+function chipText(stat: ModifierStat, amount: number): string {
+  const option = optionFor(stat);
+  return `${option.chip} ${option.show(amount)}`;
 }
 
 /**
@@ -144,16 +206,17 @@ export function ModifierEditor() {
           )}
         </CardGrid>
 
-        {/* The last sentence was stale (2026-10-07): it still told users a modifier "can only
-            scale an effect the creature already has", which `engine/modifiers.ts` stopped being
-            true of when FR-078 was amended. It was stating the opposite of what the engine would
-            do with their input. */}
+        {/* One rule, stated once: positive is better. The previous version asked for the engine's
+            own units — "Cooldown Speed is a decimal: enter 0.2 for +20%" — and said nothing about
+            which way a cooldown second pointed, which is how a +1 that meant "slower" got entered
+            as if it meant "faster". */}
         <p className={styles.note}>
-          Cooldown Speed is a decimal, not a percentage: enter <code>0.2</code> for +20%. Damage and
-          status amounts are flat additions, and they may <em>create</em> an effect the creature does
-          not publish — +4 Burn on a creature that applies none gives it Burn, the way a trinket or
-          an ally's ability would. Cooldown speed is the one exception: it needs an existing cast
-          cycle to speed up.
+          A <strong>positive</strong> number always means better output. Enter <code>20</code> for
+          +20% Cooldown Speed, or <code>1</code> on Cooldown reduction to cast one second sooner; a
+          negative amount goes the other way. Damage and status amounts may <em>create</em> an effect
+          the creature does not publish — +4 Burn on a creature that applies none gives it Burn, the
+          way a trinket or an ally's ability would — but a cooldown change needs a published cooldown
+          to act on.
         </p>
       </Modal>
     </>
@@ -162,11 +225,6 @@ export function ModifierEditor() {
 
 function countModifiers(placements: TeamPlacement[]): number {
   return placements.reduce((sum, p) => sum + (p.modifiers?.length ?? 0), 0);
-}
-
-/** Modifiers are entered as signed deltas, so a positive one is shown with its sign. */
-function formatAmount(amount: number): string {
-  return amount > 0 ? `+${amount}` : String(amount);
 }
 
 interface PlacementModifierCellProps {
@@ -185,6 +243,7 @@ function PlacementModifierCell({ placement, onAdd, onRemove }: PlacementModifier
   // The placeholder still shows a 0 so the expected shape is obvious.
   const [amount, setAmount] = useState("");
   const amountRef = useRef<HTMLInputElement>(null);
+  const option = optionFor(stat);
 
   /**
    * FR-078 (amended 2026-10-07): a modifier may CREATE an effect, so almost nothing is inert.
@@ -195,24 +254,29 @@ function PlacementModifierCell({ placement, onAdd, onRemove }: PlacementModifier
    * a status it did not have, and that is exactly the board a user is trying to record. See
    * engine/modifiers.ts.
    *
-   * The one genuine case left is a creature with no published cooldown. It has no cast cycle, so a
-   * RELATIVE change to that cycle has nothing to act on — but an absolute `+N seconds` now gives it
-   * one, so only the speed modifier is called out.
+   * What is left is a creature with no published cooldown: it has no cast cycle, so neither a
+   * percentage of that cycle nor a reduction of it has anything to act on. A NEGATIVE reduction
+   * still creates one (it adds seconds), so that case is called out rather than warned about.
    */
   const inertReason = ((): string | null => {
-    if (!creature) return null;
-    if (stat === "cooldownSpeedAdd" && creature.baseCooldownSeconds === null)
-      return `${name} has no published cooldown, so a cooldown-speed modifier has no cast cycle to speed up. Add a cooldown in seconds to give it one.`;
+    if (!creature || creature.baseCooldownSeconds !== null) return null;
+    if (stat === "cooldownSpeedAdd")
+      return `${name} has no published cooldown, so there is no cast cycle for a percentage to speed up.`;
+    if (stat === "cooldownFlatAddSeconds" && Number(amount) > 0)
+      return `${name} has no published cooldown, so there is nothing to shorten. A negative amount gives it one instead: -3 means it casts every 3 seconds.`;
     return null;
   })();
 
   function handleAdd() {
-    const parsed = Number(amount);
-    if (Number.isNaN(parsed) || parsed === 0) return;
+    const typed = Number(amount);
+    if (Number.isNaN(typed) || typed === 0) return;
     // The modifier is still ADDED when inert — the warning informs, it does not block. The user may
     // be recording a trinket they are about to buy, and refusing the input would be worse than
     // telling them it currently does nothing.
-    onAdd(stat, parsed);
+    //
+    // `store` is where the user's unit becomes the engine's: a typed 20 on Cooldown Speed is stored
+    // as 0.2, and a typed 1 on Cooldown reduction is stored as -1 second.
+    onAdd(stat, option.store(typed));
     setAmount("");
     // Keep focus here so a second modifier can be typed straight away. Adding several in a row is
     // the normal case, and returning to the mouse between each is the thing being fixed.
@@ -257,9 +321,11 @@ function PlacementModifierCell({ placement, onAdd, onRemove }: PlacementModifier
               <Chip
                 className={styles.modifierChip}
                 onRemove={() => onRemove(modifier.id)}
-                removeLabel={`Remove ${statLabel(modifier.stat)} modifier from ${name}`}
+                removeLabel={`Remove ${optionFor(modifier.stat).chip} modifier from ${name}`}
               >
-                {statLabel(modifier.stat)} {formatAmount(modifier.amount)}
+                {/* In the user's units, not the engine's: a stored 0.2 reads "+20%" and a stored
+                    -1 second reads "-1s", so the chip says back what was typed. */}
+                {chipText(modifier.stat, modifier.amount)}
               </Chip>
             </li>
           ))}
@@ -274,16 +340,18 @@ function PlacementModifierCell({ placement, onAdd, onRemove }: PlacementModifier
           onChange={handleStatChange}
           aria-label={`Stat to modify for ${name}`}
         >
-          {STAT_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
+          {STAT_OPTIONS.map((statOption) => (
+            <option key={statOption.value} value={statOption.value}>
+              {statOption.label}
             </option>
           ))}
         </Select>
         <NumberField
           ref={amountRef}
           size="sm"
-          step="any"
+          // Whole percentages step by 1; everything else takes a decimal, since a damage or status
+          // amount can legitimately be fractional.
+          step={option.step}
           value={amount}
           placeholder="0"
           onChange={(e) => setAmount(e.target.value)}

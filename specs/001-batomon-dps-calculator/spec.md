@@ -932,3 +932,50 @@ the only control that can choose a trainer would be off the page whenever none i
 Region still comes first and still gates nothing (FR-091). `TrainerCard` takes the selects as a
 **slot** and remains a presentation of a trainer record, so it still renders in tests with no
 `TeamConfigProvider`.
+
+### FR-039 AMENDED (2026-10-07) — modifier units are the user's, not the engine's
+
+> **FR-039c**: modifier editing must keep unit/format explanations as supporting text rather than
+> inside control labels.
+
+Satisfied, and still wrong in a way the wording did not cover: the supporting text was explaining the
+ENGINE's units. Two amendments, both user-reported.
+
+- **Cooldown Speed is entered as a whole percentage.** It was the raw decimal the formula divides by,
+  so +20% meant typing `0.2` — which reads as a typo in a column of plain numbers, and which the note
+  had to apologise for. The engine still stores 0.2; the field takes 20 and the chip shows `+20%`.
+- **A cooldown entry is a REDUCTION.** A positive number made the creature slower, which is never
+  what a user means: the game's own "+20% Cooldown Speed" wording describes casting sooner, and there
+  is no case for hand-entering a penalty. `1` now means one second sooner (stored as `-1`), and the
+  option is labelled "Cooldown reduction (sec)". A NEGATIVE entry still adds time, which is what keeps
+  FR-078's "a modifier may create an effect" reachable — `-3` gives a creature with no published
+  cooldown a 3-second cast cycle.
+
+The rule both share, and the one the note now states once: **a positive number always means better
+output**.
+
+#### The reported "Haste Crown applies backwards" was neither a trinket nor a formula error
+
+Worth recording, because fixing the wrong thing here would have introduced a real bug. Shelldra
+(4.5s) read 4.8s effective with Haste Crown held. `effectiveCooldown` is correct —
+`base / (1 + speed) + flatSeconds`, so a positive speed divides and makes a creature faster — and
+**Haste Crown has no `effectTags` at all**: its effect is positional ("your top middle monster"), and
+`effectTags` are team-wide by construction, so it contributes nothing to any simulation. The 4.8s was
+the user's own two modifiers under the old convention: 4.5 / 1.2 = 3.75, plus the +1 second they had
+entered = 4.75. The same two entries now produce 2.75s.
+
+Positional trinkets remain unmodelled, and that gap is reported by `TotalDps`'s coverage line rather
+than by a per-trinket badge (see the retired "★ affects DPS" marker).
+
+### Two layout corrections (2026-10-07)
+
+- **The team grid's cells reserved space the cards did not use.** `.dropZone` carried a 2px dashed
+  transparent border plus 0.15rem of padding so its drag-over state had somewhere to draw, budgeted by
+  a `--grid-cell-chrome` token. That inset every card 4.7px inside its own cell, so the grid's outer
+  edge sat inside the trainer and editor panels stacked above it, and the gaps between cards were
+  18.4px while the gap token said 9px. The indicator is an `outline` now — painted outside the box,
+  part of no layout — the token is gone, and `--grid-gap` states the 1rem spacing that was really
+  there. Every edge in the team column now aligns.
+- **The page frame is removed.** `#root` drew 1px vertical rules down both edges and `header` a 1px
+  `#ddd` rule beneath it — a light-theme grey that read as the brightest line on a dark page. Both
+  framed the app on a wide desktop and crowded it on a phone, where the frame is the viewport.

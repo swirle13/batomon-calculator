@@ -131,13 +131,18 @@
   --grid-slot-size: calc(
     var(--sprite-grid) + var(--grid-card-chrome) + 2 * var(--grid-card-padding)
   );
-  --grid-gap: 0.5rem;
   /*
-   * The drop-zone wrapper's own border and padding, which sit OUTSIDE the card. The grid track has
-   * to hold the card AND this, or the cell's min-content exceeds its track and the whole grid
-   * overflows sideways. Must stay in step with `.dropZone` in GridPicker.module.css.
+   * 1rem, up from 0.5rem (2026-10-07). The gap BETWEEN cards was never 0.5rem in practice: the drop
+   * zone's reserved border and padding added 4.7px on each facing edge, so the cards sat 18.4px
+   * apart. Removing that reservation (see `.dropZone`) would have halved the spacing of a grid
+   * nobody asked to change, so the gap token now states the spacing that was actually there.
    */
-  --grid-cell-chrome: calc(2 * 2px + 2 * 0.15rem);
+  --grid-gap: 1rem;
+  /*
+   * `--grid-cell-chrome` is gone with the drop zone's border and padding. The drag-over indicator is
+   * an `outline` now, which takes no space, so a grid track holds exactly its card and the cards line
+   * up with the panels above them.
+   */
   /*
    * The width of the whole left-hand team column: three slots and the two gaps between them.
    *
@@ -147,9 +152,7 @@
    * layout open whenever it was expanded, while the column was too narrow to hold the grid at all
    * and spilled it over the detail panel.
    */
-  --team-column-width: calc(
-    3 * (var(--grid-slot-size) + var(--grid-cell-chrome)) + 2 * var(--grid-gap)
-  );
+  --team-column-width: calc(3 * var(--grid-slot-size) + 2 * var(--grid-gap));
   /* The gap between the team column and the detail panel beside it. */
   --column-gap: 1.5rem;
   /*

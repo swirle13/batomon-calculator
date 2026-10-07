@@ -42,21 +42,25 @@
   gap: 0.25rem;
 }
 
+/*
+ * No border and no padding (2026-10-07): this wrapper is exactly its card.
+ *
+ * It used to reserve a 2px dashed transparent border plus 0.15rem of padding so the drag-over state
+ * had somewhere to draw. That reservation inset every card 4.7px inside its own grid cell, which is
+ * the "bit more margin around the mon selector" the user reported: the grid's outer edge sat 4.7px
+ * inside the panels stacked above it, and the gaps between cards came out at 18.4px while the gap
+ * token said 9px.
+ *
+ * `outline` is what replaces it. An outline is painted outside the box and takes part in no layout,
+ * so the indicator costs nothing until it is shown.
+ */
 .dropZone {
-  /*
-   * border-box so this wrapper's border and padding come OUT of the grid track rather than being
-   * added to the card inside it. As content-box it made each cell ~9px wider than
-   * --grid-slot-size, which is min-content the grid tracks then refused to shrink below — the card
-   * overflowed the grid and painted across the detail panel. --grid-cell-chrome budgets for it.
-   */
-  box-sizing: border-box;
-  border: 2px dashed transparent;
   border-radius: 6px;
-  padding: 0.15rem;
 }
 
 .dropZoneOver {
-  border-color: #f5f5f5;
+  outline: 2px dashed #f5f5f5;
+  outline-offset: 2px;
 }
 
 /*

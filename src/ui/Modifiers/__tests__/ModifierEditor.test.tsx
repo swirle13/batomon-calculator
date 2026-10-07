@@ -86,19 +86,66 @@ describe("ModifierEditor (FR-039)", () => {
     expect(cells.children.length).toBe(6);
   });
 
-  it("uses short stat labels, with the decimal/percent explanation as supporting text", () => {
+  it("uses short stat labels, with the unit convention as supporting text", () => {
     renderEditor(TWO_PLACEMENTS);
     const overlay = openOverlay();
     const statSelect = within(overlay).getByLabelText(/stat to modify for bumblebolt/i) as HTMLSelectElement;
     const labels = Array.from(statSelect.options).map((o) => o.textContent ?? "");
-    expect(labels).toContain("Cooldown Speed");
-    // (c): the "+decimal, e.g. 0.2 = +20%" explanation must not live inside an option label.
-    expect(labels.some((l) => l.includes("0.2") || l.includes("decimal"))).toBe(false);
-    // ...but it must still be stated somewhere for the user. Matched on the container's full
-    // textContent, since the note interleaves a <code> element and so spans several text nodes.
-    const note = within(overlay).getByText(/Cooldown Speed is a decimal/i);
-    expect(note.textContent).toMatch(/0\.2/);
-    expect(note.textContent).toMatch(/20%/);
+    expect(labels).toContain("Cooldown Speed (%)");
+    // (c): an option label carries its UNIT, never a worked example. "enter 0.2 for +20%" inside a
+    // dropdown is unreadable without opening it.
+    expect(labels.some((l) => l.includes("0.2") || l.includes("decimal") || l.includes("enter"))).toBe(false);
+    // ...but the convention must still be stated somewhere. Matched on the container's full
+    // textContent, since the note interleaves <code> and <strong> and so spans several text nodes.
+    // Matched on the paragraph's own text, not the <strong> inside it.
+    const note = within(overlay).getByText(/always means better output/i);
+    expect(note.textContent).toMatch(/20/);
+    expect(note.textContent).toMatch(/one second sooner/i);
+  });
+
+  /**
+   * 2026-10-07, both user-reported, and both about the engine's units being the wrong thing to type.
+   *
+   * The percentage was a raw decimal, so +20% meant typing `0.2` — which reads as a typo in a column
+   * of plain numbers. And a positive Cooldown second made the creature SLOWER: entering 1 alongside
+   * +20% speed took Shelldra from 4.5s to 4.75s, which was reported as a trinket applying backwards.
+   */
+  describe("units are the user's, not the engine's", () => {
+    function addModifier(overlay: HTMLElement, label: string, typed: string) {
+      fireEvent.change(within(overlay).getByLabelText(/stat to modify for bumblebolt/i), {
+        target: { value: label },
+      });
+      fireEvent.change(within(overlay).getByLabelText(/amount to add for bumblebolt/i), { target: { value: typed } });
+      fireEvent.click(within(overlay).getByRole("button", { name: /add modifier to bumblebolt/i }));
+    }
+
+    it("takes Cooldown Speed as a whole percentage and shows it back as one", () => {
+      renderEditor(TWO_PLACEMENTS);
+      const overlay = openOverlay();
+      addModifier(overlay, "cooldownSpeedAdd", "20");
+
+      // The engine still stores the 0.2 its formula divides by; only the keyboard and the chip changed.
+      expect(within(overlay).getByText("Cooldown Speed +20%")).toBeTruthy();
+      expect(within(overlay).queryByText(/\+0\.2\b/)).toBeNull();
+    });
+
+    it("takes a Cooldown entry as a REDUCTION, so a positive number casts sooner", () => {
+      renderEditor(TWO_PLACEMENTS);
+      const overlay = openOverlay();
+      addModifier(overlay, "cooldownFlatAddSeconds", "1");
+
+      // Stored negative, because `effectiveCooldown` ADDS this term: -1s is one second sooner.
+      expect(within(overlay).getByText("Cooldown -1s")).toBeTruthy();
+    });
+
+    it("still reaches the other direction with a negative entry", () => {
+      // Which is what keeps "give a creature with no published cooldown a cast cycle" possible.
+      renderEditor(TWO_PLACEMENTS);
+      const overlay = openOverlay();
+      addModifier(overlay, "cooldownFlatAddSeconds", "-2");
+
+      expect(within(overlay).getByText("Cooldown +2s")).toBeTruthy();
+    });
   });
 
   it("adds a modifier scoped to the creature whose row it was entered on", () => {

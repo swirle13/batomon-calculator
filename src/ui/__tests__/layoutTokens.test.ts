@@ -21,22 +21,31 @@ const read = (p: string) => readFileSync(join(__dirname, "..", "..", p), "utf8")
 const tokens = read("ui/tokens.css");
 
 describe("layout width tokens", () => {
-  it("derives the team column from the slot size, the cell chrome and the gap", () => {
-    // The cell chrome term is load-bearing: `.dropZone`'s border and padding sit OUTSIDE the card,
-    // so a track budgeted at only --grid-slot-size is narrower than the cell's min-content, and the
-    // grid then overflows sideways across the detail panel instead of shrinking.
+  it("derives the team column from the slot size and the gap, with nothing else in the track", () => {
     expect(tokens.replace(/\s+/g, " ")).toMatch(
-      /--team-column-width: calc\( 3 \* \(var\(--grid-slot-size\) \+ var\(--grid-cell-chrome\)\) \+ 2 \* var\(--grid-gap\) \)/,
+      /--team-column-width: calc\(3 \* var\(--grid-slot-size\) \+ 2 \* var\(--grid-gap\)\)/,
     );
   });
 
-  it("the cell chrome token matches the drop zone's actual border and padding", () => {
-    // These two must move together; the token is a budget for what that rule really draws.
-    expect(tokens).toMatch(/--grid-cell-chrome:\s*calc\(2 \* 2px \+ 2 \* 0\.15rem\)/);
+  /**
+   * The drop zone used to reserve a 2px dashed transparent border plus 0.15rem of padding for its
+   * drag-over state, budgeted by a `--grid-cell-chrome` token. The reservation inset every card
+   * 4.7px inside its own cell, so the grid's outer edge sat inside the panels above it and the cards
+   * were 18.4px apart while the gap token said 9px — reported as "a bit more margin around the mon
+   * selector".
+   */
+  it("the drop zone reserves no space, so a card fills its cell", () => {
     const grid = read("ui/GridPicker/GridPicker.module.css");
-    expect(grid).toMatch(/\.dropZone \{[^}]*box-sizing: border-box/);
-    expect(grid).toMatch(/\.dropZone \{[^}]*border: 2px dashed/);
-    expect(grid).toMatch(/\.dropZone \{[^}]*padding: 0\.15rem/);
+    const dropZone = /\.dropZone \{([^}]*)\}/.exec(grid.replace(/\s+/g, " "))?.[1] ?? "";
+    expect(dropZone).not.toMatch(/border:/);
+    expect(dropZone).not.toMatch(/padding:/);
+    // An outline is painted outside the box and takes part in no layout, which is the whole reason
+    // it can carry an indicator that costs nothing until it is shown.
+    expect(grid.replace(/\s+/g, " ")).toMatch(/\.dropZoneOver \{[^}]*outline: 2px dashed/);
+    // Neither declared nor referenced. Matched that way rather than on the bare name, because the
+    // comment recording WHY it went is worth keeping where the token used to be.
+    expect(tokens).not.toMatch(/^\s*--grid-cell-chrome\s*:/m);
+    expect(tokens).not.toMatch(/var\(--grid-cell-chrome/);
   });
 
   it("derives the slot size from the sprite, the rows under it AND the card's own padding", () => {

@@ -1,6 +1,10 @@
+/*
+ * No rule under the header (2026-10-07). It was `1px solid #ddd` — a light-theme grey that read as a
+ * bright white line across a dark page, and the heaviest edge in the whole app for a boundary the
+ * title and nav already make obvious.
+ */
 header {
   padding: 1rem;
-  border-bottom: 1px solid #ddd;
 }
 
 main {

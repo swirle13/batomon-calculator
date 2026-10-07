@@ -60,11 +60,15 @@
    * `max()` keeps the established 1126px frame for every other section while guaranteeing the one
    * row that cannot compress has somewhere to go.
    */
-  width: max(1126px, calc(var(--builder-row-width) + 2 * 1rem + 2px + var(--space-xl)));
+  /*
+   * The `+ 2px` term is gone with the border it budgeted for (2026-10-07): the two faint vertical
+   * rules down the page edges are removed. They framed the app on a wide desktop and did nothing but
+   * crowd it on a phone, where the frame IS the viewport.
+   */
+  width: max(1126px, calc(var(--builder-row-width) + 2 * 1rem + var(--space-xl)));
   max-width: 100%;
   margin: 0 auto;
   text-align: center;
-  border-inline: 1px solid var(--border);
   min-height: 100svh;
   display: flex;
   flex-direction: column;
