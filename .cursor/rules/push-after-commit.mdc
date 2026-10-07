@@ -1,15 +1,9 @@
 ---
-description: Always push commits to origin; verify the GitHub Pages deploy actually shipped
+description: Always push commits to origin after committing
 alwaysApply: true
 ---
 
-# Push every commit, then verify the deploy
-
-This project is served from GitHub Pages at https://swirle13.github.io/batomon-calculator/,
-built by `.github/workflows/deploy.yml` on push to `main`. The user validates changes against
-that live site, so **a commit that is not pushed and deployed does not exist from their side**.
-
-## Required
+# Push every commit
 
 After any commit, push it:
 
@@ -19,29 +13,15 @@ git push origin main
 
 Do not batch several commits and push later, and do not end a turn with unpushed work.
 
-## Verify, don't assume
+## Do not watch the deploy
 
-Pushing is not shipping. The deploy takes ~1 minute and the Pages workflow uses a
-`concurrency: group: pages`, so a rapid second push can supersede an in-flight run.
+The user does not want deploy monitoring. Do not poll `gh run list`, do not `sleep` waiting for a
+workflow, and do not compare deployed asset hashes against the local build. Push and move on.
 
-```bash
-gh run list --limit 3   # confirm completed/success for the SHA just pushed
-```
-
-For a user-visible change, confirm the live site serves the new bundle rather than trusting
-the green check. The asset filenames are content-hashed, so comparing them against the local
-build is a direct check that the deployed code is the code you wrote:
-
-```bash
-ls dist/assets/                                              # local hashes
-curl -s https://swirle13.github.io/batomon-calculator/ | rg -o 'assets/index-[^"]*'
-```
-
-Matching hashes means the live site is running your build. Differing hashes mean the deploy
-has not landed yet — say so rather than telling the user to reload.
+GitHub Pages serves this project from `.github/workflows/deploy.yml` on push to `main`, so a change
+reaches the live site about a minute after the push without anyone watching it.
 
 ## When a change "doesn't show up"
 
-Check in this order before touching the code: is the commit pushed, did the run succeed, do
-the deployed asset hashes match the local build, and is the user on the live site or on the
-dev server (which Vite may have moved off port 5173 if it was occupied).
+Check whether the commit was pushed, then ask which URL the user is on. The dev server and the
+deployed site are different things, and Vite moves off port 5173 when that port is already taken.
