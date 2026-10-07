@@ -714,16 +714,23 @@ describe("second-order status metrics (FR-055/056/057)", () => {
 
   it("pins the exact worked case so the arithmetic cannot drift (20s)", () => {
     // Measured, not hand-derived: casts at t=8 and t=16, Poison ticks every 1s and never decays.
+    //
+    // 2026-10-06 (intra-instant ordering): 320 -> 340. Drumire's second cast at t=16 lands on the
+    // same instant as a Poison tick, and an application now resolves BEFORE the tick that shares
+    // its instant — so that tick deals 40, not 20. Ticks at 9-15 deal 20 (140) and 16-20 deal 40
+    // (200). Confirmed against a recorded run; see research.md B2a.
     const result = simulate(drumireOnly(20), corpus);
-    expect(result.perStatusPerSecond.Poison).toBeCloseTo(16.0, 5); // 320 total / 20s
+    expect(result.perStatusPerSecond.Poison).toBeCloseTo(17.0, 5); // 340 total / 20s
     expect(result.perStatusFinalDamageRate.Poison).toBeCloseTo(40, 5); // 2 casts x 20 layers
     expect(result.perStatusDamageGrowthPerSecond.Poison).toBeCloseTo(2.0, 5); // 40 / 20
     expect(result.perStatusAppliedPerSecond.Poison).toBeCloseTo(2.0, 5); // 40 stacks / 20s
   });
 
   it("pins the same case at 60s, where the average and the end-of-window rate diverge further", () => {
+    // 3920 -> 4040 for the same reason as the 20s case: every one of Drumire's casts after the
+    // first falls on a tick instant, and each of those ticks now sees the new stacks.
     const result = simulate(drumireOnly(60), corpus);
-    expect(result.perStatusPerSecond.Poison).toBeCloseTo(3920 / 60, 4);
+    expect(result.perStatusPerSecond.Poison).toBeCloseTo(4040 / 60, 4);
     expect(result.perStatusFinalDamageRate.Poison).toBeCloseTo(140, 5);
     expect(result.perStatusDamageGrowthPerSecond.Poison).toBeCloseTo(140 / 60, 5);
   });
@@ -785,8 +792,8 @@ describe("second-order status metrics (FR-055/056/057)", () => {
     const result = simulate(drumireOnly(20), corpus);
     const key = Object.keys(result.perCreatureFacilitatedDps).find((k) => k.startsWith("drumire@"));
     expect(key).toBeDefined();
-    // All 320 Poison damage exists because Drumire applied it.
-    expect(result.perCreatureFacilitatedDps[key!]).toBeCloseTo(16.0, 5);
+    // All 340 Poison damage exists because Drumire applied it.
+    expect(result.perCreatureFacilitatedDps[key!]).toBeCloseTo(17.0, 5);
     // ...but Drumire deals no DIRECT damage, so its own DPS stays zero. Facilitated output is
     // reported separately rather than folded in, so a DOT team's DPS column stays comparable with
     // a direct-damage team's.

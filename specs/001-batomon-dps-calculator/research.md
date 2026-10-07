@@ -100,6 +100,47 @@ must reproduce, each grounded in a cited source rather than assumed.
 > from the instant of the cast, which is why the stack chart reads 4 at t=4.5 while cumulative burn
 > damage is still 0.
 
+### B2a. Order of operations within one instant — "the stack"
+
+Several things can land on the same instant, and the order decides the numbers. This is the
+engine's model, with the evidence for each step marked, because the three rules below look
+contradictory until you see that they answer **different questions**.
+
+| # | within one instant | evidence |
+|---|---|---|
+| 1 | Ticks scheduled **strictly before** this instant resolve | ordering, not observed |
+| 2 | Casts resolve: **direct damage first, then status application** | B2 above; the capture's "a cast that applies new Shock does not boost that same cast's own hit" |
+| 3 | A tick landing **exactly on** this instant resolves, seeing everything applied in step 2 | **observed** — see below |
+| 4 | Reactive effects (charges, ally-cast hooks, on-cast buffs) resolve | FR-040 |
+
+**Step 3 is the one that was wrong.** Venopuff (3.5s cooldown, Poison 4) casts at 3.5, 7.0, 10.5,
+14.0 while its Poison cadence runs 4.5, 5.5, 6.5, … The cast at **10.5 lands on a tick instant**. In
+game the cast's 4 joins the stack first and the tick deals **12**; the engine ran the tick first,
+dealt 8, and stayed 4 behind for the rest of the fight because the deficit never catches up.
+
+Observed series, now reproduced exactly and pinned in `statusStacks.test.ts`:
+
+| tick | 4.5 | 5.5 | 6.5 | 7.5 | 8.5 | 9.5 | **10.5** | 11.5 | 12.5 | 13.5 | 14.5 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| damage | 4 | 4 | 4 | 8 | 8 | 8 | **12** | 12 | 12 | 12 | 16 |
+| cumulative | 4 | 8 | 12 | 20 | 28 | 36 | **48** | 60 | 72 | 84 | 100 |
+
+**Why this does not contradict FR-040 or B2.** Three different questions:
+
+- **FR-040** governs what one creature reads of *another creature's stats* mid-instant — the
+  capture's "Cobrex used 1027, not 1037" case. Unchanged.
+- **B2's Shock note** governs one creature's *own* cast: its damage resolves before its own status
+  application, so it cannot buff itself.
+- **Step 3** governs a damage-over-time tick reading *the target's stack*. The stack is a property
+  of the target and includes everything applied to it this instant.
+
+A single "damage always last" rule would be wrong — it would make a cast's Shock boost its own hit,
+which B2 explicitly denies.
+
+**Not yet settled**, and worth a purpose-built recording: whether a tick sees a status applied by a
+creature that resolves *later in the same instant* than one resolving earlier. Every case observed
+so far has a single applier, so instant-internal ordering between two appliers is untested.
+
 - **Sources**:
   - "Batomon Showdown Status Effects and Debuff Removal" —
     <https://batomonshowdown.wiki/mechanics/status-effects-and-debuff-removal/>. Retrieved

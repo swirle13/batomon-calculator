@@ -163,3 +163,54 @@ describe("statuses tick as ONE pool on the target, not per application", () => {
     expect(attributed).toBeCloseTo(poisonDealt, 4);
   });
 });
+
+describe("intra-instant ordering: an application resolves BEFORE a tick sharing its instant", () => {
+  it("reproduces the observed Venopuff series through four casts", () => {
+    // Stepped against a recorded run. Venopuff casts at 3.5, 7.0, 10.5, 14.0; the Poison cadence
+    // runs 4.5, 5.5, 6.5, ... Casts 3 and 4 land exactly ON tick instants (10.5, and 14.0 feeding
+    // the 14.5 tick), which is where the ordering shows.
+    const r = simulate(solo("venopuff", 15), corpus);
+    const ticks = new Map(
+      r.timeline
+        .filter((e) => e.kind === "statusTick" && e.damageType === "Poison")
+        .map((e) => [e.tSeconds, e.damage]),
+    );
+    const observed = [...ticks.keys()].map(
+      (t) => `${t}:${ticks.get(t)}:${r.cumulativeSeries.find((p) => p.tSeconds === t)!.byStatus.Poison}`,
+    );
+    expect(observed).toEqual([
+      "4.5:4:4",
+      "5.5:4:8",
+      "6.5:4:12",
+      "7.5:8:20",
+      "8.5:8:28",
+      "9.5:8:36",
+      // The cast at 10.5 joins the stack before this tick reads it — 12, not 8.
+      "10.5:12:48",
+      "11.5:12:60",
+      "12.5:12:72",
+      "13.5:12:84",
+      "14.5:16:100",
+    ]);
+  });
+
+  it("the tick on a cast instant uses the POST-application stack", () => {
+    // The specific inversion that was wrong: running the tick first dealt 8 at t=10.5 and left the
+    // engine 4 behind for the remainder of the fight, since the deficit never catches up.
+    const r = simulate(solo("venopuff", 12), corpus);
+    const tickAt105 = r.timeline.find(
+      (e) => e.kind === "statusTick" && e.damageType === "Poison" && e.tSeconds === 10.5,
+    );
+    expect(tickAt105?.damage).toBe(12);
+  });
+
+  it("a tick strictly BEFORE a cast still uses the pre-cast stack", () => {
+    // The guard against overcorrecting: only a tick sharing the cast's instant sees it. The tick at
+    // 9.5 precedes the 10.5 cast and must still read 8.
+    const r = simulate(solo("venopuff", 12), corpus);
+    const tickAt95 = r.timeline.find(
+      (e) => e.kind === "statusTick" && e.damageType === "Poison" && e.tSeconds === 9.5,
+    );
+    expect(tickAt95?.damage).toBe(8);
+  });
+});

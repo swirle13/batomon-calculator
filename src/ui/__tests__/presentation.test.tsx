@@ -277,7 +277,11 @@ describe("round 9: total DPS and grid sizing", () => {
     // 2026-10-06 (status pooling): 1658.90 -> 1774.40. Poison used to tick once per APPLICATION, on
     // separate clocks; it now ticks once for the whole stack on one cadence, which is both fewer
     // ticks and a larger amount each. For this Poison-heavy board the larger amount dominates.
-    expect(screen.getByText("1774.40")).toBeTruthy();
+    //
+    // 2026-10-06 (intra-instant ordering): 1774.40 -> 1793.50. An application now resolves before a
+    // tick sharing its instant, so a cast that lands on a tick boundary is counted by that tick
+    // rather than the next one.
+    expect(screen.getByText("1793.50")).toBeTruthy();
   });
 
   it("states the engine's coverage ceiling right where the number is (FR-075)", () => {

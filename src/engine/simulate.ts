@@ -587,7 +587,18 @@ export function simulate(
       entry.nextAt = roundTime(tSeconds + entry.cooldown);
     }
 
-    runTicksUpTo(tSeconds);
+    /*
+      ORDER OF OPERATIONS WITHIN ONE INSTANT (see research.md B2a).
+
+      Ticks STRICTLY BEFORE this instant are caught up here; the tick landing exactly ON it is
+      deferred until after the casts have applied their statuses, below.
+
+      That ordering is observed, not assumed. Venopuff (3.5s cooldown, Poison 4) casts at 10.5 on
+      the same instant its 1s Poison cadence ticks. In-game the cast's 4 joins the stack FIRST and
+      the tick then deals 12. Running the tick first dealt 8 and left the engine permanently 4
+      behind for the rest of the fight.
+    */
+    runTicksUpTo(roundTime(tSeconds - STEP / 2));
 
     // FR-040 snapshot: every event at this instant resolves against the state as it stood when the
     // instant began. Covers BOTH the scalar total and the per-source attribution map.
@@ -800,7 +811,18 @@ export function simulate(
       }
     }
 
-    // Applications for this instant are in; record the resulting stack counts.
+    /*
+      Applications for this instant are in, so the tick landing ON this instant runs NOW and sees
+      them. This is the second half of the ordering described above.
+
+      Note this does not weaken FR-040's snapshot rule, which governs what one creature reads of
+      ANOTHER's stats mid-instant (the capture's Cobrex-used-1027 case). This is a different
+      question: a damage-over-time tick reads the TARGET's stack, and the stack includes everything
+      applied to it this instant.
+    */
+    runTicksUpTo(tSeconds);
+
+    // Record the resulting stack counts.
     snapshotStacks(tSeconds);
 
     // --- T241/FR-095: reactive "permanently" gains from ally status inflictions ---
