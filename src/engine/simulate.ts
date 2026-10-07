@@ -220,6 +220,9 @@ export function simulate(
   interface Scheduled {
     nextAt: number;
     cooldown: number;
+    /** T213: the pre-ally-cast-bonus cooldown, so a compounding grant recomputes from a fixed
+     *  base rather than repeatedly dividing an already-divided value. */
+    baseCooldown: number;
     sourceSlot: GridSlot;
     creature: CreatureRecord;
     modifiers: Cast["modifiers"];
@@ -301,6 +304,7 @@ export function simulate(
     schedule.push({
       nextAt: roundTime(startAt + cooldown),
       cooldown,
+      baseCooldown: cooldown,
       sourceSlot: slot,
       creature,
       modifiers,
@@ -381,6 +385,16 @@ export function simulate(
   // The alternative (charges counting within their own instant) would fire it at t=9; that is the
   // arbitrary half of the choice, and FR-040 already decided which half this engine takes.
   const STEP = 0.1;
+  /**
+   * T214: chained triggers are depth-capped. Two creatures that trigger each other would otherwise
+   * schedule one another forever. The cap is on CHAIN DEPTH WITHIN ONE INSTANT, not on total
+   * triggers in the battle: a legitimate chain that fires once per cast must keep working, while a
+   * mutual-trigger pair must terminate. 8 is well above any real board (6 slots) and low enough to
+   * halt immediately.
+   */
+  const MAX_CHAIN_DEPTH = 8;
+  let chainDepth = 0;
+  let chainCapHits = 0;
   /** Repetitions queued from a multicast burst that has already begun. */
   const pendingReps: Cast[] = [];
 
@@ -395,6 +409,18 @@ export function simulate(
    * It lives here rather than in `effects.ts` because `effects.ts` resolves ONCE before the battle
    * and returns fixed stats; a value that changes mid-window cannot be expressed there.
    */
+  /**
+   * T215 (FR-081): accumulated POISON stacks on the shared implicit target.
+   *
+   * Round 9 deferred this for want of a full target entity. **That deferral no longer holds** — the
+   * engine already keeps exactly this counter for Shock (`shockLayers`), and a per-status counter is
+   * far smaller than a target model. Reversal recorded here rather than silently acted on.
+   */
+  let poisonLayers = 0;
+
+  /** T213 (FR-080): cooldown-speed granted by ally casts, which COMPOUNDS as the battle runs. */
+  const allyCastSpeedBonus = new Map<string, number>();
+
   const runtimeBuffs = new Map<string, { damage: number; multicast: number; status: Map<StatusEffectType, number> }>();
   const buffFor = (key: string) => {
     let b = runtimeBuffs.get(key);
@@ -539,6 +565,7 @@ export function simulate(
         } else if (applied.type === "Burn" || applied.type === "Poison") {
           const amount = applied.amount + (applied.type === "Burn" ? modifiers.burnAmountAdd : modifiers.poisonAmountAdd);
           const interval = applied.type === "Burn" ? BURN_TICK_SECONDS : POISON_TICK_SECONDS;
+          if (applied.type === "Poison") poisonLayers += amount;
           activeStatuses.push({
             type: applied.type,
             layers: amount,
@@ -592,6 +619,47 @@ export function simulate(
           if (tag.effect.statusGrant) {
             const g = tag.effect.statusGrant;
             b.status.set(g.type, (b.status.get(g.type) ?? 0) + g.amount);
+          }
+        }
+      }
+    }
+
+    // --- T213/T214: the ally-cast hook ---
+    //
+    // Fired AFTER the instant, under the same FR-040 snapshot rule as charges and on-cast buffs: a
+    // creature responds to an ally's cast, never to its own, and never retroactively to a cast in
+    // the same instant it is still resolving.
+    //
+    // Both tags that need this ride the same hook, which is why T213 and T214 were built together:
+    // `cooldownSpeedOnAllyCast` (Drumire's grant, which compounds across the battle) and
+    // `triggerOnAllyCast` (a chained cast).
+    for (const caster of dueCasts) {
+      const casterKey = `${caster.creature.id}@${slotKey(caster.sourceSlot)}`;
+      const casterResolved = resolvedByKey.get(casterKey);
+      if (!casterResolved) continue;
+
+      for (const listener of resolved) {
+        if (listener.key === casterKey) continue; // "an ALLY casts" — never yourself
+        for (const tag of listener.creature.abilityTags) {
+          if (tag.kind === "cooldownSpeedOnAllyCast") {
+            if (tag.typeFilter && !creatureHasType(caster.creature, tag.typeFilter, config)) continue;
+            // Compounds: every qualifying ally cast adds again, for the rest of the battle.
+            allyCastSpeedBonus.set(casterKey, (allyCastSpeedBonus.get(casterKey) ?? 0) + tag.amount);
+            const entry = schedule.find((e) => e.key === casterKey);
+            if (entry && entry.baseCooldown > 0) {
+              const speed = 1 + (allyCastSpeedBonus.get(casterKey) ?? 0);
+              entry.cooldown = roundTime(entry.baseCooldown / speed);
+            }
+          } else if (tag.kind === "triggerOnAllyCast") {
+            if (!selectTargets(tag.target, listener, resolved, config).some((t) => t.key === casterKey)) continue;
+            if (chainDepth >= MAX_CHAIN_DEPTH) {
+              chainCapHits++;
+              continue;
+            }
+            const entry = schedule.find((e) => e.key === listener.key);
+            // Pull the chained creature's next cast to the following step rather than firing it
+            // inside this instant, so the snapshot rule still holds for what it reads.
+            if (entry) entry.nextAt = roundTime(tSeconds + STEP);
           }
         }
       }

@@ -127,3 +127,12 @@
 .amount {
   width: 5rem;
 }
+
+/* T211 (FR-078): a modifier that cannot apply says so at entry time. Warning-toned rather than
+   error-toned, because the input is accepted — it is informative, not a rejection. */
+.inertWarning {
+  margin: var(--space-xs) 0 0;
+  font-size: var(--font-xs);
+  line-height: 1.4;
+  color: var(--text-warn);
+}

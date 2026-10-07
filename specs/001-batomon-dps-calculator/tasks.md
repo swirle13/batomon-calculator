@@ -1916,7 +1916,7 @@ rounding artifact. **~22 of the 135 are not battle calculations at all** (10 sho
       between the creature's printed card and what the battle computes; a modifier they typed
       themselves is neither — it is their own input, and they expect to see it. Record the revision
       rather than silently flipping it back.
-- [ ] T211 **[WI-003]** Tell the user when a modifier cannot apply (FR-078). `+50 damage` on
+- [x] T211 **[WI-003]** Tell the user when a modifier cannot apply (FR-078). `+50 damage` on
       Puffloon legitimately does nothing — `baseDamage` is `null` and the documented rule is that a
       modifier only scales an effect that already exists. Surface that at entry time instead of
       accepting the number and discarding it.
@@ -1931,15 +1931,15 @@ rounding artifact. **~22 of the 135 are not battle calculations at all** (10 sho
 
 ### Implementation — engine mechanisms
 
-- [ ] T213 **[WI-005, WI-006]** Emit an **ally-cast event** from the event loop that other creatures
+- [x] T213 **[WI-005, WI-006]** Emit an **ally-cast event** from the event loop that other creatures
       can subscribe to, and implement `cooldownSpeedOnAllyCast` against it so the grant **compounds**
       as the battle runs (FR-080). Drumire's tag exists but is applied nowhere today. Same hook
       serves T214, so build them together.
-- [ ] T214 **[WI-006]** Add a trigger-chaining tag kind ("Trigger this when adjacent Toxic allies
+- [x] T214 **[WI-006]** Add a trigger-chaining tag kind ("Trigger this when adjacent Toxic allies
       trigger") and implement it on the T213 hook, so a chained creature casts in response to allies
       rather than only on its own cooldown (FR-080). **Guard against infinite recursion** — two
       creatures that trigger each other must not loop; cap chain depth and state the cap.
-- [ ] T215 **[WI-007]** Track accumulated status stacks on the shared implicit target so
+- [x] T215 **[WI-007]** Track accumulated status stacks on the shared implicit target so
       "additional Damage equal to N% of the Poison stacks on the enemy" resolves (FR-081). The engine
       already tracks exactly this for Shock (`shockLayers`); Poison needs the same counter. **Round 9
       deferred this for want of a full target entity — that deferral no longer holds**, because a
@@ -1947,7 +1947,7 @@ rounding artifact. **~22 of the 135 are not battle calculations at all** (10 sho
 
 ### Implementation — coverage programme (WI-012)
 
-- [ ] T218 **[WI-010, WI-011]** Record the taxonomy and audit in `research.md` L1/L2 and keep them
+- [x] T218 **[WI-010, WI-011]** Record the taxonomy and audit in `research.md` L1/L2 and keep them
       **regenerable**: commit the classification script to `scripts/` so the figures recompute rather
       than going stale the moment a creature is tagged. The figures were published before the script
       was committed, which is how the tagged-vs-resolved error survived into two artifacts.
@@ -1975,7 +1975,7 @@ rounding artifact. **~22 of the 135 are not battle calculations at all** (10 sho
       modelled death/HP system this engine does not have; **shop/economy (10)** and
       **evolution-only (12)** are out of scope by research.md B6. Together that is **31 of 135**,
       and T223 must report it as the known shortfall.
-- [ ] T220 **[WI-012]** BOUNDED by pass-1 (it previously had no list, no target and no stopping
+- [x] T220 **[WI-012]** BOUNDED by pass-1 (it previously had no list, no target and no stopping
       criterion across a 4-level corpus). Scope: the On-Cast accumulating-buff family named in
       research.md L5's retraction — **15 species**, not 14 (pass-2 caught that the table's rows sum
       to 6+7+2=15 while its prose said 14; the prose was wrong) — minus the 7 tagged in round 11 —
@@ -2006,14 +2006,14 @@ rounding artifact. **~22 of the 135 are not battle calculations at all** (10 sho
 
 ### Polish
 
-- [ ] T222 [P] Quickstart validation scenarios. **Renumbered by pass-1**: the file's highest
+- [x] T222 [P] Quickstart validation scenarios. **Renumbered by pass-1**: the file's highest
       existing scenario is **31**, not 44, so "Scenarios 45-50" referred to nothing. Add
       **Scenarios 32-37**, one each for: (32) a modifier that cannot apply is reported, not silently
       dropped [T211]; (33) an ally-cast event reaches a listening creature [T213]; (34) a chained
       trigger fires once, not recursively [T214]; (35) accumulated stacks on the shared target
       [T215]; (36) Pebbler's 20/35/50 cascade [T231]; (37) a painted creature satisfies a type
       filter it does not natively match [T230].
-- [ ] T223 Verify `npx tsc -b --noEmit`, `npx vitest run`, `npm run build`; report the coverage
+- [x] T223 Verify `npx tsc -b --noEmit`, `npx vitest run`, `npm run build`; report the coverage
       figure before and after, and **state plainly how far short of 100% the round lands, per
       family** — the user asked for 100%, so the shortfall is the headline, not the progress.
       Baseline to report against: **3 of 135 resolved** at the start of this round. The known
@@ -2068,12 +2068,12 @@ rounding artifact. **~22 of the 135 are not battle calculations at all** (10 sho
       distinct from `behind`/`above` (Saberhorn). Tagging before this means either skipping those
       creatures or encoding them wrongly.
 
-- [ ] T226 **[WI-010]** Resolve the three ambiguous accumulating buffs — **pebbler, bonshell,
+- [x] T226 **[WI-010]** Resolve the three ambiguous accumulating buffs — **pebbler, bonshell,
       pyrokami** — whose ability text grants a status the creature *already applies* ("+15 Shield"
       vs `appliesStatus` Shield 20). Needs evidence from the game or patch notes, not a guess:
       either the grant IS the application (tag nothing) or it is additive (tag `buffOnCast`).
       Guessing wrong double-counts, which is how Bumblebolt's Shock doubled in round 10.
-- [ ] T227 **[WI-010, WI-012]** SPLIT by pass-1, which found this task instructed modelling what
+- [x] T227 **[WI-010, WI-012]** SPLIT by pass-1, which found this task instructed modelling what
       research.md itself calls unmodellable. Decided scope:
       (a) **Saberhorn IS modelled, but the engine does NOT already represent its cost** — pass-2
           corrected that claim. `EffectDescriptor.statChange.stat` is
@@ -2101,17 +2101,17 @@ Design: research.md **M1-M7**, data-model.md "Round 4", spec.md FR-085 to FR-093
 
 ### Data corrections
 
-- [ ] T228a **[WI-001]** Add `supersededText?: string` to `TrainerRecord` (`src/data/types.ts`).
+- [x] T228a **[WI-001]** Add `supersededText?: string` to `TrainerRecord` (`src/data/types.ts`).
       Pass-3 found T228 depends on this field and data-model declares it, but no task owned the
       schema change — the same "declared in a design artifact, owned by nobody" gap that pass-1
       found for `smuggledCreatureIds`.
-- [ ] T228 **[WI-001]** Correct Painter's ability in `src/data/trainers.ts`. The recorded text
+- [x] T228 **[WI-001]** Correct Painter's ability in `src/data/trainers.ts`. The recorded text
       ("Your monsters gain +1 to all stats for each different type they have…") is **the wrong
       ability** — it came from a fan sheet and the record already carried
       `unconfirmedFields: ["abilityText"]`. Replace with the painting behaviour per research.md M1,
       clear the unconfirmed flag, and keep the superseded text in the record so the correction is
       auditable rather than a silent overwrite.
-- [ ] T229 **[WI-005]** Add `region?: RegionId` to `CreatureRecord` and `selectedRegion` to
+- [x] T229 **[WI-005]** Add `region?: RegionId` to `CreatureRecord` and `selectedRegion` to
       `TeamConfiguration` (FR-087), plus the region selector the ask calls for ("the player chooses
       a region before they choose anything else"). Pass-1 found the config field and the selector
       were both missing while T235 already depended on them.
@@ -2135,7 +2135,7 @@ Design: research.md **M1-M7**, data-model.md "Round 4", spec.md FR-085 to FR-093
 
 ### Engine
 
-- [ ] T230 **[WI-001, WI-007]** Add `paintedCreatureIds: string[]` to `TeamConfiguration` and route
+- [x] T230 **[WI-001, WI-007]** Add `paintedCreatureIds: string[]` to `TeamConfiguration` and route
       **every** `typeFilter` comparison through one `creatureHasType(creature, type, config)`
       predicate that returns true for any type when the species is painted (FR-086). There are
       **six** sites, not the "four in effects.ts" previously asserted here — pass-1 validation
@@ -2156,13 +2156,13 @@ Design: research.md **M1-M7**, data-model.md "Round 4", spec.md FR-085 to FR-093
       in provenance: native `"All"` is corpus data, painted is run configuration. One predicate
       covers both, which also means Omnichrome stops being quietly unmatched by every type filter —
       a pre-existing bug this round fixes as a side effect.
-- [ ] T231 **[WI-009, WI-010, WI-011]** Tag **pebbler, bonshell, pyrokami** with `buffOnCast` at
+- [x] T231 **[WI-009, WI-010, WI-011]** Tag **pebbler, bonshell, pyrokami** with `buffOnCast` at
       every level. T226's ambiguity is ANSWERED by the user: base `appliesStatus` is cast 1, the
       grant accumulates from cast 2. Verbatim targets to assert:
       Pebbler "first turn, it grants 20 shield… next trigger, it grants 35 sheild… next trigger,
       grants 50 shield"; Bonshell "7.0s casting time, shield 100 as base stats… (0,100), (80,180),
       (160,260)"; Pyrokami "cast 1 deal 5 burn then add 10, cast 2 deals 15 burn… cast 3 deals 25".
-- [ ] T232 **[WI-010]** Allow an ability grant to CREATE a damage effect. Bonshell has
+- [x] T232 **[WI-010]** Allow an ability grant to CREATE a damage effect. Bonshell has
       `baseDamage: null` / `damageType: null` yet deals 80 damage from cast 2, and `simulate()`
       currently short-circuits `resolvedBase === null` and gates on `damageType === "Direct"`.
       Scope the change to ability grants only: data-model.md's "modifiers can only scale an effect
@@ -2170,19 +2170,19 @@ Design: research.md **M1-M7**, data-model.md "Round 4", spec.md FR-085 to FR-093
 
 ### UI
 
-- [ ] T233 **[WI-002]** A trainer card (FR-089), reusing the shared card/primitive language
+- [x] T233 **[WI-002]** A trainer card (FR-089), reusing the shared card/primitive language
       (Constitution Principle VII) rather than a new bespoke layout. Renders: name, ability text,
       and an unconfirmed-data marker where `unconfirmedFields` applies. It REPLACES the bare
       `<select>` in `src/ui/GridPicker/TrainerPicker.tsx:9-22`, which is the current trainer UI;
       pass-1 found no task said what the card shows or what happens to the existing control.
-- [ ] T234 **[WI-002, WI-006]** The "show affected mons" button (FR-089), rendered **only** for
+- [x] T234 **[WI-002, WI-006]** The "show affected mons" button (FR-089), rendered **only** for
       trainers that designate a set. Per research.md M2/M7 that is exactly **Painter and Smuggler**;
       Chef grants Fire to single-typed monsters by rule and must NOT get the button, and Mad
       Scientist / Monster Ranger are excluded because they are day-scoped (see M7 for why that is
       the boundary, which pass-1 found unrecorded).
       The button's panel shows, per trainer: **Painter** — the 9 painted species and which of them
       are currently on the board; **Smuggler** — the 9 smuggled species and their region.
-- [ ] T235 **[WI-004, WI-006]** The 9-creature picker, writing `paintedCreatureIds` /
+- [x] T235 **[WI-004, WI-006]** The 9-creature picker, writing `paintedCreatureIds` /
       `smuggledCreatureIds`. **User-chosen, never generated** — the app models a run already on the
       player's screen. Smuggler's list is restricted to the OPPOSITE region to the one selected.
       Default rarity shape 2/2/2/2/1 shown as guidance and NOT enforced, and **for Painter only** —
@@ -2192,21 +2192,21 @@ Design: research.md **M1-M7**, data-model.md "Round 4", spec.md FR-085 to FR-093
       "Opposite region" MUST mean "in the other region and NOT in the current one" (FR-088), never
       `!== selectedRegion`: 14 species are in both regions and 13 in neither (research.md M6), so
       the complement would wrongly offer all 27.
-- [ ] T235b **[WI-004]** Make smuggling have an EFFECT, not just a record (FR-091). Pass-1 found
+- [x] T235b **[WI-004]** Make smuggling have an EFFECT, not just a record (FR-091). Pass-1 found
       the pool is not region-aware at all (`corpus.ts:130` filters name/type/rarity;
       `CreatureSearchModal.tsx:58` filters type), so "added to the creature pool from the opposite
       region" was a no-op. Gate the creature picker to `selectedRegion` PLUS `smuggledCreatureIds`,
       so choosing Smuggler and picking 9 species actually changes what is selectable.
       Region-less species (the 13 in neither set) remain always available — they are events/fossils,
       not regional stock, and hiding them would break existing teams.
-- [ ] T236 **[WI-007]** Rainbow type chip for painted creatures, replacing the normal type chips.
-- [ ] T237 **[WI-008]** Translucent rainbow sprite overlay, "slowly scrolling southeasterly"
+- [x] T236 **[WI-007]** Rainbow type chip for painted creatures, replacing the normal type chips.
+- [x] T237 **[WI-008]** Translucent rainbow sprite overlay, "slowly scrolling southeasterly"
       (verbatim). Must honour `prefers-reduced-motion` — the project ships no other continuous
       animation, so this is the first one that needs the guard.
 
 ### Previously-deferred tasks the user asked to execute (WI-012)
 
-- [ ] T238 **[WI-012]** Execute T211, T213, T214, T215, T218, T220, T222, T223, T226, T227. Each is
+- [x] T238 **[WI-012]** Execute T211, T213, T214, T215, T218, T220, T222, T223, T226, T227. Each is
       tracked at its own id; this entry exists so the ask itself is checkable. T226 is satisfied by
       T231 (the user answered its question). Any of the ten that cannot be completed must be
       reported as not done WITH A REASON, not quietly dropped.
@@ -2219,5 +2219,5 @@ Design: research.md **M1-M7**, data-model.md "Round 4", spec.md FR-085 to FR-093
 
 ### Verification
 
-- [ ] T239 **[WI-012]** `npx tsc -b --noEmit`, `npx vitest run`, `npm run build`; report ability
+- [x] T239 **[WI-012]** `npx tsc -b --noEmit`, `npx vitest run`, `npm run build`; report ability
       coverage before/after and state the shortfall plainly.

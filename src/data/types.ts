@@ -201,6 +201,13 @@ export type AbilityTag =
    * *distinct type values across the team*, a different cardinality. Two Fire allies are two
    * matches for `statFromCount` but one unique type here.
    */
+  /**
+   * 2026-10-06 (T214 / FR-080). "Trigger this when <target> allies trigger" — a CHAINED cast.
+   *
+   * The creature casts in response to an ally rather than only on its own cooldown, so it needs
+   * the ally-cast hook from T213. Chains are depth-capped; see `MAX_CHAIN_DEPTH` in `simulate.ts`.
+   */
+  | { kind: "triggerOnAllyCast"; target: TargetSelector }
   | { kind: "statFromUniqueTypes"; target: TargetSelector; effect: EffectDescriptor }
   /**
    * 2026-10-06 (T220). "Knockout adjacent allies and gain <effect> for each ally knocked out" —

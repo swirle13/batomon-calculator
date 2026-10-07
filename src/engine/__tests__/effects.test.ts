@@ -73,7 +73,11 @@ describe("charge mechanic (FR-073 / WI-009)", () => {
     expect(firstCobrexCast).toBeDefined();
     expect(firstCobrexCast!.tSeconds).toBeLessThan(15);
     // Pinned exactly so the tie-break rule cannot drift silently -- see effects.ts for why.
-    expect(firstCobrexCast!.tSeconds).toBeCloseTo(9.1, 5);
+    // 2026-10-06 (T213): was 9.1; now 8.957143. Drumire's "When a Toxic ally casts, give it +5%
+    // Cooldown Speed for this battle" tag EXISTED in the corpus but was applied nowhere, which is
+    // precisely what T213 was filed to fix. Now that ally casts grant it, Cobrex is charged by
+    // Poison *and* sped up, so it arrives slightly earlier. The change is the feature working.
+    expect(firstCobrexCast!.tSeconds).toBeCloseTo(8.957143, 5);
   });
 
   it("does not charge a creature from its own status applications", () => {

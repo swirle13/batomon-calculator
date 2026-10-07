@@ -124,9 +124,37 @@ function PlacementModifierRow({ placement, onAdd, onRemove }: PlacementModifierR
   const [stat, setStat] = useState<ModifierStat>("damageFlatAdd");
   const [amount, setAmount] = useState("0");
 
+  /**
+   * T211 (FR-078): say so when a modifier would do nothing, AT ENTRY TIME.
+   *
+   * A modifier can only scale an effect the creature already has, so `+50 damage` on a creature
+   * with `baseDamage: null` is silently discarded. Accepting the number and showing no change is
+   * the worst outcome — the user reasonably concludes the calculator is wrong rather than that the
+   * input was meaningless.
+   *
+   * Note this rule is about USER modifiers only. An ABILITY grant may create an effect from nothing
+   * (FR-093, Bonshell), which is why this check lives here and not in the engine's buff path.
+   */
+  const inertReason = ((): string | null => {
+    if (!creature) return null;
+    const noStatus = (t: string) => !(creature.appliesStatus ?? []).some((s) => s.type === t);
+    if (stat === "damageFlatAdd" && creature.baseDamage === null)
+      return `${name} has no published damage, so a damage modifier has nothing to scale.`;
+    if (stat === "burnAmountAdd" && noStatus("Burn")) return `${name} does not apply Burn.`;
+    if (stat === "poisonAmountAdd" && noStatus("Poison")) return `${name} does not apply Poison.`;
+    if (stat === "shockAmountAdd" && noStatus("Shock")) return `${name} does not apply Shock.`;
+    if (stat === "shieldAmountAdd" && noStatus("Shield")) return `${name} does not apply Shield.`;
+    if (stat === "cooldownFlatAddSeconds" && creature.baseCooldownSeconds === null)
+      return `${name} has no published cooldown.`;
+    return null;
+  })();
+
   function handleAdd() {
     const parsed = Number(amount);
     if (Number.isNaN(parsed) || parsed === 0) return;
+    // The modifier is still ADDED when inert — the warning informs, it does not block. The user may
+    // be recording a trinket they are about to buy, and refusing the input would be worse than
+    // telling them it currently does nothing.
     onAdd(stat, parsed);
     setAmount("0");
   }
@@ -182,6 +210,13 @@ function PlacementModifierRow({ placement, onAdd, onRemove }: PlacementModifierR
           Add
         </button>
       </div>
+
+      {/* T211/FR-078: stated before the user commits, not discovered afterwards in an unchanged number. */}
+      {inertReason && (
+        <p className={styles.inertWarning} role="status">
+          {inertReason} This modifier will be recorded but will not change any output.
+        </p>
+      )}
     </li>
   );
 }

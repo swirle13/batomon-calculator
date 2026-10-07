@@ -1921,3 +1921,37 @@ scoped by *day*, and this engine simulates a single battle with no day counter (
 excludes shop/economy/run-progression). Neither designates a stable set the player could enumerate
 for a given battle the way Painter's 9 and Smuggler's 9 can be. If a run-timeline model is ever
 added, both return as candidates.
+
+### M8. T223/T239 — coverage report after round 4
+
+Regenerable via `npx vite-node scripts/audit-coverage.mjs` (T218), which imports `isResolvableTag`
+rather than reimplementing it, so the script and the app cannot drift. This is the mechanism round
+10 lacked when it published a figure that was wrong by 3×.
+
+| | start of round 4 | end |
+|---|---|---|
+| battle-relevant abilities | 135 | 135 |
+| **resolved by the engine** | **10** | **17** |
+| carry a tag but are inert | 7 | **0** |
+| structurally excluded | — | 40 |
+| remaining unsupported | 125 | **78** |
+
+Newly resolved: Bonshell, Drumire, Pebbler, Petrirex, Prismagon, Pyrokami, Saberhorn.
+
+**Every tag in the corpus is now read by engine code.** The "inert tags" count — creatures carrying
+a tag kind no resolver consumes — is zero for the first time. That number is the honest version of
+"tagged", and conflating it with "resolved" is exactly the round-10 error.
+
+**The shortfall is 78 of 135, and it is the headline, not the progress.** Of those, 40 are
+structurally excluded (knockout-by-damage needs an HP model; shop/economy and evolution are out of
+scope per B6), leaving ~38 that are reachable with more tagging and a few more mechanisms.
+
+**Named deferrals**, so none is dropped silently:
+
+- **Aerophim** — "+1 Multicast to adjacent allies **and transform them into random monsters of their
+  rarity**". The transformation replaces a creature with an unknown one; no simulator of a known
+  board can express it, and approximating it would fabricate output.
+- **General knockout** — a creature dying to incoming damage. Petrirex's *self-inflicted,
+  position-chosen* knockout is now modelled because its outcome is decidable before the first cast;
+  the general case still needs an HP/death model.
+- **v1.3.0 corpus refresh** — the corpus remains pinned to Balance 24 / 1.2.0 (K6).

@@ -104,6 +104,9 @@ describe("selector-based effect families (T219)", () => {
     // The round-10 audit reported "9 of 135 modelled" by counting tags rather than resolved kinds.
     // One constant now feeds both the resolver and the coverage reporter.
     for (const kind of RESOLVED_TAG_KINDS) expect(isResolvableTag({ kind })).toBe(true);
-    expect(isResolvableTag({ kind: "cooldownSpeedOnAllyCast" })).toBe(false);
+    // `cooldownSpeedOnAllyCast` moved from unresolved to resolved in T213 — it is the tag that
+    // task existed to implement. A kind no engine code reads is the thing this guard watches for.
+    expect(isResolvableTag({ kind: "cooldownSpeedOnAllyCast" })).toBe(true);
+    expect(isResolvableTag({ kind: "notARealTagKind" })).toBe(false);
   });
 });

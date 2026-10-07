@@ -744,3 +744,51 @@ npm run build
 # GitHub Actions workflow (.github/workflows/deploy.yml) publishes dist/ to the gh-pages branch
 # on every push to main — no manual deploy step required once the workflow is in place.
 ```
+
+### Scenario 32 — a modifier that cannot apply says so (T211 / FR-078)
+
+1. Place **Puffloon** (its `baseDamage` is `null`) and open **Modifiers**.
+2. Choose stat **damageFlatAdd** on Puffloon's cell.
+3. **Expect**: a warning appears *before* you press Add — "Puffloon has no published damage, so a
+   damage modifier has nothing to scale… will be recorded but will not change any output."
+4. Press **Add** anyway. **Expect**: the chip is added (the warning informs, it does not block) and
+   the DPS figure does not move.
+
+### Scenario 33 — an ally cast reaches a listening creature (T213 / FR-080)
+
+1. Place **Drumire** and **Miasmaw** (Toxic) together; window 20s.
+2. **Expect**: total DPS **1217.80** for the four-creature poison team in `presentation.test.tsx`.
+   Drumire's "+5% Cooldown Speed when a Toxic ally casts" now applies and **compounds** — the same
+   team at a 30s window reads **2105.20**, because each extra cast earned by the speed-up earns
+   further speed-up.
+3. **Expect**: Cobrex's first cast moves from t=9.1 to **t=8.957143**.
+
+### Scenario 34 — a chained trigger terminates (T214 / FR-080)
+
+1. Construct two creatures that each carry `triggerOnAllyCast` targeting the other.
+2. **Expect**: the simulation **completes**. Chain depth is capped at `MAX_CHAIN_DEPTH = 8` within a
+   single instant — high enough that a legitimate chain on a 6-slot board never hits it, low enough
+   that a mutual-trigger pair halts immediately.
+
+### Scenario 35 — accumulated Poison stacks on the shared target (T215 / FR-081)
+
+1. Place two Poison appliers and run 20s.
+2. **Expect**: `poisonLayers` accumulates exactly as `shockLayers` already does. Round 9 deferred
+   this pending a full target entity; that deferral is **reversed** — a per-status counter is far
+   smaller than a target model.
+
+### Scenario 36 — Pebbler's cascade (T231 / WI-009)
+
+1. Place **Pebbler** alone, window 21s.
+2. **Expect** Shield grants of exactly **20, 35, 50, 65** — the base is cast 1, the +15 accumulates
+   from cast 2. If cast 1 reads 35, the grant is being double-counted against the base.
+
+### Scenario 37 — a painted creature satisfies a foreign type filter (T230 / FR-086)
+
+1. Choose a region, select **Painter**, open **Painted species**, and paint **Bumblebolt**
+   (Bug/Electric).
+2. **Expect**: Bumblebolt's card shows a single rainbow **All** chip instead of its two type chips,
+   and its sprite carries a slowly drifting rainbow overlay.
+3. Filter the Corpus Browser by **Fire**. **Expect**: Bumblebolt appears.
+4. **Expect**: **Omnichrome** also appears under every type filter — it is natively `All`, and
+   before this round it matched *no* type filter at all.

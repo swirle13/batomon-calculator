@@ -94,6 +94,9 @@ export const RESOLVED_TAG_KINDS = [
   // Round 4 orchestration (T220).
   "statFromUniqueTypes",
   "knockoutAlliesOnBattleStart",
+  // T213/T214: resolved by `simulate()`'s ally-cast hook, not by the static resolver.
+  "cooldownSpeedOnAllyCast",
+  "triggerOnAllyCast",
 ] as const;
 
 /** True when `tag` is one this resolver understands. Keeps the "can we act on it?" test in one place. */

@@ -228,7 +228,13 @@ describe("round 9: total DPS and grid sizing", () => {
     // Miasmaw applies Poison 336 instead of 10 and Cobrex fires at t=9.1 instead of t=15, so the
     // team's real output is 1155.70/s. The ~8.5x jump IS the answer to the user's "I think the DPS
     // measurement is off" -- it was, by that factor, for this archetype.
-    expect(screen.getByText("1155.70")).toBeTruthy();
+    // 2026-10-06 (T213): was 1155.70. Drumire's ally-cast Cooldown Speed grant now applies and
+    // COMPOUNDS -- every Toxic ally cast adds another +5% for the rest of the battle -- so the
+    // team's real output rises. The compounding is what the ability says ("for this battle",
+    // granted per cast); it converges because the simulation window bounds it. The effect grows
+    // superlinearly with the window -- this 20s team reads 1217.80, the same team at 30s reads
+    // 2105.20 -- because each extra cast earned by the speed-up earns further speed-up.
+    expect(screen.getByText("1217.80")).toBeTruthy();
   });
 
   it("states the engine's coverage ceiling right where the number is (FR-075)", () => {
