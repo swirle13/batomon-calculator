@@ -31,6 +31,7 @@ export const STATUS_TYPES: StatusEffectType[] = ["Burn", "Poison", "Shock", "Shi
 export interface ModifierAmounts {
   damageFlatAdd: number;
   multicastAdd: number;
+  healAmountAdd: number;
   status: Record<StatusEffectType, number>;
 }
 
@@ -75,7 +76,14 @@ export function applyModifiers(base: ModifiableBase, amounts: ModifierAmounts): 
       type,
       amount: (published.get(type) ?? 0) + amounts.status[type],
     })),
-    heal: base.heal,
+    // Same create-from-nothing rule as damage: a creature with no published heal that is GIVEN one
+    // has a heal, and `null` still means "nothing here" so a healer-less card renders no heal line.
+    heal:
+      base.heal === null
+        ? amounts.healAmountAdd !== 0
+          ? amounts.healAmountAdd
+          : null
+        : base.heal + amounts.healAmountAdd,
     multicast: Math.max(1, base.baseMulticast + amounts.multicastAdd),
     damageUnconfirmed: false,
   };

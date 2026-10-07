@@ -52,6 +52,7 @@ interface StatOption {
  */
 const STAT_OPTIONS: StatOption[] = [
   { value: "damageFlatAdd", label: "Damage", chip: "Damage", store: same, show: signed, step: "any" },
+  { value: "healAmountAdd", label: "Heal", chip: "Heal", store: same, show: signed, step: "any" },
   {
     value: "cooldownFlatAddSeconds",
     label: "Cooldown reduction (sec)",

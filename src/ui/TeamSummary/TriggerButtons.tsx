@@ -48,6 +48,8 @@ const STAT_KEY: Partial<Record<ModifierStat, StatColorKey>> = {
   shockAmountAdd: "shock",
   shieldAmountAdd: "shield",
   multicastAdd: "multicast",
+  healAmountAdd: "heal",
+  cooldownSpeedAdd: "multicast",
 };
 
 const STAT_LABEL: Partial<Record<ModifierStat, string>> = {
@@ -57,7 +59,23 @@ const STAT_LABEL: Partial<Record<ModifierStat, string>> = {
   shockAmountAdd: "Shock",
   shieldAmountAdd: "Shield",
   multicastAdd: "Multicast",
+  healAmountAdd: "Heal",
+  cooldownSpeedAdd: "Cooldown Speed",
 };
+
+/**
+ * The amount as the ability text writes it.
+ *
+ * `cooldownSpeedAdd` is STORED as a fraction — Ninflora's published "+10% Cooldown Speed" is `0.1`,
+ * matching `ModifierEditor`'s own `store: (typed) => typed / 100` — so printing the raw number gave
+ * a button reading "+0.1 Cooldown Speed" against an ability that says "+10%". Rounded through a
+ * tenth of a percent, the same way the modifier chips do it, so `0.1` is "+10%" and a fractional
+ * `0.125` is "+12.5%" rather than binary-float noise.
+ */
+function formatAmount(stat: ModifierStat, amount: number): string {
+  if (stat !== "cooldownSpeedAdd") return `+${amount}`;
+  return `+${Math.round(amount * 1000) / 10}%`;
+}
 
 /** A placement in the shape `selectTargets` reads, carrying the placement so a press can write. */
 interface BoardMember {
@@ -133,7 +151,7 @@ export function TriggerButtons({ creature, placement }: TriggerButtonsProps) {
                 className={styles.effect}
                 style={{ color: STAT_COLORS[STAT_KEY[e.stat] ?? "damage"] }}
               >
-                +{e.amount} {STAT_LABEL[e.stat] ?? e.stat}
+                {formatAmount(e.stat, e.amount)} {STAT_LABEL[e.stat] ?? e.stat}
               </span>
             ))}
             {/* Only said when it is news: a self-only trigger would be stating the obvious. */}

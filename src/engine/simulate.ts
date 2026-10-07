@@ -157,6 +157,8 @@ interface Cast {
     shieldAmountAdd: number;
     /** 2026-10-05 round 2 (research.md D3) */
     multicastAdd: number;
+    /** 2026-10-07 round 7 (WI-002) */
+    healAmountAdd: number;
   };
 }
 
@@ -287,6 +289,7 @@ export function simulate(
     // — so `perCreatureEffectiveStats` can report them below regardless of cast eligibility.
     const multicastAdd = sumModifier("multicastAdd", teamModifiers, placementModifiers);
     const damageFlatAdd = sumModifier("damageFlatAdd", teamModifiers, placementModifiers);
+    const healAmountAdd = sumModifier("healAmountAdd", teamModifiers, placementModifiers);
     const statusAmountAdd = {
       Burn: sumModifier("burnAmountAdd", teamModifiers, placementModifiers),
       Poison: sumModifier("poisonAmountAdd", teamModifiers, placementModifiers),
@@ -316,6 +319,7 @@ export function simulate(
       shockAmountAdd: statusAmountAdd.Shock,
       shieldAmountAdd: statusAmountAdd.Shield,
       multicastAdd,
+      healAmountAdd,
     };
 
     /*
@@ -331,13 +335,13 @@ export function simulate(
         damageType: creature.damageType,
         appliesStatus: member.resolved.appliesStatus,
         baseMulticast: creature.baseMulticast,
-        // No modifier targets healing today, so this is the base value rather than an adjusted one.
-        // It still belongs here: the band shows what this creature does THIS battle, and omitting a
-        // stat because nothing currently modifies it is how 9 healers ended up reading "No published
-        // per-cast output" beside a card showing their heal.
+        // `healAmountAdd` (round 7) is what finally lets a modifier reach this. It still belongs
+        // here regardless: the band shows what this creature does THIS battle, and omitting a stat
+        // because nothing modified it is how 9 healers ended up reading "No published per-cast
+        // output" beside a card showing their heal.
         heal: creature.healAmount ?? null,
       },
-      { damageFlatAdd, multicastAdd, status: statusAmountAdd },
+      { damageFlatAdd, multicastAdd, healAmountAdd, status: statusAmountAdd },
     );
     perCreatureEffectiveStats[key] = { cooldownSeconds: cooldown, output };
 

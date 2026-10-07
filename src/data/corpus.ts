@@ -5,14 +5,43 @@ import { trinkets } from "./trinkets";
 import { items } from "./items";
 import { SHINY_STATS } from "./shiny";
 import { creatureHasType } from "./typing";
+import { deriveAbilityTags } from "./deriveTags";
 
 /**
  * The single assembled corpus lookup object. UI and engine code should import `corpus` from
  * here rather than importing the individual arrays directly (Constitution Principle I — data
  * layer presents one stable surface to its consumers).
  */
+/**
+ * Ability tags are DERIVED here, at corpus-construction time (2026-10-07, round 7 WI-002).
+ *
+ * ## The merge rule
+ *
+ *     effective tags = hand-authored tags, else derived tags
+ *
+ * Hand-authored wins, and the escape hatch is required rather than defensive: some published
+ * abilities cannot be read from prose at any effort. Omnichrome multiplies off an enemy's stats,
+ * Mallogre scales "for each Trinket that you own" and Sproach "for each life lost this run" —
+ * **inputs this model does not have** — Gildshell grants `Sell Value`, which is not a
+ * `ModifierStat`, and Aerophim carries a transform clause no tag expresses. `deriveTags.test.ts`
+ * enumerates the survivors with a reason each, and fails if one of them becomes derivable, so the
+ * exception list cannot quietly regrow into the hand-maintained array this change removes.
+ *
+ * ## Why at construction time rather than in a codegen script
+ *
+ * `scripts/tag-shiny-abilities.mjs` is the precedent for the other choice and carries its flaw:
+ * generated tags are correct only as of the last time somebody remembered to run it. Deriving here
+ * means a tag cannot drift from the text it came from. The reviewability that codegen's git diff
+ * would have given is recovered by a snapshot test over the derived output.
+ */
+function withDerivedTags(record: CreatureRecord): CreatureRecord {
+  if (record.abilityTags.length > 0) return record;
+  const derived = deriveAbilityTags(record);
+  return derived.length > 0 ? { ...record, abilityTags: derived } : record;
+}
+
 export const corpus: Corpus = {
-  creatures,
+  creatures: creatures.map(withDerivedTags),
   trainers,
   trinkets,
   items,

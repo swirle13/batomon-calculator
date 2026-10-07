@@ -515,7 +515,17 @@ export type ModifierStat =
   | "shockAmountAdd"
   | "shieldAmountAdd"
   /** 2026-10-05 round 2 (research.md D3): adds to a creature's baseMulticast count. */
-  | "multicastAdd";
+  | "multicastAdd"
+  /**
+   * 2026-10-07 (round 7 WI-002). Heal was the one output stat with no modifier, which made four
+   * species' published abilities HALF-unexpressible: Lumijel's "Allies of level 3 or above gain +15
+   * Damage and +15 Heal permanently", plus Aster, Emperooze and Dewlotl. Deriving those abilities
+   * would have had to silently drop the heal clause, which is worse than not deriving them.
+   *
+   * `heal` was already a first-class output — it is in `PerCastOutput`, it has a `STAT_COLORS` entry
+   * and the card renders a line for it — so this closes an asymmetry rather than adding a concept.
+   */
+  | "healAmountAdd";
 
 export interface StatModifier {
   /** Stable id for list management/removal in the UI; not otherwise meaningful */

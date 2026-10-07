@@ -84,7 +84,12 @@ export function perCastOutputOf(
       baseMulticast: creature.baseMulticast,
       heal: creature.healAmount ?? null,
     },
-    { damageFlatAdd: sum("damageFlatAdd"), multicastAdd: sum("multicastAdd"), status: statusAdd },
+    {
+      damageFlatAdd: sum("damageFlatAdd"),
+      multicastAdd: sum("multicastAdd"),
+      healAmountAdd: sum("healAmountAdd"),
+      status: statusAdd,
+    },
   );
 
   return { ...output, damageUnconfirmed: isUnconfirmed(creature, "baseDamage") };

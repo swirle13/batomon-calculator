@@ -19,6 +19,7 @@ import type { TeamConfiguration } from "../../data/types";
 const NONE: ModifierAmounts = {
   damageFlatAdd: 0,
   multicastAdd: 0,
+  healAmountAdd: 0,
   status: { Burn: 0, Poison: 0, Shock: 0, Shield: 0 },
 };
 
