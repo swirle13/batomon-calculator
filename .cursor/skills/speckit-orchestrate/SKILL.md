@@ -19,6 +19,15 @@ results, or asks to design and build. It is the authoritative input for every
 downstream step and for validation. If it is empty, STOP and ask the user for the
 list instead of inventing one.
 
+**Applicability gate.** This skill's content may be in your context without the user
+having invoked it. Before Step 0, confirm $ARGUMENTS actually reads as work to design
+and build: items, findings, review comments, audit results, or feature asks. If it
+instead reads as a question to answer, a request to inspect or explain something, or
+any other one-off task, do NOT run this skill — answer the user directly and note in
+one line that you skipped orchestration. Write no ledger and never treat a single
+question as a one-item ledger. If genuinely ambiguous, ask which the user wants before
+Step 0.
+
 ## What this skill does
 
 Runs one complete spec-kit round over a work-item list:

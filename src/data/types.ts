@@ -83,6 +83,13 @@ export interface Provenance {
 // Structured, closed-vocabulary ability hints
 // ---------------------------------------------------------------------------
 
+/**
+ * A region: the pool of creatures a run draws from, chosen before anything else (T229/FR-087).
+ * Open union, not a strict pair — the official notes say "the power level of **all regions**",
+ * which does not commit to there being exactly two (research.md M4).
+ */
+export type RegionId = "pantra" | "jinto" | (string & {});
+
 export type EventLabel = "OnCast" | "OnBattleStart" | "OnVictory" | "OnKnockout";
 
 /**
@@ -114,7 +121,16 @@ export type TargetSelector =
   | ({ kind: "allAllies" } & SelectorFilters);
 
 export interface EffectDescriptor {
-  statChange?: { stat: "cooldownSpeed" | "damage" | "multicast"; amount: number };
+  /**
+   * `cooldownFlatSeconds` added 2026-10-06 (T227a) for Saberhorn's "+8 seconds to this monster's
+   * Cooldown". Deliberately NOT expressed as a `cooldownSpeed` percentage: "+8 seconds" is an
+   * absolute quantity, and converting it would make the cost depend on the base cooldown, which is
+   * not what the ability says.
+   */
+  statChange?: {
+    stat: "cooldownSpeed" | "damage" | "multicast" | "cooldownFlatSeconds";
+    amount: number;
+  };
   statusGrant?: { type: StatusEffectType; amount: number };
   extraOngoingApplications?: number;
 }
@@ -178,6 +194,28 @@ export type AbilityTag =
    * `simulate()` inside the cast loop.
    */
   | { kind: "buffOnCast"; target: TargetSelector; effect: EffectDescriptor }
+  /**
+   * 2026-10-06 (T220). "+N <stat> for each UNIQUE TYPE on your team" — Prismagon.
+   *
+   * `statFromCount` cannot express this: it counts *allies matching a filter*, whereas this counts
+   * *distinct type values across the team*, a different cardinality. Two Fire allies are two
+   * matches for `statFromCount` but one unique type here.
+   */
+  | { kind: "statFromUniqueTypes"; target: TargetSelector; effect: EffectDescriptor }
+  /**
+   * 2026-10-06 (T220). "Knockout adjacent allies and gain <effect> for each ally knocked out" —
+   * Petrirex. A SELF-INFLICTED knockout resolved at battle start.
+   *
+   * This is the narrow slice of the knockout family a battle simulator can model, and the reason it
+   * is tractable where the rest is not: the victims are chosen by POSITION, not by who happens to
+   * die during the fight, so the outcome is known before the first cast. The general knockout
+   * family (a creature dying to incoming damage) still needs an HP model this engine does not have.
+   */
+  | {
+      kind: "knockoutAlliesOnBattleStart";
+      target: TargetSelector;
+      effectPerKnockout: EffectDescriptor;
+    }
   | {
       kind: "statFromStat";
       sourceSelector: TargetSelector;
@@ -265,6 +303,12 @@ export interface TrainerRecord extends Provenance {
   id: string;
   name: string;
   abilityText: string;
+  /**
+   * An earlier recorded ability that turned out to be wrong, kept so the correction is auditable
+   * rather than a silent overwrite (T228a). Painter's original text came from a fan sheet and was
+   * flagged `unconfirmedFields` at the time; the flag was right and nobody followed it up.
+   */
+  supersededText?: string;
   abilityTags: AbilityTag[];
 }
 
@@ -366,6 +410,19 @@ export interface TeamPlacement {
 }
 
 export interface TeamConfiguration {
+  /**
+   * The region this run draws from (FR-087). The player picks it "before they choose anything
+   * else", so the builder gates on it.
+   */
+  selectedRegion?: RegionId;
+  /**
+   * Species painted "all"-type by Painter (FR-085/086). **Species ids, not slots** — the ability
+   * reads "whenever these specific species appear… on your board", so painting Mosslug paints
+   * every Mosslug (research.md M1).
+   */
+  paintedCreatureIds?: string[];
+  /** Species brought in from the opposite region by Smuggler (FR-091). */
+  smuggledCreatureIds?: string[];
   /** Max 6; one per unique slot — see Validation rules in data-model.md */
   placements: TeamPlacement[];
   trainerId: string | null;

@@ -344,6 +344,7 @@ export function GridPicker({ onHighlightSlot }: GridPickerProps) {
       </DndContext>
 
       <CreatureSearchModal
+        config={config}
         slot={searchModalSlot}
         onClose={() => setSearchModalSlot(null)}
         onSelect={(creatureId) => {

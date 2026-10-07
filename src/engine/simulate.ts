@@ -13,6 +13,7 @@ import { effectiveCooldown } from "./cooldown";
 import { applyStatusTick, applyShockProc } from "./status";
 import { isAdjacent, slotKey, slotsEqual, stableSlotIndex } from "./grid";
 import { resolveEffects, selectTargets } from "./effects";
+import { creatureHasType } from "../data/typing";
 import { InvalidTeamConfigurationError } from "./errors";
 
 /**
@@ -101,6 +102,7 @@ function resolveCooldownSpeedTotal(
   targetSlot: GridSlot,
   targetCreature: CreatureRecord,
   teamMembers: { slot: GridSlot; creature: CreatureRecord }[],
+  config: TeamConfiguration,
 ): number {
   let total = 0;
   for (const member of teamMembers) {
@@ -115,10 +117,10 @@ function resolveCooldownSpeedTotal(
         reaches = true;
       }
       if (!reaches) continue;
-      if (target.kind === "adjacent" && target.typeFilter && !targetCreature.types.includes(target.typeFilter)) {
+      if (target.kind === "adjacent" && target.typeFilter && !creatureHasType(targetCreature, target.typeFilter, config)) {
         continue;
       }
-      if (target.kind === "allAllies" && target.typeFilter && !targetCreature.types.includes(target.typeFilter)) {
+      if (target.kind === "allAllies" && target.typeFilter && !creatureHasType(targetCreature, target.typeFilter, config)) {
         continue;
       }
       total += tag.amount;
@@ -268,7 +270,7 @@ export function simulate(
     }
 
     const cooldownSpeedTotal =
-      resolveCooldownSpeedTotal(slot, creature, teamMembers) +
+      resolveCooldownSpeedTotal(slot, creature, teamMembers, config) +
       sumModifier("cooldownSpeedAdd", teamModifiers, placementModifiers);
     const cooldownFlatAdd = sumModifier("cooldownFlatAddSeconds", teamModifiers, placementModifiers);
     const cooldown = effectiveCooldown(creature.baseCooldownSeconds, cooldownSpeedTotal, cooldownFlatAdd);
@@ -475,8 +477,21 @@ export function simulate(
       // T224: base/resolved damage PLUS whatever this creature has accumulated so far this battle.
       const accrued = runtimeBuffs.get(sourceKey);
       const resolvedBase = effective?.baseDamage ?? creature.baseDamage;
-      const resolvedDamage = resolvedBase === null ? null : resolvedBase + (accrued?.damage ?? 0);
-      const isDirectHit = creature.damageType === "Direct" && resolvedDamage !== null;
+      // T232/FR-093: an ability grant may bring a damage effect INTO EXISTENCE. Bonshell has
+      // `baseDamage: null` yet deals 80 damage from its second cast, so `null + buff` must resolve
+      // to the buff rather than staying null.
+      //
+      // This does NOT relax data-model's "modifiers can only scale an effect the creature already
+      // has" — that rule is about USER modifiers and still holds for them. `accrued` comes only
+      // from `buffOnCast` ability tags; `modifiers.damageFlatAdd` is applied separately below and
+      // is still unable to fabricate an attack.
+      const accruedDamage = accrued?.damage ?? 0;
+      const resolvedDamage =
+        resolvedBase === null ? (accruedDamage > 0 ? accruedDamage : null) : resolvedBase + accruedDamage;
+      // A creature with no published damageType that has ACCRUED damage hits directly: Bonshell's
+      // damageType is null because its base card has no attack, but the ability grants one.
+      const isDirectHit =
+        resolvedDamage !== null && (creature.damageType === "Direct" || creature.damageType === null);
 
       if (isDirectHit) {
         const effectiveDamage = resolvedDamage! + modifiers.damageFlatAdd;
@@ -567,6 +582,13 @@ export function simulate(
           const b = buffFor(target.key);
           if (tag.effect.statChange?.stat === "damage") b.damage += tag.effect.statChange.amount;
           if (tag.effect.statChange?.stat === "multicast") b.multicast += tag.effect.statChange.amount;
+          if (tag.effect.statChange?.stat === "cooldownFlatSeconds") {
+            // T227a: Saberhorn's "+8 seconds to this monster's Cooldown" — a COST, pushing its own
+            // next cast later. Applied to the schedule directly, since cooldown is a property of
+            // when the creature acts rather than of what the cast emits.
+            const victim = schedule.find((e) => e.key === target.key);
+            if (victim) victim.nextAt = roundTime(victim.nextAt + tag.effect.statChange.amount);
+          }
           if (tag.effect.statusGrant) {
             const g = tag.effect.statusGrant;
             b.status.set(g.type, (b.status.get(g.type) ?? 0) + g.amount);

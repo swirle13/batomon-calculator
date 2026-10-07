@@ -1,5 +1,5 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
-import type { TeamConfiguration, TeamPlacement, GridSlot, StatModifier } from "../data/types";
+import type { TeamConfiguration, TeamPlacement, GridSlot, RegionId, StatModifier } from "../data/types";
 import { slotsEqual } from "../engine/grid";
 
 /**
@@ -48,6 +48,10 @@ interface TeamConfigContextValue {
   removeTeamModifier: (id: string) => void;
   /** FR-087 (round 11, WI-R11-001): toggle this placement's SHINY variant, independent of level. */
   setPlacementShiny: (slot: GridSlot, shiny: boolean) => void;
+  /** T229/T235 (FR-087, FR-090). */
+  setSelectedRegion: (region: RegionId | undefined) => void;
+  setPaintedCreatureIds: (ids: string[]) => void;
+  setSmuggledCreatureIds: (ids: string[]) => void;
   addPlacementModifier: (slot: GridSlot, modifier: Omit<StatModifier, "id">) => void;
   removePlacementModifier: (slot: GridSlot, id: string) => void;
 }
@@ -153,6 +157,9 @@ export function TeamConfigProvider({
             };
           }),
         })),
+      setSelectedRegion: (region) => setConfig((prev) => ({ ...prev, selectedRegion: region })),
+      setPaintedCreatureIds: (ids) => setConfig((prev) => ({ ...prev, paintedCreatureIds: ids })),
+      setSmuggledCreatureIds: (ids) => setConfig((prev) => ({ ...prev, smuggledCreatureIds: ids })),
       setPlacementShiny: (slot, shiny) =>
         setConfig((prev) => ({
           ...prev,

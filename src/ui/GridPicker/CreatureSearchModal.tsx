@@ -5,6 +5,8 @@ import { RARITIES_DESC, RARITY_COLORS } from "../../data/statColors";
 import { slotKey } from "../../engine/grid";
 import { CardGrid, CreatureTile, Modal } from "../primitives";
 import styles from "./CreatureSearchModal.module.css";
+import { creatureHasType, isAvailableInRun } from "../../data/typing";
+import type { TeamConfiguration } from "../../data/types";
 
 interface CreatureSearchModalProps {
   /** `null` = closed. Changing to a different slot while already open re-triggers the
@@ -12,6 +14,12 @@ interface CreatureSearchModalProps {
   slot: GridSlot | null;
   onClose: () => void;
   onSelect: (creatureId: string | null) => void;
+  /**
+   * The run's configuration, for painting and region availability. A PROP rather than a context
+   * read: this modal is rendered standalone in tests and must not require a `TeamConfigProvider`.
+   * Omitted means "no run context", which correctly filters nothing.
+   */
+  config?: Pick<TeamConfiguration, "paintedCreatureIds" | "selectedRegion" | "smuggledCreatureIds">;
 }
 
 /**
@@ -31,7 +39,7 @@ interface CreatureSearchModalProps {
  * - **The type background is `TypeSplit`, not a gradient**, which is what removes the "sliver" of
  *   the far colour along the card edge (research.md I8).
  */
-export function CreatureSearchModal({ slot, onClose, onSelect }: CreatureSearchModalProps) {
+export function CreatureSearchModal({ slot, onClose, onSelect, config}: CreatureSearchModalProps) {
   const [query, setQuery] = useState("");
   const [rarityFilter, setRarityFilter] = useState<Rarity | "">("");
   const [typeFilter, setTypeFilter] = useState<CreatureType | "">("");
@@ -55,7 +63,12 @@ export function CreatureSearchModal({ slot, onClose, onSelect }: CreatureSearchM
   const results = distinctCreatures.filter((c) => {
     if (needle !== "" && !c.name.toLowerCase().includes(needle)) return false;
     if (rarityFilter !== "" && c.rarity !== rarityFilter) return false;
-    if (typeFilter !== "" && !c.types.includes(typeFilter)) return false;
+    // T230/FR-086: painted and natively-"All" species match every type filter.
+    if (typeFilter !== "" && !creatureHasType(c, typeFilter, config)) return false;
+    // T235b/FR-091: the pool is the selected region plus whatever Smuggler brought in. Region-less
+    // species (events, fossils) stay available — they were never regional stock, and hiding them
+    // would break existing teams.
+    if (!isAvailableInRun(c.id, config)) return false;
     return true;
   });
 

@@ -1,0 +1,49 @@
+/* Trainer card + affected-species picker (T233-T235). Dark-HUD stance, tokens.css only. */
+
+.card { display: flex; flex-direction: column; gap: var(--space-xs); }
+.header { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-xs); }
+.name { margin: 0; font-size: var(--font-md); }
+.unconfirmed {
+  font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--text-warn); border: 1px solid currentColor; border-radius: 999px;
+  padding: 0 0.35rem;
+}
+.ability { margin: 0; font-size: var(--font-sm); color: var(--text-secondary); line-height: 1.45; }
+.superseded {
+  margin: 0; font-size: var(--font-xs); color: var(--text-muted);
+  text-decoration: line-through; text-decoration-color: var(--text-warn);
+}
+.showButton {
+  align-self: flex-start; font-size: var(--font-xs); padding: 0.3rem 0.6rem;
+  border: 1px solid var(--line-subtle); border-radius: var(--radius-sm);
+  background: var(--surface-sunken); color: var(--text-primary); cursor: pointer;
+}
+.showButton:hover { border-color: var(--line-strong); }
+.hint { color: var(--text-muted); }
+
+.pickerIntro { font-size: var(--font-sm); color: var(--text-secondary); margin: 0 0 var(--space-xs); }
+.pickerWarn { font-size: var(--font-sm); color: var(--text-warn); margin: 0 0 var(--space-xs); }
+.pickerSearch {
+  width: 100%; padding: 0.35rem 0.5rem; margin-bottom: var(--space-xs);
+  background: var(--surface-sunken); color: var(--text-primary);
+  border: 1px solid var(--line-subtle); border-radius: var(--radius-sm);
+}
+.shapeRow { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-bottom: var(--space-xs); }
+.shapeChip {
+  font-size: 0.65rem; padding: 0.15rem 0.4rem; border-radius: 999px;
+  border: 1px dashed var(--line-subtle); color: var(--text-muted);
+}
+/* Met is a quiet confirmation, not a reward — the shape is guidance and may be ignored. */
+.shapeMet { border-style: solid; color: var(--text-secondary); }
+
+.pickerList { list-style: none; margin: 0; padding: 0; max-height: 50vh; overflow-y: auto; }
+.pickerItem {
+  display: flex; align-items: center; gap: var(--space-xs); width: 100%;
+  padding: 0.25rem 0.4rem; background: none; border: 1px solid transparent;
+  border-radius: var(--radius-sm); color: var(--text-primary); cursor: pointer; text-align: left;
+}
+.pickerItem:hover { background: var(--surface-sunken); }
+.pickerItemOn { border-color: var(--accent, #8ab4f8); background: var(--surface-sunken); }
+.pickerName { flex: 1; font-size: var(--font-sm); }
+.pickerMeta { font-size: var(--font-xs); color: var(--text-muted); }
+.pickerEmpty { font-size: var(--font-sm); color: var(--text-muted); padding: var(--space-sm); }

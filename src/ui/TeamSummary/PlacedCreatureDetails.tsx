@@ -1,5 +1,6 @@
 import { resolveCreatureVariant } from "../../data/corpus";
 import { VariantToggles } from "../shared/VariantToggles/VariantToggles";
+import { isPainted } from "../../data/typing";
 import { useTeamConfig } from "../../context/TeamConfigContext";
 import type { GridSlot, SimulationResult } from "../../data/types";
 import { slotKey } from "../../engine/grid";
@@ -70,6 +71,7 @@ export function PlacedCreatureDetails({ result, highlightedSlot }: PlacedCreatur
       creature={creature}
       levelLabel={`Lv.${placement.level}${placement.shiny ? " ✦" : ""}`}
       fixedHeight="panel"
+      painted={isPainted(creature.id, config)}
       meta={<VariantToggles placement={placement} />}
     >
       {effective ? (

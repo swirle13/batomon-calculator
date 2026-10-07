@@ -1,9 +1,10 @@
-import type { Corpus, CreatureRecord, CreatureType, Rarity } from "./types";
+import type { Corpus, CreatureRecord, CreatureType, Rarity, TeamConfiguration } from "./types";
 import { creatures } from "./creatures";
 import { trainers } from "./trainers";
 import { trinkets } from "./trinkets";
 import { items } from "./items";
 import { SHINY_STATS } from "./shiny";
+import { creatureHasType } from "./typing";
 
 /**
  * The single assembled corpus lookup object. UI and engine code should import `corpus` from
@@ -125,9 +126,16 @@ export function searchCreatures(query: string): CreatureRecord[] {
 
 /** FR-013: filter the creature corpus by type and/or rarity (both optional, combined with AND).
  * Filters `distinctCreatures` (round 5) for the same one-row-per-species reason as above. */
-export function filterCreatures(criteria: { type?: CreatureType; rarity?: Rarity }): CreatureRecord[] {
+export function filterCreatures(criteria: {
+  type?: CreatureType;
+  rarity?: Rarity;
+  /** T230: needed so painted species surface under any type filter. */
+  config?: Pick<TeamConfiguration, "paintedCreatureIds">;
+}): CreatureRecord[] {
   return distinctCreatures.filter((c) => {
-    if (criteria.type && !c.types.includes(criteria.type)) return false;
+    // T230/FR-086: painted and natively-"All" creatures surface under EVERY type filter. Before
+    // this, Omnichrome (types: ["All"]) matched no filter at all.
+    if (criteria.type && !creatureHasType(c, criteria.type, criteria.config)) return false;
     if (criteria.rarity && c.rarity !== criteria.rarity) return false;
     return true;
   });

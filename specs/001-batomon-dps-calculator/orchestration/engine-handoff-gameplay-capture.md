@@ -65,8 +65,31 @@ The reusable extraction pipeline is the `battle-capture-analysis` skill in
 ```
 
 That writes `/tmp/out/frames.csv` (one row per frame, every badge and bar) and
-`/tmp/out/events.csv` (derived cast / charge / stat-change / status-delta events). Every number
-quoted in this document can be grepped out of those two files.
+`/tmp/out/events.csv` (derived cast / charge / stat-change / health events). Every number quoted
+in this document can be queried out of those two files — the findings below were originally read
+frame-by-frame by hand, then the pipeline was built and reproduced all of them independently.
+
+The four queries that regenerate the core evidence:
+
+```bash
+Q=.cursor/skills/battle-capture-analysis/scripts/bcquery.py
+
+# Finding 2 — the +6 / +10 split that proves multipliers are re-evaluated on read
+python3 $Q order   /tmp/out/frames.csv 4.29 4.40
+
+# Finding 3 — Thorntail's damage, every step a multiple of 24
+python3 $Q changes /tmp/out/frames.csv ally_back_0_dmg
+
+# Finding 5 — Fumungus's damage tracking enemy Poison stacks
+python3 $Q changes /tmp/out/frames.csv ally_front_0_dmg
+
+# Findings 6 and 8 — charge grants and cast ordering
+grep -E 'cast|charge' /tmp/out/events.csv
+```
+
+Slot ids map to the board as `ally_back_0` = Thorntail, `ally_back_1` = Puffloon,
+`ally_back_2` = Noxnimbus, `ally_front_0` = Fumungus, `ally_front_1` = Miasmaw,
+`ally_front_2` = Cobrex.
 
 ---
 

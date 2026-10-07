@@ -171,23 +171,6 @@ struct GlyphSet: Codable {
     var templates: [GlyphTemplate]
 }
 
-/// Place `cells` into the fixed canvas, anchored top-left. Anchoring rather than centring matters:
-/// the same digit arrives 10px or 11px wide depending on sub-pixel placement, and centring those
-/// two offsets them by half a pixel each way, which splits one character into several templates.
-/// Top-left anchoring leaves them differing only at the trailing edge.
-/// Oversized input is cropped rather than scaled, so a mis-segmented blob degrades into a
-/// non-match instead of a plausible wrong digit.
-func canonical(_ cells: [Bool], _ w: Int, _ h: Int) -> [Bool] {
-    var out = [Bool](repeating: false, count: GW * GH)
-    guard w > 0, h > 0 else { return out }
-    for y in 0..<min(h, GH) {
-        for x in 0..<min(w, GW) where cells[y * w + x] {
-            out[y * GW + x] = true
-        }
-    }
-    return out
-}
-
 func maskString(_ m: [Bool]) -> String { m.map { $0 ? "1" : "0" }.joined() }
 func maskBools(_ s: String) -> [Bool] { s.map { $0 == "1" } }
 

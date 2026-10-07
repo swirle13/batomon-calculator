@@ -4,7 +4,8 @@ import { RARITY_COLORS, STAT_COLORS, type StatColorKey } from "../../../data/sta
 import { STATUS_COLOR_KEY } from "../../../data/format";
 import { displayField, isUnconfirmed } from "../../../data/display";
 import { formatCooldown } from "../../../data/format";
-import { TypeTag } from "../TypeTag";
+import { AllTypeTag, TypeTag } from "../TypeTag";
+import typeStyles from "../TypeTag.module.css";
 import { Sprite } from "../Sprite";
 import styles from "./BatomonCard.module.css";
 
@@ -117,9 +118,19 @@ interface BatomonCardProps {
    * Corpus Browser renders cards for creatures that have no placement to toggle.
    */
   meta?: ReactNode;
+  /** True when Painter has painted this species this run (T236/FR-092). */
+  painted?: boolean;
 }
 
-export function BatomonCard({ creature, children, levelLabel, fixedHeight, meta }: BatomonCardProps) {
+export function BatomonCard({ creature, children, levelLabel, fixedHeight, meta, painted }: BatomonCardProps) {
+  // Painted species and natively-"All" species render identically — they mean the same thing
+  // in-game and differ only in provenance (run configuration vs corpus data).
+  //
+  // `painted` is a PROP, not read from context here. `BatomonCard` is shared with the Corpus
+  // Browser, which renders creatures outside any team and has no `TeamConfigProvider`; reading
+  // context inside the card coupled a pure presentation component to run state and broke every
+  // browser test. Callers that know about a run pass it; callers that do not, do not.
+  const isAllType = creature.types.includes("All") || painted === true;
   const rarityColor = RARITY_COLORS[creature.rarity];
   const cooldownUnconfirmed = isUnconfirmed(creature, "baseCooldownSeconds");
   const statLines = buildStatLines({
@@ -145,11 +156,14 @@ export function BatomonCard({ creature, children, levelLabel, fixedHeight, meta 
       </header>
 
       <div className={styles.identity}>
-        <div className={styles.spriteFrame}>
+        <div className={`${styles.spriteFrame} ${isAllType ? typeStyles.paintedSprite : ""}`}>
           <Sprite spriteFile={creature.spriteFile} kind="monster" size={72} alt={creature.name} />
         </div>
         <div className={styles.types}>
-          {creature.types.length > 0 ? (
+          {/* T236/FR-092: an all-type creature gets ONE rainbow chip, never one chip per type. */}
+          {isAllType ? (
+            <AllTypeTag />
+          ) : creature.types.length > 0 ? (
             creature.types.map((type) => <TypeTag key={type} type={type} />)
           ) : (
             <span className={styles.noOutput}>unknown type</span>

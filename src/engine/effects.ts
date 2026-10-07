@@ -10,6 +10,8 @@ import type {
 } from "../data/types";
 import { aboveSlot, behindSlot, isAdjacent, slotKey, slotsEqual } from "./grid";
 import { applyShinyOverlay } from "../data/corpus";
+import { creatureHasType } from "../data/typing";
+import { TYPE_COLORS } from "../data/typeColors";
 
 /**
  * Effect resolution (FR-073/FR-074, 2026-10-06 round 9).
@@ -89,6 +91,9 @@ export const RESOLVED_TAG_KINDS = [
   "statFromStat",
   // Round 11: resolved, but by `simulate()` inside the cast loop rather than here — see T224.
   "buffOnCast",
+  // Round 4 orchestration (T220).
+  "statFromUniqueTypes",
+  "knockoutAlliesOnBattleStart",
 ] as const;
 
 /** True when `tag` is one this resolver understands. Keeps the "can we act on it?" test in one place. */
@@ -111,6 +116,7 @@ export function selectTargets<T extends { slot: GridSlot; key: string; creature:
   selector: TargetSelector,
   source: T,
   all: T[],
+  config?: Pick<TeamConfiguration, "paintedCreatureIds">,
 ): T[] {
   const others = all.filter((m) => m.key !== source.key);
 
@@ -119,7 +125,7 @@ export function selectTargets<T extends { slot: GridSlot; key: string; creature:
     const f = selector as Partial<SelectorFilters>;
     return list.filter(
       (m) =>
-        (!f.typeFilter || m.creature.types.includes(f.typeFilter)) &&
+        (!f.typeFilter || creatureHasType(m.creature, f.typeFilter, config)) &&
         (!f.rarityFilter || m.creature.rarity === f.rarityFilter) &&
         (!f.minLevelFilter || m.creature.level >= f.minLevelFilter),
     );
@@ -181,6 +187,8 @@ export function resolveEffects(config: TeamConfiguration, corpus: Corpus): Resol
     multicast: creature.baseMulticast,
     chargeRules: [] as { status: StatusEffectType; seconds: number }[],
     extraOngoingApplications: 0,
+    /** Filled by the knockout pass, applied with the other deltas so ordering stays uniform. */
+    pendingKnockoutGrants: [] as { effect: EffectDescriptor; count: number }[],
     unmodelledAbilities: [] as string[],
   }));
 
@@ -202,6 +210,32 @@ export function resolveEffects(config: TeamConfiguration, corpus: Corpus): Resol
       const existing = resolved.appliesStatus.find((s) => s.type === tag.status);
       if (existing) existing.amount += gained;
       else resolved.appliesStatus.push({ type: tag.status, amount: gained });
+    }
+  }
+
+  // --- Pass 2a: self-inflicted battle-start knockouts (T220, Petrirex) ---
+  //
+  // Runs FIRST and physically removes the victims from `base`, because a knocked-out ally must not
+  // then contribute to adjacency auras, unique-type counts or ally totals. Resolving it after those
+  // would let a creature Petrirex just removed still buff the team.
+  //
+  // Petrirex's "+20 Shield permanently for each ally Knockout" is the SELF-inflicted case, which is
+  // decidable before the battle starts because the victims are chosen by position. Deaths caused by
+  // incoming damage remain unmodelled (no HP system) — see the coverage report.
+  const knockedOut = new Set<string>();
+  for (const source of base) {
+    for (const tag of source.creature.abilityTags) {
+      if (tag.kind !== "knockoutAlliesOnBattleStart") continue;
+      const victims = selectTargets(tag.target, source, base, config);
+      for (const v of victims) knockedOut.add(v.key);
+      if (victims.length > 0) {
+        source.pendingKnockoutGrants.push({ effect: tag.effectPerKnockout, count: victims.length });
+      }
+    }
+  }
+  if (knockedOut.size > 0) {
+    for (let i = base.length - 1; i >= 0; i--) {
+      if (knockedOut.has(base[i]!.key)) base.splice(i, 1);
     }
   }
 
@@ -249,17 +283,24 @@ export function resolveEffects(config: TeamConfiguration, corpus: Corpus): Resol
     }
   };
 
+  // Knockout rewards, applied through the same delta path as everything else.
+  for (const source of base) {
+    for (const grant of source.pendingKnockoutGrants) {
+      applyEffect(source.key, grant.effect, grant.count);
+    }
+  }
+
   for (const source of base) {
     for (const tag of source.creature.abilityTags) {
       switch (tag.kind) {
         case "ongoing":
-          for (const target of selectTargets(tag.target, source, base)) {
+          for (const target of selectTargets(tag.target, source, base, config)) {
             applyEffect(target.key, tag.effect);
           }
           break;
 
         case "statusGrant":
-          for (const target of selectTargets(tag.target, source, base)) {
+          for (const target of selectTargets(tag.target, source, base, config)) {
             addStatus(target.key, tag.status, tag.amount);
           }
           break;
@@ -276,15 +317,35 @@ export function resolveEffects(config: TeamConfiguration, corpus: Corpus): Resol
           // Count scaling: "+N Damage for each <type> ally", "for each ally in the back row", etc.
           const matches = base.filter((m) => {
             if (m.key === source.key && !tag.includeSelf) return false;
-            if (tag.typeFilter && !m.creature.types.includes(tag.typeFilter)) return false;
+            if (tag.typeFilter && !creatureHasType(m.creature, tag.typeFilter, config)) return false;
             if (tag.rarityFilter && m.creature.rarity !== tag.rarityFilter) return false;
             if (tag.minLevelFilter && m.creature.level < tag.minLevelFilter) return false;
             if (tag.rowFilter && m.slot.row !== tag.rowFilter) return false;
             return true;
           }).length;
           if (matches > 0) {
-            for (const target of selectTargets(tag.target, source, base)) {
+            for (const target of selectTargets(tag.target, source, base, config)) {
               applyEffect(target.key, tag.effect, matches);
+            }
+          }
+          break;
+        }
+
+        case "statFromUniqueTypes": {
+          // Distinct type VALUES across the team, not a count of matching allies. A painted or
+          // natively-"All" ally contributes every type, which is exactly the Painter/Prismagon
+          // combination the community guides call out as the archetype.
+          const types = new Set<string>();
+          for (const m of base) {
+            if (m.creature.types.includes("All") || config.paintedCreatureIds?.includes(m.creature.id)) {
+              for (const t of Object.keys(TYPE_COLORS)) types.add(t);
+            } else {
+              for (const t of m.creature.types) types.add(t);
+            }
+          }
+          if (types.size > 0) {
+            for (const target of selectTargets(tag.target, source, base, config)) {
+              applyEffect(target.key, tag.effect, types.size);
             }
           }
           break;
@@ -292,7 +353,7 @@ export function resolveEffects(config: TeamConfiguration, corpus: Corpus): Resol
 
         case "statFromStat": {
           // Stat scaling: "+Damage equal to 50% of the Shield of your allies".
-          const pool = selectTargets(tag.sourceSelector, source, base);
+          const pool = selectTargets(tag.sourceSelector, source, base, config);
           const total = pool.reduce((sum, m) => {
             if (tag.sourceStat === "damage") return sum + (m.baseDamage ?? 0);
             if (tag.sourceStat === "multicast") return sum + m.multicast;
