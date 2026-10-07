@@ -1706,14 +1706,14 @@ already implied; and the optimiser ships stating what it cannot yet see.
 | WI | Ask (abbreviated) | Task(s) | FR |
 |---|---|---|---|
 | WI-001 | Grid icons much too small now | T197 | FR-071 |
-| WI-002 | DPS table needs a combined total | T198 | FR-072 |
+| WI-002 | DPS table needs a combined total | T204 | FR-072 |
 | WI-003 | Effective band wrong — Miasmaw should read Poison 336 | T199, T200, T202 | FR-073 |
-| WI-004 | Build the all-effects resolution engine | T199, T200, T201 | FR-073 |
+| WI-004 | Build the all-effects resolution engine | T199, T200, T200b, T201, T202 | FR-073 |
 | WI-005 | Placement suggester must use it | T203 | FR-074 |
-| WI-006 | Prominent single total-DPS number | T198, T204 | FR-072 |
+| WI-006 | Prominent single total-DPS number | T204, T205 | FR-072 |
 | WI-007 | Slider to scrub DPS through the battle | T205 | FR-076 |
 | WI-008 | *Question*: why does DPS take off at 15s? | T206 (answered in research.md K2) | — |
-| WI-009 | Cobrex's cooldown charge from ally poison unmodelled | T200, T201 | FR-073 |
+| WI-009 | Cobrex's cooldown charge from ally poison unmodelled | T200b, T201 | FR-073 |
 
 **Answers recorded for the question asked** (research.md K2, so it is not lost in chat):
 **Cobrex has a 15 s cooldown and applies Poison 300, so its *first cast lands at t=15*.** Poison never
@@ -1723,13 +1723,18 @@ one creature's opening cast. And with WI-009 modelled it would fire around **t=4
 
 ### Foundational
 
-- [ ] T197 **[WI-001]** Stop the team grid shrinking (FR-071). **Root cause, not a nudge**:
-      `GridPicker` is a flex item with the default `flex: 0 1 auto`, and round 8 made its sibling
-      rigid (`flex: 0 0 var(--detail-panel-width)`) to fix WI-007 last round — so the grid absorbed
-      all remaining squeeze, and its `max-width: 30rem` is a *maximum*, not a floor. Give it
-      `flex: 0 0 auto` / an explicit min-width in `src/App.tsx` so both columns are rigid, and verify
-      the rendered slot and sprite sizes rather than eyeballing. Record the lesson: fixing one flex
-      item without considering its siblings moves the problem instead of solving it.
+- [ ] T197 **[WI-001]** Restore the team grid's width (FR-071). **CORRECTED root cause** — the first
+      draft blamed flex shrinkage from round 8's rigid sibling, and validation disproved it: the
+      container is `flexWrap: "wrap"` (a rigid sibling wraps, it doesn't squeeze), `Sprite` emits
+      fixed `width`/`height` with `flexShrink: 0` and no `max-width` (so a narrow pane **clips** it,
+      never scales it), and `.grid` has no `width`/`flex-grow` at all.
+      **The real cause is round 8's own T183**, which deleted the per-slot `<details>` containing a
+      `<select>` of every creature name — the widest content in each column, and the thing giving
+      `.grid` (`repeat(3, 1fr)`, content-derived basis) its intrinsic width. Fix by setting an
+      explicit `width`/`min-width` on `.grid` in `GridPicker.module.css`. **A flex keyword in
+      `App.tsx` would change nothing**, because it leaves the content-derived basis intact.
+      Record the restored width as an explicit number so "verify, don't eyeball" has something to
+      verify against.
 
 ### Tests first (Constitution Principle III, NON-NEGOTIABLE)
 
@@ -1739,7 +1744,14 @@ one creature's opening cast. And with WI-009 modelled it would fire around **t=4
         **Poison 336** (own 10 + allies 6 + 20 + 300 = 326). The user supplied this arithmetic; it is
         the spec.
       - Cobrex's effective cooldown is **reduced by 1 second per allied Poison application**, so its
-        first cast lands near **t=4**, not t=15 (WI-009).
+        first cast lands at **t=9**, not t=15 (WI-009).
+        **This number was wrong in the first draft (t≈4) and the error is instructive**: there are
+        **9** allied applications strictly before t=15 (t = 3, 3, 6, 6, 8, 9, 9, 12, 12), not 11 —
+        the draft counted the two landing *at* t=15 — and it then computed `15 − 11 = 4`, crediting
+        charges that have not occurred by the proposed fire time. Solve it, don't subtract: the first
+        `t` where `t + charges(t) ≥ 15`. At t=8 progress is 13; at t=9, 7 charges give 16 → fires.
+        Since this is a test-first task, pinning the wrong number would have written the error into
+        the suite as the round's acceptance criterion.
       - a creature with no relevant ability resolves to exactly its base stats — the resolver must
         not perturb teams it has nothing to say about.
 
@@ -1758,15 +1770,22 @@ one creature's opening cast. And with WI-009 modelled it would fire around **t=4
       (Miasmaw, Cobrex, Drumire, Fumungus at minimum) so the resolver has structured input. **State
       the ceiling honestly in the file header**: only **6 of 149** level-1 creatures have any
       `abilityTags`, so the engine does not retroactively make 143 creatures' prose abilities work.
-- [ ] T202 **[WI-003]** Make `simulate()` consume `effects.ts`, so `perCreatureEffectiveStats` —
-      and therefore the "Effective this battle" band — reports **resolved** values rather than base
-      ones. Existing engine tests pin exact numbers; any that change MUST be re-derived and the
+- [ ] T202 **[WI-003]** Make `simulate()` consume `effects.ts`. **Reporting is not enough, and the
+      first draft of this task permitted the entire round to land without a single DPS number
+      changing**: `perCreatureEffectiveStats` is built in Phase A and read by nothing downstream,
+      while Phase B independently recomputes damage from `creature.baseDamage`
+      (`simulate.ts:388`) and status amounts from `creature.appliesStatus` (`simulate.ts:413-427`).
+      So **Phase B must read the resolved record at those two call sites**, or Miasmaw's band shows
+      336 while its timeline still applies Poison 10 — leaving FR-073's "the simulation MUST use
+      those resolved values" unmet and T208's delta report empty. Existing engine tests pin exact numbers; any that change MUST be re-derived and the
       change explained in the test comment, never silently re-baselined.
 - [ ] T203 **[WI-005]** Point the placement optimiser at the same resolution layer (FR-074), and
       **update `analyzePositionalCoverage()`** — it currently counts only `cooldownSpeedModifier` as
       actionable, which will *understate* coverage once the resolver handles more kinds. The count
       must track what the resolver actually handles, or round 8's honesty mechanism inverts into a
-      different lie.
+      different lie. **`optimize.test.ts`'s `expect(coverage.actionable).toEqual(["Formiqueen"])`
+      deliberately excludes Onsetra and WILL invert** — re-derive it and explain the change in the
+      test comment rather than re-baselining it.
 
 ### Implementation — UI
 
@@ -1774,8 +1793,11 @@ one creature's opening cast. And with WI-009 modelled it would fire around **t=4
       headline total-DPS figure (FR-072) in `src/ui/TeamSummary/TeamSummary.tsx`. **Confirm the
       user's parenthetical in the UI copy**: `perCreatureDps` really is direct damage only, which is
       why their all-status team read `0.00` everywhere while dealing 136.6/s. Facilitated total
-      exactly equals `perStatusPerSecond`, so direct + facilitated is a complete, non-double-counting
-      partition — summing is safe, and the label should make clear the headline is all output.
+      exactly equals `perStatusPerSecond.Poison`, so direct + facilitated is a complete,
+      non-double-counting partition of **damage** — summing those two is safe.
+      **Do NOT sum the `perStatusPerSecond` record to build the headline**: `perStatusPerSecond.Shield`
+      is Shield *granted*, never damage, and never enters `facilitatedDamage`, so that route inflates
+      any Shield team. Sum direct + facilitated.
 - [ ] T205 **[WI-007]** Add a time scrubber (FR-076) that updates the headline figure to the selected
       moment's value, read from the existing `dpsRateSeries` so it agrees with the DPS-over-time
       chart **by construction** rather than via a second computation. Default to the whole-window

@@ -1411,16 +1411,25 @@ think currently, the DPS measurement is off" — **is correct**, and this sectio
 
 ### K1. WI-001 — the icon shrink is a direct regression from round 8's own fix
 
-`GridPicker` is a flex item with the default `flex: 0 1 auto`, so it **shrinks**. Round 8 made its
-sibling rigid (`flex: 0 0 var(--detail-panel-width)`, 22rem) to stop the detail panel resizing
-(WI-007 last round). With one rigid sibling and no `flex-shrink: 0` of its own, the grid absorbed
-all the remaining squeeze — its `max-width: 30rem` is a *maximum*, not a floor, so the slot cards
-(and the 64px sprites inside their `overflow: hidden` squares) shrank with it.
+**CORRECTED DIAGNOSIS.** The first version of this section blamed flex shrinkage from round 8's
+rigid sibling. Validation rejected it on three counts, all verifiable: the container is
+`flexWrap: "wrap"`, so a rigid 22rem sibling wraps to a new line rather than squeezing its neighbour;
+`Sprite` emits fixed `width`/`height` attributes with `flexShrink: 0` and no `max-width`, so a
+narrower pane **clips** it and cannot scale it; and `.grid` has no `width` or `flex-grow`, with
+`max-width: 30rem` acting only as a cap.
 
-- **Decision**: give the grid `flex: 0 0 auto` (or an explicit min-width) so both columns are rigid.
-- **Lesson worth recording**: fixing one flex item's sizing without considering its siblings moves
-  the problem rather than solving it. Round 8 verified the panel stopped resizing and did not check
-  what absorbed the difference.
+**The actual cause is round 8's T183**, which deleted the per-slot `<details>` fallback containing a
+`<select>` of every creature name. That `<select>` was the widest content in each column and was
+what gave `.grid` its intrinsic width — `.grid` is `repeat(3, 1fr)` with a content-derived basis, so
+removing it collapsed every column to the next-widest content. The sprites did not shrink; their
+containers did, and `overflow: hidden` did the rest.
+
+- **Decision**: give `.grid` an explicit `width`/`min-width` in `GridPicker.module.css` rather than a
+  flex keyword in `App.tsx`. A flex keyword leaves a content-derived basis unchanged and would fix
+  nothing.
+- **Lesson, corrected**: the first diagnosis was plausible and wrong. Removing an element changes the
+  layout of everything that was sized by it — T183 verified the dropdown was gone and not what had
+  depended on its width.
 
 ### K2. WI-006/WI-008 answered, and the "DPS" column is genuinely misleading
 
@@ -1437,9 +1446,13 @@ perStatusPerSecond.Poison  136.60         <- exactly equals the facilitated tota
   (`perCreatureDamage` is incremented solely on `isDirectHit`), so an all-status team shows `0.00`
   across the DPS column while actually dealing 136.6 damage/second. A combined figure is not a
   convenience, it is a correctness fix for how the table reads.
-- **Useful confirmation**: facilitated total **exactly** equals `perStatusPerSecond.Poison`, so
-  direct + facilitated is a complete, non-double-counting partition of all damage. Summing them is
-  safe.
+- **Useful confirmation, with one exclusion that matters**: facilitated total **exactly** equals
+  `perStatusPerSecond.Poison`, and direct + facilitated is a complete, non-double-counting partition
+  of all **damage** — `perCreatureDamage` takes only `isDirectHit` damage, `facilitatedDamage` takes
+  exactly the status-tick damage plus Shock-proc damage split by shares that sum to the whole proc.
+  **But `perStatusPerSecond.Shield` is Shield *granted*, never damage**, and never enters
+  `facilitatedDamage`. A headline that naively sums the whole `perStatusPerSecond` record would
+  therefore inflate any Shield team. Sum direct + facilitated; do **not** sum the status record.
 - **WI-008 answered precisely**: Cobrex has a 15 s cooldown and applies **Poison 300**. Its *first
   cast lands at t=15*. Poison never decays, so the per-second rate steps from **84/s at t=15 to
   400/s at t=16** and stays there. The takeoff is one creature's opening cast, not an artifact.
@@ -1459,11 +1472,22 @@ change DPS materially:
 | Drumire | "When a Toxic ally casts, give it +5% Cooldown Speed for this battle" | **No** | Compounding team speed-up |
 | Fumungus | "Has additional Damage equal to 100% of the Poison stacks on the enemy" | **No** | Gains real *direct* damage |
 
-Cobrex's is the most dramatic and directly answers WI-008's follow-up: allies apply Poison at t=3,
-6, 9, 12, 15 (Miasmaw), t=3, 6, 9, 12, 15 (Fumungus) and t=8, 16 (Drumire) — **11 applications
-before t=15**, each charging Cobrex 1 second. Modelled, Cobrex fires around **t=4** and repeatedly
-after, instead of once at t=15. The user's suspicion that the measurement is off is not only correct,
-it is off by a large factor for exactly this archetype.
+Cobrex's is the most dramatic and directly answers WI-008's follow-up — **with a correction, because
+the first version of this paragraph got the arithmetic wrong twice.** Allied Poison applications land
+at t = 3, 3, 6, 6, 8, 9, 9, 12, 12 (Miasmaw and Fumungus every 3 s, Drumire at 8 s), which is **9
+applications strictly before t=15**, not 11: the first draft counted the two landing *at* t=15.
+
+It then compounded that by computing the fire time as `15 − 11 = 4`, which credits Cobrex with
+charges that have not happened yet at the proposed fire time. The charge mechanic has to be solved,
+not subtracted: Cobrex fires at the first `t` where `t + charges(t) ≥ 15`.
+
+```text
+t=8:  5 charges -> progress 13   (not yet)
+t=9:  7 charges -> progress 16   -> FIRES
+```
+
+So modelled, Cobrex's first cast lands at **t=9**, not t=4 — still a large shift from the unmodelled
+t=15, and still confirming the user's suspicion, but the number a test pins must be 9.
 
 - **Decision**: build a resolution layer (`src/engine/effects.ts`) that computes each creature's
   effective stats after on-battle-start, ally-triggered, positional, and trinket effects, and have
