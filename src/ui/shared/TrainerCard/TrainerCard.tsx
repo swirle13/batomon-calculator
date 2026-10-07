@@ -68,22 +68,25 @@ export function TrainerCard({ trainer, controls }: TrainerCardProps) {
   return (
     <Surface className={styles.card}>
       <div className={styles.identity}>
-        <div className={styles.header}>
-          {/* T255/FR-102. The placeholder holds the art's exact 120x80 footprint, so choosing a
-              trainer fills the frame instead of growing the card and shifting the selects beside
-              it — which would move the control you just used. */}
-          {trainer ? (
-            <Sprite spriteFile={trainer.spriteFile} kind="trainer" width={120} height={80} alt={trainer.name} />
-          ) : (
-            <div className={styles.spritePlaceholder} aria-hidden="true" />
-          )}
-          <div className={styles.titles}>
-            <h3 className={`${styles.name} ${trainer ? "" : styles.namePlaceholder}`}>
-              {trainer?.name ?? "No trainer"}
-            </h3>
-          </div>
-        </div>
+        {/* T255/FR-102. The placeholder holds the art's exact 120x80 footprint, so choosing a
+            trainer fills the frame instead of growing the card and shifting the selects beside
+            it — which would move the control you just used. */}
+        {trainer ? (
+          <Sprite spriteFile={trainer.spriteFile} kind="trainer" width={120} height={80} alt={trainer.name} />
+        ) : (
+          <div className={styles.spritePlaceholder} aria-hidden="true" />
+        )}
+        <h3 className={`${styles.name} ${trainer ? "" : styles.namePlaceholder}`}>
+          {trainer?.name ?? "No trainer"}
+        </h3>
+      </div>
 
+      {controls ? <div className={styles.controls}>{controls}</div> : null}
+
+      {/* Spans BOTH columns, below them (2026-10-07). Confined to the left half it wrapped to five
+          lines for the wordiest trainer and made the card grow by ~90px on selection; at the card's
+          full width the longest ability in the corpus takes two. */}
+      <div className={styles.footer}>
         <p className={`${styles.ability} ${trainer ? "" : styles.abilityPlaceholder}`}>
           {trainer?.abilityText ?? "Choose a trainer to see their ability."}
         </p>
@@ -99,8 +102,6 @@ export function TrainerCard({ trainer, controls }: TrainerCardProps) {
           </>
         )}
       </div>
-
-      {controls ? <div className={styles.controls}>{controls}</div> : null}
     </Surface>
   );
 }

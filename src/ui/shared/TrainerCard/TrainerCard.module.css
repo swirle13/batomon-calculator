@@ -22,16 +22,15 @@
   .card { grid-template-columns: 1fr; }
 }
 
-.identity { display: flex; flex-direction: column; gap: var(--space-xs); min-width: 0; }
+/* The art and the name. `center`, not `baseline`: the trainer icon is 120x80 landscape art, and
+   baseline-aligning a block image against text pins its bottom edge to the text baseline and drags
+   the row down. */
+.identity { display: flex; align-items: center; gap: var(--space-sm); min-width: 0; }
 
 /* The selects, stacked. Their labels share a width via Field's `labelWidth`, so the two controls
    start at the same x-position down the column. */
 .controls { display: flex; flex-direction: column; gap: var(--space-xs); min-width: 0; }
 
-/* `center`, not `baseline`: the trainer icon is 120x80 landscape art, and baseline-aligning a
-   block image against text pins its bottom edge to the text baseline and drags the row down. */
-.header { display: flex; align-items: center; gap: var(--space-sm); }
-.titles { display: flex; align-items: baseline; gap: var(--space-xs); flex-wrap: wrap; }
 .name { margin: 0; font-size: var(--font-md); }
 
 /* Exactly the art's footprint, so the card does not change size when a trainer is chosen. */
@@ -50,6 +49,29 @@
   color: var(--text-warn); border: 1px solid currentColor; border-radius: 999px;
   padding: 0 0.35rem;
 }
+/*
+ * The ability text and the affected-species button, spanning BOTH columns below them.
+ *
+ * In the left column the longest ability wrapped to five lines and the card grew by ~90px the moment
+ * a trainer was selected — which moved the Trinkets and Modifiers panels and the whole team grid
+ * below it. Across the full card width the longest one takes two lines, and the reserved height
+ * below means even that costs nothing.
+ */
+.footer {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  /*
+   * MEASURED, not estimated (FR-043): every one of the 23 trainers was selected in a real browser at
+   * this card's width and its footer measured. The worst case is Painter — two lines of ability text
+   * plus the affected-species button — at 4.32rem; Musician is the wordiest at three lines and
+   * 3.48rem. 4.5rem covers both, so the card holds one height for every trainer and for the empty
+   * state, and nothing below it moves when a trainer is chosen.
+   */
+  min-height: 4.5rem;
+}
+
 .ability { margin: 0; font-size: var(--font-sm); color: var(--text-secondary); line-height: 1.45; }
 /* `Button size="sm"` carries the look. All that is left is where it sits: left, not stretched across
    the card, because it opens a picker for one of the card's fields rather than acting on the card. */

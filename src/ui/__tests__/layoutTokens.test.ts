@@ -124,6 +124,27 @@ describe("the overlays keep the board's three-column shape", () => {
 });
 
 /**
+ * FR-043: a panel reserves space for the corpus's worst case rather than resizing as its contents
+ * change. The trainer card is the newest instance and the one with a measured number behind it.
+ */
+describe("the trainer card holds one height for every trainer", () => {
+  const card = read("ui/shared/TrainerCard/TrainerCard.module.css");
+
+  it("spans the ability text across both columns", () => {
+    // In the left column alone the wordiest trainer wrapped to five lines and grew the card by ~90px
+    // on selection, which moved the panels and the whole team grid below it.
+    expect(card.replace(/\s+/g, " ")).toMatch(/\.footer \{[^}]*grid-column: 1 \/ -1/);
+  });
+
+  it("reserves the measured worst-case footer height", () => {
+    // 4.5rem covers Painter (two lines plus the affected-species button, 4.32rem measured in a real
+    // browser) and Musician (three lines, 3.48rem). Deleting this makes the card resize again, which
+    // no unit test in jsdom can see — jsdom does no layout.
+    expect(card).toMatch(/min-height:\s*4\.5rem/);
+  });
+});
+
+/**
  * A `var(--x)` with no fallback, where `--x` is defined nowhere, makes the WHOLE declaration invalid
  * at computed-value time — so the property silently falls back to its inherited or initial value and
  * the page renders as if the line had not been written.
