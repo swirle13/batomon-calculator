@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { corpus, hasShinyVariant, resolveCreatureVariant } from "../corpus";
+import { simulate } from "../../engine/simulate";
+import type { TeamConfiguration } from "../types";
 import { SHINY_STATS } from "../shiny";
 
 /**
@@ -63,5 +65,64 @@ describe("shiny variants", () => {
     expect(shiny.abilityText).toBe(normal.abilityText);
     expect(shiny.abilityTags).toEqual(normal.abilityTags);
     expect(shiny.rarity).toBe(normal.rarity);
+  });
+});
+
+describe("shiny reaches the ENGINE, not just the card (2026-10-06)", () => {
+  const place = (creatureId: string, shiny: boolean): TeamConfiguration => ({
+    placements: [{ slot: { row: "back", col: 0 }, creatureId, level: 1, shiny }],
+    trainerId: null,
+    trinketIds: [],
+    itemIds: [],
+    simulationWindowSeconds: 15,
+    teamModifiers: [],
+  });
+
+  it("a shiny heal reaches the effective stats", () => {
+    // The symptom: a shiny Dribblet's card showed Heal 18 while "Effective this battle" showed 15,
+    // so the band rendered a difference that did not exist. The engine looked up the raw corpus
+    // record and ignored `placement.shiny`, so `member.resolved` was shiny while every direct
+    // `creature.*` read was not.
+    const normal = Object.values(simulate(place("dribblet", false), corpus).perCreatureEffectiveStats)[0]!;
+    const shiny = Object.values(simulate(place("dribblet", true), corpus).perCreatureEffectiveStats)[0]!;
+    expect(normal.output.heal).toBe(15);
+    expect(shiny.output.heal).toBe(18);
+  });
+
+  it("a shiny multicast actually changes the simulation", () => {
+    // Velocect is the sharpest case: shiny trades damage DOWN (15 -> 8) for multicast UP (2 -> 4).
+    // Reading the normal record meant the engine simulated neither half, so the trade-off that
+    // makes shiny Velocect worth taking was invisible.
+    const normal = simulate(place("velocect", false), corpus);
+    const shiny = simulate(place("velocect", true), corpus);
+    const casts = (r: typeof normal) => r.timeline.filter((e) => e.kind === "attack").length;
+    expect(casts(shiny)).toBe(casts(normal) * 2);
+    expect(Object.values(shiny.perCreatureEffectiveStats)[0]!.output.damage).toBe(8);
+  });
+
+  it("a shiny cooldown changes cast timing", () => {
+    // Furnadon's shiny line is a full second faster (5s -> 4s). A 20s window is needed to show it:
+    // at 15s both fit exactly 3 casts (5/10/15 against 4/8/12), so the difference is invisible.
+    const longWindow = (id: string, shiny: boolean) => ({ ...place(id, shiny), simulationWindowSeconds: 20 });
+    const normal = simulate(longWindow("furnadon", false), corpus);
+    const shiny = simulate(longWindow("furnadon", true), corpus);
+    expect(Object.values(normal.perCreatureEffectiveStats)[0]!.cooldownSeconds).toBe(5);
+    expect(Object.values(shiny.perCreatureEffectiveStats)[0]!.cooldownSeconds).toBe(4);
+    expect(shiny.timeline.filter((e) => e.kind === "attack").length).toBeGreaterThan(
+      normal.timeline.filter((e) => e.kind === "attack").length,
+    );
+  });
+
+  it("GUARD: the effective band matches the card for every shiny species, so it stays hidden", () => {
+    // The band only renders when it DIFFERS from the card. A shiny creature with no modifiers must
+    // therefore produce identical values on both, or every shiny placement shows a phantom
+    // difference — which is exactly what was reported.
+    for (const id of ["dribblet", "velocect", "furnadon", "kappow"]) {
+      const effective = Object.values(simulate(place(id, true), corpus).perCreatureEffectiveStats)[0]!;
+      const card = resolveCreatureVariant(id, 1, true)!;
+      expect(effective.output.heal ?? null, `${id} heal`).toBe(card.healAmount ?? null);
+      expect(effective.output.multicast, `${id} multicast`).toBe(card.baseMulticast);
+      expect(effective.cooldownSeconds, `${id} cooldown`).toBe(card.baseCooldownSeconds);
+    }
   });
 });

@@ -15,6 +15,7 @@ import { applyStatusTick, applyShockProc } from "./status";
 import { STABLE_SLOT_ORDER, isAdjacent, slotKey, slotsEqual, stableSlotIndex } from "./grid";
 import { resolveEffects, selectTargets } from "./effects";
 import { creatureHasType } from "../data/typing";
+import { applyShinyOverlay } from "../data/corpus";
 import { InvalidTeamConfigurationError } from "./errors";
 
 /**
@@ -225,7 +226,17 @@ export function simulate(
   const teamMembers = config.placements.map((p) => {
     // Safe to assert: validate() above already confirmed a record exists for this exact
     // (creatureId, level) pair — see the lookup-fix amendment in data-model.md.
-    const creature = corpus.creatures.find((c) => c.id === p.creatureId && c.level === p.level)!;
+    //
+    // THE SHINY OVERLAY BELONGS HERE, not only in `effects.ts`. Without it the engine was half
+    // shiny: `member.resolved` carried the shiny line while every direct `creature.*` read below —
+    // heal, cooldown, multicast, damageType, ability tags — silently used the normal one. A shiny
+    // Dribblet's card showed Heal 18 while "Effective this battle" showed 15, and the same split
+    // would have mis-simulated Furnadon's shiny cooldown (5s vs 4s) and Velocect's multicast
+    // (2 vs 4). One lookup, one answer.
+    const creature = applyShinyOverlay(
+      corpus.creatures.find((c) => c.id === p.creatureId && c.level === p.level)!,
+      p.shiny,
+    )!;
     return {
       slot: p.slot,
       creature,
