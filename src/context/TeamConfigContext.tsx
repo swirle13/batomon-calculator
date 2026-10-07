@@ -9,11 +9,18 @@ import { slotsEqual } from "../engine/grid";
  */
 
 /**
- * 15s, not 20 (2026-10-06). Sudden death begins at 15s, so a fight that reaches it is already being
- * decided by something this engine does not model — and most fights end before then. A default that
- * runs past the point the rules change flatters slow-ramping teams against fast ones.
+ * 30s (2026-10-07).
+ *
+ * This was briefly 15s, justified by "sudden death begins at 15s". **That was wrong** — the claim
+ * came from a search result, and a recorded battle ran past 23s with no sign of it. Whether sudden
+ * death has a fixed onset at all is unknown (see `enemyHealth.ts`), so nothing here should be
+ * tuned to it.
+ *
+ * 30s instead, chosen for a reason the data supports: enemy HP grows roughly 25% per day and keeps
+ * growing, so later-day fights take substantially longer than early ones. A window that ends before
+ * a team has done its work makes a slow, scaling build look worse than it is.
  */
-const DEFAULT_WINDOW_SECONDS = 15;
+const DEFAULT_WINDOW_SECONDS = 30;
 
 function emptyConfig(): TeamConfiguration {
   return {

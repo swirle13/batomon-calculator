@@ -2318,3 +2318,52 @@ the neighbouring avg-vs-end pair already show.
 **Applied/s stays.** It is the only meaningful figure for Shield, and it separates "I apply a lot of
 Poison" from "my Poison deals a lot". FR-055's substance — more than one averaged figure — is still
 met by avg, end and applied.
+
+
+## P. Enemy HP by day, and a retraction about sudden death (2026-10-07)
+
+### P1. Observed enemy team HP
+
+Read off the battle UI across one run. Stored in `src/data/enemyHealth.ts`.
+
+| day | HP | day | HP |
+|---|---|---|---|
+| 1 | 300 | 11 | 24,900 |
+| 2 | 500 | 12 | 34,700 |
+| 3 | 800 | 13 | 47,300 |
+| 4 | 1,400 | 14 | 63,000 |
+| 5 | 2,400 | 15 | 82,400 |
+| 6 | 3,800 | 16 | 106,000 |
+| 7 | 5,700 | 17 | 134,300 |
+| 8 | 8,300 | 18 | 168,000 |
+| 9 | 11,600 | 19 | **207,700** (derived) |
+| 10 | 17,300 | 20 | not captured |
+
+**Day 19 is derived, not read.** The run carried a +25% max-health trinket by then and the UI
+showed 259,625. 259,625 / 1.25 = **207,700** exactly, and the implied day-18→19 ratio of 1.236 sits
+on the curve's declining trend (1.267, 1.251, …). Clean enough to record, flagged because it is one
+step removed from the observation.
+
+**The growth ratio is still falling at the last sample** — 1.67 early, 1.25 by day 18 and dropping —
+so the curve has not settled and `enemyHpForDay` returns `null` beyond day 19 rather than
+extrapolating. A projection off an unsettled curve is a confident-looking number with nothing
+behind it.
+
+**One run.** HP may also scale with opponent strength, rank or seed; none is ruled out by a single
+sample. A time-to-kill built on this is an order-of-magnitude estimate. It also assumes the enemy
+neither heals, shields, nor clears statuses — all of which exist — so it is a **floor** on TTK.
+
+### P2. RETRACTION: "sudden death begins at 15s" is unsupported
+
+An earlier round set the default simulation window to 15s, justified in `TeamConfigContext.tsx` by
+"sudden death begins at 15s, so a fight that reaches it is already being decided by something this
+engine does not model".
+
+That came from a search result, not from observation, and the frame-by-frame recording contradicts
+it: the battle ran past **23s** with no sudden-death damage. Whether sudden death has a fixed onset
+at all, or varies by day, is **unknown**. Nothing in the engine may assume a value for it until
+someone records one.
+
+The default window is now **30s**, justified by something the data does support: enemy HP grows
+~25% per day and keeps growing, so later-day fights take substantially longer. A window that ends
+before a team has done its work makes a slow, scaling build look worse than it is.
