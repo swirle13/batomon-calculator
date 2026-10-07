@@ -128,14 +128,20 @@ describe("round 7 presentation fixes", () => {
     expect(document.body.textContent).not.toMatch(/Banto\b/);
   });
 
-  it("shows no corpus-snapshot prose in the browser, and keeps the version in the footer (FR-014/FR-070)", () => {
-    // Round 8 (WI-014): the prose the user objected to is gone from the browser. FR-014 still needs
-    // a home, so the version moved to a footer rather than being dropped -- its third relocation.
+  it("shows no corpus-snapshot prose anywhere (FR-070; FR-014 retired 2026-10-06)", () => {
+    // Round 8 (WI-014) removed the prose from the browser and moved the version to a footer, which
+    // was FR-014's third home. Its removal was then requested from that footer too.
+    //
+    // Three independent refusals is the answer, so FR-014 is RETIRED rather than quietly unmet —
+    // which is exactly what the comment in App.tsx instructed should happen on a third removal.
+    // Provenance survives per-record in each creature's `patch` field, and is strictly better
+    // there: v1.3.0 moved 15 of 149 creatures, so one app-wide label would have been wrong for the
+    // other 134 the moment a partial update landed.
     const { unmount } = render(<CorpusBrowser />);
     expect(screen.queryByText(/Corpus snapshot:/)).toBeNull();
     unmount();
     render(<App />);
-    expect(screen.getByText(/Balance 24/)).toBeTruthy();
+    expect(screen.queryByText(/^Corpus: /)).toBeNull();
   });
 
   it("renders the split type background without a gradient (FR-049, item 11)", () => {
@@ -213,7 +219,11 @@ describe("round 7 presentation fixes", () => {
     expect(screen.getAllByText(/Dmg\/s \(avg\)/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Dmg\/s \(end\)/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Applied\/s/).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/Growth\/s/).length).toBeGreaterThan(0);
+    // Growth/s² removed 2026-10-06: for Poison it was structurally IDENTICAL to Applied/s (stacks
+    // never decay and a tick deals the current count, so the rate grows by exactly the applied
+    // rate), always 0 for Shield, and an uninterpretable second derivative for Burn and Shock.
+    // FR-055's substance — more than one averaged figure — is still met by avg, end and applied.
+    expect(screen.queryByText(/Growth\/s/)).toBeNull();
   });
 });
 

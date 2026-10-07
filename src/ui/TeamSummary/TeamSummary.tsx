@@ -101,11 +101,20 @@ export function TeamSummary({ config, result }: TeamSummaryProps) {
               <th className={styles.numeric} title="Damage per second as the window closes. For a status whose stacks never decay (Poison) this is much higher than the average, because the rate climbs all battle.">
                 Dmg/s (end)
               </th>
+              {/*
+                Growth/s² was removed 2026-10-06. For Poison it was ALWAYS exactly equal to
+                Applied/s — not by coincidence but structurally: Poison stacks never decay and a
+                tick deals the current stack count, so the damage rate grows by precisely the
+                applied rate. Verified identical across every team tried. For Shield it was always
+                0 (Shield is not damage), and for Burn and Shock it was a small second derivative
+                in units nobody reasons in, saying less clearly what the DPS-over-time chart and
+                the avg-vs-end pair beside it already show.
+
+                Applied/s stays: it is the only meaningful figure for Shield, where "damage" has no
+                meaning, and it separates "I apply a lot of Poison" from "my Poison deals a lot".
+              */}
               <th className={styles.numeric} title="Status stacks applied per second -- the input rate, NOT damage">
                 Applied/s
-              </th>
-              <th className={styles.numeric} title="How fast the damage rate itself is growing, in damage per second per second. Near zero for a status that decays to a steady state (Burn); clearly positive for one that does not (Poison).">
-                Growth/s²
               </th>
             </tr>
           </thead>
@@ -130,9 +139,6 @@ export function TeamSummary({ config, result }: TeamSummaryProps) {
                 </td>
                 <td className={styles.numeric}>
                   {formatRate(result.perStatusAppliedPerSecond[status as StatusEffectType])}
-                </td>
-                <td className={styles.numeric}>
-                  {formatRate(result.perStatusDamageGrowthPerSecond[status as StatusEffectType])}
                 </td>
               </tr>
             ))}

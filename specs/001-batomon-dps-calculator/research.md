@@ -2204,3 +2204,42 @@ round reading "+3" without this note would conclude round 5 was a small one.
 **Shiny now drives resolution**, which the counter does not capture at all: 508 records carry shiny
 ability text and 28 carry derived shiny tags, so e.g. shiny Mosslug resolves +24 Damage where the
 normal form resolves +20.
+
+## O. v1.3.0 corpus refresh and metric pruning (2026-10-06)
+
+### O1. v1.3.0 applied — 15 creatures, and level 4 is INFERRED
+
+Source: [Patch 1.3.0](https://store.steampowered.com/news/app/4557380/view/686392527015643351),
+Steam, 2026-10-06. Applied by `scripts/patch-1_3_0.mjs`; the corpus was pinned to Balance 24 / 1.2.0
+(K6 had flagged this as deferred work).
+
+| | changes |
+|---|---|
+| Jinto | Opalion (cd 9→6, Rock allies 2→1), Petrirex (7→5.5), Steamscuttle (3→3.5), Kappow (4.5→5.5, cost 30→25), Aviarab (cost 20→25), Dollhime (40/80/120→50/100/150), Mallogre (9→8), Danuki (cost 50→45), Sarudo (cost 35→25) |
+| Pantra | Guardiant (7/14/21→8/16/24), Noxnimbus (cd 4→3), Lignite (×15/30/45→×20/40/60, cd 4→5), Stalagrove (5.5→4.5), Aegistruct (7→6), Geminiss (12→10) |
+
+**The notes publish levels 1-3 only** for the scaling abilities, but our corpus carries a level 4.
+Each L4 value is rescaled by the same factor as L1, preserving that creature's existing L1:L4 ratio
+— the only defensible inference available. Those records say so in their `patch` string rather than
+presenting an inferred number as published. Affected: Dollhime L4 480→600, Guardiant L4 42→48,
+Lignite L4 ×90→×120.
+
+**The corpus is now AHEAD of the batodex snapshot** for these 15. `levelSeries.test.ts` exempts them
+by name via `PATCHED_AHEAD_OF_SNAPSHOT`, because the official patch notes are a primary source and
+the fan site is a secondary one — a mismatch there is the fixture being stale, not our data being
+wrong. The set should shrink to empty when batodex catches up.
+
+### O2. Growth/s² removed — it was structurally identical to Applied/s
+
+For **Poison** the two columns were always exactly equal, and not by coincidence: Poison stacks
+never decay and each tick deals the current stack count, so the damage rate grows by precisely the
+applied rate. Verified identical across every team tried (132.5000/132.5000, 1.0667/1.0667,
+7.1500/7.1500, 27.6800/27.6800).
+
+For **Shield** it was always 0 — Shield is not damage. For **Burn** and **Shock** it was a small
+second derivative in units nobody reasons in, saying less clearly what the DPS-over-time chart and
+the neighbouring avg-vs-end pair already show.
+
+**Applied/s stays.** It is the only meaningful figure for Shield, and it separates "I apply a lot of
+Poison" from "my Poison deals a lot". FR-055's substance — more than one averaged figure — is still
+met by avg, end and applied.

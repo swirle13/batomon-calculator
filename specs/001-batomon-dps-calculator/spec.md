@@ -716,3 +716,19 @@ stopped at FR-084 while every prior round added FRs.
 - **FR-105**: Shiny ability text MUST drive resolution, not only display — a shiny placement must
   resolve the magnitudes its shiny text states.
 - **FR-106**: Both charts MUST be resampled onto a real 0.5s grid before being labelled as such.
+
+### FR-014 RETIRED (2026-10-06)
+
+> **FR-014**: "The app must display which corpus patch version it is built from."
+
+Retired, not quietly unmet. It had three homes — the app header (round 7), the Corpus Browser
+summary line (round 8), and a footer line (round 8's remediation) — and its removal was requested
+from each. Three independent refusals is the answer: a global patch label is not something users
+want on screen.
+
+Provenance is **not** lost. Every record carries its own `patch` string, which is strictly more
+useful: v1.3.0 touched 15 creatures, so a single app-wide label would have been wrong for the other
+134 the moment a partial update landed.
+
+`src/App.tsx` carried a comment instructing that a third removal should trigger exactly this
+retirement rather than silence. That is what happened.

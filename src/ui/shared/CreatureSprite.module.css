@@ -32,25 +32,48 @@
 
   mix-blend-mode: screen;
   opacity: 0.45;
-  background-image: linear-gradient(
+
+  /*
+   * REPEATING gradient, and the animation travels exactly ONE period.
+   *
+   * This is what makes the loop seamless, and its absence is what caused the jarring restart. A
+   * plain `linear-gradient` is a single ramp stretched across the box: scrolling it has to snap
+   * back at the end of the cycle, and because the first and last colours differ, that snap is
+   * visible as a hard flash.
+   *
+   * A `repeating-linear-gradient` tiles. Translating it by exactly one tile lands on a state that
+   * is pixel-identical to the start, so the wrap is invisible. The colour stops therefore have to
+   * START and END on the same colour (#ff6b6b at both 0 and 112px) or the tile boundary itself
+   * becomes a visible seam.
+   */
+  background-image: repeating-linear-gradient(
     135deg,
-    #ff6b6b 0%, #ffa94d 14%, #ffd43b 28%, #69db7c 42%, #4dabf7 56%, #b197fc 70%, #ff6b6b 84%, #ffa94d 100%
+    #ff6b6b 0px,
+    #ffa94d 16px,
+    #ffd43b 32px,
+    #69db7c 48px,
+    #4dabf7 64px,
+    #b197fc 80px,
+    #f783ac 96px,
+    #ff6b6b 112px
   );
-  /* Oversized so one full cycle of travel never exposes an edge. */
-  background-size: 300% 300%;
   animation: paintedDrift 3s linear infinite;
 }
 
 /*
- * Travels toward the SOUTH-EAST.
+ * Travels toward the SOUTH-EAST by exactly one gradient period.
  *
- * Raising `background-position` scrolls the viewport across the image toward its bottom-right,
- * which makes the pattern appear to move the opposite way — north-west. So south-east motion means
- * counting DOWN from 100% to 0%, which reads backwards and is exactly why it was wrong before.
+ * The gradient is at 135deg (down-right), and its period is 112px measured along that axis. A
+ * translation of 112px in x and 112px in y moves the pattern one full tile along its own axis, so
+ * the end frame equals the start frame and the loop has no seam.
+ *
+ * `background-position` is used rather than a transform because the overlay is masked to the
+ * sprite: transforming the element would drag the MASK along with the paint, moving the silhouette
+ * instead of scrolling colour through it.
  */
 @keyframes paintedDrift {
-  from { background-position: 100% 100%; }
-  to { background-position: 0% 0%; }
+  from { background-position: 0 0; }
+  to { background-position: 112px 112px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

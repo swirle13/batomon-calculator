@@ -17,17 +17,16 @@ import { simulate } from "./engine/simulate";
 import type { GridSlot } from "./data/types";
 import "./App.css";
 
-/**
- * FR-014's home as of round 8, and its third relocation — recorded because the pattern matters.
- * Round 7 removed this from the app header (FR-050) and put it in the Corpus Browser's summary
- * line specifically so the requirement kept a surface; round 8 (WI-014) asked for that prose gone
- * too. The user's objection both times was to provenance PROSE AT THE TOP OF A VIEW, not to the
- * version being recorded at all, so it moves to one unobtrusive footer line rather than being
- * silently dropped — which would leave FR-014 unmet everywhere, the exact failure review caught
- * last round. If a future round removes this too, FR-014 should be RETIRED with a stated
- * rationale rather than quietly unmet.
+/*
+ * FR-014 (display the corpus patch version) is RETIRED as of 2026-10-06, which is what the comment
+ * that used to live here instructed should happen on a third removal rather than letting the
+ * requirement go quietly unmet.
+ *
+ * It was shown in the app header (round 7), then the Corpus Browser summary (round 8), then a
+ * footer line — and removal was requested each time. Three refusals is the answer: the version is
+ * not something a user wants on screen. It remains recorded per-record in each creature's `patch`
+ * field, which is where it is actually useful, and `spec.md` records the retirement.
  */
-const CORPUS_PATCH_LABEL = "Balance 24 / 1.2.0 (community-imported build)";
 
 type View = "calculator" | "corpus";
 
@@ -50,25 +49,35 @@ function CalculatorView() {
       <p>
         <TrinketPicker />
       </p>
+      {/*
+        Two columns. The left one holds the grid and everything that edits the team; the right is
+        the creature detail panel.
+
+        Modifiers and Share live in the LEFT column, under the grid, because the detail panel is
+        tall and the space beside it was empty — and because both are things you do TO the team, so
+        they belong with the team rather than below the whole page. Share in particular was
+        full-width before, which stretched a base64 code across the viewport.
+      */}
       <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap", alignItems: "flex-start" }}>
-        <GridPicker onHighlightSlot={setHighlightedSlot} />
         <div
           style={{
-            flex: "0 0 var(--detail-panel-width)",
-            textAlign: "left",
+            flex: "1 1 20rem",
+            minWidth: 0,
             display: "flex",
             flexDirection: "column",
             gap: "0.75rem",
+            alignItems: "stretch",
           }}
         >
-          <PlacedCreatureDetails result={result} highlightedSlot={highlightedSlot} />
-          {/* Share sits in the detail column rather than full-width: a base64 build code stretched
-              across the page was unreadable, and this column is already sized for a sidebar. */}
+          <GridPicker onHighlightSlot={setHighlightedSlot} />
+          {/* FR-066 / WI-011: Modifiers sits with the grid it modifies. */}
+          <ModifierEditor />
           <ShareBuild />
         </div>
+        <div style={{ flex: "0 0 var(--detail-panel-width)", textAlign: "left" }}>
+          <PlacedCreatureDetails result={result} highlightedSlot={highlightedSlot} />
+        </div>
       </div>
-      {/* 2026-10-06 round 8 (FR-066 / WI-011): Modifiers sits between the grid and the summary. */}
-      <ModifierEditor />
       <PlacementAdvisor />
       <TotalDps config={config} result={result} />
       <TeamSummary config={config} result={result} />
@@ -119,9 +128,6 @@ function App() {
         </nav>
       </header>
       <main>{view === "calculator" ? <CalculatorView /> : <CorpusBrowser />}</main>
-      <footer style={{ fontSize: "0.7rem", color: "var(--text-muted)", padding: "1rem 0 0.5rem" }}>
-        Corpus: {CORPUS_PATCH_LABEL}
-      </footer>
     </TeamConfigProvider>
   );
 }
