@@ -22,31 +22,14 @@
   text-align: left;
 }
 
-/*
- * FR-043 (items 3 + 15): the card reserved nothing, so it resized on every hover — a one-type
- * creature's card was shorter than a two-type one, the ability band grew with text length, and the
- * adjacent column visibly jumped. Every variable band now reserves space sized to the corpus's
- * measured worst case (longest name 12 chars, longest abilityText 169 chars, max 2 types), so the
- * outer height is constant regardless of which creature is shown.
- *
- * This is a fixed HEIGHT at a flexible width: the containing column is `flex: 1 1 16rem`, so
- * freezing the width would fight the page layout. Text wraps within that width and the reserved
- * heights are sized for it.
- */
-/* "panel": the Calculator's selected-creature card, which also carries the effective-stats band. */
 .cardFixedPanel { height: 29rem; }
 
 .cardFixedPanel .identity { min-height: 1rem; }
 /* .cardFixedPanel .output { min-height: 5.5rem; } */
-/* 3.5rem + the band's own 1rem of vertical padding. This was written as a bare 3.5rem while cards
-   were content-box, where padding sat OUTSIDE the declared height; under border-box it came out of
-   the usable height instead and the ability text spilled over the level pips below it. */
-.cardFixedPanel .ability { height: calc(3.5rem + 1rem); }
+.cardFixedPanel .ability { height: 4.5rem; }
 /* .cardFixedPanel .extra { min-height: 1rem; } */
 /* .cardFixedPanel .meta { min-height: 3.25rem; } */
 
-/* "browser": the narrower grid card (FR-070 / WI-013). Shorter, because it has no effective band --
-   forcing the panel's 33rem onto 149 browser cards would waste most of each one. */
 .cardFixedBrowser { height: 21rem; }
 
 .cardFixedBrowser .identity { min-height: 6.5rem; }

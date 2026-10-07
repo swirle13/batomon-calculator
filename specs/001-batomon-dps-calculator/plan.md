@@ -553,3 +553,151 @@ forward-binding").
 - **A 3x3 selected block plus a 3-column browse grid of 149 cards is a tall overlay.** The trinket
   picker's 93 cards already scroll in `Modal`'s body, so this is the same shape at a larger count;
   the search field and rarity sections are what keep it navigable.
+
+## Amendment: Orchestration round 7 (2026-10-07)
+
+Ledger: `specs/001-batomon-dps-calculator/orchestration/round-7-items.md` (WI-001..WI-007).
+Research: research.md R1-R7.
+
+### Technical Context
+
+No new dependency. One new data-layer module (the vocabulary registry), one new derivation module,
+one new tokeniser; no engine algorithm changes and no change to any stored corpus value.
+
+The round's framing matters more than any individual item. The ask reads as four "make it an enum"
+refactors plus two features, but **all four vocabularies are already closed string-literal unions**
+and Constitution Principle II already mandates that (research.md R1). Taken literally the first four
+items are no-ops. What the user is actually pointing at is the *consequences* of a literal union
+being erased at runtime — hand-written value arrays that drift, no label distinct from the stored
+key, and per-member data scattered across parallel `Record` maps. This repo has already shipped two
+user-visible defects from exactly that cause: three rarity arrays with inconsistent ordering (T172)
+and the `"Super Rare"`/`"SuperRare"` key mismatch that dropped a chip (Q3). So the round is scoped
+to fix the cause, and WI-006 and WI-002 fall out of it almost for free.
+
+- **WI-001/003/005 — one construct, three vocabularies.** A frozen const object per vocabulary with
+  one descriptor per member, the union derived from its keys (research.md R2). Not TypeScript's
+  `enum`, which would churn 596 records, cannot be expressed in the cited
+  `batodex-monsters.json` fixture at all, and would still need the side-tables that are the mess.
+- **WI-002 — derive tags from ability text, via a rule table.** 424 of 596 records (106 of 149
+  species) have published ability text and zero tags; Ninflora is the median case, not an oversight.
+  The round delivers (a) the rule-table mechanism, so adding a shape or family is one declarative row
+  rather than N per-creature edits — the structural reading of the ask; (b) the **`manualTrigger`
+  family across its full `TargetSelector` range**, which R4 measures at 60 untagged records, of which
+  only 10 match the three shapes that were hand-tagged first; and (c) **one further family chosen by
+  census** (T297), so the table is proven extensible rather than asserted to be.
+  `manualTrigger` is first because it sits **outside** `RESOLVED_TAG_KINDS`, so widening it cannot
+  inflate the engine-coverage claim. A second family that *is* inside it may legitimately move that
+  figure — see decision 12.
+- **WI-004 — answer, then split the answer by cost.** `damageType` is both redundant on the record
+  (596/596 correlated with `baseDamage`, measured) and one type serving two unrelated roles. The
+  vocabulary split lands this round; the `publishedCast` value object is proposed and deferred with
+  an invariant test pinning the correlation meanwhile (R3).
+- **WI-006 — label, not data.** The registry's `label` field carries "Super Rare" while the key
+  stays `SuperRare`, so the **138** stored occurrences (124 in `creatures.ts`, 14 in `trinkets.ts`;
+  measured, correcting the ledger's "~100 plus 15") are untouched. The cited
+  `batodex-monsters.json` fixture turns out to contain **no `"SuperRare"` at all** — it stores rarity as
+  `{ label, color }`, i.e. **the published source already uses this round's registry shape** (R2a), which
+  is both independent evidence for "Super Rare" being the published spelling and the strongest argument
+  that the registry is the data's own shape rather than a TypeScript idiom.
+- **WI-007 — a pure tokeniser plus a thin renderer.** Keyword vocabulary lives beside `STAT_COLORS`
+  so the ability text and the stat badges cannot drift to different reds (Principle VII).
+
+### Decisions
+
+1. **The registry is one shared helper, not five bespoke objects.** `defineVocabulary` +
+   `VocabularyKey<T>` in `src/data/vocabulary.ts`, used by all five. Five hand-rolled shapes would
+   be the same duplication this round exists to remove, one level up.
+2. **Stored keys never change, for any of the five vocabularies.** This is the decision that makes
+   the round cheap and safe: no corpus record is edited, `batodex-monsters.json` stays byte-identical
+   to its cited source (Principle IV), and build codes keep round-tripping. Everything the user asked
+   for is reachable through `label`, `order` and the derived value list.
+3. **`label` is the only thing the UI may render.** Enforced by a test that scans rendered output for
+   the raw key, because the failure mode here is silent: `"SuperRare"` reaching a heading looks like a
+   styling slip, not a bug. Three existing tests assert the raw spelling and flip to "Super Rare"
+   (`presentation.test.tsx:102`, `AffectedCreaturePicker.test.tsx:55` and `:62`) — those flips are
+   the evidence WI-006 landed.
+4. **Ordering comes from `order`, and the existing arrays derive from it.** `RARITIES_DESC` /
+   `RARITIES_ASC` keep their names and call sites but stop being hand-written lists. Same for the
+   trigger list in `triggers.test.ts`, which becomes unable to miss a new union member — the drift its
+   own guard was written to catch.
+5. **`"All"` is separated from the element types.** It is a wildcard that `creatureHasType` treats as
+   "matches everything", carried by exactly one species, and comparing it as if it were an element is
+   what caused round 10's Omnichrome bug. The registry marks members with a `kind`
+   (`element` | `wildcard` | `placeholder`), and `creatureHasType` tests `kind === "wildcard"` instead
+   of the literal `"All"` — in one place, rather than the four production sites that hardcode the
+   string today.
+   **Only the wildcard is withheld from filter lists.** `"Curio"` (11 level-1 species) and `"NULL"` (4)
+   are marked `placeholder` for provenance but **stay filterable**, because `types.ts:26-31` cites two
+   independent sources treating both as real published Type values; excluding them would make 15
+   species unreachable by type filter, a regression no ledger item asked for. (Validation pass 1 caught
+   an earlier version of this decision excluding all three.)
+   **Typeless stays representable** — 8 records (the two egg species) have an empty `types` array, and
+   that is a real state, not a gap to fill (R7.2).
+6. **The derivation reads TEXT, with the trigger as corroboration.** 134 records have ability text and
+   no `abilityTrigger` at all (R4), so keying on the trigger would miss a quarter of the corpus. The
+   trigger, when present, must *agree* with what the text implies; a disagreement is a test failure,
+   not a silent preference for one field.
+7. **Hand-authored tags beat derived tags on the same creature.** Required escape hatch: Petrirex,
+   Fumungus and the Link Cable class of ability will never be read correctly from prose, and round 6's
+   two disjointness guards must keep holding.
+8. **Derive at corpus-construction time, snapshot the result.** Not a codegen script —
+   `scripts/tag-shiny-abilities.mjs` is the precedent for that and carries the staleness flaw
+   (correct only as of the last manual run). Runtime derivation cannot drift from its text; a
+   per-species snapshot test recovers the reviewability that codegen's git diff would have given.
+9. **WI-004(b) is deferred, not dropped, and pinned while deferred.** The `publishedCast` value object
+   reaches `ModifiableBase`, `PerCastOutput`, `perCreatureEffectiveStats` and ~15 engine fixtures.
+   Attempting it alongside WI-002 would be the largest-blast-radius change of the round landing beside
+   the most behavioural one. The invariant test makes the deferral safe rather than merely stated.
+10. **The keyword vocabulary exceeds `STAT_COLORS`, in two tiers.** 225 of 543 ability texts contain
+    none of the seven stat keys. Of those, **only 52 contain Protect / HP / Trigger / Ongoing** — a
+    figure validation pass 1 had to correct, because the first draft of this round asserted all 225 did
+    and scoped itself on that. The remaining 173 carry *mechanic* nouns instead: `level` (36),
+    `Evolve`/`Evolves` (35/19), `Knockout` (32), `Trinket` (24), `Charge` (12), `day` (12). So tier 1 is
+    the stat terms and tier 2 is mechanic nouns, coloured distinctly because "Evolves at level 3" names
+    a mechanic rather than an output stat. An ask that says "all mon's ability text" is not met by
+    colouring 318 of 543 cards, and whatever the final figure is, it is reported (T298) rather than
+    implied.
+11. **`StatusEffectType` is registered too, and kept separate from `DamageChannel`.** They overlap on
+    three of four members and are still different vocabularies: `"Direct"` is a channel and never a
+    status, `"Shield"` is a status and never a channel because it absorbs damage rather than dealing it.
+    Related by a derived `damageChannelOf(status)` mapping, following `STATUS_COLOR_KEY`'s precedent.
+    Merging them would let the compiler accept `applyShieldReduction(n, "Shield", s)` (R3a). WI-004's
+    ledger note required this relationship be addressed; the first draft omitted it.
+12. **A second family may move the coverage figure; the first may not.** `manualTrigger` is outside
+    `RESOLVED_TAG_KINDS`, so deriving it must leave the UI's "N abilities not yet modelled" line
+    unchanged (FR-114, asserted by T289). If T297's census selects a family that **is** resolved, the
+    figure rises and that is correct — the engine really does compute those abilities. The dishonesty
+    FR-075 guards against is a count moving without the engine computing anything, not a count moving.
+
+### Constitution Check
+
+| Principle | Status |
+| --- | --- |
+| I. Static data / engine / UI separation | **Pass.** The registry, the derivation and the tokeniser are all `src/data/**`. `recipientsOfPress` already established that selector resolution stays in `src/engine/**`; nothing moves the other way. |
+| II. TypeScript strict, closed unions | **This round's point.** The unions survive unchanged — they are now *derived* from the registry rather than hand-written beside their metadata. No `any`, no new suppression. |
+| III. Test-first for the engine | **Partially applicable, and honoured where it is.** No mechanic changes. WI-002 does change what the engine receives, so Ninflora's derived tag gets a failing test first; the `damageType` invariant (R3) is likewise a test written before the deferral it protects. |
+| IV. Cited, versioned corpus | **Pass, and improved.** No stored value changes, so every `sourceRefs`/`patch` stays accurate and the cited batodex fixture stays byte-identical. WI-006 *restores* the published "Super Rare" spelling this corpus had compressed (R5). |
+| V. Zero-backend | **Pass.** |
+| VI. Simplicity & incremental delivery | **The binding constraint, twice.** It is why WI-002 derives two families rather than all seventeen (deriving 424 records at once would be a generic rule engine built ahead of the evidence, which this principle names explicitly) and why WI-004(b) is deferred. The rule table itself clears the "at least two concrete cases" bar with five target shapes inside the first family alone (R4). Each deferral is recorded as outstanding with a measured figure rather than left implied. |
+| VII. Shared design language & DRY UI | **Pass.** WI-007's colours come from the existing `STAT_COLORS` layer rather than a second palette; the highlighter is one shared component, so the card, the panel and any future surface cannot disagree. |
+
+### Complexity Tracking
+
+One deviation worth naming: `defineVocabulary` is an abstraction introduced for **five** concrete
+call sites that need it, which clears Principle VI's "at least two" bar. It is deliberately the
+smallest thing that works — a typed identity function plus a key type — and carries no plugin
+registry, no inheritance and no runtime validation beyond `Object.freeze`.
+
+### Risks
+
+- **WI-002 is the only item that changes behaviour the user can see, and it changes it for 149
+  species at once.** A derivation that over-matches would hand creatures buttons they should not have,
+  which is worse than Ninflora having none. Mitigation: hand-authored tags win, the derived set is
+  snapshot-tested per species, and round 6's two disjointness guards remain the gate.
+- **The trigger/text agreement check (decision 6) may fail on existing records.** 134 records have no
+  trigger and some embed it in prose ("Ongoing: the ally behind..."). If the check finds genuine
+  disagreements they are corpus findings needing citation, not test failures to suppress — and that
+  could enlarge the round. Tasks must treat a disagreement census as its own step before enforcing.
+- **WI-007 touches every card in the app.** The band's reserved height (FR-043) is sized to a measured
+  169-character worst case and no text grows, but inline elements can still change line-breaking;
+  this needs checking in a browser, not only in jsdom, which does no layout.

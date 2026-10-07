@@ -1124,3 +1124,292 @@ This makes the line count a **display-layout input**, not an incidental: the ban
 reserves a fixed height (FR-043), so the number of lines decides whether that reservation holds. It is
 recorded here because the constraint belongs to the shape, not to the component that happens to draw
 it today.
+
+## Vocabulary registries (2026-10-07, round 7 WI-001/003/004/005/006)
+
+The five closed vocabularies describing a creature — `Rarity`, `CreatureType`, `DamageChannel`,
+`StatusEffectType` and `AbilityTrigger` — move from bare literal unions to **one const-object registry
+each**, with the union derived from the registry's keys. Reasoning and the rejection of TypeScript's
+`enum` are in research.md R1/R2; this records the resulting schema.
+
+The user's asks name four of the five; `StatusEffectType` joins them so that the one remaining closed
+vocabulary in the file is not left as a bare union beside four registered ones (research.md R3a).
+
+### The shared helper
+
+```ts
+// src/data/vocabulary.ts
+export interface VocabularyMember {
+  /** The ONLY string the UI may render. Distinct from the key, which is the stored value. */
+  readonly label: string;
+  /** Canonical ordering, ascending. Sort keys derive from this; no hand-written order arrays. */
+  readonly order: number;
+}
+
+export type VocabularyKey<T> = keyof T & string;
+
+export function defineVocabulary<M extends VocabularyMember, K extends string>(
+  members: Record<K, M>,
+): Readonly<Record<K, M>>;
+```
+
+A typed identity function plus `Object.freeze`, and nothing else. It exists for five concrete call
+sites (Principle VI's "at least two" bar) and deliberately has no plugin registry, no inheritance and
+no runtime validation.
+
+### The invariant that makes this safe
+
+**Stored keys are unchanged, for all five vocabularies.** `rarity: "SuperRare"` stays
+`rarity: "SuperRare"` in all 596 records; `batodex-monsters.json` stays byte-identical to the source
+it cites (Principle IV); build codes keep round-tripping (`share.ts` encodes ids and levels, never
+rarity). Every round-7 ask is reachable through `label`, `order`, and the derived value list.
+
+The corollary is the rule that replaces the old "spelling bridge" comment:
+
+> The key is for storing and comparing. The `label` is for rendering. A raw key reaching the screen
+> is a defect.
+
+### `Rarity` — and "Super Rare" (WI-005, WI-006)
+
+```ts
+export const RARITY = defineVocabulary({
+  Common:    { label: "Common",     order: 0, color: "#70707a" },
+  Uncommon:  { label: "Uncommon",   order: 1, color: "#4ab500" },
+  Rare:      { label: "Rare",       order: 2, color: "#0084bd" },
+  SuperRare: { label: "Super Rare", order: 3, color: "#a040a0" },
+  Legendary: { label: "Legendary",  order: 4, color: "#d47c00" },
+  Mythical:  { label: "Mythical",   order: 5, color: "#dc2844" },
+});
+export type Rarity = VocabularyKey<typeof RARITY>;
+```
+
+`"Super Rare"` with a space is the **published** spelling — `statColors.ts` already recorded that the
+extracted database uses it and that `"SuperRare"` is this corpus's own compression (research.md R5).
+So WI-006 restores a cited value rather than imposing a preference.
+
+`RARITY_COLORS`, `RARITIES_DESC` and `RARITIES_ASC` keep their names and call sites but are now
+**derived** from this one declaration instead of being three parallel structures keyed by the same
+union. That is what closes round 6's Q3 defect class: a new tier cannot be added with a colour and
+without an order, or vice versa.
+
+### `CreatureType` — the wildcard is not an element (WI-003)
+
+```ts
+export const CREATURE_TYPE = defineVocabulary({
+  Fire: { label: "Fire", order: 0, kind: "element" },
+  // ... the eleven other elements ...
+  Curio: { label: "Curio", order: 12, kind: "placeholder" },
+  NULL:  { label: "NULL",  order: 13, kind: "placeholder" },
+  All:   { label: "All",   order: 14, kind: "wildcard" },
+});
+```
+
+`kind` is the load-bearing addition. `"All"` is carried by exactly one species (Omnichrome) and
+`creatureHasType` treats it as "matches every type"; comparing it as though it were an element is
+precisely what caused round 10's Omnichrome bug, where the one creature that is every type matched no
+type filter. Marking it means `creatureHasType` tests `kind === "wildcard"` instead of the literal
+string, in one place, and filter UIs can exclude the wildcard deliberately rather than by accident.
+
+**Only the `wildcard` is withheld from filter lists.** `Curio` (11 level-1 species) and `NULL` (4)
+are `placeholder` because they name no element, **but they stay filterable**: `types.ts:26-31` cites
+two independent sources treating both as real published Type values, so hiding them would make 15
+species unreachable by type filter. (An earlier draft of this section said filter UIs enumerate
+`kind === "element"`, which would have done exactly that; validation pass 1 flagged it as a
+user-visible regression presented as a fix, and pass 2 found the wording had survived here after being
+corrected in the task. `kind` distinguishes three things for three different reasons — wildcard for
+matching semantics, placeholder for provenance — and only the first changes what a filter offers.)
+
+**Typeless remains representable.** Eight records — `dragonegg` and `purpleegg` at all four levels —
+carry an empty `types` array, and that is a legitimate state for a shop item that hatches into a
+creature rather than being one. `types: []` is not a gap to be filled with a placeholder member.
+
+### `DamageChannel` replaces `DamageType` (WI-004)
+
+`DamageType` was one type serving two unrelated roles, which is why it looked half-empty
+(research.md R3):
+
+| Role | Values that occur | Read by |
+| --- | --- | --- |
+| what channel **a hit** lands on | Direct, Burn, Poison, Shock | `TimelineEvent`, `shield.ts`, `status.ts` |
+| what cast **a creature** publishes | Direct, or nothing | `CreatureRecord.damageType` |
+
+```ts
+export const DAMAGE_CHANNEL = defineVocabulary({
+  Direct: { label: "Direct", order: 0 },
+  Burn:   { label: "Burn",   order: 1 },
+  Poison: { label: "Poison", order: 2 },
+  Shock:  { label: "Shock",  order: 3 },
+});
+export type DamageChannel = VocabularyKey<typeof DAMAGE_CHANNEL>;
+```
+
+`"SuddenDeath"` is dropped: it appears in no record and at no runtime site, and P2 already retracted
+the sudden-death claim it was added for.
+
+#### Its relationship to `StatusEffectType` — two registries, one derived mapping
+
+WI-004's ledger note required this to be addressed. `DamageChannel` and `StatusEffectType` overlap on
+three of four members, and the overlap is **not** duplication (research.md R3a):
+
+```ts
+DamageChannel    = "Direct" | "Burn"   | "Poison" | "Shock"
+StatusEffectType =            "Burn"   | "Poison" | "Shock" | "Shield"
+```
+
+`"Direct"` is a channel and not a status (a direct hit was never a status); `"Shield"` is a status and
+not a channel (Shield absorbs damage, it never deals it). So `DamageChannel` is exactly *the statuses
+that tick for damage, plus `Direct`*, and the shared three members are a status naming the channel its
+own ticks land on.
+
+They stay **two registries related by a derived mapping**, following the precedent `STATUS_COLOR_KEY`
+already sets in `format.ts`:
+
+```ts
+/** The channel a status's tick damage lands on. Absent for statuses that never deal damage. */
+export function damageChannelOf(status: StatusEffectType): DamageChannel | undefined;
+```
+
+Merging them into one five-member vocabulary is rejected: it would make the type system accept
+`applyShieldReduction(n, "Shield", s)` and a `statusTick` of `"Direct"`, both nonsense the current split
+rejects at compile time. Widening a union to express a relationship is the opposite of Principle II.
+
+`StatusEffectType` is registered on the same helper, so it is not left as the one bare union beside
+four registered ones.
+
+**`CreatureRecord.damageType` is redundant and stays, for now, under an invariant.** Measured over all
+596 records, `damageType === null` ⟺ `baseDamage === null` with **zero** exceptions in either
+direction, so the field encodes nothing that `baseDamage` does not. The recommended fix is to make the
+illegal state unrepresentable:
+
+```ts
+// PROPOSED, DEFERRED: two nullable fields that must agree -> one optional field that cannot disagree.
+publishedCast?: { damage: number; channel: DamageChannel };
+```
+
+Deferred because it reaches `ModifiableBase`, `PerCastOutput`, `perCreatureEffectiveStats`,
+`BatomonCard`'s output band and ~15 engine fixtures — a hot-path refactor landing beside this round's
+most behavioural change. **A test pins the 596/596 correlation in the meantime**, so the two fields
+cannot begin to disagree while the deferral stands; if one ever does, the suite fails and the
+restructure has evidence behind it.
+
+### `AbilityTrigger` (WI-001)
+
+Registered the same way, carrying the `actionLabel`, `description` and `enginePropagated` fields that
+`TRIGGER_DEFINITIONS` in `src/data/triggers.ts` already holds — those merge into the registry rather
+than sitting beside it. `abilityTrigger` stays `AbilityTrigger | undefined` on the record: 134 records
+have real ability text and no published trigger (research.md R4), so "not published" is a real state
+and inventing a member for it would assert a fact no source supports.
+
+The hand-written ten-value array in `src/data/__tests__/triggers.test.ts` derives from the registry,
+which removes the drift its own guard existed to catch: today a value added to the union and omitted
+from that array is invisible to the test.
+
+## Derived ability tags (2026-10-07, round 7 WI-002)
+
+**The problem, measured.** 424 of 596 records (106 of 149 level-1 species) have published ability text
+and an empty `abilityTags` array. Ninflora — "This and your Grass allies gain +10% Cooldown Speed
+permanently", which offers no button while Brawlmantis and Kickrane offer one for the identical
+ability shape — is the median case, not an oversight. Hand-maintaining tags across 149 species has not
+worked and will not start working.
+
+**The shape.** A pure function in the data layer:
+
+```ts
+// src/data/deriveTags.ts
+export function deriveAbilityTags(record: CreatureRecord): AbilityTag[];
+```
+
+applied at corpus-construction time, with the result merged into each record:
+
+```text
+effective tags = hand-authored tags, else derived tags
+```
+
+### Four rules, each with a reason
+
+1. **Hand-authored tags win.** Some abilities will never read correctly from prose — Petrirex's
+   self-knockout, Fumungus's enemy-stack scaling, the Link Cable adjacency rewrite. Derivation is a
+   floor, not a ceiling.
+2. **Read the TEXT; treat the trigger as corroboration.** 134 records have text and no trigger at all,
+   so keying on the trigger would miss a quarter of the corpus. Where a trigger *is* published it must
+   agree with what the text implies, and a disagreement is a test failure rather than a silent
+   preference for one field.
+3. **`manualTrigger` first, across its full target range; then one further family by census.**
+   `manualTrigger` leads because it is Ninflora's family, it is the family both recent user bug reports
+   were about, and — decisively — it sits **outside `RESOLVED_TAG_KINDS`**, so widening it cannot
+   inflate the engine-coverage counter into claiming abilities the engine does not compute.
+   **The rules must cover the whole `TargetSelector` vocabulary, not the three shapes hand-tagged
+   first.** Of the 60 untagged records containing "permanently", only 10 match those three; the other
+   50 are the same family with targets like `"Adjacent Water allies gain +25 Heal permanently"` or
+   `"Give the ally behind +3% Cooldown Speed permanently"` — all already expressible via `adjacent`,
+   `behind`, `allAllies` and `minLevelFilter` (research.md R4). A second family follows, selected from
+   R4's census, so the table is proven extensible. If that family **is** in `RESOLVED_TAG_KINDS` the
+   coverage figure legitimately rises (FR-114).
+   The families still hand-tagged after this round are recorded per family with measured before/after
+   counts, not as a single aggregate.
+4. **Derive at runtime, snapshot the output.** Not a codegen script:
+   `scripts/tag-shiny-abilities.mjs` is the precedent and carries the flaw — generated tags are correct
+   only as of the last time someone remembered to run it. Runtime derivation cannot drift from its own
+   text. A per-species snapshot test recovers the review visibility codegen's git diff would have given.
+
+### The pattern shapes being derived, and what they reach
+
+Four text shapes, not the two the three hand-written examples suggested. The `target`/`includeSelf`
+fields added earlier on 2026-10-07 are what let the ally-granting shapes be expressed at all.
+
+1. `"This and <filter> allies gain +N <Stat> permanently"` — `allAllies` + filter + `includeSelf`.
+2. `"+N <Stat> permanently"`, including two-stat variants — a bare self-grant.
+3. A leading trigger clause then the grant — `"When you use an item, this gains +20 Damage and
+   Shield"`. Note this one carries **no "permanently" at all**.
+4. **Positional and filtered targets** — `adjacent` (+ optional `typeFilter`), `behind`,
+   `allAllies` + `minLevelFilter`.
+
+**Measured reach: 33 of the 60 untagged "permanently" records** (research.md R4). The other 27, across
+7 species, are outside the family whatever the selector support: four species are count-scaled
+(Mallogre, Sproach, Talonite, Sunsage — and two of their inputs, trinket count and lives lost, do not
+exist in this model), Omnichrome multiplies off an enemy's stats, Aerophim carries a transform clause
+no tag expresses, and Gildshell's `"+240 Sell Value permanently"` names a stat that is **not a
+`ModifierStat`**.
+
+The generalisation worth keeping: **a family identified by one keyword is not a family.**
+"Permanently" selects 60 records spanning six different mechanisms. Three successive drafts of this
+section understated the non-derivable set — as "one" record, then "two" — before it was measured at 27,
+which is itself the argument for keying rules on full text shapes rather than on a trigger word.
+
+Round 6's two disjointness guards remain the gate on all of it: no creature may carry both a
+`manualTrigger` and an engine-resolved tag, and no `manualTrigger` may name a trigger the engine
+already propagates.
+
+## Ability-text keyword highlighting (2026-10-07, round 7 WI-007)
+
+Ability text renders as one uncoloured `<p>`; the game colours keywords in place, with two different
+keyword colours inside a single sentence on the Craghorn card ("this gains +20 Damage and Shield").
+
+**A pure tokeniser, not a component:**
+
+```ts
+// src/data/abilityHighlight.ts
+export interface AbilityTextRun { text: string; colorKey?: StatColorKey | KeywordColorKey; }
+export function tokenizeAbilityText(text: string): AbilityTextRun[];
+```
+
+Colours resolve through the existing `STAT_COLORS` layer so ability text and stat badges cannot drift
+to different reds (Principle VII). A thin shared renderer maps runs to spans; no call site builds its
+own.
+
+Three constraints read off the corpus rather than assumed (research.md R6):
+
+1. **Longest match first** — "Cooldown Speed" contains "Cooldown"; the game colours the whole phrase.
+2. **The sign and number join the run** — "+20 Damage" is coloured entire, not just the word.
+3. **The vocabulary exceeds `STAT_COLORS`, in two tiers.** 225 of 543 texts contain none of the seven
+   stat keys. Of those, **only 52 contain Protect/HP/Trigger/Ongoing** — validation pass 1 refuted an
+   earlier claim that all 225 did. The remaining 173 carry *mechanic* nouns: `level` (36),
+   `Evolve`/`Evolves` (35/19), `Knockout` (32), `Trinket` (24), `Charge` (12), `day` (12), `shop` (8),
+   `Sell Value` and `Berries` (4 each). A tier-2 vocabulary of those nine terms reaches **132 of the
+   173**, giving **502 of 543** texts at least one coloured run and leaving **41** bare. So "all mon's
+   ability text" is approached, not reached, and the final figure is reported rather than implied
+   (FR-115).
+
+The card's reserved height (FR-043) is unaffected: it is sized to a measured 169-character worst case
+and no text grows. Inline elements can still change line-breaking, so this is verified in a browser,
+not only in jsdom.

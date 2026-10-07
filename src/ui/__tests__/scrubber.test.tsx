@@ -45,25 +45,24 @@ describe("DPS scrubber indexes the series, not seconds (2026-10-06)", () => {
 });
 
 describe("placeholder ability text never reaches the UI (2026-10-06)", () => {
-  it("treats both corpus placeholder strings as absent", () => {
-    expect(hasAbilityText("No ability text shown")).toBe(false);
-    expect(hasAbilityText("No ability text transcribed in sources reviewed.")).toBe(false);
+  it("treats an empty text and the retired placeholder strings as absent", () => {
+    expect(hasAbilityText("")).toBe(false);
     expect(hasAbilityText("   ")).toBe(false);
     expect(hasAbilityText(undefined)).toBe(false);
+    // The corpus no longer stores either phrasing, but the predicate keeps rejecting them so a
+    // reverted record or a new source transcribed the old way cannot render as an ability.
+    expect(hasAbilityText("No ability text shown")).toBe(false);
+    expect(hasAbilityText("No ability text transcribed in sources reviewed.")).toBe(false);
     expect(hasAbilityText("Deals 3 direct damage every 2.5 seconds.")).toBe(true);
   });
 
-  it("GUARD: the corpus still uses only the placeholder strings this predicate knows", () => {
-    // If a third placeholder phrasing is ever introduced, it would silently render as an ability.
-    const placeholders = new Set(
-      corpus.creatures
-        .map((c) => c.abilityText ?? "")
-        .filter((t) => /no ability text/i.test(t)),
-    );
-    expect(placeholders.size).toBeGreaterThan(0);
-    for (const p of placeholders) {
-      expect(hasAbilityText(p), `unrecognised placeholder: ${p}`).toBe(false);
-    }
+  it("GUARD: the corpus spells 'no ability' as an empty string, never as prose", () => {
+    // Prose placeholders are indistinguishable from real abilities to anything but this predicate,
+    // so a newly-introduced phrasing would silently render as an ability called e.g. "Unknown".
+    const prose = corpus.creatures
+      .map((c) => ({ id: c.id, text: c.abilityText ?? "" }))
+      .filter((c) => /^(no ability|none|unknown|n\/a|not transcribed|tbd)/i.test(c.text.trim()));
+    expect(prose, `placeholder prose in corpus: ${prose.map((c) => c.id).join(", ")}`).toEqual([]);
   });
 });
 

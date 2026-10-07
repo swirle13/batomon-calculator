@@ -836,3 +836,201 @@ npm run build
 1. Add a damage modifier and all four statuses to a creature that also heals and multicasts, for the
    full 7 lines.
 2. Expect 4 lines in the first column and 3 in the second, no third column, and no clipping.
+
+## Validation scenarios 49-59 — round 7 (2026-10-07)
+
+Ledger: `orchestration/round-7-items.md`. Design: plan.md "Amendment: Orchestration round 7",
+data-model.md "Vocabulary registries" / "Derived ability tags" / "Ability-text keyword highlighting",
+research.md R1-R7.
+
+### Scenario 49 — one declaration per vocabulary (WI-001, WI-003, WI-005)
+
+```bash
+npm test -- vocabulary
+```
+
+Expected: adding a member to any of the five registries without a `label` or an `order` fails to
+compile. `RARITIES_DESC`, `RARITIES_ASC`, `RARITY_COLORS` and the trigger list formerly hand-written
+in `src/data/__tests__/triggers.test.ts` all derive from their registry — asserted by comparing each
+against the registry's own key list, so a union member that is missing from a derived list is a test
+failure rather than invisible.
+
+Manual check: `rg -n 'RARITIES\s*[:=]\s*\[' src/` returns nothing. Round 7's T172 found three such
+local arrays with inconsistent ordering; the registry is what makes a fourth impossible.
+
+### Scenario 50 — "Super Rare" everywhere, "SuperRare" nowhere on screen (WI-006)
+
+```bash
+npm run dev    # then open the Corpus Browser and the creature picker
+```
+
+Expected: every rarity label reads **"Super Rare"** with a space, at all six surface classes (FR-112).
+Validation pass 1 found the first draft's list missed the three dropdowns, which are the places a user
+most often sees a rarity name:
+
+| Surface | Site |
+|---|---|
+| Card header | `BatomonCard.tsx` |
+| **Rarity filter dropdowns (×3)** | `CreatureSearchModal.tsx:137`, `CorpusBrowser.tsx:70`, `TrinketPicker.tsx:202` |
+| Picker section headings | `CreatureSearchModal.tsx:97`, `TrinketPicker.tsx:159`, `AffectedCreaturePicker.tsx:119` |
+| Rarity-shape chips | `AffectedCreaturePicker.tsx:163` |
+| **`title` attribute** | `AffectedCreaturePicker.tsx:169` (`Typically ${want} ${r}`) |
+
+Automated: a test scans rendered output across the card, all three pickers, **the Corpus Browser** and
+the overlay — **including `title`/`aria-label` attributes**, since a text-node-only scan misses the
+chip tooltip. The **four** tests that consumed the raw spelling now assert `"Super Rare"`:
+`presentation.test.tsx:102`, `AffectedCreaturePicker.test.tsx:55` and `:62`, and
+`creaturePicker.test.tsx:18`. **The fourth is the subtle one** — it filters headings with
+`RARITIES_ASC.some((r) => h?.startsWith(r))`, so once a heading reads "Super Rare" that section
+silently drops out of the assertion and the test keeps passing while checking less.
+
+Also expected, and the point of the "keys never change" decision: `git diff --stat src/data/` shows
+**no change** to `creatures.ts`, `trinkets.ts`, `trainers.ts` or
+`src/data/__tests__/fixtures/batodex-monsters.json`. A diff touching the fixture means the stored
+value was changed and the cited source no longer matches it.
+
+### Scenario 51 — Ninflora gets its button without anyone writing a tag (WI-002)
+
+```bash
+npm run dev
+```
+
+1. Place **Ninflora** on the board and select it.
+2. Expected: a **"+ Win a round"** button appears, previewing **+10% Cooldown Speed** at level 1.
+3. With a Grass ally also placed, the button reads **"to 2 monsters"**; pressing it banks the
+   Cooldown Speed bonus on Ninflora *and* the Grass ally, and not on a non-Grass ally.
+
+The acceptance condition is that `src/data/creatures.ts` contains **no `abilityTags` entry for
+Ninflora** — `rg -n -A3 '"ninflora"' src/data/creatures.ts` still shows `abilityTags: []`. If the
+button only appears because a tag was hand-written, the item was not satisfied.
+
+### Scenario 52 — derivation does not hand out buttons it should not (WI-002)
+
+```bash
+npm test -- deriveTags
+```
+
+Expected:
+- a per-species snapshot of the derived tag set, so any change to it shows up in review as a diff;
+- round 6's two guards still pass — no creature carries both a `manualTrigger` and an
+  engine-resolved tag, and no `manualTrigger` names an `enginePropagated` trigger;
+- a creature with a hand-authored tag keeps it: derivation never overrides.
+
+Expected count check: the number of species offering a manual trigger **rises from 9**, and the
+engine-coverage figure in the UI's "N abilities not yet modelled" line is **unchanged**, because this
+family is outside `RESOLVED_TAG_KINDS`. A coverage number that moves means the derivation leaked into
+the engine's claim.
+
+### Scenario 53 — the trigger/text agreement census (WI-002, plan decision 6)
+
+```bash
+npm test -- deriveTags
+```
+
+Expected: for every record where both a published `abilityTrigger` and a derivable trigger exist, the
+two agree. Disagreements are reported as a list with ids, not suppressed. Any that survive are corpus
+findings needing a citation — recorded, not asserted away.
+
+### Scenario 54 — `damageType` cannot start lying (WI-004)
+
+```bash
+npm test -- damageChannel
+```
+
+Expected: an invariant test over all 596 records asserting `damageType === null` ⟺
+`baseDamage === null`, which holds 596/596 today. This is the guard that makes deferring the
+`publishedCast` restructure safe; a future record setting one field without the other fails the suite.
+
+Also expected: `DamageChannel` no longer declares `"SuddenDeath"`, and
+`rg -n 'SuddenDeath' src/` returns nothing.
+
+### Scenario 55 — ability keywords are coloured in place, on every card (WI-007)
+
+```bash
+npm run dev    # Corpus Browser
+```
+
+Compare against the three reference cards in the ask:
+
+| Creature | Expected |
+| --- | --- |
+| Shikitsune | "+15% Cooldown Speed" rendered as one light-blue run, sign and number included |
+| Pebbler | "+30 Shield" in the Shield colour |
+| Craghorn | "+20 Damage" pink **and** "Shield" tan in the same sentence |
+
+Expected: a creature whose text contains no keyword renders exactly as before (no empty spans, no
+changed spacing). Bumblebolt's trailing flavour quote is not mangled.
+
+```bash
+npm test -- abilityHighlight
+```
+
+Expected: longest-match-first ("Cooldown Speed" never splits into "Cooldown" + " Speed"), and the
+tokeniser's runs concatenate back to the original string **exactly** for all 543 records with ability
+text — the assertion that proves no text is lost or duplicated by highlighting.
+
+### Scenario 56 — the card still holds its height (WI-007, FR-043)
+
+Browser check, not jsdom — jsdom performs no layout.
+
+1. Open the Corpus Browser and hover across a full row of cards, including the 169-character
+   worst-case ability text.
+2. Expected: no card changes outer height, and no ability band clips. Inline spans can alter
+   line-breaking even though no text grows, which is why this is checked visually rather than inferred
+   from the unchanged character count.
+
+### Scenario 57 — the rule table extends to a second family (WI-002, FR-113)
+
+```bash
+npm test -- deriveTags
+```
+
+Added in remediation after validation pass 1, which judged a one-family derivation PARTIAL against an
+ask about "140+ mons".
+
+Expected: the derivation is a **rule table**, and adding the second family is **one row** — the
+structural claim FR-113 makes. The test reports, per family, records newly covered and records still
+untagged. Baseline to beat: **424 of 596** records have published ability text and zero tags, of which
+**60** contain "permanently" and so fall to the `manualTrigger` family alone.
+
+```bash
+rg -n 'RULES' src/data/deriveTags.ts
+```
+
+Expected: a declarative array of `{ family, pattern, build }`, not a chain of `if`s. A hardcoded parser
+fixes Ninflora and leaves the next family exactly as hand-managed as before, which is the thing the ask
+objects to.
+
+If the chosen second family is in `RESOLVED_TAG_KINDS`, the UI's "N abilities not yet modelled" figure
+**should rise**, and that is correct rather than a regression (FR-114) — the engine really does resolve
+those tags. Scenario 52's "figure must not move" applies only to the `manualTrigger` family.
+
+### Scenario 58 — `StatusEffectType` and `DamageChannel` stay distinct (WI-004, FR-111)
+
+```bash
+npx tsc -b
+```
+
+Expected: `damageChannelOf("Shield")` is `undefined` — Shield absorbs damage and never deals it — while
+`damageChannelOf("Burn")` is `"Burn"`. And the compiler **rejects** both
+`applyShieldReduction(10, "Shield", 5)` and a `statusTick` carrying `damageType: "Shield"`. If either
+compiles, the two vocabularies have been merged and the nonsense states the split exists to exclude are
+reachable (research.md R3a).
+
+This scenario exists because WI-004's ledger note named the `DamageType`/`StatusEffectType`
+relationship as a deliverable of the proposal and the first draft addressed neither.
+
+### Scenario 59 — WI-007 states its own coverage (FR-115)
+
+```bash
+npm test -- abilityHighlight
+```
+
+Expected: the test **reports the number of the 543 ability texts that carry at least one coloured run**,
+and the round report repeats it. The figures that must be beaten, measured: 318 contain an output-stat
+term; a further **52** (not 225 — the first draft asserted 225 and validation pass 1 refuted it) contain
+Protect/HP/Trigger/Ongoing; **173** carry only mechanic nouns (`level` 36, `Evolve`/`Evolves` 35/19,
+`Knockout` 32, `Trinket` 24, `Charge` 12, `day` 12).
+
+If the final figure is not 543 of 543, the report says so plainly rather than implying "all mon's
+ability text" was met.

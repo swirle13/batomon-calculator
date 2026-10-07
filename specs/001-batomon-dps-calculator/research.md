@@ -2498,3 +2498,426 @@ the published spelling instead of the union's.
 Recorded here, and fixed by a task, because WI-001 rebuilds this file: carrying the bug across a rewrite
 is how it would become permanent. It is **not** a ledger item and is reported to the user as a
 by-product, not as something they asked for.
+
+## R. Orchestration round 7 (2026-10-07) — standardising the creature data vocabularies
+
+Ledger: `specs/001-batomon-dps-calculator/orchestration/round-7-items.md` (WI-001..WI-007).
+The round's stated motivation: "we need to standardize the data types for the creatures, it's a
+total mess."
+
+### R1. The premise, checked: all four vocabularies are ALREADY closed unions
+
+Items 1-4 ask for `abilityTrigger`, `types`, `damageType` and `rarity` to "be an Enum". All four are
+already closed string-literal unions in `src/data/types.ts`, and Constitution Principle II already
+requires exactly that ("MUST be modeled as closed discriminated unions, never bare strings"). So the
+asks cannot be read as "these are currently loose strings" — nothing would change, and the mess the
+user is pointing at would survive the round.
+
+**What is actually broken is the three things a literal union cannot do**, each with measured
+evidence from this repo's own history:
+
+1. **No runtime value list.** A literal union is erased at compile time, so every site needing to
+   *iterate* a vocabulary hand-writes an array. Those restatements have drifted twice already:
+   round 7's T172 found the rarity ordering declared as a local `RARITIES` array in three files
+   "with inconsistent ordering between them (two descending, one ascending)", and
+   `src/data/__tests__/triggers.test.ts:55-59` still hand-lists all ten `AbilityTrigger` values in
+   order to check that each has a registry entry — a test that cannot see a value added to the union
+   and omitted from its own list, which is the exact drift it exists to prevent.
+2. **No display-name layer.** The stored value doubles as the rendered label, which is the whole of
+   WI-006: `"SuperRare"` reaches the screen because there is nowhere to say "stored `SuperRare`,
+   displayed `Super Rare`". `statColors.ts:40-44` documents this as "the deliberate spelling
+   bridge" — a comment where a mechanism belongs.
+3. **No attachment point for per-member data.** Colour, ordering and label live in three separate
+   structures keyed by the same union (`RARITY_COLORS`, `RARITIES_DESC`, nothing). Each is a
+   separate chance to miss a member, and round 6's validation found precisely that:
+   `PAINTER_RARITY_SHAPE` keyed `"Super Rare"` against a corpus spelling `"SuperRare"`, silently
+   dropping a chip so the guidance row summed to 7 of 9 (Q3).
+
+`Record<Rarity, X>` does give compiler-checked exhaustiveness and must be preserved — the problem is
+that there are three such records instead of one.
+
+### R2. DECISION: a const-object vocabulary registry, NOT TypeScript's `enum`
+
+The construct adopted for all four vocabularies the asks name — and for `StatusEffectType`, which R3a
+brings in so the file is not left with one bare union beside four registered ones: **one frozen const
+object per vocabulary, carrying one descriptor per member, with the literal union derived from its
+keys.**
+
+```ts
+export const RARITY = defineVocabulary({
+  Common:    { label: "Common",     order: 0, color: "#70707a" },
+  //...
+  SuperRare: { label: "Super Rare", order: 3, color: "#a040a0" },
+});
+export type Rarity = VocabularyKey<typeof RARITY>;   // the SAME union as today
+```
+
+**Why not `enum`.** Four reasons, in order of how much they cost:
+
+1. **It would churn all 596 corpus records and break the JSON fixtures.** `enum` members are not
+   assignable from their string literals, so every `rarity: "SuperRare"` becomes
+   `rarity: Rarity.SuperRare` — thousands of edits across `creatures.ts`, `trinkets.ts`,
+   `trainers.ts` — and `src/data/__tests__/fixtures/batodex-monsters.json` **cannot express an enum
+   member at all**. That fixture is cited source data (Principle IV); a construct that cannot
+   represent it is disqualified on that alone.
+2. **It is nominal, and this corpus round-trips structurally.** Build codes (`src/data/share.ts`),
+   the batodex fixture and the vendored extraction all move these values as plain strings. A nominal
+   type at the boundary needs a validating cast on every entry and exit.
+3. **It is on TypeScript's own way out.** `enum` emits runtime code, conflicts with
+   `isolatedModules`/`erasableSyntaxOnly`-style type-only builds, and `const enum` is worse (inlined,
+   with no runtime object — which is the one thing we actually need).
+4. **It would not deliver what the round is for.** `enum Rarity { SuperRare = "SuperRare" }` has no
+   label, no order and no colour. We would still need the three side-tables that are the actual mess.
+
+**What the registry does deliver**, mapped to the asks: a runtime list and iteration order (R1.1),
+a label distinct from the stored key (R1.2, and therefore WI-006 with **zero data churn**), and one
+exhaustive place for per-member data (R1.3). Adding a member becomes one edit, and omitting its
+label or colour becomes a compile error rather than a dropped chip.
+
+**Lineage, since item 3 asks for senior-level OOP reasoning.** This is the enum-with-fields pattern
+from Java/C# (`enum Rarity { SUPER_RARE("Super Rare", 3) }`), reached in TypeScript by the idiom the
+language actually supports. It is Fowler's *Replace Type Code with Class* applied to a type code that
+is already a union: keep the cheap comparable key, attach the behaviour to it in one place. The
+alternative OOP-purist reading — a `Rarity` class with instances — is rejected under Principle VI and
+for reason 2 above: the values must stay JSON-serialisable primitives.
+
+### R3. WI-004 ANSWERED: `damageType` is one type doing two jobs, and redundant in one of them
+
+Two measured findings, both from a census over all 596 records.
+
+**Finding 1 — on `CreatureRecord`, the field carries no information.** `damageType` takes exactly two
+values in the corpus: `"Direct"` (356 records) and `null` (240). It is **perfectly correlated with
+`baseDamage`**: records with `damageType === null` and `baseDamage !== null` number **0**, and
+records with `damageType !== null` and `baseDamage === null` number **0**. So `damageType` on the
+record is derivable from `baseDamage !== null` and nothing is encoded by storing it.
+
+The code already shows this. `BatomonCard.tsx:97` reads:
+
+```ts
+const verb = input.damageType === "Direct" ? "Deal" : "Deal";
+```
+
+Both branches are the same string. The field is consulted for a decision that cannot have an
+outcome — dead code that is evidence, not just a typo.
+
+**Finding 2 — the user's "just null or Direct" is right about the record and wrong about the type.**
+`DamageType` declares five members, and the other four are **not dead; they are alive somewhere
+else**. `"Burn"`, `"Poison"` and `"Shock"` are used at runtime on `TimelineEvent.damageType` (every
+`statusTick` carries one — see `statusStacks.test.ts`), and `shield.ts:45` branches on
+`damageType === "Direct"` to apply the status-vs-shield reduction. So one type spans two different
+concepts:
+
+| Role | Inhabited by | Where |
+| --- | --- | --- |
+| "what channel is **this hit** on" | Direct, Burn, Poison, Shock (SuddenDeath unused) | `TimelineEvent`, `shield.ts`, `status.ts` |
+| "what kind of cast does **this creature** publish" | Direct, or absent | `CreatureRecord.damageType` |
+
+**That conflation is the real mess in item 3**, and it is why the field looks half-empty: it is being
+read as a creature property while being typed as a hit property.
+
+**Proposal.** Two changes, of very different cost:
+
+- **(a) Split the vocabulary by role.** `DamageChannel` for hits (the five members, where four are
+  genuinely used), leaving the record's concept to be expressed by (b). Mechanical, and it makes each
+  `switch` exhaustive over values that can actually occur.
+- **(b) Replace the nullable PAIR with one optional value object**, so the illegal state stops being
+  representable:
+
+  ```ts
+  // Two nullable fields that must agree -> one optional field that cannot disagree.
+  publishedCast?: { damage: number; channel: DamageChannel };
+  ```
+
+  This is "make illegal states unrepresentable" — the pair `(baseDamage, damageType)` has four
+  combinations of which the corpus uses two and the code trusts without checking.
+
+**(b) is proposed but DEFERRED, with the reason recorded** rather than attempted this round. It
+reaches `ModifiableBase` (`modifiers.ts`), `PerCastOutput`, `SimulationResult.perCreatureEffectiveStats`,
+`BatomonCard`'s output band and roughly fifteen engine test fixtures that spell `baseDamage`/
+`damageType` literally — a wide refactor of the engine's hot path, in a round that already carries
+WI-002's derivation work. Principle VI applies. **An invariant test is added now instead**, pinning
+the 596/596 correlation, so the redundancy cannot begin to drift in the interval: if a future record
+ever sets one field without the other, the suite fails and (b) becomes urgent with evidence.
+
+A note for whoever lands (b): `modifiers.test.ts:47-59` exercises Burn- and Poison-typed *attackers*
+(`{...pebbler, damage: 10, damageType: "Burn"}`). **No corpus creature has ever had that shape** — the
+fixtures are synthetic, so the engine supports a case the data has never contained. That is worth
+keeping (T232 allows ability grants to create damage) but it means those tests pin a capability, not
+a creature.
+
+#### R3a. The `DamageType` / `StatusEffectType` overlap (required by WI-004's ledger note)
+
+The ledger made this a named deliverable of the proposal and the first draft of this round omitted it
+(validation pass 1). The two vocabularies overlap on three of four members:
+
+```ts
+DamageChannel    = "Direct" | "Burn"   | "Poison" | "Shock"
+StatusEffectType =            "Burn"   | "Poison" | "Shock" | "Shield"
+```
+
+**They are not the same vocabulary, and the overlap is not duplication.** They answer different
+questions, which is visible in the one member each has that the other lacks:
+
+- `"Direct"` is a channel and not a status, because a direct hit is damage that was never a status.
+- `"Shield"` is a status and not a channel, because Shield **never deals damage** — it absorbs it
+  (`shield.ts`). A `DamageChannel` of `"Shield"` would be meaningless.
+
+So the relationship is exactly: **`DamageChannel` = the statuses that tick for damage, plus `Direct`.**
+Burn, Poison and Shock appear in both because a status that ticks produces damage on a channel named
+after itself; Shield and Direct are each the half that does not cross over.
+
+**Decision: two registries, related by a derived mapping — not merged, not duplicated.**
+
+```ts
+/** The channel a status's tick damage lands on. Absent for statuses that never deal damage. */
+damageChannelOf(status: StatusEffectType): DamageChannel | undefined
+```
+
+Merging them into one five-member vocabulary was considered and rejected: it would make the type system
+accept `applyShieldReduction(n, "Shield", s)` and a `statusTick` of `"Direct"`, both nonsense that the
+current split already rejects at compile time. Widening a union to express a relationship is the
+opposite of what Principle II asks for.
+
+`STATUS_COLOR_KEY` in `format.ts` is the precedent for this shape — one vocabulary with a derived
+mapping onto another, rather than one merged type carrying both roles' members.
+
+`StatusEffectType` therefore **becomes a registry too**, so the four statuses get the same
+label/order/colour treatment rather than being the one closed vocabulary left as a bare union beside
+four registered ones.
+
+### R2a. Where the published source materialises a rarity, it uses the registry's shape
+
+Found while verifying WI-006's churn inventory. **Scoped carefully, because the first version of this
+finding overstated it and validation pass 2 refuted the overstatement.**
+
+`src/data/__tests__/fixtures/batodex-monsters.json` — the cited extraction from the game's embedded
+database — has 144 records. **4 of them** (`beetbud`, `aviarab`, `aristobat`, `aerophim`) carry a fully
+materialised rarity:
+
+```json
+{ "id": "beetbud", "name": "Beetbud", "rarity": { "label": "Common", "color": "#70707a" }, "trigger": null }
+```
+
+The other 140 carry a React-flight dereference string instead — `"$17:props:children:0:props:entries:0:rarity"`
+— an artefact of how the page payload was captured, not a different data shape.
+
+**What this does and does not support:**
+
+- **Supported**: where the source materialises a rarity at all, it is an object carrying a `label` and
+  a `color` — the same descriptor shape R2 arrives at from first principles. So the registry is not a
+  TypeScript idiom imposed on the data; it is the shape the data has where it is visible. That is a
+  genuine, if narrow, corroboration of R2.
+- **NOT supported, and withdrawn**: the claim that the fixture's labels evidence the "Super Rare"
+  spelling. The four materialised labels are Common, Uncommon, Rare and Mythical — Super Rare is not
+  among them. The file's only two "Super Rare" strings sit inside *ability text* ("Gain a random
+  non-unique Super Rare Trinket."). That still shows the published data spells the tier with a space,
+  but by different evidence than first claimed, and R5's primary citation (`statColors.ts`'s own
+  record of the extracted database) remains the load-bearing one.
+- **Still true, and the part WI-006 depends on**: the fixture contains **no `"SuperRare"` string at
+  all**, so the ledger's claim that it is a churn site for WI-006 is simply wrong — there is nothing
+  in it to churn.
+
+A second corollary that does hold: `"trigger": null` in the materialised records is the source's own
+representation of "no published trigger", which supports keeping `abilityTrigger` as
+`AbilityTrigger | undefined` rather than inventing a member for it (R4).
+
+### R4. WI-002 MEASURED: the size of the hand-maintained-tag problem, and this round's honest slice
+
+Census over all 596 records:
+
+| Measure | Count |
+| --- | --- |
+| Records with real ability text (per `hasAbilityText`) | 543 |
+| Records with real ability text and **zero** `abilityTags` | **424** |
+| Level-1 species with real ability text and zero tags | **106 of 149** |
+| Records carrying at least one tag | 119 |
+
+So the user's "140+ mons" is if anything an understatement of the hand-management burden: **106 of
+149 species** have a published ability and no structured representation of it at all. Ninflora is not
+an oversight, it is the median case.
+
+**A second gap found while measuring**: 134 records have real ability text and **no `abilityTrigger`
+at all**, and 3 have a trigger with no ability text. A derivation keyed on the trigger alone would
+therefore miss a quarter of the corpus, which is why the derivation below reads the **text** and
+treats the trigger as corroboration rather than as the key.
+
+**Scope decision — derive the `manualTrigger` family plus one further family chosen by census (T297), not all seventeen.** Round 10's audit (L1) identified 17
+mechanism families. Deriving all of them for 424 records in one round would be a generic rule engine
+built ahead of the evidence, which Principle VI prohibits in those words. This round derives the
+**`manualTrigger` family** — the "gain +N \<stat\> permanently" run-event grants — for four reasons:
+
+1. It is the family Ninflora is in, so the named acceptance case is covered.
+2. It is the family the user's last two bug reports were both about (round 6's ally-propagation fix,
+   and Ninflora now).
+3. It is **outside `RESOLVED_TAG_KINDS` by design**, so deriving more of it cannot inflate the
+   engine-coverage counter into claiming abilities the engine does not compute — the honesty rule the
+   spec sets out at length. Every other family would.
+4. Its text shape is narrow and already attested by three hand-written examples (Brawlmantis,
+   Kickrane, Craghorn), satisfying Principle VI's "at least two concrete creatures" bar.
+
+**The family census over the 424 untagged records** (added after validation pass 1, which rightly
+refused family claims that had not been measured). Shapes are counted in order, each record attributed
+to the first shape it matches:
+
+| Text shape | New records | Total matching |
+|---|---|---|
+| contains "permanently" — **the `manualTrigger` family** | **60** | 60 |
+| mentions an ally | 140 | 174 |
+| "for this battle" | 24 | 56 |
+| "adjacent" | 0 | 64 |
+| "for each" / "per" | 10 | 45 |
+| knockout | 24 | 40 |
+| shop / gold / sell value / Berries / day | 28 | 44 |
+| evolution only ("Evolves at level 3") | 19 | 19 |
+| row / column / behind / in front | 9 | 41 |
+| charge | 0 | 16 |
+| **matching none of the above** | — | **110** |
+
+"New" attributes each record to the **first** shape it matches, so the New column sums to 314 and
+314 + 110 = 424. The two columns differ sharply for some shapes — 56 records say "for this battle" but
+32 of those also mention an ally and are attributed there — which is exactly why both are shown.
+(Validation pass 2 caught the first version of this table reporting 108 and 56 in the New column;
+those were `total` values for a different attribution order, and the errors happened to offset so the
+column still summed to 424. The numbers above are re-measured.)
+
+**One caveat on reading these as exact.** Every row except the first depends on the regex chosen for
+its shape, and the shapes are descriptive rather than normative — validation pass 3 reproduced every
+row from its own patterns except `"for each" / "per"`, which it measured at 9/44 against 10/45 here,
+a `\bper\b` wording difference. Treat the table as the **shape of the residue**, accurate to a record
+or two per row, not as a specification. The one row that is exact and load-bearing is the first: 60
+records contain "permanently", and that one is used for sizing below.
+
+Two things follow that no amount of reasoning would have produced:
+
+1. **The pattern shapes are the hard part, not the family boundary.** Of the 60 untagged records
+   containing "permanently", only **10** match the three text shapes `manualTrigger` was hand-written
+   against. The other 50 are the same *family* — a permanent stat grant — expressed with targets the
+   hand-written three never needed: `"Adjacent Water allies gain +25 Heal permanently"` (Aster),
+   `"Give the ally behind +3% Cooldown Speed permanently"` (Boomagon), `"Allies of level 3 or above gain
+   +15 Damage and +15 Heal permanently"` (Lumijel), `"+4 Burn and +4 Poison permanently"` (Brimtoad —
+   two stats, no target clause), `"+4 Damage and +4 Shield permanently for each Trinket that you own"`
+   (Mallogre — count-scaled).
+   **This is good news for the design and bad news for a narrow rule set**: those targets are already
+   expressible — `TargetSelector` has `adjacent`, `behind`, `allAllies` and `minLevelFilter`, and the
+   `target`/`includeSelf` fields added on 2026-10-07 carry them. So the rules should be written against
+   the **full `TargetSelector` vocabulary** rather than against the three shapes that happened to be
+   hand-tagged first.
+
+   **But the family does not reduce to targeting, and the honest split is 33 of 60** (measured in
+   validation pass 3, after two earlier drafts of this section understated the non-derivable set as
+   "one" and then "two" records). 27 records across 7 species are outside this family regardless of
+   selector support:
+
+   | Not derivable | Why |
+   |---|---|
+   | Mallogre ×4, Sproach ×4, Talonite ×4, Sunsage ×3 | count-scaled — "for each Trinket that you own", "for each life lost this run", "for each Rock ally". These belong to `statFromCount`, and two of the inputs (trinket count, lives lost) do not exist in this model at all. |
+   | Omnichrome ×4 | "Gain 2400% of the stats of the enemy monster with the highest stats" — a multiplier off an enemy, not a flat grant. |
+   | Aerophim ×4 | "+60 Multicast permanently **and transform them into random monsters of their rarity**" — a second clause no tag expresses. |
+   | Gildshell ×4 | "+240 Sell Value permanently" — **Sell Value is not a `ModifierStat`**, so there is nothing to write. |
+
+   The lesson generalises past this round: **a "family" identified by one keyword is not a family.**
+   "Permanently" selects 60 records spanning flat grants, positional grants, count-scaling, an
+   enemy-stat multiplier, a transform, and a stat this model does not have. That is the argument for a
+   rule table keyed on full text shapes rather than on a trigger word.
+2. **The derivation must be a rule TABLE, not a parser.** 110 records match no recognised shape, the
+   families are long-tailed, and as item 1 shows a single family spans five target shapes. The
+   mechanism that matters is therefore "adding a shape or a family is one declarative row", which is
+   the structural reading of the user's "instead of having to manually manage a separate list of tags".
+   A hardcoded parser would fix Ninflora and leave the next shape exactly as hand-managed.
+
+The remaining families stay hand-tagged and are recorded as outstanding, per family, with measured
+before/after counts rather than a single aggregate.
+
+**Runtime derivation, not a codegen script.** The project has a precedent for the other choice —
+`scripts/tag-shiny-abilities.mjs` pattern-matches ability text and writes tags into the data file —
+and it has the staleness flaw that recommends against repeating it: the generated tags are correct
+only as of the last time somebody remembered to run it. Deriving at corpus-construction time instead
+means the tags cannot drift from the text they came from. Reviewability (the one real advantage of
+codegen, since a git diff shows what changed) is recovered with a **snapshot test** over the derived
+output per species, so a text edit that silently changes behaviour shows up as a diff in review
+anyway.
+
+Hand-authored tags **win over derived ones** on the same creature. The escape hatch is required: the
+corpus contains abilities no pattern will ever read correctly (Petrirex's self-knockout, Fumungus's
+enemy-stack scaling, Link Cable's adjacency rewrite), and round 6's guards must keep holding.
+
+### R5. WI-006: "Super Rare" is the PUBLISHED spelling, so this is an alignment, not a preference
+
+`statColors.ts:40-44` already records that the game's own extracted database spells this tier
+**"Super Rare"** with a space, and that `"SuperRare"` is this corpus's own compression of it. So the
+ask restores the cited spelling rather than imposing a new one — which also means WI-006 is a
+Principle IV improvement, not merely cosmetic.
+
+**Decision: the stored key stays `SuperRare`; the label becomes "Super Rare".** The registry of R2
+separates them, so:
+
+- **zero churn** across the stored occurrences — **measured 124 in `creatures.ts` and 14 in
+  `trinkets.ts`, 138 in total, and zero in `trainers.ts`, `shiny.ts` and the cited
+  `batodex-monsters.json` fixture**. (The ledger's "~100 plus 15, plus `trainers.ts`, `shiny.ts` and
+  the fixture" was wrong on both the count and the file list; validation passes 1 and 2 corrected it.
+  The fixture never contained the string, so it was never a churn site — see R2a.)
+- **no share-code risk** — checked: `src/data/share.ts` encodes creature ids and levels and never
+  rarity, so no previously shared URL is affected either way;
+- the "spelling bridge" comment becomes the `label` field, i.e. a mechanism.
+
+Three existing tests assert the **rendered** string `"SuperRare"` and must flip to `"Super Rare"`:
+`presentation.test.tsx:102`, and `AffectedCreaturePicker.test.tsx:55` and `:62`. Those flips are the
+evidence the item worked, not collateral.
+
+### R6. WI-007: the keyword census, and why the vocabulary must exceed `STAT_COLORS`
+
+Of 543 records with real ability text, **318 contain at least one** of Damage / Shield / Burn /
+Poison / Shock / Cooldown Speed / Multicast / Heal:
+
+| Keyword | Records |
+| --- | --- |
+| Damage | 124 | 
+| Poison | 49 |
+| Shield | 48 |
+| Cooldown Speed | 43 |
+| Burn | 41 |
+| Multicast | 40 |
+| Heal | 18 |
+| Shock | 17 |
+
+The remaining 225 are not all unkeyworded — they carry terms outside `STAT_COLORS`, e.g. "Give
+adjacent allies **Protect** 1", "Your team has +50 **HP**", "**Trigger** the Bug ally above",
+"**Ongoing**: the ally behind...". So a vocabulary limited to the seven `StatColorKey`s would leave a
+visible minority of cards flat, against an ask that says "all mon's ability text".
+
+Three constraints the design must respect, each read off the data rather than assumed:
+
+1. **Longest match first.** "Cooldown Speed" contains "Cooldown"; matching greedily short would
+   colour half a phrase. The screenshots colour "+15% Cooldown Speed" as one run.
+2. **The number and sign belong to the run.** The game colours "+20 Damage" entirely, not just the
+   word — see the Craghorn card, where "+20 Damage" is pink and "Shield" tan **in the same
+   sentence**, which also settles that highlighting is per-keyword, not per-card.
+3. **Flavour text is concatenated into some abilities** and must not be mangled: Bumblebolt's reads
+   `Deals 3 direct damage every 2.5 seconds and applies 1 Shock. "The poster Common: 2.5s, Shock,
+   cheap."` The longest ability text in the corpus is **169 characters**, which is the figure
+   `BatomonCard.module.css:29` already sized the band against — so the band's reservation (FR-043)
+   is unchanged by colouring, since no text grows.
+
+The tokeniser is a **pure data-layer function** returning `{ text, colorKey? }[]`, not a React
+component: it keeps the keyword vocabulary next to `STAT_COLORS` (Principle VII's "one formatter"),
+and it is testable without rendering.
+
+### R7. Findings outside the ask, recorded not acted on
+
+1. **Two species carry unresolved template placeholders in cited ability text.** `purpleegg` L1-L4
+   reads "Hatches a level 2 **{monster_name}** in **{amount}** day(s)." — literal substitution tokens
+   from the extracted database, shipped to the UI. `scrubber.test.tsx:60-65` guards against
+   placeholder *prose* ("unknown", "n/a") but not against template syntax, so this passed through.
+2. **Eight records have an empty `types` array** — `dragonegg` and `purpleegg` at all four levels.
+   `CreatureType` cannot express "typeless", so the hole is encoded as absence, and WI-003's
+   decision about `"All"`/`"Curio"`/`"NULL"` should state whether typeless is a legitimate state.
+   `"All"` is carried by exactly one species (Omnichrome, all four levels).
+3. **`DamageType`'s `"SuddenDeath"` member is used nowhere at all**, in records or at runtime. P2
+   already retracted the "sudden death begins at 15s" claim as unsupported; this is the type-level
+   residue of that retraction.
+4. **`dewlotl`'s `abilityText` is a sourcing disclaimer, not an ability** (`creatures.ts:3274`):
+   "Named on batomon.com's 149-entry navigation list but not present in the 144-row community dex table
+   or the demo tier/cost table reviewed; identity otherwise unconfirmed." It passes `hasAbilityText`,
+   so it is inside WI-002's 424 and WI-007's 543, and T294 will render it on a card as though it were an
+   ability. Same class as R7.1's `purpleegg` placeholders and likewise not caught by
+   `scrubber.test.tsx`'s placeholder-prose guard. Found in validation pass 2; recorded, not fixed.

@@ -145,3 +145,20 @@ Not part of `simulate()`; a pure consumer of it.
   unmodelled slot effects. **Contractual requirement**: any UI surfacing `suggestPlacement` MUST
   also surface this, because the search's inputs are nearly empty (one engine-readable positional
   ability corpus-wide), so an empty result is a limitation and not a verdict.
+
+## Amendment: round 7 (2026-10-07) — `DamageType` becomes `DamageChannel`
+
+`applyShieldReduction`'s second parameter and `applyShockProc`'s `damageType` fields are renamed to
+the `DamageChannel` vocabulary (data-model.md "Vocabulary registries"). **Signatures are otherwise
+unchanged** — same arity, same semantics, same return shapes — and the inhabited values are the same
+four (`Direct`, `Burn`, `Poison`, `Shock`). `"SuddenDeath"` is removed from the vocabulary: no record
+and no runtime site ever produced it, and research.md P2 retracted the claim it was added for.
+
+The rename exists because the old name described two different concepts (research.md R3): a *hit's*
+channel, which is what these two functions take, and a *creature's* published cast kind, which is
+`CreatureRecord.damageType` and is redundant with `baseDamage` (596/596 correlated). Only the first is
+an engine concept, so only the first keeps a vocabulary here.
+
+`CreatureRecord.damageType`'s proposed replacement — a single optional `publishedCast` value object —
+is **deferred**, so no engine entry point changes shape this round. See data-model.md for the deferral
+and the invariant test that guards it.

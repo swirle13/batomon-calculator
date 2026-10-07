@@ -2507,3 +2507,404 @@ is unaffected this round.
 - [x] T269 **[WI-001, WI-002, WI-003]** `npx tsc -b --noEmit`, `npx vitest run`, `npm run lint`,
       `npm run build`, then walk quickstart scenarios 45-48 in a real browser. Report the measured
       numbers from T265 and state plainly whether any item was left partially done.
+
+---
+
+## Phase: Orchestration round 7 (2026-10-07) — standardising the creature data vocabularies
+
+Ledger: `orchestration/round-7-items.md` (WI-001..WI-007). Design: plan.md "Amendment: Orchestration
+round 7"; data-model.md "Vocabulary registries" / "Derived ability tags" / "Ability-text keyword
+highlighting"; research.md R1-R7; quickstart.md scenarios 49-59.
+
+**Read R1 before starting.** All four vocabularies are *already* closed string-literal unions and
+Constitution Principle II already requires that, so "make it an Enum" taken literally is a no-op. The
+round fixes what a literal union cannot do: no runtime value list, no label distinct from the stored
+key, no single place for per-member data.
+
+**The invariant that governs every task below**: **no stored key changes, in any of the four
+vocabularies (the four the asks name, plus `StatusEffectType`).** No corpus record is edited, `src/data/__tests__/fixtures/batodex-monsters.json` stays
+byte-identical to the source it cites (Principle IV), and build codes keep round-tripping. A task that
+rewrites `rarity: "SuperRare"` in `creatures.ts` has misread the design.
+
+### Foundational — the registry (WI-001, WI-003, WI-005)
+
+- [ ] T271 Create `src/data/vocabulary.ts` with `VocabularyMember` (`readonly label: string` — "the
+      ONLY string the UI may render"; `readonly order: number` — "canonical ordering, ascending"),
+      `VocabularyKey<T> = keyof T & string`, and `defineVocabulary<M extends VocabularyMember, K
+      extends string>(members: Record<K, M>): Readonly<Record<K, M>>` returning `Object.freeze(members)`.
+      A typed identity function and nothing else: **no plugin registry, no inheritance, no runtime
+      validation** beyond the freeze (plan.md Complexity Tracking). Document that it exists for five
+      concrete call sites (the four the asks name, plus `StatusEffectType` per T299), which is what clears Principle VI's "at least two" bar.
+- [ ] T272 [P] **[WI-005]** Add the `RARITY` registry to `src/data/statColors.ts` (it already owns
+      `RARITY_COLORS` and the ordering arrays, so this is where the three parallel structures collapse
+      into one), with `label`/`order`/`color` per data-model.md's table verbatim: `Common` "Common" 0
+      `#70707a`, `Uncommon` "Uncommon" 1 `#4ab500`, `Rare` "Rare" 2 `#0084bd`, **`SuperRare`
+      "Super Rare" 3 `#a040a0`**, `Legendary` "Legendary" 4 `#d47c00`, `Mythical` "Mythical" 5
+      `#dc2844`. Re-export `Rarity = VocabularyKey<typeof RARITY>` from `src/data/types.ts` so the
+      union's name and every existing import keep working. Delete the "deliberate spelling bridge"
+      comment — the `label` field now *is* the bridge.
+- [ ] T273 [P] **[WI-003]** Add the `CREATURE_TYPE` registry carrying `label`, `order` and
+      **`kind: "element" | "wildcard" | "placeholder"`**: the twelve elements are `element`, `Curio`
+      and `NULL` are `placeholder`, `All` is `wildcard`. `kind` is the load-bearing field — `All` is
+      carried by exactly one species (Omnichrome) and `creatureHasType` treats it as "matches every
+      type", and comparing it as if it were an element is what caused round 10's Omnichrome bug.
+      Fold `TYPE_COLORS` (`src/data/typeColors.ts`) into the registry as a `color` field. **Do not add
+      a member for "typeless"**: 8 records (`dragonegg`/`purpleegg` × 4 levels) carry `types: []` and
+      data-model.md records that as "a legitimate state for a shop item that hatches into a creature
+      rather than being one".
+- [ ] T274 [P] **[WI-004]** Add the `DAMAGE_CHANNEL` registry with exactly four members — `Direct`,
+      `Burn`, `Poison`, `Shock` — and export `DamageChannel = VocabularyKey<typeof DAMAGE_CHANNEL>`.
+      **Drop `"SuddenDeath"`**: `rg -n 'SuddenDeath' src/` must return nothing afterwards, since it
+      appears in no record and at no runtime site and research.md P2 retracted the sudden-death claim
+      it was added for. Keep `DamageType` as a deprecated alias of `DamageChannel` for one round so the
+      rename lands without touching every engine call site in the same commit.
+- [ ] T275 [P] **[WI-001]** Move `TRIGGER_DEFINITIONS` from `src/data/triggers.ts` into an
+      `ABILITY_TRIGGER` registry, merging its existing `actionLabel`, `description` and
+      `enginePropagated` fields in as registry member fields rather than leaving a second map beside
+      it. `abilityTrigger` on `CreatureRecord` **stays `AbilityTrigger | undefined`** — 134 records have
+      real ability text and no published trigger (research.md R4), so "not published" is a real state
+      and inventing a member for it would assert a fact no source supports.
+- [ ] T276 **[WI-003, WI-005]** Derive `RARITIES_ASC` / `RARITIES_DESC` / `RARITY_COLORS` from
+      `RARITY.order` instead of hand-writing them (today hand-written at `src/data/statColors.ts:50-60`),
+      keeping all three names and every call site unchanged. Then do the same for `CreatureType`'s three
+      consumers, **named explicitly because validation pass 1 found two of them in no task**:
+      1. `src/data/typing.ts:29` — `creatureHasType` hardcodes `creature.types.includes("All")`. It must
+         read `CREATURE_TYPE[t].kind === "wildcard"` instead. This is the function whose literal `"All"`
+         comparison **caused round 10's Omnichrome bug**, the very bug T273's `kind` field cites as its
+         motivation; leaving it hardcoded would mean the registry is not the single declaration WI-003
+         asked for and the bug class stays reachable from its own origin.
+         **Three further production sites hardcode the same literal** and must route through the same
+         predicate, because validation pass 2 found them unreachable by any assertion this round adds
+         (T277's guard is on vocabulary *arrays*, and these are inline comparisons):
+         `src/engine/effects.ts:439`, `src/ui/GridPicker/GridPicker.tsx:316`, and
+         `src/ui/shared/BatomonCard/BatomonCard.tsx:190`. Four sites, one predicate. Add a grep
+         assertion that `includes("All")` appears nowhere in `src/` outside the registry and its tests.
+      2. `src/ui/CorpusBrowser/CorpusBrowser.tsx:12-15` — a local array hand-listing all fifteen members.
+      3. The type-filter `<select>` lists in the pickers.
+      **Only `All` is withheld from filter lists**, because it is the wildcard that matches everything.
+      `Curio` (11 level-1 species) and `NULL` (4) **stay filterable**: `src/data/types.ts:26-31` cites two
+      independent sources treating both as real published Type values, so hiding them would make 15
+      species unreachable by type filter — a regression no ledger item asked for. (depends on T271, T272,
+      T273)
+- [ ] T277 **[WI-001, WI-003, WI-005]** Add `src/data/__tests__/vocabulary.test.ts` asserting, for each
+      of the **five** registries — including `StatusEffectType` from T299, which pass 3 found was the one registry the round added and then left outside its own anti-drift guard — that every derived list is **key-complete against the registry** — i.e.
+      `RARITIES_DESC`, the type lists, and the trigger list each contain exactly the registry's keys
+      (minus `kind === "wildcard"` where a list documents that exclusion). Then **replace the
+      hand-written ten-value array in `src/data/__tests__/triggers.test.ts:55-59` with the registry's
+      keys**: that array is the drift the round exists to remove, because today a value added to the
+      union and omitted from it is invisible to the very guard that checks registry completeness.
+      Finally assert that **no local vocabulary array survives anywhere in `src/`** — both
+      `RARITIES = [...]` and the `CreatureType` equivalent, since pass 1 found the rarity grep alone
+      left `CorpusBrowser.tsx:12-15` unguarded. (depends on T276)
+
+### WI-006 — "Super Rare" on screen, `SuperRare` in storage
+
+- [ ] T278 [US3] **[WI-006]** Render rarity through `RARITY[r].label` at **every** call site. The ask is
+      "should display that everywhere", so this list is exhaustive and was corrected by validation pass
+      1, which found the three filter dropdowns — the places a user most often sees a rarity name — in
+      no task at all:
+      1. `src/ui/shared/BatomonCard/BatomonCard.tsx` — the card header's rarity label.
+      2. **Rarity filter `<option>` lists, all three**: `src/ui/GridPicker/CreatureSearchModal.tsx:137-139`,
+         `src/ui/CorpusBrowser/CorpusBrowser.tsx:70-72`, `src/ui/GridPicker/TrinketPicker.tsx:202-204`.
+         Each renders `{r}` raw today.
+      3. `PickerSection` headings: `CreatureSearchModal.tsx:97`, `TrinketPicker.tsx:159`,
+         `AffectedCreaturePicker.tsx:119`. **Note `CorpusBrowser` has no `PickerSection`** — its only
+         rarity surfaces are the dropdown in (2) and the local array in T276, which is why pass 1
+         recorded the original wording here as wrong.
+      4. `AffectedCreaturePicker.tsx:163` — the rarity-shape chips, **including the `title` attribute at
+         line 169** (`Typically ${want} ${r}`), which a text-node scan cannot see.
+      Flip the **four** tests that consume the raw spelling: `src/ui/__tests__/presentation.test.tsx:102`,
+      `src/ui/shared/TrainerCard/__tests__/AffectedCreaturePicker.test.tsx:55` and `:62`, and
+      `src/ui/__tests__/creaturePicker.test.tsx:18`. **The fourth matters most and is the subtlest**: it
+      filters headings with `RARITIES_ASC.some((r) => h?.startsWith(r))`, so once a heading reads
+      "Super Rare" that section silently drops out of the assertion and the test **still passes** while
+      checking less. Those flips are the evidence the item landed; this one is also a latent
+      false-pass. (depends on T272)
+- [ ] T279 [US3] **[WI-006]** Add a guard test that renders the card, **all three** pickers, the Corpus
+      Browser and the affected-species overlay, and **fails if the raw key `SuperRare` appears in any
+      rendered text or in any `title`/`aria-label` attribute**. Both halves were corrected by pass 1:
+      CorpusBrowser was omitted from the scan, and a text-node-only scan misses
+      `AffectedCreaturePicker.tsx:169`'s `title`. The failure mode is silent — a raw key in a heading
+      reads as a styling slip rather than a bug — so the assertion must be on rendered output, never on
+      the data value. (depends on T278)
+- [ ] T280 **[WI-006]** Verify the no-churn invariant: `git diff --stat src/data/` shows **no change** to
+      `creatures.ts` (124 occurrences of `"SuperRare"`, measured) or `trinkets.ts` (14). Note the
+      ledger's inventory of churn sites was wrong and pass 1 corrected it: `trainers.ts` and `shiny.ts`
+      contain **zero** occurrences, and **`src/data/__tests__/fixtures/batodex-monsters.json` contains no
+      `"SuperRare"` at all** — it stores rarity as `{"label": "...", "color": "..."}`, i.e. the published
+      source already uses the label/colour descriptor shape this round is adopting (research.md R2a).
+      So the fixture was never a churn site and the registry is the source's own shape, not merely a
+      TypeScript idiom. Record both corrections in the round report.
+
+### WI-004 — the damage-type answer
+
+- [ ] T281 **[WI-004]** Rename `DamageType` to `DamageChannel` at its engine call sites —
+      `applyShieldReduction` (`src/engine/shield.ts:41`), `applyShockProc` and `isDirectDamage`
+      (`src/engine/status.ts`), `TimelineEvent.damageType`, `ModifiableBase.damageType` — then remove
+      the deprecated alias from T274. **Signatures keep the same arity, semantics and return shapes**;
+      contracts/engine-api.md's round-7 amendment is the statement of that. The rename is justified in
+      research.md R3: the old name described two different concepts, a *hit's* channel (an engine
+      concept, kept here) and a *creature's* published cast kind (redundant, handled below).
+- [ ] T282 **[WI-004]** Add `src/data/__tests__/damageChannel.test.ts` asserting over **all 596 records**
+      that `damageType === null` ⟺ `baseDamage === null`. This holds 596/596 today, measured. It is the
+      guard that makes deferring the `publishedCast` restructure safe rather than merely stated: if a
+      future record ever sets one field without the other, the suite fails and the restructure has
+      evidence behind it. Comment it with the deferral it protects and point at data-model.md.
+- [ ] T283 **[WI-004]** Delete the dead ternary at `src/ui/shared/BatomonCard/BatomonCard.tsx:97` —
+      `const verb = input.damageType === "Direct" ? "Deal" : "Deal"` — whose branches are the same
+      string. It is the clearest single piece of evidence that the record's `damageType` carries no
+      information (research.md R3), so remove it **and say so in the commit**, rather than quietly
+      tidying it.
+- [ ] T299 **[WI-004]** Register `StatusEffectType` on the same `defineVocabulary` helper (label, order,
+      colour via the existing `STATUS_COLOR_KEY` mapping), and add
+      `damageChannelOf(status: StatusEffectType): DamageChannel | undefined` — `Shield` returns
+      `undefined` because Shield absorbs damage and never deals it.
+      **This task exists because validation pass 1 found the ledger's explicit requirement unaddressed**:
+      WI-004's note says "the relationship between `DamageType` and `StatusEffectType` must be addressed
+      by the proposal", and the first draft discussed neither. The answer, argued in research.md R3a and
+      data-model.md: they overlap on three of four members and are still **two vocabularies**, because
+      `"Direct"` is a channel that is never a status and `"Shield"` is a status that is never a channel.
+      **Do not merge them** — a single five-member union would make the compiler accept
+      `applyShieldReduction(n, "Shield", s)` and a `statusTick` of `"Direct"`, both nonsense the current
+      split rejects. Follow `STATUS_COLOR_KEY`'s precedent in `format.ts`: one vocabulary with a derived
+      mapping onto another. (depends on T271, T274)
+- [ ] T284 **[WI-004]** Record the `publishedCast` proposal's **deferral** in the round report with its
+      reason and its blast radius named: `ModifiableBase`, `PerCastOutput`,
+      `SimulationResult.perCreatureEffectiveStats`, `BatomonCard`'s output band and ~15 engine test
+      fixtures that spell `baseDamage`/`damageType` literally. The user asked to "think about and
+      propose"; the proposal is the deliverable and it is already written in data-model.md and R3 —
+      this task is making sure the deferral is **surfaced to the user**, not buried in an artifact.
+      Also note for whoever lands it that `modifiers.test.ts:47-59` pins Burn/Poison-typed *attackers*
+      that **no corpus creature has ever been**, so those fixtures pin a capability, not a creature.
+
+### WI-002 — derive the tags instead of hand-managing 149 species
+
+- [ ] T285 [US1] **[WI-002]** **Failing test first** (Principle III, since this changes what the engine
+      receives): add a test asserting Ninflora offers a manual "Win a round" trigger granting
+      `cooldownSpeedAdd` `0.1` at L1 (`0.2`/`0.3`/`2.4` at L2/L3/L4, from its published text), targeting
+      `{ kind: "allAllies", typeFilter: "Grass" }` with `includeSelf: true`. **Show it failing before
+      T286.** Ninflora currently has `abilityTags: []` and is the round's named acceptance case.
+- [ ] T286 [US1] **[WI-002]** Implement `deriveAbilityTags(record): AbilityTag[]` in
+      `src/data/deriveTags.ts` — a pure data-layer function, no engine import — as a **declarative rule
+      table**, not a chain of `if`s:
+
+      ```ts
+      interface DerivationRule { family: string; pattern: RegExp; build(m: RegExpMatchArray, r: CreatureRecord): AbilityTag | null; }
+      const RULES: DerivationRule[] = [ /* one row per text shape */ ];
+      ```
+
+      **The table is the point of the item, not an implementation preference.** The ask is to work from
+      "inherent properties about a mon's ability instead of having to manually manage a separate list of
+      tags across 140+ mons"; a rule table makes adding a family **one declarative row** instead of N
+      per-creature edits, which is the structural change the ask describes. A hardcoded parser would fix
+      Ninflora and leave the next family exactly as hand-managed as before.
+
+      Rules for the `manualTrigger` family. **The rules must span the full `TargetSelector` vocabulary,
+      not the shapes that happened to be hand-tagged first** — validation pass 2 measured that of the 60
+      untagged records containing "permanently", **only 10** match the three hand-written shapes:
+      1. `"This and <filter> allies gain +N <Stat> permanently."` — Brawlmantis, Kickrane, Ninflora.
+      2. `"+N <Stat> permanently."` — Dollhime, Ratacomb, Vipair. Also `"+4 Burn and +4 Poison
+         permanently."` (Brimtoad): **two stats, no target clause**.
+      3. **A leading trigger clause, then the grant** — `"When you use an item, this gains +20 Damage and
+         Shield."` (Craghorn), `"After you buy a Bug monster, this gains +8 Damage."` (Guardiant),
+         `"On Knockout of any monster, this gains +60 Damage permanently."` (Cawnushi, Emburn). Note
+         Craghorn grants **two stats from one amount** and contains **no "permanently" at all**, so a
+         rule keyed on that word would miss it.
+      4. **Positional and filtered targets — the other 50 records, and the reason this task is not
+         three regexes.** All of these targets already exist in `TargetSelector`, so each is a rule row,
+         not a new capability: `"Adjacent Water allies gain +25 Heal permanently"` (Aster) →
+         `adjacent` + `typeFilter`; `"Adjacent Grass allies gain +7% Cooldown Speed permanently"`
+         (Ginsage); `"Give the ally behind +3% Cooldown Speed permanently"` (Boomagon) → `behind`;
+         `"Allies of level 3 or above gain +15 Damage and +15 Heal permanently"` (Lumijel) →
+         `allAllies` + `minLevelFilter`.
+      **27 of the 60 records, across 7 species, are NOT derivable and must be left alone.** Validation
+      pass 3 measured this; an earlier version of this task said "two records", which was the same
+      unmeasured-claim mistake passes 1 and 2 had already caught twice. The full split of the 60:
+
+      | Derivable (33 records) | Rule |
+      |---|---|
+      | Ninflora ×4 | shape 1 — `allAllies` + `typeFilter` + `includeSelf` |
+      | Aster ×4, Ginsage ×4 | `adjacent` + `typeFilter` |
+      | Boomagon ×4 | `behind` |
+      | Lumijel ×4 | `allAllies` + `minLevelFilter` |
+      | Beetdown ×3 | shape 2 — bare self-grant |
+      | Brimtoad ×4, Emperooze ×3 | shape 2 — bare self-grant, **two stats** |
+      | Dewlotl ×3 | shape 3 — leading trigger clause |
+
+      | NOT derivable (27 records) | Why |
+      |---|---|
+      | Mallogre ×4 | `"for each Trinket that you own"` — count-scaled, no trinket-count input in this model (same gap round 5 recorded for its battle-start text) |
+      | Sproach ×4 | `"for each life lost this run"` — no run-history input |
+      | Talonite ×4 | two count-scaled grants in one sentence (`for each Rock ally`, `for each Flying ally`) |
+      | Sunsage ×3 | `"For each Fire ally, this gains …"` — count-scaled; belongs to `statFromCount`, not this family |
+      | Omnichrome ×4 | `"Gain 2400% of the stats of the enemy monster with the highest stats"` — a multiplier off an enemy, not a flat grant |
+      | Aerophim ×4 | `"Give adjacent allies +60 Multicast permanently **and transform them into random monsters of their rarity**"` — a second clause no tag expresses |
+      | Gildshell ×4 | `"+240 Sell Value permanently"` — **Sell Value is not a `ModifierStat`** |
+
+      Report all 27 as knowingly skipped rather than force-matching them, and make sure T291's
+      per-family table reports 33 of 60 rather than implying 60.
+
+      **Read the TEXT, with the published trigger as corroboration only** — 134 records have ability text
+      and no trigger at all, so keying on the trigger would miss a quarter of the corpus (research.md
+      R4). Percentage stats store as fractions (`+10% Cooldown Speed` → `0.1`), matching
+      `ModifierEditor`'s existing `store: (typed) => typed / 100`. (depends on T285)
+- [ ] T297 [US1] **[WI-002]** **Census first, then derive a second family**, so the rule table is proven
+      extensible rather than asserted to be. Read research.md R4's census table **and its note on the
+      two columns**: "new" attributes each record to the first shape it matches, "total" counts every
+      record matching, and the two differ sharply — 56 records say "for this battle" but 32 of those
+      also mention an ally, so only **24** are new there. Do not restate the two columns as one
+      partition; validation pass 2 caught the first version of this task doing exactly that and summing
+      to 527 over a 424-record base.
+      The candidates, by **new** count: ally-mentioning 140, shop/economy 28, knockout 24, "for this
+      battle" 24, evolution-only 19, "for each" 10, positional 9 — with 110 records matching no shape.
+      Pick the **next family the census actually supports**, add it as rule-table rows, and report the
+      records it covers. Do **not** pre-commit to a family here — pass 1 flagged unverified family
+      claims as overreach, so the census is a required output and the choice follows from it. Note the
+      largest bucket (ally-mentioning, 140) is a *target shape* spanning several families rather than a
+      family itself, so it is not automatically the right pick.
+      **One constraint that decides whether the coverage counter may move**: if the chosen family IS in
+      `RESOLVED_TAG_KINDS`, the UI's "N abilities not yet modelled" figure **should rise**, and that is
+      honest — the engine really does resolve those tags. T289's "figure must not move" assertion applies
+      only to the `manualTrigger` family. State which case applies and why. (depends on T287)
+- [ ] T287 [US1] **[WI-002]** Apply the derivation at corpus-construction time in `src/data/corpus.ts`
+      with the merge rule stated verbatim in data-model.md: **effective tags = hand-authored tags, else
+      derived tags.** Hand-authored wins, and the escape hatch is required rather than defensive —
+      Petrirex's self-knockout, Fumungus's enemy-stack scaling and the Link Cable adjacency rewrite will
+      never read correctly from prose. **Not a codegen script**:
+      `scripts/tag-shiny-abilities.mjs` is the precedent for that and carries the staleness flaw
+      (correct only as of the last manual run), so derivation happens at construction and cannot drift
+      from its own text. (depends on T286)
+- [ ] T288 [US1] **[WI-002]** Add a **per-species snapshot test** of the derived tag set. This is what
+      recovers the one real advantage codegen would have had — a git diff showing what changed — so a
+      text edit that silently alters behaviour appears in review. Also assert the three round-6 guards
+      still hold: no creature carries both a `manualTrigger` and an engine-resolved tag; no
+      `manualTrigger` names an `enginePropagated` trigger; and the WI-002 guard from
+      `triggers.test.ts` ("a trigger targets allies exactly when its ability text says allies GAIN")
+      passes against **derived** tags too, not just hand-written ones. (depends on T287)
+- [ ] T289 [US1] **[WI-002]** Assert the **engine-coverage figure does not move for the `manualTrigger`
+      family** (T297 governs whether a second family may legitimately move it). `manualTrigger` is
+      deliberately absent from `RESOLVED_TAG_KINDS`, which is the reason this family was chosen as the
+      round's slice (research.md R4), so the UI's "N abilities not yet modelled" line must read the same
+      before and after. A coverage number that changes means the derivation leaked into the engine's
+      claim about what it computes — the specific dishonesty the spec argues against at length.
+      (depends on T287)
+- [ ] T290 [US1] **[WI-002]** Produce the **trigger/text agreement census**: for every record with both
+      a published `abilityTrigger` and a derivable one, report disagreements as a list of ids. Run it as
+      a reporting step **before** enforcing agreement as an assertion — plan.md's risk section flags
+      that 134 records have no trigger and some embed it in prose ("Ongoing: the ally behind..."), so
+      genuine disagreements are corpus findings needing citation, not test failures to suppress. If the
+      census is non-empty, record the ids and do **not** enforce; state it in the round report.
+      (depends on T286)
+- [ ] T291 [US1] **[WI-002]** Record the residue in the round report as a **per-family table with
+      measured before/after counts**, not a single number. Before: **424 of 596 records (106 of 149
+      level-1 species)** have published ability text and zero tags. After T286 and T297, report: records
+      newly covered per family, records still untagged, and which of research.md L1's 17 families remain
+      hand-written. The ask was "instead of having to manually manage a separate list of tags across
+      140+ mons", so a round that converts the *mechanism* from per-creature edits to per-family rules
+      must state exactly how many creatures that reached and how many it did not — pass 1's finding was
+      that honesty about a residue is not the same as covering it, and the table is what lets the user
+      judge which they got. (depends on T288, T297)
+
+### WI-007 — ability-text keywords coloured in place
+
+- [ ] T292 [US3] **[WI-007]** Implement `tokenizeAbilityText(text): AbilityTextRun[]` in
+      `src/data/abilityHighlight.ts`, returning `{ text: string; colorKey?: ... }[]`. A **pure
+      data-layer function, not a component** — it keeps the keyword vocabulary next to `STAT_COLORS`
+      (Principle VII's "one formatter") and is testable without rendering. Two rules read off the
+      corpus (research.md R6): **longest match first**, so "Cooldown Speed" never splits into
+      "Cooldown" + " Speed"; and **the sign and number join the run**, so "+20 Damage" colours
+      entire — the game's Craghorn card shows "+20 Damage" pink and "Shield" tan *in the same
+      sentence*, which also settles that highlighting is per-keyword rather than per-card.
+- [ ] T293 [US3] **[WI-007]** Extend the keyword vocabulary **beyond the seven `StatColorKey`s**, using
+      measured figures. **Validation pass 1 found the original version of this task asserted something
+      false** — it claimed the 225 texts without a stat keyword "do contain Protect, HP, Trigger or
+      Ongoing", when only **52 of them do** (60 case-insensitively). research.md R6 stated it correctly
+      and hedged; the task hardened the hedge into a claim and scoped itself on it. Corrected census of
+      the **173** texts that remain bare after those four terms:
+
+      | Term | Records |
+      |---|---|
+      | `level` (e.g. "Evolves at level 3") | 36 |
+      | `Evolve`/`Evolves` | 35 / 19 |
+      | `Knockout` | 32 |
+      | `Trinket` | 24 |
+      | `Charge` | 12 |
+      | `day`/`days` | 12 |
+      | `shop` | 8 |
+      | `Sell Value`, `Berries` | 4 each |
+
+      Add a second tier of **mechanic nouns** for these terms, coloured distinctly from the stat terms
+      (they name mechanics, not output stats — "Evolves at level 3" is not a damage figure). All colours
+      resolve through the same `statColors.ts` layer so ability text and stat badges cannot drift to
+      different reds.
+      **Measured outcome, so the task is falsifiable**: those nine terms reach **132 of the 173**,
+      giving **502 of 543** texts at least one coloured run and leaving **41** bare. Do not describe the
+      tier as "covering the 173" — validation pass 2 measured it at 132 and the distinction is the
+      difference between meeting the ask and approaching it. Compute the final figure and hand it to
+      T298. (depends on T292)
+- [ ] T298 [US3] **[WI-007]** Record WI-007's **uncoloured residue** in the round report, the way T291
+      does for WI-002 — pass 1's finding was that WI-002 writes its residue down and WI-007 did not,
+      while both substitute a measured slice for an ask that says "all". Report the count of ability
+      texts with no coloured keyword after T293, with examples. The round's own stated bar is that
+      "'all mon's ability text' is not satisfied by colouring 318 of 543 cards" (plan.md), so whatever
+      the final figure is, it is stated rather than implied. If it is not 543 of 543, say so plainly.
+      (depends on T293)
+- [ ] T294 [US3] **[WI-007]** Add a shared renderer mapping runs to spans and use it at
+      `src/ui/shared/BatomonCard/BatomonCard.tsx:245`, replacing the plain
+      `<p>{creature.abilityText}</p>`. One component, so the Corpus Browser, the Calculator panel and
+      any future surface cannot disagree. **Trainers are out of scope** — the ask says "all mon's" —
+      but state that explicitly in the component's doc comment rather than leaving
+      `TrainerCard.tsx:91` silently inconsistent. (depends on T293)
+- [ ] T295 [US3] **[WI-007]** Add `src/data/__tests__/abilityHighlight.test.ts` asserting the
+      **round-trip**: for all 543 records with real ability text, concatenating the runs' `text` returns
+      the original string **exactly**. That is the assertion proving highlighting loses and duplicates
+      nothing. Also pin longest-match-first, a creature with no keyword producing a single
+      uncoloured run, and that Bumblebolt's trailing flavour quote (`... applies 1 Shock. "The poster
+      Common: 2.5s, Shock, cheap."`) is not mangled. (depends on T292)
+
+### Verification
+
+- [ ] T296 **[WI-001..WI-007]** `npx tsc -b`, `npx vitest run`, `npm run lint`, `npm run build`, then
+      walk **quickstart scenarios 49-59 in a real browser**. Scenario 56 (the card holding its declared
+      height, FR-043) **cannot be done in jsdom, which performs no layout** — inline spans can change
+      line-breaking even though no text grows, so this one is a visual check or it is not done.
+      Report, as numbers rather than adjectives: the T280 no-data-diff result and its two ledger
+      corrections, the T290 trigger/text census outcome, **T291's per-family before/after table**,
+      whether T289's coverage figure held for the `manualTrigger` family and what T297 did to it for the
+      second family, and **T298's uncoloured-ability-text residue**. State plainly whether any item was
+      left partially done — WI-002 and WI-007 both substitute a measured slice for an ask that says
+      "all", so both figures belong in the user-facing report, not only in an artifact.
+
+### Round 7 traceability
+
+| Item | Ask (short) | Tasks | Requirement | Where the decision is recorded |
+|---|---|---|---|---|
+| WI-001 | `abilityTrigger` → enum | T271, T275, T277 | FR-111 | R1, R2, R2a; data-model.md "`AbilityTrigger`" |
+| WI-002 | trigger informs/replaces `abilityTags`; fix Ninflora | T285, T286, **T297**, T287, T288, T289, T290, T291 | FR-113, FR-114 | R4 (incl. the family census and its two-column note); data-model.md "Derived ability tags" |
+| WI-003 | `types` → enum | T271, T273, T276, T277 | FR-111 | R1, R2, R7.2; data-model.md "`CreatureType`" |
+| WI-004 | `damageType`: propose a reasoned change | T274, **T299**, T281, T282, T283, T284 | FR-111 | **R3** (the proposal) + **R3a** (the `StatusEffectType` relationship); data-model.md "`DamageChannel`"; contracts/engine-api.md round-7 amendment |
+| WI-005 | `rarity` → enum | T271, T272, T276, T277 | FR-111 | R1, R2, R2a; data-model.md "`Rarity`" |
+| WI-006 | "SuperRare" → "Super Rare" everywhere | T278, T279, T280 | FR-112 | R5, R2a; data-model.md "`Rarity` — and 'Super Rare'" |
+| WI-007 | ability-text keywords coloured inline | T292, T293, T294, T295, **T298** | FR-115 | R6; data-model.md "Ability-text keyword highlighting" |
+
+The **Requirement** column was added in pass-2 remediation: FR-111..FR-115 had been written into
+spec.md to give the round requirement text to validate against, but nothing in tasks.md cited them, so
+traceability ran only one way (quickstart → FR).
+
+Tasks added in remediation after validation pass 1: **T297** (WI-002's second family, census-first),
+**T298** (WI-007's uncoloured residue), **T299** (WI-004's `StatusEffectType` relationship — a named
+ledger deliverable the first draft omitted). T276, T277, T278, T279, T280, T286, T289, T291, T293 and
+T296 were tightened rather than added; see `round-7-validation.md` pass 1 for what each was missing.
+
+**Deliberately outstanding after this round** (to be stated in the round report, not implied):
+
+1. **WI-004(b)** — the `publishedCast` value object is proposed and **deferred**; T282's invariant test
+   guards the interval. Reason and blast radius: R3 and T284.
+2. **WI-002's residue** — the round derives the `manualTrigger` family across its full `TargetSelector`
+   range plus **one** further family chosen by census (T297), leaving the rest of research.md L1's 17
+   families hand-tagged. Baseline: **424 of 596 records** carry published ability text with zero tags.
+   T291 reports the measured per-family before/after table, which is the figure that matters — not the
+   family count.
+3. **R7.1** — `purpleegg` L1-L4 ship unresolved template placeholders in cited ability text
+   ("Hatches a level 2 **{monster_name}** in **{amount}** day(s)"). Found while measuring, not asked
+   for, not fixed.

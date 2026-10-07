@@ -1004,3 +1004,52 @@ than by a per-trinket badge (see the retired "★ affects DPS" marker).
   A third column MUST NOT be reachable. The published corpus reaches at most 3 lines; 4 to 7 arise only
   once modifiers, trinket effects, ally abilities or manual triggers have added statuses the creature
   does not publish (research.md Q2), and 7 — damage, four statuses, heal, multicast — is the ceiling.
+
+### Round 7 requirements (2026-10-07) — standardised data vocabularies
+
+Ledger: `orchestration/round-7-items.md`. Added during remediation after validation pass 1, which found
+the round changed three user-visible behaviours while recording no requirement text to validate them
+against — every prior round recorded FRs and this one had not.
+
+- **FR-111**: Each closed vocabulary describing a creature — rarity, creature type, damage channel,
+  status effect, ability trigger — MUST be declared **exactly once**, as a registry carrying every
+  member's rendered label, canonical ordering and colour together. No list of a vocabulary's members
+  may be hand-written anywhere else in the codebase. Adding a member MUST be one edit, and omitting its
+  label, order or colour MUST be a compile error.
+  Rationale: this repo has shipped two user-visible defects from hand-written restatements — three
+  rarity arrays with inconsistent ordering (T172) and a rarity key misspelling that silently dropped a
+  guidance chip so the row summed to 7 of 9 (research.md Q3). The requirement is on the *declaration
+  count*, not on any particular TypeScript construct; research.md R2 records why a const-object registry
+  rather than `enum`, and R2a records that the published source data already uses this shape.
+- **FR-112**: A vocabulary member's **stored key and its displayed label are separate**, and only the
+  label may be rendered. Specifically, the Super Rare tier MUST display as **"Super Rare"** with a space
+  on **every** surface — card headers, picker and browser section headings, rarity filter dropdowns,
+  rarity-shape chips, and `title`/`aria-label` attributes — while remaining stored as `SuperRare`.
+  A raw stored key reaching any user-visible surface is a defect.
+  Rationale: "Super Rare" is the **published** spelling (research.md R5, confirmed by the cited batodex
+  fixture in R2a); `"SuperRare"` is this corpus's own compression of it, so this restores cited data.
+  Separating key from label is what makes it a zero-churn change: no corpus record and no cited fixture
+  is edited.
+- **FR-113**: A creature's ability behaviour MUST be derivable from its own published fields — its
+  ability text, corroborated by its trigger where one is published — rather than from a per-creature
+  hand-maintained tag list. The derivation MUST be expressed as a **rule per ability family**, so
+  extending coverage to a new family is one declarative addition and not an edit to every affected
+  creature. Hand-authored tags MUST win over derived ones, since some abilities cannot be read from
+  prose.
+  **Ninflora is the acceptance case**: its "This and your Grass allies gain +10% Cooldown Speed
+  permanently" MUST work with no `abilityTags` entry written for it. 424 of 596 records (106 of 149
+  level-1 species) currently have published ability text and no tags at all (research.md R4), so any
+  round satisfying this partially MUST report the residue per family rather than imply completeness.
+- **FR-114**: Deriving tags MUST NOT change the engine-coverage figure the UI reports ("N abilities not
+  yet modelled") **unless the derived family is one the engine genuinely resolves**, in which case the
+  figure moves and that movement is correct. A derivation that inflates the count without the engine
+  computing the ability is the specific dishonesty FR-075 exists to prevent.
+- **FR-115**: Ability text MUST render its keywords coloured in place, for **all** creatures, using the
+  same colour source as the output-stat badges so the two cannot disagree. Keyword runs include the sign
+  and number ("+20 Damage" colours entire), the longest matching phrase wins ("Cooldown Speed" never
+  splits), and a creature whose text contains no keyword MUST render unchanged rather than degrade.
+  The card's declared fixed height (FR-043) MUST survive the change.
+  Of 543 records with real ability text, 318 contain an output-stat term and a further 52 contain
+  Protect/HP/Trigger/Ongoing, so a stat-only vocabulary leaves a visible minority flat (research.md R6);
+  the remaining texts carry mechanic nouns (`Evolve`, `Knockout`, `Trinket`, `Charge`, `level`) which are
+  coloured as a second tier. Whatever coverage is reached MUST be reported as a number.
