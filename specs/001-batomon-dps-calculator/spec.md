@@ -666,3 +666,27 @@ applied to the placement optimiser, and more important here, because a DPS figur
 authoritative in a way an empty suggestion list does not. **This round does not claim to make DPS
 correct for arbitrary teams**; it makes it correct for tagged creatures and makes the gap visible
 for the rest.
+
+### Round 4 requirements (2026-10-06)
+
+Added because pass-1 validation found Phase 16 had no requirement to verify against — spec.md
+stopped at FR-084 while every prior round added FRs.
+
+- **FR-085**: Painter's recorded ability MUST describe painting selected species with every type.
+  The superseded text MUST be retained in the record, not overwritten silently.
+- **FR-086**: A creature painted by Painter MUST satisfy every `typeFilter` the engine or UI tests,
+  at all six comparison sites, WITHOUT its `types` list being expanded.
+- **FR-087**: `CreatureRecord` MUST carry an optional region; `TeamConfiguration` MUST carry the
+  player's selected region.
+- **FR-088**: "Opposite region" MUST mean "in the other region and not in the current one", never
+  the set complement — 14 species are in both regions and 13 in neither.
+- **FR-089**: A trainer card MUST exist, with an affected-creatures button shown ONLY for trainers
+  that designate an enumerable set (Painter, Smuggler) and not for rule-based type grants (Chef).
+- **FR-090**: The painted/smuggled sets MUST be user-selected and persisted in the team
+  configuration; the app MUST NOT generate or randomise them.
+- **FR-091**: Smuggled creatures MUST become selectable in the creature pool where they otherwise
+  would not be; recording the set without that effect does not satisfy the requirement.
+- **FR-092**: Painted creatures MUST render a rainbow type chip and a translucent rainbow sprite
+  overlay scrolling slowly south-east, suppressed under `prefers-reduced-motion`.
+- **FR-093**: An ability grant MAY bring a damage effect into existence on a creature whose
+  `baseDamage` is null. User-entered modifiers MUST NOT.

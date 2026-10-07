@@ -1754,6 +1754,9 @@ selector families combined. It is a well-defined piece of work, but it is engine
 > |---|---|
 > | self-buff, accumulates on the holder | mosslug, bambudo, pebbler, bonshell, pyrokami, galvanine |
 > | **grants to an ally** (positional) | magmalith, noxalith, voltalith, zephyrex, saberhorn, noxnimbus, aerophim |
+>
+> (The prose above says 14; the rows sum to **15**. The rows are correct — corrected 2026-10-06
+> in pass-2 remediation of the round-4 orchestration.)
 > | other mechanism | petrirex (knockout), prismagon (unique-type count) |
 >
 > Two things follow, and both cut against what L5 originally concluded:
@@ -1771,3 +1774,150 @@ selector families combined. It is a well-defined piece of work, but it is engine
 > exactly the trap that doubled Bumblebolt's Shock in round 10. **saberhorn** grants +1 Multicast
 > but also adds 8s to its own cooldown; tagging only the upside would overstate it. **aerophim**
 > also transforms its targets into random monsters, which is unmodellable.
+
+## M. Round 4 orchestration (2026-10-06) — Painter/Smuggler, regions, cascading buffs
+
+### M1. WI-001: our recorded Painter ability is WRONG, and the user's description is right
+
+`src/data/trainers.ts:186-188` records Painter as:
+
+> "Your monsters gain +1 to all stats for each different type they have (dual-typed monsters get a
+> bigger bonus than single-typed ones)."
+
+That is not Painter's ability. It came from `batomonshowdowngame.wiki`'s trainer sheet, which is
+why the record already carried `unconfirmedFields: ["abilityText"]` — the flag was correct and was
+never followed up. Two independent sources agree with the user instead:
+
+- `batomon-showdown-wiki.wiki/trainers/batomon-showdown-painter`: *"turns selected units into
+  all-type monsters… Random species from the pool are selected to become 'painted'. Whenever these
+  specific species appear in your shop or on your board, they possess every single typing
+  simultaneously."*
+- GamesFuze Season 1 guide: *"Painter's ability causes random species to be painted with every type
+  during the run."*
+
+**Decision**: replace the ability text, keep the superseded text in a `supersededText` note so the
+correction is auditable rather than a silent overwrite.
+
+### M2. WI-003 ANSWERED: which trainers designate a creature set
+
+Scanned all 23 trainers for type-granting and set-designating language. The answer is **two
+trainers need the picker, and a third grants types by rule and does not**:
+
+| Trainer | Ability | Needs a 9-creature picker? |
+|---|---|---|
+| **Painter** | paints selected species with every type | **Yes** |
+| **Smuggler** | "Batomon from other regions appear in your shop and cost 25% less" | **Yes** |
+| Chef | "Your single-typed monsters gain Fire typing" | **No** — rule-based, derivable from the board |
+
+The user's "at least 2" is therefore exactly 2 for the picker, and Chef is the item they suspected
+existed but could not name. Steam's 1.2.0 notes corroborate the grouping: *"Added a visual effect
+for Batomon that have additional types from Painter, Chef, events, etc."* — Painter and Chef are
+named together as type-granting sources, and only Painter's is a selected set.
+
+### M3. WI-004 ANSWERED: why the set is 9, and its composition
+
+Community gameplay reports give the breakdown: *"the random assignment typically selects two
+common, two uncommon, two rare, two super rare, and one legendary species"* — 2+2+2+2+1 = **9**.
+This independently corroborates the user's "9 mons" and, more usefully, says the 9 are **not** a
+free choice: they are constrained by rarity.
+
+**Decision**: the picker enforces the 2/2/2/2/1 rarity shape as the DEFAULT but does not hard-lock
+it. The breakdown is community-reported and the word used is "typically"; hard-locking a soft
+constraint would make the tool unable to represent a run the user is actually looking at. The
+shape is shown as guidance with an indicator when the selection departs from it.
+
+### M4. WI-005 ANSWERED: the regions are **Pantra** and **Jinto**, not "starter" and Jinto
+
+The user said *"two regions being 'starter' and 'Jinto'"*. The official Steam patch notes name the
+original region **Pantra**:
+
+> "At days 10+, median DPS of Jinto teams are almost 2 times higher than **Pantra** teams. I'm
+> aiming to get the power level of all regions into a similar ballpark, so that I can implement
+> more cross-region mechanics or game modes in the future."
+
+"starter" was descriptive (the region you start with), not the in-game name. We use `pantra` and
+`jinto` as ids and surface "Pantra" in the UI, because a user comparing against the game will see
+Pantra, and Smuggler's "opposite region" is meaningless without the real names.
+
+Jinto was added in 1.0.0 with "50+ new Batomon". Our corpus does **not** record a region per
+creature, so region must be added to `CreatureRecord`. The patch note's "all regions" phrasing
+leaves open that more regions exist or are planned; the model therefore treats region as an open
+string union rather than a strict two-value boolean.
+
+### M5. WI-009/010/011 ANSWERED: T226's ambiguity is resolved — the grant is ADDITIVE
+
+Round 11 filed T226 because three creatures grant a status they already apply, and the text did not
+say whether that was one effect or two. The user has answered it: **two effects**. The base
+`appliesStatus` is what the FIRST cast emits; the ability grant accumulates on top from the second
+cast onward. Checked against our own data, the user's numbers reproduce exactly:
+
+| Creature | Base (cast 1) | Grant | Sequence |
+|---|---|---|---|
+| Pebbler | Shield 20 | +15 | 20, 35, 50, 65 … |
+| Bonshell | Shield 100, cd 7.0s | +80 dmg / +80 shield | (0,100), (80,180), (160,260) … |
+| Pyrokami | Burn 5 | +10 | 5, 15, 25, 35 … |
+
+This is **exactly** `buffOnCast` with the FR-040 snapshot rule already built in round 11 (first cast
+unbuffed, grant lands after the instant). So the mechanism needs no new engine work — only tagging.
+
+**One real engine gap this does expose.** Bonshell's `baseDamage` is `null` and its `damageType` is
+`null`, yet the user states it deals 80 damage from cast 2. `simulate()` currently short-circuits
+`resolvedBase === null ? null : …`, and `isDirectHit` requires `damageType === "Direct"`, so an
+accumulated buff can never bring damage into existence. data-model.md's "modifiers can only scale an
+effect the creature already has" was written for USER modifiers and is correct for them; it must not
+be extended to ability grants, which demonstrably do create damage. This is the one behavioural
+change items 9-11 require.
+
+### M6. WI-005 (revisited): region data EXISTS, and the two regions do not partition the corpus
+
+Pass-1 validation found T229 had no source for attributing creatures to regions. It does now.
+batodex's embedded payload carries a `sets` field per monster:
+
+| `sets` value | species |
+|---|---|
+| `['starter']` | 56 |
+| `['oshima']` | 56 |
+| `['starter','oshima']` | **14** |
+| `[]` | 13 |
+
+**Three naming schemes are in play and they must be reconciled, not averaged:**
+
+| Source | Original region | Second region |
+|---|---|---|
+| The user | "starter" | "Jinto" |
+| Official Steam patch notes | **Pantra** | **Jinto** |
+| batodex `sets` | `starter` | `oshima` |
+
+**The tally does not cover the corpus**: 56+56+14+13 = **139**, but we hold **149** level-1
+species. Ten are absent from batodex's payload entirely (it lists 144 monsters to our 149). Those
+ten get `region: undefined` for the same reason as the 13 set-less ones, but for a different cause —
+missing from the source, rather than present and unassigned. T229 must not conflate them.
+
+`starter` is clearly the user's "starter" and the notes' Pantra — it is a descriptive id for the
+region you begin with. `oshima` ↔ Jinto is an **inference, not a quotation**: the 1.0.0 notes say
+Jinto added "50+ new Batomon" and `oshima` contains exactly **56**, which is the only second region
+present and the only count matching. Recorded as an inference so a later contradiction is cheap to
+find. Display names follow the official notes (Pantra, Jinto) because that is what the player sees.
+
+**The complication, which changes the design**: 14 species are in **both** regions and 13 are in
+**neither**. So "the opposite region" is not a complement — `opposite(starter)` is *not*
+"everything that isn't starter". Smuggler's picker must offer species whose sets include the other
+region and exclude the current one, and the 13 set-less species (events, fossils, shop-only) belong
+to no region and must not appear under either. A naive `!== selectedRegion` filter would wrongly
+offer all 27 of those edge cases.
+
+### M7. WI-003 (boundary): why Mad Scientist and Monster Ranger are excluded
+
+M2 concluded "exactly Painter and Smuggler" without recording what else was considered. Two further
+trainers do designate creature sets that reach the board:
+
+- **Mad Scientist** — "On day 7, transform monsters on your active team into random level 1
+  Legendary monsters."
+- **Monster Ranger** — "Start with an Uncommon monster. Get another copy of that monster every 2
+  days."
+
+Both are excluded, and the reason is **not** that they affect no creatures — it is that both are
+scoped by *day*, and this engine simulates a single battle with no day counter (research.md B6
+excludes shop/economy/run-progression). Neither designates a stable set the player could enumerate
+for a given battle the way Painter's 9 and Smuggler's 9 can be. If a run-timeline model is ever
+added, both return as candidates.

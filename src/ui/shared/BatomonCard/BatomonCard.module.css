@@ -34,12 +34,12 @@
  * heights are sized for it.
  */
 /* "panel": the Calculator's selected-creature card, which also carries the effective-stats band. */
-.cardFixedPanel { height: 30rem; }
+.cardFixedPanel { height: 29rem; }
 
-.cardFixedPanel .identity { min-height: 6.5rem; }
+.cardFixedPanel .identity { min-height: 1rem; }
 /* .cardFixedPanel .output { min-height: 5.5rem; } */
-.cardFixedPanel .ability { min-height: 6rem; }
-.cardFixedPanel .extra { min-height: 1rem; }
+.cardFixedPanel .ability { height: 3.5rem; }
+/* .cardFixedPanel .extra { min-height: 1rem; } */
 /* .cardFixedPanel .meta { min-height: 3.25rem; } */
 
 /* "browser": the narrower grid card (FR-070 / WI-013). Shorter, because it has no effective band --

@@ -1,0 +1,44 @@
+# Ground-truth badge readings for glyph labelling: t,slotId,runIndex,text
+#
+# runIndex is the badge's position under that mon, left to right (0-based).
+# Pick frames where the badges are unobscured, and between them cover every digit plus
+# any non-digit the game uses (X for multicast, K for the thousands abbreviation).
+#
+# These lines are from 3fcb5165-2e5e-4712-8ce2-771461ec77c1.mp4 and are only valid for it;
+# re-derive them for a new recording by reading a couple of clean frames.
+
+# --- t=3.2600: covers 0 1 2 4 5 6 7 8 9 X
+3.2600, ally_back_0,   0, 7082
+3.2600, ally_back_0,   1, 5
+3.2600, ally_back_1,   0, 17
+3.2600, ally_back_1,   1, 19
+3.2600, ally_back_1,   2, X2
+3.2600, ally_back_2,   0, 5
+3.2600, ally_front_0,  0, 20
+3.2600, ally_front_0,  1, 10
+3.2600, ally_front_1,  0, 1080
+3.2600, ally_front_2,  0, 1027
+3.2600, enemy_back_1,  0, 2409
+3.2600, enemy_back_2,  0, 459
+3.2600, enemy_front_1, 0, 96
+3.2600, enemy_front_1, 1, X2
+3.2600, enemy_front_2, 0, 18
+3.2600, enemy_front_2, 1, 200
+
+# --- t=9.0000: adds 3 (via Puffloon's "39") and K (via Fumungus's "16K")
+9.0000, ally_back_0,   0, 8066
+9.0000, ally_back_0,   1, 17
+9.0000, ally_back_1,   0, 17
+9.0000, ally_back_1,   1, 39
+9.0000, ally_back_1,   2, X2
+9.0000, ally_back_2,   0, 5
+9.0000, ally_front_0,  0, 16K
+9.0000, ally_front_0,  1, 22
+9.0000, ally_front_1,  0, 1092
+9.0000, ally_front_2,  0, 1047
+9.0000, enemy_back_0,  0, 242
+9.0000, enemy_back_2,  0, 459
+9.0000, enemy_front_0, 0, 197
+9.0000, enemy_front_0, 1, 152
+9.0000, enemy_front_2, 0, 18
+9.0000, enemy_front_2, 1, 200

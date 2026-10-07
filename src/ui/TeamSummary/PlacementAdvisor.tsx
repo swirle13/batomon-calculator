@@ -51,7 +51,7 @@ export function PlacementAdvisor() {
     return (
       <Disclosure
         label="Placement suggestion"
-        hint={seen === 0 ? "(none — no positional abilities modelled)" : `(none — ${seen}/${config.placements.length} positional abilities modelled)`}
+        hint={seen === 0 ? "(none)" : `(none — ${seen}/${config.placements.length} positional abilities modelled)`}
       />
     );
   }

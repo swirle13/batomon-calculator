@@ -1975,7 +1975,25 @@ rounding artifact. **~22 of the 135 are not battle calculations at all** (10 sho
       modelled death/HP system this engine does not have; **shop/economy (10)** and
       **evolution-only (12)** are out of scope by research.md B6. Together that is **31 of 135**,
       and T223 must report it as the known shortfall.
-- [ ] T220 **[WI-012]** Tag creatures family by family against T219's kinds, **at every level**
+- [ ] T220 **[WI-012]** BOUNDED by pass-1 (it previously had no list, no target and no stopping
+      criterion across a 4-level corpus). Scope: the On-Cast accumulating-buff family named in
+      research.md L5's retraction — **15 species**, not 14 (pass-2 caught that the table's rows sum
+      to 6+7+2=15 while its prose said 14; the prose was wrong) — minus the 7 tagged in round 11 —
+      i.e. pebbler, bonshell, pyrokami (done by T231), saberhorn, aerophim (T227), petrirex,
+      galvanine, prismagon. Stopping criterion: every one of the 14 is either tagged or named in
+      T227/T223 as deferred with a reason for every one of the **15**.
+      **The list above is the action list; there is no list below** (pass-3 caught the dangling
+      pointer). Of the 15: 7 are tagged, 3 are T231's, 1 is T227's Saberhorn, 1 is T227's named
+      Aerophim deferral, leaving **galvanine** to tag and **petrirex + prismagon** which are
+      REMOVED from this task's action list — pass-3 correctly objected that T220 was directing work
+      that research.md and T219 both exclude. Petrirex is a **knockout** effect, which T219
+      explicitly defers as needing a death/HP system this engine lacks; Prismagon counts **unique
+      types on the team**, which `statFromCount` cannot express (it counts matching allies, not
+      distinct type values). Both go to T223's named-shortfall report, not to a tag.
+      **Bambudo is correctly tagged at levels 2-4 only**: its level-1 record reads "No ability text
+      transcribed in sources reviewed." There is no level-1 ability to tag, so this does not violate
+      the "at every level" rule — recorded because the count otherwise looks like an omission. Tag creatures family by family against T219's kinds,
+      **at every level**
       (round 9b's per-level guard already enforces this). Report the coverage figure after each
       family rather than only at the end.
 - [x] T221 **[WI-012]** Make the coverage figure self-reporting and honest (FR-084): compute it from
@@ -1988,7 +2006,13 @@ rounding artifact. **~22 of the 135 are not battle calculations at all** (10 sho
 
 ### Polish
 
-- [ ] T222 [P] Quickstart Validation Scenarios 45-50 for the above.
+- [ ] T222 [P] Quickstart validation scenarios. **Renumbered by pass-1**: the file's highest
+      existing scenario is **31**, not 44, so "Scenarios 45-50" referred to nothing. Add
+      **Scenarios 32-37**, one each for: (32) a modifier that cannot apply is reported, not silently
+      dropped [T211]; (33) an ally-cast event reaches a listening creature [T213]; (34) a chained
+      trigger fires once, not recursively [T214]; (35) accumulated stacks on the shared target
+      [T215]; (36) Pebbler's 20/35/50 cascade [T231]; (37) a painted creature satisfies a type
+      filter it does not natively match [T230].
 - [ ] T223 Verify `npx tsc -b --noEmit`, `npx vitest run`, `npm run build`; report the coverage
       figure before and after, and **state plainly how far short of 100% the round lands, per
       family** — the user asked for 100%, so the shortfall is the headline, not the progress.
@@ -2049,7 +2073,151 @@ rounding artifact. **~22 of the 135 are not battle calculations at all** (10 sho
       vs `appliesStatus` Shield 20). Needs evidence from the game or patch notes, not a guess:
       either the grant IS the application (tag nothing) or it is additive (tag `buffOnCast`).
       Guessing wrong double-counts, which is how Bumblebolt's Shock doubled in round 10.
-- [ ] T227 **[WI-010]** Model **saberhorn** (+1 Multicast to the ally in front, but +8s to its OWN
-      cooldown) and **aerophim** (+1 Multicast to adjacent allies, but transforms them into random
-      monsters). Both need a cost the engine cannot currently express; tagging only their upside
-      would overstate them.
+- [ ] T227 **[WI-010, WI-012]** SPLIT by pass-1, which found this task instructed modelling what
+      research.md itself calls unmodellable. Decided scope:
+      (a) **Saberhorn IS modelled, but the engine does NOT already represent its cost** — pass-2
+          corrected that claim. `EffectDescriptor.statChange.stat` is
+          `"cooldownSpeed" | "damage" | "multicast"` (`types.ts:117`): there is no flat-seconds
+          option, and flat seconds exist only as the USER modifier `cooldownFlatAddSeconds`, which
+          data-model explicitly distinguishes from ability grants. The `buffOnCast` applier
+          (`simulate.ts:565-574`) also handles only damage/multicast/statusGrant and would drop a
+          cooldown change outright.
+          **Decision, so the implementer does not have to invent one**: add
+          `"cooldownFlatSeconds"` to `EffectDescriptor.statChange.stat` and a branch for it in the
+          `buffOnCast` applier. NOT a `cooldownSpeed` percentage — "+8 seconds" is an absolute
+          quantity and converting it to a percentage would make it depend on the base cooldown,
+          which is not what the ability says. Then tag Saberhorn with both halves; tagging only the
+          upside would overstate it.
+      (b) **Aerophim is DEFERRED and named.** "Transform them into random monsters of their rarity"
+          replaces a creature with an unknown one; no engine that simulates a known board can
+          express that, and approximating it would fabricate output. T223 must report it by name.
+
+---
+
+## Phase 16: Round 4 orchestration — Painter/Smuggler, regions, cascading grants
+
+Ledger: `specs/001-batomon-dps-calculator/orchestration/round-4-items.md`.
+Design: research.md **M1-M7**, data-model.md "Round 4", spec.md FR-085 to FR-093.
+
+### Data corrections
+
+- [ ] T228a **[WI-001]** Add `supersededText?: string` to `TrainerRecord` (`src/data/types.ts`).
+      Pass-3 found T228 depends on this field and data-model declares it, but no task owned the
+      schema change — the same "declared in a design artifact, owned by nobody" gap that pass-1
+      found for `smuggledCreatureIds`.
+- [ ] T228 **[WI-001]** Correct Painter's ability in `src/data/trainers.ts`. The recorded text
+      ("Your monsters gain +1 to all stats for each different type they have…") is **the wrong
+      ability** — it came from a fan sheet and the record already carried
+      `unconfirmedFields: ["abilityText"]`. Replace with the painting behaviour per research.md M1,
+      clear the unconfirmed flag, and keep the superseded text in the record so the correction is
+      auditable rather than a silent overwrite.
+- [ ] T229 **[WI-005]** Add `region?: RegionId` to `CreatureRecord` and `selectedRegion` to
+      `TeamConfiguration` (FR-087), plus the region selector the ask calls for ("the player chooses
+      a region before they choose anything else"). Pass-1 found the config field and the selector
+      were both missing while T235 already depended on them.
+      **Attribution source** (pass-1 found T229 had none): batodex's `sets` field —
+      `starter` 56, `oshima` 56, both 14, neither 13 (research.md M6). Map `starter` -> Pantra,
+      `oshima` -> Jinto; the latter is an INFERENCE from "50+ new Batomon" matching 56, recorded as
+      such. Display names follow the official patch notes (Pantra, Jinto) because that is what the
+      player sees; "starter" was the user's descriptive wording, not the in-game name.
+      **Two different kinds of unattributed creature, which research.md M6 says explicitly must not
+      be conflated**: 13 species are present in the payload but in neither set (events/fossils), and
+      a further 10 of our 149 are absent from the payload entirely (it lists 144). Both get
+      `region: undefined`, but they are reported separately — "no region" vs "not in the source" —
+      because only the second is a data-coverage gap worth chasing.
+      **Commit the extract.** The payload must be snapshotted into
+      `src/data/__tests__/fixtures/` by a script in `scripts/`, exactly as the shiny data was. A
+      task that says "re-fetch an external site" with nothing committed is how the wrong Painter
+      ability entered the corpus in the first place (research.md M1).
+      **Gating**: the ask says the player chooses a region "before they choose anything else". The
+      region selector is therefore rendered first and the creature pickers are disabled until a
+      region is chosen, rather than region being an optional field alongside the others.
+
+### Engine
+
+- [ ] T230 **[WI-001, WI-007]** Add `paintedCreatureIds: string[]` to `TeamConfiguration` and route
+      **every** `typeFilter` comparison through one `creatureHasType(creature, type, config)`
+      predicate that returns true for any type when the species is painted (FR-086). There are
+      **six** sites, not the "four in effects.ts" previously asserted here — pass-1 validation
+      caught that: `effects.ts:122`, `effects.ts:279`, `simulate.ts:118`, `simulate.ts:121`,
+      `corpus.ts:130`, `CreatureSearchModal.tsx:58`. Missing the two `simulate.ts` ones would leave
+      cooldown grants unpainted; missing the two UI ones means a painted creature still does not
+      surface under a type filter. One predicate because round 10's lesson was that a duplicated
+      "supported" test drifts. Adds BOTH `paintedCreatureIds` and `smuggledCreatureIds` to
+      `TeamConfiguration`.
+      Keyed by **species id, not slot** — "whenever these specific species appear… on your board"
+      (research.md M1), so painting Mosslug paints every Mosslug.
+      Painted must NOT expand `types`, or "count the unique types on your team" (Prismagon) breaks.
+      **The `"All"` type already exists and the predicate must decide its semantics** (pass-2
+      finding): `CreatureType` includes `"All"` (`types.ts:48`) and Omnichrome natively carries it
+      (`types: ["All"]`, 4 records). Decision: `creatureHasType` returns true for ANY type when the
+      creature is painted **or** natively `"All"` — they mean the same thing in-game, and Painter's
+      effect is precisely "make this species an Omnichrome for typing purposes". The two differ only
+      in provenance: native `"All"` is corpus data, painted is run configuration. One predicate
+      covers both, which also means Omnichrome stops being quietly unmatched by every type filter —
+      a pre-existing bug this round fixes as a side effect.
+- [ ] T231 **[WI-009, WI-010, WI-011]** Tag **pebbler, bonshell, pyrokami** with `buffOnCast` at
+      every level. T226's ambiguity is ANSWERED by the user: base `appliesStatus` is cast 1, the
+      grant accumulates from cast 2. Verbatim targets to assert:
+      Pebbler "first turn, it grants 20 shield… next trigger, it grants 35 sheild… next trigger,
+      grants 50 shield"; Bonshell "7.0s casting time, shield 100 as base stats… (0,100), (80,180),
+      (160,260)"; Pyrokami "cast 1 deal 5 burn then add 10, cast 2 deals 15 burn… cast 3 deals 25".
+- [ ] T232 **[WI-010]** Allow an ability grant to CREATE a damage effect. Bonshell has
+      `baseDamage: null` / `damageType: null` yet deals 80 damage from cast 2, and `simulate()`
+      currently short-circuits `resolvedBase === null` and gates on `damageType === "Direct"`.
+      Scope the change to ability grants only: data-model.md's "modifiers can only scale an effect
+      the creature already has" still holds for USER modifiers and must not be relaxed for them.
+
+### UI
+
+- [ ] T233 **[WI-002]** A trainer card (FR-089), reusing the shared card/primitive language
+      (Constitution Principle VII) rather than a new bespoke layout. Renders: name, ability text,
+      and an unconfirmed-data marker where `unconfirmedFields` applies. It REPLACES the bare
+      `<select>` in `src/ui/GridPicker/TrainerPicker.tsx:9-22`, which is the current trainer UI;
+      pass-1 found no task said what the card shows or what happens to the existing control.
+- [ ] T234 **[WI-002, WI-006]** The "show affected mons" button (FR-089), rendered **only** for
+      trainers that designate a set. Per research.md M2/M7 that is exactly **Painter and Smuggler**;
+      Chef grants Fire to single-typed monsters by rule and must NOT get the button, and Mad
+      Scientist / Monster Ranger are excluded because they are day-scoped (see M7 for why that is
+      the boundary, which pass-1 found unrecorded).
+      The button's panel shows, per trainer: **Painter** — the 9 painted species and which of them
+      are currently on the board; **Smuggler** — the 9 smuggled species and their region.
+- [ ] T235 **[WI-004, WI-006]** The 9-creature picker, writing `paintedCreatureIds` /
+      `smuggledCreatureIds`. **User-chosen, never generated** — the app models a run already on the
+      player's screen. Smuggler's list is restricted to the OPPOSITE region to the one selected.
+      Default rarity shape 2/2/2/2/1 shown as guidance and NOT enforced, and **for Painter only** —
+      pass-1 found it had been extended to Smuggler on Painter's evidence, which the source does not
+      support. The source says "typically" (research.md M3); hard-locking a soft constraint would
+      make the tool unable to represent a real run.
+      "Opposite region" MUST mean "in the other region and NOT in the current one" (FR-088), never
+      `!== selectedRegion`: 14 species are in both regions and 13 in neither (research.md M6), so
+      the complement would wrongly offer all 27.
+- [ ] T235b **[WI-004]** Make smuggling have an EFFECT, not just a record (FR-091). Pass-1 found
+      the pool is not region-aware at all (`corpus.ts:130` filters name/type/rarity;
+      `CreatureSearchModal.tsx:58` filters type), so "added to the creature pool from the opposite
+      region" was a no-op. Gate the creature picker to `selectedRegion` PLUS `smuggledCreatureIds`,
+      so choosing Smuggler and picking 9 species actually changes what is selectable.
+      Region-less species (the 13 in neither set) remain always available — they are events/fossils,
+      not regional stock, and hiding them would break existing teams.
+- [ ] T236 **[WI-007]** Rainbow type chip for painted creatures, replacing the normal type chips.
+- [ ] T237 **[WI-008]** Translucent rainbow sprite overlay, "slowly scrolling southeasterly"
+      (verbatim). Must honour `prefers-reduced-motion` — the project ships no other continuous
+      animation, so this is the first one that needs the guard.
+
+### Previously-deferred tasks the user asked to execute (WI-012)
+
+- [ ] T238 **[WI-012]** Execute T211, T213, T214, T215, T218, T220, T222, T223, T226, T227. Each is
+      tracked at its own id; this entry exists so the ask itself is checkable. T226 is satisfied by
+      T231 (the user answered its question). Any of the ten that cannot be completed must be
+      reported as not done WITH A REASON, not quietly dropped.
+      Pass-1 found three of the ten unexecutable as written and they have since been fixed rather
+      than waived: **T220** was unbounded (now scoped to 14 named species with a stopping
+      criterion), **T222** cited quickstart scenarios that do not exist (now Scenarios 32-37 with
+      stated content), **T227** instructed modelling the unmodellable (now split into Saberhorn =
+      model, Aerophim = named deferral). The "report with a reason" clause is NOT a licence to skip
+      these three.
+
+### Verification
+
+- [ ] T239 **[WI-012]** `npx tsc -b --noEmit`, `npx vitest run`, `npm run build`; report ability
+      coverage before/after and state the shortfall plainly.

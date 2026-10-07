@@ -710,3 +710,105 @@ state, same category as (not merged into) `TeamConfigContext`.
 *absorption* against an opposing target (which still isn't modeled — see `simulate.ts`'s T037
 comment). This answers "how much Shield is this team generating over time", which is what the
 summary table and chart surface as "Shield".
+
+## Round 4 (2026-10-06): regions, painted types, trainer creature sets, cascading grants
+
+Previous rounds added engine concepts without a data-model entry, which the round-3 validation
+flagged. These are recorded before implementation, not after.
+
+### Region (new entity) — WI-005
+
+```ts
+type RegionId = "pantra" | "jinto" | (string & {});
+```
+
+**Also on `TeamConfiguration`** (pass-1 gap): `selectedRegion: RegionId` — the ask's own wording is
+*"the player chooses a region before they choose anything else when starting a game"*, so region is
+a configuration choice, not only a creature attribute. T235's "opposite region" filter is undefined
+without it.
+
+Source for per-creature attribution: batodex's `sets` field (research.md M6).
+
+> **"Opposite region" is NOT a complement.** 14 species belong to both regions and 13 to neither
+> (research.md M6). `opposite(starter)` must mean "sets includes the other region AND excludes the
+> current one", not `!== selectedRegion`, which would wrongly sweep in all 27 edge cases.
+
+Added to `CreatureRecord` as `region?: RegionId`. Optional, because our corpus was imported before
+region existed as a concept and not every record can be attributed with confidence; an unattributed
+creature is reported as unknown rather than defaulted into Pantra, which would silently make
+Smuggler's "opposite region" wrong.
+
+Open union rather than a strict two-value type: the official notes say "the power level of **all
+regions**", which does not commit to there being exactly two (research.md M4).
+
+### PaintedType — WI-001, WI-007
+
+A painted creature counts as **every** type for any `typeFilter` the engine tests. Modelled as a
+sentinel rather than by expanding `types` to the full list, for two reasons:
+
+1. Expanding the list would make "how many different types does this creature have?" return the
+   whole enum, which is wrong for any ability that counts distinct types (e.g. Prismagon's "+10
+   Damage for each unique type on your team").
+2. The UI must render one rainbow chip, not twelve chips.
+
+```ts
+/** On TeamConfiguration — species ids, NOT placement slots. */
+paintedCreatureIds: string[];
+```
+
+**Species, not placements** (research.md M1): *"Whenever these specific species appear in your shop
+or on your board"*. Painting Mosslug paints every Mosslug you own, so keying by slot would be wrong
+the moment a second copy is placed.
+
+### Type matching rule (behavioural change)
+
+Every `typeFilter` comparison must go through one predicate. There are **six** sites, not the four
+previously asserted here, and only two are in `effects.ts` — pass-1 validation caught the error:
+
+| Site | Painted must apply? |
+|---|---|
+| `effects.ts:122` (selector filters) | yes |
+| `effects.ts:279` (`statFromCount`) | yes |
+| `simulate.ts:118` (adjacent cooldown grants) | yes |
+| `simulate.ts:121` (allAllies cooldown grants) | yes |
+| `corpus.ts:130` (browser search filter) | yes — a painted creature should surface under any type |
+| `CreatureSearchModal.tsx:58` (picker filter) | yes — same reason |
+
+
+```ts
+creatureHasType(creature, type, config) // true for any `type` when the creature is painted
+```
+
+This replaces the four direct `creature.types.includes(...)` tests. One predicate, because the
+round-10 lesson was that duplicating a "supported" test in two places let them drift.
+
+### TrainerCreatureSet — WI-002, WI-004, WI-006
+
+```ts
+/** On TeamConfiguration. Both are declared here; both need a task that ADDS them. */
+paintedCreatureIds: string[];
+smuggledCreatureIds: string[];
+```
+
+`TrainerRecord` also gains `supersededText?: string` so T228's Painter correction has somewhere to
+record what it replaced — pass-1 found the field did not exist.
+
+Both sets are **user-chosen, never generated**. The app models a run the player is already looking
+at; randomising would produce a board they cannot reconcile with their screen (WI-006).
+
+Default size 9 for both. The rarity shape 2 Common / 2 Uncommon / 2 Rare / 2 Super Rare / 1
+Legendary applies to **Painter only** — pass-1 validation found it had been extended to Smuggler on
+Painter's evidence. The source (research.md M3) describes Painter's "random assignment"; Smuggler's
+recorded text mentions neither 9 creatures nor rarity, and the ledger claims only "9 random mons"
+for it. Shown as guidance and **not enforced** even for Painter, since the source says "typically".
+
+### Cascading on-cast grants — WI-009, WI-010, WI-011
+
+No new entity. `buffOnCast` (round 11) already expresses this and its FR-040 snapshot timing already
+produces the user's sequences. The change is a **constraint removal**:
+
+> **Superseded**: "modifiers can only scale an effect the creature already has."
+> That rule holds for USER-entered `StatModifier`s and still does. It must NOT apply to ability
+> grants: Bonshell has `baseDamage: null` and demonstrably deals 80 damage from its second cast
+> (research.md M5). An ability grant may bring a damage effect into existence; a user modifier may
+> not.
