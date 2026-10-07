@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTeamConfig } from "../../context/TeamConfigContext";
 import { InvalidBuildCodeError, buildUrl, exportBuild, importBuild, readBuildFromUrl } from "../../data/share";
-import { Surface } from "../primitives";
+import { Disclosure } from "../primitives";
 import styles from "./ShareBuild.module.css";
 
 /**
@@ -18,6 +18,12 @@ import styles from "./ShareBuild.module.css";
  *
  * A URL is the thing people actually paste to each other. The code remains for places a link does
  * not survive, and because it is what you keep if you want the build without a browser.
+ *
+ * ## Collapsed by default
+ *
+ * Sharing is occasional; the panel was permanent. Two buttons, a wrapped base64 code and a paste
+ * field sat under the grid on every visit, for a thing most visits never do. It is now the same
+ * `Disclosure` the rest of the page uses rather than a third hand-rolled `<details>`.
  */
 export function ShareBuild() {
   const { config, replaceConfig } = useTeamConfig();
@@ -60,48 +66,48 @@ export function ShareBuild() {
   }
 
   return (
-    <Surface className={styles.wrap}>
-      <div className={styles.heading}>Share this team</div>
+    <Disclosure label="Share this team">
+      <div className={styles.wrap}>
+        <div className={styles.actions}>
+          <button type="button" onClick={() => copy("url")}>
+            {copied === "url" ? "Link copied" : "Copy link"}
+          </button>
+          <button type="button" onClick={() => copy("code")}>
+            {copied === "code" ? "Code copied" : "Copy code"}
+          </button>
+        </div>
 
-      <div className={styles.actions}>
-        <button type="button" onClick={() => copy("url")}>
-          {copied === "url" ? "Link copied" : "Copy link"}
-        </button>
-        <button type="button" onClick={() => copy("code")}>
-          {copied === "code" ? "Code copied" : "Copy code"}
-        </button>
-      </div>
-
-      <textarea
-        className={styles.code}
-        readOnly
-        value={code}
-        rows={2}
-        aria-label="Build code"
-        onFocus={(e) => e.currentTarget.select()}
-      />
-
-      <label className={styles.field}>
-        <span className={styles.label}>Load a build</span>
         <textarea
           className={styles.code}
+          readOnly
+          value={code}
           rows={2}
-          placeholder="Paste a link or code…"
-          value={pasted}
-          onChange={(e) => {
-            setPasted(e.target.value);
-            setError(null);
-          }}
+          aria-label="Build code"
+          onFocus={(e) => e.currentTarget.select()}
         />
-      </label>
-      <button type="button" onClick={load} disabled={pasted.trim() === ""}>
-        Replace team with this build
-      </button>
-      {error && (
-        <p className={styles.error} role="alert">
-          {error}
-        </p>
-      )}
-    </Surface>
+
+        <label className={styles.field}>
+          <span className={styles.label}>Load a build</span>
+          <textarea
+            className={styles.code}
+            rows={2}
+            placeholder="Paste a link or code…"
+            value={pasted}
+            onChange={(e) => {
+              setPasted(e.target.value);
+              setError(null);
+            }}
+          />
+        </label>
+        <button type="button" onClick={load} disabled={pasted.trim() === ""}>
+          Replace team with this build
+        </button>
+        {error && (
+          <p className={styles.error} role="alert">
+            {error}
+          </p>
+        )}
+      </div>
+    </Disclosure>
   );
 }
