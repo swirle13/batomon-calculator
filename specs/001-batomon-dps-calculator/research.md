@@ -1404,6 +1404,99 @@ keyboard/screen-reader fallback for the drag-and-drop picker (research.md E2.5).
 **because round 7 restored click-to-open** — Enter/Space on a slot opens the picker, so the accessible
 path survives. Worth recording so a future round doesn't "restore" it as a regression fix.
 
+## K. Round 9 (2026-10-06, via `/speckit-orchestrate`) — the effect-resolution engine, total DPS, and a confirmed accuracy gap
+
+Nine atomic work items (ledger: `orchestration/round-2-items.md`). The user's central claim — "I
+think currently, the DPS measurement is off" — **is correct**, and this section quantifies it.
+
+### K1. WI-001 — the icon shrink is a direct regression from round 8's own fix
+
+`GridPicker` is a flex item with the default `flex: 0 1 auto`, so it **shrinks**. Round 8 made its
+sibling rigid (`flex: 0 0 var(--detail-panel-width)`, 22rem) to stop the detail panel resizing
+(WI-007 last round). With one rigid sibling and no `flex-shrink: 0` of its own, the grid absorbed
+all the remaining squeeze — its `max-width: 30rem` is a *maximum*, not a floor, so the slot cards
+(and the 64px sprites inside their `overflow: hidden` squares) shrank with it.
+
+- **Decision**: give the grid `flex: 0 0 auto` (or an explicit min-width) so both columns are rigid.
+- **Lesson worth recording**: fixing one flex item's sizing without considering its siblings moves
+  the problem rather than solving it. Round 8 verified the panel stopped resizing and did not check
+  what absorbed the difference.
+
+### K2. WI-006/WI-008 answered, and the "DPS" column is genuinely misleading
+
+Simulating the user's exact team (Miasmaw, Cobrex, Drumire, Fumungus):
+
+```text
+perCreatureDps:            {}            <- EMPTY. Every creature reads 0.00
+perCreatureFacilitatedDps: fumungus 17.10, miasmaw 28.50, drumire 16.00, cobrex 75.00
+direct total 0.00 | facilitated total 136.60 | combined 136.60
+perStatusPerSecond.Poison  136.60         <- exactly equals the facilitated total
+```
+
+- **The user's parenthetical is right**: `perCreatureDps` counts **direct damage only**
+  (`perCreatureDamage` is incremented solely on `isDirectHit`), so an all-status team shows `0.00`
+  across the DPS column while actually dealing 136.6 damage/second. A combined figure is not a
+  convenience, it is a correctness fix for how the table reads.
+- **Useful confirmation**: facilitated total **exactly** equals `perStatusPerSecond.Poison`, so
+  direct + facilitated is a complete, non-double-counting partition of all damage. Summing them is
+  safe.
+- **WI-008 answered precisely**: Cobrex has a 15 s cooldown and applies **Poison 300**. Its *first
+  cast lands at t=15*. Poison never decays, so the per-second rate steps from **84/s at t=15 to
+  400/s at t=16** and stays there. The takeoff is one creature's opening cast, not an artifact.
+  ```text
+  t=12 68 | t=13 84 | t=14 84 | t=15 84 | t=16 400 | t=17 420 | t=18 420
+  ```
+
+### K3. WI-003/WI-004/WI-009 — the accuracy gap, measured
+
+**Every one of the four creatures on the user's board has an unmodelled ability**, and three of them
+change DPS materially:
+
+| Creature | Ability text | Modelled? | Effect if modelled |
+|---|---|---|---|
+| Miasmaw | "Gain Poison … equal to 1x the total Poison of your allies" | **No** | Poison 10 → **336** |
+| Cobrex | "Whenever an ally inflicts Poison, Charge this by 1 second(s)" | **No** | First cast ~t=4 instead of t=15 |
+| Drumire | "When a Toxic ally casts, give it +5% Cooldown Speed for this battle" | **No** | Compounding team speed-up |
+| Fumungus | "Has additional Damage equal to 100% of the Poison stacks on the enemy" | **No** | Gains real *direct* damage |
+
+Cobrex's is the most dramatic and directly answers WI-008's follow-up: allies apply Poison at t=3,
+6, 9, 12, 15 (Miasmaw), t=3, 6, 9, 12, 15 (Fumungus) and t=8, 16 (Drumire) — **11 applications
+before t=15**, each charging Cobrex 1 second. Modelled, Cobrex fires around **t=4** and repeatedly
+after, instead of once at t=15. The user's suspicion that the measurement is off is not only correct,
+it is off by a large factor for exactly this archetype.
+
+- **Decision**: build a resolution layer (`src/engine/effects.ts`) that computes each creature's
+  effective stats after on-battle-start, ally-triggered, positional, and trinket effects, and have
+  `simulate()` consume it. `perCreatureEffectiveStats` then reports resolved values, which is what
+  makes the "Effective this battle" band truthful (WI-003's acceptance criterion: **Poison 336**).
+- **Supporting the new effect families needs new `AbilityTag` kinds**: a battle-start status grant
+  scaled from allies' totals, a cooldown charge triggered by an ally event, a cooldown-speed grant
+  triggered by an ally cast, and damage scaled from a status on the target.
+
+### K4. The honest ceiling on all of this, stated before building it
+
+**Only 6 of 149 level-1 creatures have *any* `abilityTags` at all.** An effect engine can only act on
+structured tags, so building it does not retroactively make 143 creatures' abilities work — their
+effects exist solely as prose in `abilityText`.
+
+- **Decision**: build the engine *and* populate tags for the creatures this round exercises, then
+  state the coverage figure plainly in the UI and README rather than letting a working engine imply
+  full coverage. This is the same honesty rule round 8 applied to the placement optimiser (FR-069),
+  and it matters more here because a DPS number *looks* authoritative in a way an empty suggestion
+  list does not.
+- **Explicitly not claimed**: that this round makes DPS correct for arbitrary teams. It makes it
+  correct for teams whose creatures have tags, and makes the gap visible for the rest.
+
+### K5. WI-005/WI-007 — consequences that fall out of K3
+
+- **WI-005**: the placement optimiser already calls `simulate()`, so once `simulate()` consumes the
+  resolution layer the optimiser inherits positional and trinket effects for free. What must change
+  is `analyzePositionalCoverage()`'s count, which currently reports only `cooldownSpeedModifier`
+  as actionable — it has to track whatever the resolver actually handles, or it will understate.
+- **WI-007**: the slider is a UI-only addition over `dpsRateSeries`, which already exists. The
+  headline number at time *t* is that series' value, so it agrees with the DPS-over-time chart by
+  construction rather than by a second computation.
+
 ## C. Resolved Technical Context (feeds plan.md)
 
 | Field | Resolution |

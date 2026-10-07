@@ -355,6 +355,24 @@ correct and show their data source citation(s).
 - **FR-070**: The corpus browser MUST be titled "Batomon Browser", MUST use fixed-height cards, and
   MUST NOT display corpus/patch provenance prose.
 
+- **FR-071**: The team grid MUST hold its size regardless of what a sibling panel does; no layout
+  change elsewhere may shrink the creature slots or their sprites (WI-001).
+- **FR-072**: The per-creature output table MUST show a total combining direct and facilitated
+  output, and MUST present a single prominent total-DPS figure, because a status-only team currently
+  reads `0.00` in every row while dealing substantial damage.
+- **FR-073**: System MUST resolve each creature's effective stats after **all** applicable effects —
+  on-battle-start abilities, abilities triggered by allies' actions, positional abilities, and
+  selected trinkets — and the simulation MUST use those resolved values. The "Effective this battle"
+  display MUST show the resolved result, not the creature's base stats.
+- **FR-074**: The resolution in FR-073 MUST be a single shared layer consumed by every feature that
+  depends on it, including the placement suggester, so no two features can disagree about a
+  creature's effective stats.
+- **FR-075**: Where a creature's or trinket's ability is recorded only as prose and has no structured
+  representation the engine can act on, the system MUST make that coverage limit visible rather than
+  presenting its output as complete.
+- **FR-076**: System MUST provide a time control that scrubs through the simulated battle, updating
+  the headline output figure to that moment's value, consistent with the damage-rate chart.
+
 ### Key Entities
 
 - **Creature (Batomon)**: A collectible unit with name, rarity, one or more types, shop cost, base
@@ -603,3 +621,29 @@ optimiser can see. The chaining effects motivating the request —
 `AbilityTag`, so the engine cannot reason about them. An optimiser will therefore find no improvement
 for almost every team, and the UI must say *why* rather than presenting an empty result as a
 conclusion.
+
+
+### 2026-10-06 (round 9) — FR-071..FR-076 added; the DPS accuracy gap confirmed and quantified
+
+Nine atomic work items (ledger: `orchestration/round-2-items.md`). The user's suspicion that "the
+DPS measurement is off" was investigated and **confirmed**, with the magnitude measured rather than
+estimated.
+
+**The output table was actively misleading.** `perCreatureDps` counts direct damage only, so the
+user's all-status team showed `0.00` in every row while dealing **136.6 damage/second** — all of it
+in the separate "Facilitated DPS" column. Facilitated total exactly equals `perStatusPerSecond`, so
+direct + facilitated is a complete, non-double-counting partition; FR-072 requires that sum be shown.
+
+**Every creature on the user's board had an unmodelled ability.** Miasmaw's Poison should read 336,
+not 10. Cobrex charges 1 second per allied Poison application — with 11 such applications before
+t=15, it should fire around **t=4 rather than t=15**, which is also the answer to "why does DPS take
+off at 15 seconds" (Cobrex's single opening cast applying Poison 300, which never decays). Drumire's
+and Fumungus's abilities are likewise inert. FR-073/FR-074 add the resolution layer this needs.
+
+**The ceiling is stated up front rather than discovered later.** Only **6 of 149** level-1 creatures
+have any `abilityTags`. An effect engine acts on structured tags, so building it does not make 143
+creatures' prose abilities work. FR-075 requires that limit be visible — the same rule round 8
+applied to the placement optimiser, and more important here, because a DPS figure reads as
+authoritative in a way an empty suggestion list does not. **This round does not claim to make DPS
+correct for arbitrary teams**; it makes it correct for tagged creatures and makes the gap visible
+for the rest.

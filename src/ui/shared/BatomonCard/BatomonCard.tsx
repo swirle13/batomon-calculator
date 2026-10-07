@@ -171,21 +171,18 @@ export function BatomonCard({ creature, children, levelLabel, fixedHeight }: Bat
 
       {children ? <div className={styles.extra}>{children}</div> : null}
 
-      <div className={styles.meta}>
-        {/* 2026-10-06 round 8 (WI-006): the Cost line is omitted entirely when the value is
-            unconfirmed, rather than printing "Cost $unknown". Removing only the "Unconfirmed:"
-            marker would have left an unexplained "unknown" -- strictly less information than
-            before. The `unconfirmedFields` DATA is untouched; this is a display decision, and no
-            cost is ever fabricated. Other unknown stats still render as "unknown". */}
-        {!isUnconfirmed(creature, "shopCost") && <span>Cost ${creature.shopCost}</span>}
-        {creature.sellValue != null && <span>Sell ${creature.sellValue}</span>}
-        {creature.evolvesInto && (
-          <span>
-            Evolves into <code>{creature.evolvesInto}</code>
-            {creature.evolvesAtLevel ? ` at Lv.${creature.evolvesAtLevel}` : " (not by levelling)"}
-          </span>
-        )}
-      </div>
+      {/*
+        <div className={styles.meta}>
+          {!isUnconfirmed(creature, "shopCost") && <span>Cost ${creature.shopCost}</span>}
+          {creature.sellValue != null && <span>Sell ${creature.sellValue}</span>}
+          {creature.evolvesInto && (
+            <span>
+              Evolves into <code>{creature.evolvesInto}</code>
+              {creature.evolvesAtLevel ? ` at Lv.${creature.evolvesAtLevel}` : " (not by levelling)"}
+            </span>
+          )}
+        </div>
+      */}
     </article>
   );
 }

@@ -1695,6 +1695,113 @@ already implied; and the optimiser ships stating what it cannot yet see.
 
 ---
 
+## Phase 14: Round 9 — Effect-Resolution Engine, Total DPS, Time Scrubber (2026-10-06)
+
+**Goal**: Implement the 9 work items in `orchestration/round-2-items.md` (FR-071..FR-076).
+
+**Independent Test**: quickstart.md Validation Scenarios 39–44.
+
+### Traceability
+
+| WI | Ask (abbreviated) | Task(s) | FR |
+|---|---|---|---|
+| WI-001 | Grid icons much too small now | T197 | FR-071 |
+| WI-002 | DPS table needs a combined total | T198 | FR-072 |
+| WI-003 | Effective band wrong — Miasmaw should read Poison 336 | T199, T200, T202 | FR-073 |
+| WI-004 | Build the all-effects resolution engine | T199, T200, T201 | FR-073 |
+| WI-005 | Placement suggester must use it | T203 | FR-074 |
+| WI-006 | Prominent single total-DPS number | T198, T204 | FR-072 |
+| WI-007 | Slider to scrub DPS through the battle | T205 | FR-076 |
+| WI-008 | *Question*: why does DPS take off at 15s? | T206 (answered in research.md K2) | — |
+| WI-009 | Cobrex's cooldown charge from ally poison unmodelled | T200, T201 | FR-073 |
+
+**Answers recorded for the question asked** (research.md K2, so it is not lost in chat):
+**Cobrex has a 15 s cooldown and applies Poison 300, so its *first cast lands at t=15*.** Poison never
+decays, so the rate steps from **84/s at t=15 to 400/s at t=16** and stays there. Not an artifact —
+one creature's opening cast. And with WI-009 modelled it would fire around **t=4** instead, because
+11 allied Poison applications land before t=15.
+
+### Foundational
+
+- [ ] T197 **[WI-001]** Stop the team grid shrinking (FR-071). **Root cause, not a nudge**:
+      `GridPicker` is a flex item with the default `flex: 0 1 auto`, and round 8 made its sibling
+      rigid (`flex: 0 0 var(--detail-panel-width)`) to fix WI-007 last round — so the grid absorbed
+      all remaining squeeze, and its `max-width: 30rem` is a *maximum*, not a floor. Give it
+      `flex: 0 0 auto` / an explicit min-width in `src/App.tsx` so both columns are rigid, and verify
+      the rendered slot and sprite sizes rather than eyeballing. Record the lesson: fixing one flex
+      item without considering its siblings moves the problem instead of solving it.
+
+### Tests first (Constitution Principle III, NON-NEGOTIABLE)
+
+- [ ] T199 **[WI-003, WI-004]** Write **failing** tests in `src/engine/__tests__/effects.test.ts`
+      (new) pinning the user's own worked example as the acceptance criterion:
+      - with Miasmaw + Cobrex + Drumire + Fumungus placed, Miasmaw's resolved `appliesStatus` is
+        **Poison 336** (own 10 + allies 6 + 20 + 300 = 326). The user supplied this arithmetic; it is
+        the spec.
+      - Cobrex's effective cooldown is **reduced by 1 second per allied Poison application**, so its
+        first cast lands near **t=4**, not t=15 (WI-009).
+      - a creature with no relevant ability resolves to exactly its base stats — the resolver must
+        not perturb teams it has nothing to say about.
+
+### Implementation — engine
+
+- [ ] T200 **[WI-003, WI-004, WI-009]** Create `src/engine/effects.ts`: a single resolution pass that
+      takes a `TeamConfiguration` + `Corpus` and returns each placement's effective stats after
+      on-battle-start abilities, ally-triggered abilities, positional abilities, and selected
+      trinkets. Add the `AbilityTag` kinds these need (a battle-start status grant scaled from
+      allies' totals; a cooldown charge triggered by an ally event; a cooldown-speed grant triggered
+      by an ally cast; damage scaled from a status on the target). **Order of resolution must be
+      explicit and documented** — Miasmaw reads allies' Poison *totals*, so it must resolve after
+      base stats are known but before cooldown-dependent effects, and the file must say so rather
+      than leaving it to call order. Satisfies T199.
+- [ ] T201 **[WI-004, WI-009]** Populate `abilityTags` for the creatures this round exercises
+      (Miasmaw, Cobrex, Drumire, Fumungus at minimum) so the resolver has structured input. **State
+      the ceiling honestly in the file header**: only **6 of 149** level-1 creatures have any
+      `abilityTags`, so the engine does not retroactively make 143 creatures' prose abilities work.
+- [ ] T202 **[WI-003]** Make `simulate()` consume `effects.ts`, so `perCreatureEffectiveStats` —
+      and therefore the "Effective this battle" band — reports **resolved** values rather than base
+      ones. Existing engine tests pin exact numbers; any that change MUST be re-derived and the
+      change explained in the test comment, never silently re-baselined.
+- [ ] T203 **[WI-005]** Point the placement optimiser at the same resolution layer (FR-074), and
+      **update `analyzePositionalCoverage()`** — it currently counts only `cooldownSpeedModifier` as
+      actionable, which will *understate* coverage once the resolver handles more kinds. The count
+      must track what the resolver actually handles, or round 8's honesty mechanism inverts into a
+      different lie.
+
+### Implementation — UI
+
+- [ ] T204 **[WI-002, WI-006]** Add a total row to the per-creature table **and** a prominent
+      headline total-DPS figure (FR-072) in `src/ui/TeamSummary/TeamSummary.tsx`. **Confirm the
+      user's parenthetical in the UI copy**: `perCreatureDps` really is direct damage only, which is
+      why their all-status team read `0.00` everywhere while dealing 136.6/s. Facilitated total
+      exactly equals `perStatusPerSecond`, so direct + facilitated is a complete, non-double-counting
+      partition — summing is safe, and the label should make clear the headline is all output.
+- [ ] T205 **[WI-007]** Add a time scrubber (FR-076) that updates the headline figure to the selected
+      moment's value, read from the existing `dpsRateSeries` so it agrees with the DPS-over-time
+      chart **by construction** rather than via a second computation. Default to the whole-window
+      average and make clear which is being shown.
+- [ ] T206 **[WI-008, FR-075]** Surface the coverage limit where the DPS number is shown: how many
+      placed creatures have abilities the engine can act on. A DPS figure reads as authoritative in a
+      way an empty suggestion list does not, so this matters more here than it did for FR-069. Also
+      record WI-008's answer in `research.md` K2 (drafted) and verify it still holds after T202
+      changes the numbers.
+
+### Polish
+
+- [ ] T207 [P] Write quickstart Validation Scenarios 39–44 covering: grid sizing restored; combined
+      total + headline DPS; Miasmaw resolving to Poison 336; Cobrex firing near t=4; the scrubber
+      agreeing with the chart; and the coverage disclosure.
+- [ ] T208 Verify `npx tsc -b --noEmit`, full `npx vitest run`, and `npm run build`; report the test
+      count, and **report honestly whether the DPS numbers changed** as a result of T202 — the user
+      asked whether the measurement is off, so the delta is the answer to their question.
+
+**Checkpoint**: the grid is back to size; a status-only team no longer reads 0.00; Miasmaw reads
+Poison 336 and Cobrex fires when it should; one resolution layer feeds the simulation, the effective
+band, and the optimiser; a scrubber ties the headline number to the rate chart; and the 6-of-149
+coverage ceiling is stated wherever the numbers are shown.
+
+---
+
 ## Implementation Strategy
 
 ### MVP First (User Story 1 Only)
