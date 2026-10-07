@@ -31,7 +31,8 @@ interface TotalDpsProps {
  * never damage, and never enters `facilitatedDamage` — so that route would inflate any Shield team.
  */
 export function TotalDps({ config, result }: TotalDpsProps) {
-  const [scrubT, setScrubT] = useState<number | null>(null);
+  // An index into `dpsRateSeries`, never a count of seconds — see the lookup below.
+  const [scrubIndex, setScrubIndex] = useState(0);
 
   const directTotal = Object.values(result.perCreatureDps).reduce((a, b) => a + b, 0);
   const facilitatedTotal = Object.values(result.perCreatureFacilitatedDps).reduce((a, b) => a + b, 0);
@@ -50,42 +51,37 @@ export function TotalDps({ config, result }: TotalDpsProps) {
   // it was not a reading at all.
   //
   // Indexing cannot desynchronise from the grid, whatever the grid becomes.
-  const scrubPoint = scrubT === null ? null : series[scrubT] ?? null;
-  const scrubbed = scrubPoint?.dps ?? null;
-  const shown = scrubbed ?? windowAverage;
+  const scrubPoint = series[scrubIndex] ?? null;
+  const scrubbedOrZero = scrubPoint?.dps ?? 0;
 
   const coverage = analyzePositionalCoverage(config, corpus);
-  const placedCount = config.placements.length;
+  // Only creatures with an ability that NEEDS modelling count — see `abilityNeedsModelling`.
+  const unmodelled = coverage.needsModelling.filter((n) => !coverage.actionable.includes(n)).length;
 
   return (
     <section className={styles.wrap}>
       {/*
-        2026-10-06 round 11 (FR-085 / WI-R11-003). One figure, one caption, no prose.
-        The caption still distinguishes the two readings, because they are genuinely different
-        quantities -- an average over the window versus an instantaneous rate -- and a bare number
-        that silently switched between them would be worse than the prose it replaces.
+        Two figures side by side (item 4). The scrubbed reading answers "what is happening now?" and
+        the average answers "what did the whole fight look like?" — they are different questions and
+        a user comparing builds wants both at once, rather than toggling and remembering.
+
+        Fixed-width columns: a DPS figure ranges from single digits to five, and without reserved
+        space the two numbers shuffle left and right as you drag the scrubber, which makes them
+        hard to read at exactly the moment you are reading them.
       */}
       <div className={styles.headline}>
-        <div className={styles.value}>{formatRate(shown)}</div>
-        <div className={styles.label}>
-          {scrubT === null || scrubPoint === null
-            ? "DPS average"
-            : `DPS at t=${scrubPoint.tSeconds}s`}
+        <div className={styles.figure}>
+          <div className={styles.value}>{formatRate(scrubbedOrZero)}</div>
+          <div className={styles.label}>DPS at t={scrubPoint?.tSeconds ?? 0}s</div>
+        </div>
+        <div className={styles.figure}>
+          <div className={`${styles.value} ${styles.secondary}`}>{formatRate(windowAverage)}</div>
+          <div className={styles.label}>DPS average</div>
         </div>
       </div>
 
-
-      {/*
-        2026-10-06 round 10 (FR-083 / WI-009). Two bugs here, one reported and one found alongside.
-        Reported: at rest the thumb sat hard left while the figure read the window average, so the
-        control asserted "t = 0" about a number that was not a reading at any time.
-        Found: `v === 0 ? null : v` hijacked 0 to mean "no scrub", which made **t = 0 unreachable** —
-        the one moment the user is most likely to check, since it is where every cooldown starts.
-        Now 0 is an ordinary time, "whole window" is its own state reached by the button, and at rest
-        the slider is visibly inert so its thumb position makes no claim.
-      */}
       {series.length > 0 && (
-        <div className={`${styles.scrubRow} ${scrubT === null ? styles.scrubIdle : ""}`}>
+        <div className={styles.scrubRow}>
           <label className={styles.scrubLabel}>
             Time{" "}
             <input
@@ -93,26 +89,30 @@ export function TotalDps({ config, result }: TotalDpsProps) {
               min={0}
               max={Math.max(0, series.length - 1)}
               step={1}
-              value={scrubT ?? 0}
-              onChange={(e) => setScrubT(Number(e.target.value))}
+              value={scrubIndex}
+              onChange={(e) => setScrubIndex(Number(e.target.value))}
               aria-label="Scrub battle time to see damage per second at that moment"
             />
           </label>
-          <button type="button" onClick={() => setScrubT(null)} disabled={scrubT === null}>
-            Whole window
-          </button>
         </div>
       )}
 
       {/*
-        FR-075 still applies: a DPS figure reads as authoritative in a way an empty list does not, so
-        the coverage ceiling stays next to the number. Round 11 reduces it from a sentence to a
-        counter, which is what the user asked for -- the fact survives, the prose does not. Dropping
-        it entirely would let a confident-looking number imply coverage the engine does not have.
+        FR-075: a DPS figure reads as authoritative, so a real coverage gap stays beside it.
+        But the counter now measures abilities that NEED modelling. It previously used every placed
+        creature as the denominator, so a team of Venopuff, Magmite and Dribblet read "0 of 3
+        modelled" — implying the figure was untrustworthy — when none of the three has an ability to
+        model and the DPS was entirely correct. With nothing outstanding it says nothing at all,
+        because a counter reading 0/0 is noise.
       */}
-      <p className={styles.coverage} title={`${coverage.actionable.length} of ${placedCount} placed Batomon have an ability this engine computes. The rest contribute base stats and your manual modifiers only.`}>
-        abilities modelled {coverage.actionable.length}/{placedCount}
-      </p>
+      {unmodelled > 0 && (
+        <p
+          className={styles.coverage}
+          title={`${unmodelled} of the ${coverage.needsModelling.length} placed Batomon with a battle ability have one this engine does not yet compute. Creatures with no ability, evolution-only text, or text that just restates their stats are not counted — there is nothing to model.`}
+        >
+          {unmodelled} of {coverage.needsModelling.length} abilities not yet modelled
+        </p>
+      )}
     </section>
   );
 }

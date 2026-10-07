@@ -169,15 +169,33 @@ describe("round 7 presentation fixes", () => {
   });
 
   it("shows cooldown at one decimal on both bands (FR-044, item 4)", () => {
+    // 2026-10-06: the effective band now renders only when it DIFFERS from the card above it, so
+    // this needs a creature whose battle values actually change. Bumblebolt alone no longer shows
+    // two bands — which is the point of that change, not a regression in this one.
+    const modified: TeamConfiguration = {
+      ...CONFIG,
+      teamModifiers: [{ id: "m1", stat: "damageFlatAdd", amount: 5 }],
+    };
+    render(
+      <TeamConfigProvider initialConfig={modified}>
+        <PlacedCreatureDetails result={simulate(modified, corpus)} highlightedSlot={null} />
+      </TeamConfigProvider>,
+    );
+    // Bumblebolt's cooldown is 2.5s. Both bands must agree; they used to render 2.5 and 2.50 one
+    // above the other.
+    expect(screen.getAllByText("2.5").length).toBe(2);
+    expect(screen.queryByText("2.50")).toBeNull();
+  });
+
+  it("hides the effective band entirely when nothing differs (item 2)", () => {
+    // A second panel repeating the first invites the user to hunt for a difference and find none,
+    // which is worse than no panel: it implies something changed.
     render(
       <TeamConfigProvider initialConfig={CONFIG}>
         <PlacedCreatureDetails result={simulate(CONFIG, corpus)} highlightedSlot={null} />
       </TeamConfigProvider>,
     );
-    // Bumblebolt's cooldown is 2.5s. Both the base band and "Effective this battle" must agree;
-    // they used to render 2.5 and 2.50 one above the other.
-    expect(screen.getAllByText("2.5").length).toBe(2);
-    expect(screen.queryByText("2.50")).toBeNull();
+    expect(screen.queryByText(/Effective this battle/i)).toBeNull();
   });
 
   it("reports Shield without the over-qualifying parenthetical (FR-046, item 7)", () => {
@@ -251,10 +269,11 @@ describe("round 9: total DPS and grid sizing", () => {
   it("states the engine's coverage ceiling right where the number is (FR-075)", () => {
     const result = simulate(poisonTeam, corpus);
     render(<TotalDps config={poisonTeam} result={result} />);
-    // Round 11 (WI-R11-003) replaced the sentence with a counter at the user's request. The FACT
-    // must survive the prose removal: a DPS figure reads as authoritative, so the limit still sits
-    // beside it. This asserts the counter, not the old wording.
-    expect(screen.getByText(/abilities modelled \d+\/\d+/)).toBeTruthy();
+    // Round 11 replaced the sentence with a counter; 2026-10-06 made the counter measure abilities
+    // that NEED modelling. It previously used every placed creature as the denominator, so a team
+    // whose creatures have no abilities at all read "0 of 3 modelled" beside a correct DPS figure.
+    // With a real gap it still reports one; with nothing outstanding it renders nothing.
+    expect(screen.getByText(/\d+ of \d+ abilities not yet modelled/)).toBeTruthy();
   });
 
   it("reads 'DPS average' until the scrubber is moved (WI-R11-003)", () => {

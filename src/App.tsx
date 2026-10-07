@@ -52,14 +52,24 @@ function CalculatorView() {
       </p>
       <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap", alignItems: "flex-start" }}>
         <GridPicker onHighlightSlot={setHighlightedSlot} />
-        <div style={{ flex: "0 0 var(--detail-panel-width)", textAlign: "left" }}>
+        <div
+          style={{
+            flex: "0 0 var(--detail-panel-width)",
+            textAlign: "left",
+            display: "flex",
+            flexDirection: "column",
+            gap: "0.75rem",
+          }}
+        >
           <PlacedCreatureDetails result={result} highlightedSlot={highlightedSlot} />
+          {/* Share sits in the detail column rather than full-width: a base64 build code stretched
+              across the page was unreadable, and this column is already sized for a sidebar. */}
+          <ShareBuild />
         </div>
       </div>
       {/* 2026-10-06 round 8 (FR-066 / WI-011): Modifiers sits between the grid and the summary. */}
       <ModifierEditor />
       <PlacementAdvisor />
-      <ShareBuild />
       <TotalDps config={config} result={result} />
       <TeamSummary config={config} result={result} />
       {/* FR-037: the simulation window governs the chart's time axis, not the per-second summary

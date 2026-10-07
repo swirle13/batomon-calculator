@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { InvalidBuildCodeError, buildId, canonicalise, exportBuild, importBuild } from "../share";
+import { InvalidBuildCodeError, buildId, canonicalise, exportBuild, importBuild, readBuildFromUrl } from "../share";
 import type { TeamConfiguration } from "../types";
 
 const base: TeamConfiguration = {
@@ -85,5 +85,34 @@ describe("build export/import", () => {
 
   it("the code is URL- and chat-safe", () => {
     expect(exportBuild(base)).toMatch(/^bat1:[A-Za-z0-9\-_]+$/);
+  });
+});
+
+describe("sharing by URL", () => {
+  it("accepts a pasted URL as readily as a bare code", () => {
+    // People paste whichever they were handed; the import field must not care which.
+    const code = exportBuild(base);
+    const asUrl = `https://example.test/batomon-calculator/?b=${code}`;
+    expect(canonicalise(importBuild(asUrl))).toEqual(canonicalise(base));
+    expect(canonicalise(importBuild(code))).toEqual(canonicalise(base));
+  });
+
+  it("a URL carrying other params still round-trips", () => {
+    const code = exportBuild(base);
+    const asUrl = `https://example.test/?utm=x&b=${code}&other=1`;
+    expect(canonicalise(importBuild(asUrl))).toEqual(canonicalise(base));
+  });
+
+  it("a malformed URL still produces a readable error, not a crash", () => {
+    expect(() => importBuild("https://example.test/?b=garbage")).toThrow(InvalidBuildCodeError);
+    expect(() => importBuild("https://example.test/?nothing=here")).toThrow(InvalidBuildCodeError);
+  });
+
+  it("readBuildFromUrl returns null for a bad link rather than throwing", () => {
+    // A bad LINK should leave a usable empty builder; a bad PASTE throws, because there the user is
+    // waiting on a specific action and silence would look like the button is broken.
+    expect(readBuildFromUrl("?b=garbage")).toBeNull();
+    expect(readBuildFromUrl("")).toBeNull();
+    expect(readBuildFromUrl(`?b=${exportBuild(base)}`)).not.toBeNull();
   });
 });

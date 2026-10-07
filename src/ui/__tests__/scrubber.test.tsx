@@ -26,15 +26,20 @@ describe("DPS scrubber indexes the series, not seconds (2026-10-06)", () => {
     for (let i = 0; i <= series.length - 1; i++) {
       expect(series[i], `slider index ${i} has no sample`).toBeDefined();
     }
-    // The old lookup is the thing that failed: no sample sits at t=0.
-    expect(series.find((p) => p.tSeconds === 0)).toBeUndefined();
-    expect(series[0]!.tSeconds).toBe(0.5);
+    // t=0 is now a real sample (item 4): at the instant the battle starts nothing has cast, so the
+    // rate genuinely is zero. It was previously unreachable on the scrubber.
+    expect(series[0]).toEqual({ tSeconds: 0, dps: 0 });
+    expect(series[1]!.tSeconds).toBe(0.5);
   });
 
-  it("at rest the caption says average, not a time", () => {
+  it("shows the scrubbed reading AND the average at once", () => {
+    // Both are always visible (item 4), so comparing "right now" against "the whole fight" needs no
+    // toggling — and the "Whole window" button is gone, since "window" was never defined for users.
     const result = simulate(team, corpus);
     render(<TotalDps config={team} result={result} />);
     expect(screen.getByText("DPS average")).toBeTruthy();
+    expect(screen.getByText("DPS at t=0s")).toBeTruthy();
+    expect(screen.queryByText("Whole window")).toBeNull();
   });
 });
 

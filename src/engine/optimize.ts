@@ -3,6 +3,7 @@ import { simulate } from "./simulate";
 import { STABLE_SLOT_ORDER, slotKey } from "./grid";
 import { isResolvableTag } from "./effects";
 import { applyShinyOverlay } from "../data/corpus";
+import { abilityNeedsModelling } from "../data/display";
 
 /**
  * Placement optimiser (FR-069, WI-018, 2026-10-06 round 8).
@@ -53,6 +54,13 @@ export interface PlacementSuggestion {
 }
 
 export interface PositionalCoverage {
+  /**
+   * Placed creatures with an ability the engine OUGHT to compute — the honest denominator for any
+   * "N of M modelled" figure. Excludes creatures with no ability, evolution-only text, and text
+   * that merely restates the stat line (see `abilityNeedsModelling`). A team of three such
+   * creatures reported "0 of 3 modelled" next to a DPS figure that was entirely correct.
+   */
+  needsModelling: string[];
   /** Placed creatures carrying any positional-target ability tag. */
   withPositionalTag: string[];
   /** Placed creatures whose positional tag the engine can actually act on. */
@@ -85,6 +93,8 @@ export function scoreConfiguration(config: TeamConfiguration, corpus: Corpus): n
 export function analyzePositionalCoverage(config: TeamConfiguration, corpus: Corpus): PositionalCoverage {
   const withPositionalTag: string[] = [];
   const actionable: string[] = [];
+  /** Placed creatures with an ability the engine ought to be computing — the honest denominator. */
+  const needsModelling: string[] = [];
 
   for (const placement of config.placements) {
     const creature = applyShinyOverlay(
@@ -108,6 +118,7 @@ export function analyzePositionalCoverage(config: TeamConfiguration, corpus: Cor
         tag.kind === "cooldownSpeedOnAllyCast"
       );
     });
+    if (abilityNeedsModelling(creature)) needsModelling.push(creature.name);
     if (positional.length === 0) continue;
     withPositionalTag.push(creature.name);
     if (positional.some(isResolvableTag)) actionable.push(creature.name);
@@ -119,7 +130,7 @@ export function analyzePositionalCoverage(config: TeamConfiguration, corpus: Cor
     .filter((t) => POSITIONAL_TRINKET_PATTERN.test(t.effectText) && (t.abilityTags?.length ?? 0) === 0)
     .map((t) => t.name);
 
-  return { withPositionalTag, actionable, unmodelledTrinkets };
+  return { withPositionalTag, actionable, unmodelledTrinkets, needsModelling };
 }
 
 /** All permutations of `items`. Bounded by 6! = 720 for a full board. */

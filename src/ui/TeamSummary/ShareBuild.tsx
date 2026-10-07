@@ -1,79 +1,92 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTeamConfig } from "../../context/TeamConfigContext";
-import { InvalidBuildCodeError, buildId, exportBuild, importBuild } from "../../data/share";
+import { InvalidBuildCodeError, buildUrl, exportBuild, importBuild, readBuildFromUrl } from "../../data/share";
 import { Surface } from "../primitives";
 import styles from "./ShareBuild.module.css";
 
 /**
- * Export and import a build (item 5).
+ * Share a build, as a link or as a code.
  *
- * ## The id and the code are shown as different things, because they are
+ * ## What is deliberately NOT shown
  *
- * The **code** restores the build. The **id** is a fingerprint of it — it cannot restore anything,
- * and presenting it as if it could would be the cruellest possible version of this feature, since
- * the whole point is not losing work. So the id is labelled as an identity, the code as the thing
- * you keep, and only the code goes on the clipboard by default.
+ * The build id was displayed here with the caption "identifies this team; the code below restores
+ * it". It was the author's distinction, not the user's: nobody comparing builds needs a fingerprint
+ * on screen when the code itself is right beneath it and is just as comparable. It still exists in
+ * `share.ts` and is still what names a saved build — it simply has no reason to occupy the panel.
  *
- * ## Import replaces rather than merges
+ * ## Link first
  *
- * Merging two teams has no obvious correct answer (what happens to a slot occupied in both?), and
- * guessing would quietly corrupt the imported build. Replacement is stated on the button.
+ * A URL is the thing people actually paste to each other. The code remains for places a link does
+ * not survive, and because it is what you keep if you want the build without a browser.
  */
 export function ShareBuild() {
   const { config, replaceConfig } = useTeamConfig();
   const [pasted, setPasted] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState<"url" | "code" | null>(null);
 
   const code = useMemo(() => exportBuild(config), [config]);
-  const id = useMemo(() => buildId(config), [config]);
+  const url = useMemo(() => buildUrl(config), [config]);
 
-  async function copy() {
+  // Load a build the page was opened with. Runs once: re-running on every config change would
+  // fight the user's edits, since the URL is not rewritten as they build.
+  useEffect(() => {
+    const incoming = readBuildFromUrl();
+    if (incoming) replaceConfig(incoming);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function copy(what: "url" | "code") {
     try {
-      await navigator.clipboard.writeText(code);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
+      await navigator.clipboard.writeText(what === "url" ? url : code);
+      setCopied(what);
+      setTimeout(() => setCopied(null), 1500);
     } catch {
-      // Clipboard access can be denied; the code is selectable in the field regardless, so this
+      // Clipboard permission can be denied; both values stay selectable in their fields, so this
       // is a missing convenience rather than a failure worth an error state.
-      setCopied(false);
+      setCopied(null);
     }
   }
 
   function load() {
     try {
+      // Accepts a full URL as readily as a bare code — people paste whichever they were given.
       replaceConfig(importBuild(pasted));
       setError(null);
       setPasted("");
     } catch (err) {
-      setError(
-        err instanceof InvalidBuildCodeError ? err.message : "Could not read that build code.",
-      );
+      setError(err instanceof InvalidBuildCodeError ? err.message : "Could not read that build.");
     }
   }
 
   return (
     <Surface className={styles.wrap}>
-      <div className={styles.row}>
-        <span className={styles.label}>Build id</span>
-        <code className={styles.id} title="A fingerprint of this build. It identifies the team but cannot restore it — use the code below for that.">
-          {id}
-        </code>
-        <span className={styles.note}>identifies this team; the code below restores it</span>
+      <div className={styles.heading}>Share this team</div>
+
+      <div className={styles.actions}>
+        <button type="button" onClick={() => copy("url")}>
+          {copied === "url" ? "Link copied" : "Copy link"}
+        </button>
+        <button type="button" onClick={() => copy("code")}>
+          {copied === "code" ? "Code copied" : "Copy code"}
+        </button>
       </div>
 
-      <label className={styles.field}>
-        <span className={styles.label}>Build code</span>
-        <textarea className={styles.code} readOnly value={code} rows={2} onFocus={(e) => e.currentTarget.select()} />
-      </label>
-      <button type="button" onClick={copy}>{copied ? "Copied" : "Copy build code"}</button>
+      <textarea
+        className={styles.code}
+        readOnly
+        value={code}
+        rows={2}
+        aria-label="Build code"
+        onFocus={(e) => e.currentTarget.select()}
+      />
 
       <label className={styles.field}>
         <span className={styles.label}>Load a build</span>
         <textarea
           className={styles.code}
           rows={2}
-          placeholder="Paste a build code…"
+          placeholder="Paste a link or code…"
           value={pasted}
           onChange={(e) => {
             setPasted(e.target.value);
@@ -84,7 +97,11 @@ export function ShareBuild() {
       <button type="button" onClick={load} disabled={pasted.trim() === ""}>
         Replace team with this build
       </button>
-      {error && <p className={styles.error} role="alert">{error}</p>}
+      {error && (
+        <p className={styles.error} role="alert">
+          {error}
+        </p>
+      )}
     </Surface>
   );
 }

@@ -5,7 +5,7 @@ import { useTeamConfig } from "../../context/TeamConfigContext";
 import type { GridSlot, SimulationResult } from "../../data/types";
 import { slotKey } from "../../engine/grid";
 import { formatCooldown } from "../../data/format";
-import { BatomonCard, CooldownBlock, StatLines, buildStatLines } from "../shared/BatomonCard/BatomonCard";
+import { BatomonCard, CooldownBlock, StatLines, buildStatLines, perCastOutputOf } from "../shared/BatomonCard/BatomonCard";
 
 interface PlacedCreatureDetailsProps {
   result: SimulationResult;
@@ -66,6 +66,23 @@ export function PlacedCreatureDetails({ result, highlightedSlot }: PlacedCreatur
 
   const effective = result.perCreatureEffectiveStats[`${creature.id}@${slotKey(placement.slot)}`];
 
+  /**
+   * Only show "Effective this battle" when it actually differs from the card above it.
+   *
+   * A second panel repeating the first invites the user to hunt for the difference and find none,
+   * which is worse than no panel: it implies something changed. Most boards are like this — no
+   * modifiers, no trinkets, no ally effects — so the band was usually pure noise.
+   *
+   * Compared through the shared `PerCastOutput` shape, so a future output stat is included in the
+   * comparison automatically rather than being silently ignored here.
+   */
+  const base = perCastOutputOf(creature);
+  const differs =
+    effective !== undefined &&
+    (JSON.stringify(effective.output) !== JSON.stringify(base) ||
+      (effective.cooldownSeconds !== null &&
+        effective.cooldownSeconds !== creature.baseCooldownSeconds));
+
   return (
     <BatomonCard
       creature={creature}
@@ -74,7 +91,7 @@ export function PlacedCreatureDetails({ result, highlightedSlot }: PlacedCreatur
       painted={isPainted(creature.id, config)}
       meta={<VariantToggles placement={placement} />}
     >
-      {effective ? (
+      {effective && differs ? (
         <div title="Reflects any active modifiers and selected Trinkets">
           <div
             style={{

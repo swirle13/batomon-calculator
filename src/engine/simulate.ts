@@ -885,10 +885,17 @@ export function simulate(
   }
   // `dps` is a RATE: damage in a half-second bucket is twice that per second. The 1s version could
   // treat bucket damage as the rate directly; at 0.5s it must be scaled, or every value halves.
-  const dpsRateSeries = damageBuckets.map((damage, i) => ({
-    tSeconds: roundTime((i + 1) * BUCKET),
-    dps: damage / BUCKET,
-  }));
+  const dpsRateSeries = [
+    // t=0 is a real sample: at the instant the battle starts nothing has cast, so the
+    // instantaneous rate is zero. Including it makes t=0 reachable on the scrubber — the moment a
+    // user is most likely to check, since it is where every cooldown starts — and anchors the
+    // chart at the origin. It contributes 0 to any integral, so totals are unchanged.
+    { tSeconds: 0, dps: 0 },
+    ...damageBuckets.map((damage, i) => ({
+      tSeconds: roundTime((i + 1) * BUCKET),
+      dps: damage / BUCKET,
+    })),
+  ];
 
   return {
     timeline,

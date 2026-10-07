@@ -124,6 +124,40 @@ export function exportBuild(config: TeamConfiguration): string {
   return PREFIX + toBase64Url(JSON.stringify(canonicalise(config)));
 }
 
+/** The query parameter a shared link carries, e.g. `?b=bat1:...`. */
+export const BUILD_PARAM = "b";
+
+/**
+ * A shareable URL for this build.
+ *
+ * Built from `window.location` so it works in dev, in preview and under the GitHub Pages base path
+ * without any of them being hard-coded. Existing query parameters are preserved — a link should not
+ * quietly drop something else the URL was carrying.
+ */
+export function buildUrl(config: TeamConfiguration): string {
+  const url = new URL(window.location.href);
+  url.searchParams.set(BUILD_PARAM, exportBuild(config));
+  url.hash = "";
+  return url.toString();
+}
+
+/**
+ * The build the page was opened with, or `null`.
+ *
+ * Returns `null` rather than throwing on a malformed parameter: a bad link should leave the user
+ * with an empty builder they can use, not an error page. A bad code they PASTED does throw — there
+ * the user is waiting on a specific action and silence would look like the button is broken.
+ */
+export function readBuildFromUrl(search = window.location.search): TeamConfiguration | null {
+  const raw = new URLSearchParams(search).get(BUILD_PARAM);
+  if (!raw) return null;
+  try {
+    return importBuild(raw);
+  } catch {
+    return null;
+  }
+}
+
 export class InvalidBuildCodeError extends Error {
   constructor(message: string) {
     super(message);
@@ -138,7 +172,18 @@ export class InvalidBuildCodeError extends Error {
  * one that refuses to load, because the user would keep working against a team they did not build.
  */
 export function importBuild(code: string): TeamConfiguration {
-  const trimmed = code.trim();
+  let trimmed = code.trim();
+
+  // People paste whichever they were handed. Pulling the code out of a URL here means the import
+  // field accepts both without the caller having to guess which it received.
+  if (/^https?:\/\//i.test(trimmed)) {
+    try {
+      const fromUrl = new URL(trimmed).searchParams.get(BUILD_PARAM);
+      if (fromUrl) trimmed = fromUrl.trim();
+    } catch {
+      // Not a parseable URL — fall through and let the prefix check produce the clearer message.
+    }
+  }
   if (!trimmed.startsWith(PREFIX)) {
     throw new InvalidBuildCodeError(`Not a build code — expected it to start with "${PREFIX}".`);
   }

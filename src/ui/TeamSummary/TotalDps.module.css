@@ -47,12 +47,6 @@
   margin-top: var(--space-sm);
 }
 
-.scrubIdle input[type="range"] {
-  /* FR-083 (WI-009): at rest the thumb's position is not a claim about the displayed figure, so the
-     control is dimmed to say so rather than looking like a live reading of t = 0. */
-  opacity: 0.45;
-}
-
 .scrubLabel {
   display: flex;
   align-items: center;
@@ -71,4 +65,34 @@
   padding-top: var(--space-xs);
   margin: var(--space-sm) 0 0;
   line-height: 1.4;
+}
+
+/*
+ * Two figures side by side (item 4): the scrubbed reading and the whole-fight average.
+ *
+ * `min-width` with tabular figures is the point. DPS spans single digits to five, so without
+ * reserved space the pair shuffles left and right on every drag of the scrubber — unreadable at
+ * exactly the moment you are reading it.
+ */
+.headline {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: var(--space-lg);
+}
+
+.figure {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 9rem;
+}
+
+.figure .value {
+  font-variant-numeric: tabular-nums;
+}
+
+/* The average is context for the live reading, so it is quieter without being hard to read. */
+.secondary {
+  color: var(--text-secondary);
 }
