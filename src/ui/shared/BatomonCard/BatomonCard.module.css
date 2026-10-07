@@ -96,8 +96,9 @@
   align-items: center;
   justify-content: center;
   /* item 15: was 3.25rem, which left the two-type column looking half-empty because the chips set
-     a taller band than the sprite filled. */
-  width: 5.25rem;
+     a taller band than the sprite filled. Widened again 2026-10-07 to hold a 96px sprite — the
+     frame must exceed the sprite or the art is clipped. */
+  width: 6.5rem;
   height: 5.25rem;
   border: 1px solid var(--line);
   border-radius: var(--radius-md);

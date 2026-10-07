@@ -194,7 +194,9 @@ export function BatomonCard({ creature, children, levelLabel, fixedHeight, meta,
         <div className={styles.spriteFrame}>
           <CreatureSprite
             spriteFile={creature.spriteFile}
-            size={72}
+            /* 96 = 2x the source art. 72 was 1.5x, which renders unevenly under
+               `image-rendering: pixelated` — see the note in Sprite.tsx. */
+            size={96}
             alt={creature.name}
             painted={isAllType}
           />

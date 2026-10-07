@@ -37,7 +37,13 @@ interface SpriteProps {
  * site. Six call sites each passed their own literal before this; the grid size was an arbitrary
  * 40 with no reasoning behind it (research.md I11).
  */
-export function spriteSizeFromToken(token: string, fallback = 64): number {
+/**
+ * The fallback is 96, not 64. It is used whenever the custom property cannot be read — in jsdom,
+ * and before styles resolve — so a stale value here silently renders a size that exists nowhere in
+ * the app. 64 was also a fractional 1.333x of the 48px source art, so the fallback was the one
+ * remaining place that could still produce uneven pixels.
+ */
+export function spriteSizeFromToken(token: string, fallback = 96): number {
   if (typeof window === "undefined") return fallback;
   const raw = getComputedStyle(document.documentElement).getPropertyValue(token).trim();
   const parsed = Number.parseInt(raw, 10);

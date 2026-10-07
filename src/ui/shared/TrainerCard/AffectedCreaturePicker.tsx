@@ -134,7 +134,8 @@ export function AffectedCreaturePicker({ kind, onClose }: AffectedCreaturePicker
                 aria-pressed={on}
                 onClick={() => toggle(c.id)}
               >
-                <Sprite spriteFile={c.spriteFile} kind="monster" size={32} alt={c.name} />
+                {/* 24 = a clean 0.5x downscale; 32 was 0.667x and dropped source pixels unevenly. */}
+                <Sprite spriteFile={c.spriteFile} kind="monster" size={24} alt={c.name} />
                 <span className={styles.pickerName}>{c.name}</span>
                 <span className={styles.pickerMeta}>
                   {c.rarity}

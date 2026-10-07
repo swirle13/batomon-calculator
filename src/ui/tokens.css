@@ -61,7 +61,12 @@
    * the pixel grid is subtly uneven. 96px is the exact 2x and is crisper. 64px is used because it
    * is what the user asked for and what batodex displays at; 96 is recorded as the alternative.
    * (Before round 7 this was an arbitrary hard-coded 40 with no reasoning behind it.) */
-  --sprite-grid: 64px;
+  /*
+   * 96px = 2x the 48x48 source art (2026-10-07). Was 64px, which is 1.333x and therefore had the
+   * same uneven-pixel defect as the 112px picker experiment — just less visible at that size.
+   * Only 48 / 96 / 144 / 192 keep `image-rendering: pixelated` crisp.
+   */
+  --sprite-grid: 96px;
   /* In-game type chips are a fixed width regardless of label length, so a row of them lines up.
      Ours were padding-sized, so "All" was narrow and "Electric" wide and nothing aligned. */
   --type-chip-width: 7rem;

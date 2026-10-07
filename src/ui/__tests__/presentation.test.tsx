@@ -174,8 +174,10 @@ describe("round 7 presentation fixes", () => {
       </TeamConfigProvider>,
     );
     const sprite = screen.getByRole("img", { name: "Bumblebolt" });
-    // 64 is the token default (jsdom resolves no CSS custom property), up from an arbitrary 40.
-    expect(sprite.getAttribute("width")).toBe("64");
+    // 96 is the token default — jsdom resolves no CSS custom property, so this exercises the
+    // FALLBACK rather than the token. It was 64, which is a fractional 1.333x of the 48px source
+    // art; every sprite size is now an integer multiple (48/96/144/192) so pixel art stays crisp.
+    expect(sprite.getAttribute("width")).toBe("96");
   });
 
   it("shows cooldown at one decimal on both bands (FR-044, item 4)", () => {
