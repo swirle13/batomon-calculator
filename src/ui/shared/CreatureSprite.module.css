@@ -1,0 +1,63 @@
+/*
+ * The painted-type sprite treatment (FR-092).
+ *
+ * This is the project's only continuous animation, and it earns that by marking a creature whose
+ * typing is not what its card says — state a static board makes easy to forget mid-build.
+ */
+
+.wrap {
+  position: relative;
+  display: inline-block;
+  line-height: 0; /* no descender gap under the img, which would offset the overlay */
+  flex-shrink: 0;
+}
+
+.painted::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+
+  /*
+   * Masked by the sprite itself, so the rainbow follows the creature's silhouette instead of
+   * tinting the square frame around it. Without the mask this filled the whole card window, which
+   * is the bug this file was split out to fix.
+   */
+  -webkit-mask-image: var(--sprite-url);
+  mask-image: var(--sprite-url);
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+
+  mix-blend-mode: screen;
+  opacity: 0.45;
+  background-image: linear-gradient(
+    135deg,
+    #ff6b6b 0%, #ffa94d 14%, #ffd43b 28%, #69db7c 42%, #4dabf7 56%, #b197fc 70%, #ff6b6b 84%, #ffa94d 100%
+  );
+  /* Oversized so one full cycle of travel never exposes an edge. */
+  background-size: 300% 300%;
+  animation: paintedDrift 9s linear infinite;
+}
+
+/*
+ * Travels toward the SOUTH-EAST.
+ *
+ * Raising `background-position` scrolls the viewport across the image toward its bottom-right,
+ * which makes the pattern appear to move the opposite way — north-west. So south-east motion means
+ * counting DOWN from 100% to 0%, which reads backwards and is exactly why it was wrong before.
+ */
+@keyframes paintedDrift {
+  from { background-position: 100% 100%; }
+  to { background-position: 0% 0%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* The rainbow still identifies the creature as painted; only the drift stops. Removing the
+     overlay entirely would take the information away along with the motion. */
+  .painted::after {
+    animation: none;
+    background-position: 50% 50%;
+  }
+}

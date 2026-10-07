@@ -1,9 +1,9 @@
 /*
- * The rainbow "All" chip and the painted-sprite overlay (T236/T237, FR-092).
+ * The rainbow "All" chip (T236, FR-092).
  *
- * This is the project's first continuous animation. It is also the only one it should have: the
- * overlay marks a creature whose typing is not what its card says, which is the kind of state a
- * static board makes easy to forget mid-build. Everything else here stays still on purpose.
+ * The matching sprite overlay used to live here too and now lives in `CreatureSprite.module.css`,
+ * beside the component that owns it — it was being applied by whichever call site happened to know
+ * about painting, and only one did.
  */
 
 .allChip {
@@ -18,44 +18,4 @@
     95deg,
     #ff6b6b 0%, #ffa94d 18%, #ffd43b 34%, #69db7c 52%, #4dabf7 70%, #b197fc 86%, #ff6b6b 100%
   );
-}
-
-/* The sprite overlay: a translucent rainbow band drifting slowly toward the south-east. */
-.paintedSprite {
-  position: relative;
-  display: inline-block;
-  isolation: isolate;
-}
-
-.paintedSprite::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  border-radius: inherit;
-  mix-blend-mode: screen;
-  opacity: 0.38;
-  background-image: linear-gradient(
-    135deg,
-    #ff6b6b 0%, #ffa94d 14%, #ffd43b 28%, #69db7c 42%, #4dabf7 56%, #b197fc 70%, #ff6b6b 84%, #ffa94d 100%
-  );
-  /* Oversized so the band can travel one full tile without exposing an edge. */
-  background-size: 300% 300%;
-  animation: paintedDrift 9s linear infinite;
-}
-
-/* 135deg is down-and-right, so advancing the position moves the band south-east. One tile of
-   travel per cycle makes the loop seamless. */
-@keyframes paintedDrift {
-  from { background-position: 0% 0%; }
-  to { background-position: 100% 100%; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  /* The rainbow still identifies the creature as painted; only the drift stops. Removing the
-     overlay entirely would take the information away along with the motion. */
-  .paintedSprite::after {
-    animation: none;
-    background-position: 50% 50%;
-  }
 }

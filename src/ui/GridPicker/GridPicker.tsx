@@ -19,12 +19,14 @@ import type {
   GridSlot,
 } from "../../data/types";
 import { resolveCreatureVariant } from "../../data/corpus";
+import { isPainted } from "../../data/typing";
 import { useTeamConfig } from "../../context/TeamConfigContext";
 import { typeBackground } from "../../data/typeColors";
 import { STAT_COLORS, type StatColorKey } from "../../data/statColors";
 import { STATUS_COLOR_KEY } from "../../data/format";
 import { slotKey, slotsEqual } from "../../engine/grid";
-import { Sprite, spriteGridSize } from "../shared/Sprite";
+import { spriteGridSize } from "../shared/Sprite";
+import { CreatureSprite } from "../shared/CreatureSprite";
 import { CreatureSearchModal } from "./CreatureSearchModal";
 import styles from "./GridPicker.module.css";
 
@@ -154,6 +156,8 @@ interface DraggableCardProps {
   creature: CreatureRecord;
   level: number;
   modifiers: StatModifier[] | undefined;
+  /** Painted by Painter, or natively `All`-typed — drives the rainbow treatment. */
+  painted: boolean;
   onHighlight: () => void;
   /** FR-023 (round 4): the card itself is the click target that opens CreatureSearchModal — no
    * separate "Change…" button. Coexists with dragging on the same element: @dnd-kit/core's pointer
@@ -164,7 +168,7 @@ interface DraggableCardProps {
   onClear: () => void;
 }
 
-function DraggableCard({ slot, creature, level, modifiers, onHighlight, onOpenSearch, onClear }: DraggableCardProps) {
+function DraggableCard({ slot, creature, level, modifiers, painted, onHighlight, onOpenSearch, onClear }: DraggableCardProps) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: slotKey(slot),
     data: { slot },
@@ -224,7 +228,14 @@ function DraggableCard({ slot, creature, level, modifiers, onHighlight, onOpenSe
       </button>
       <div className={styles.level}>Lv. {level}</div>
       <div className={styles.spriteWrap}>
-        <Sprite spriteFile={creature.spriteFile} kind="monster" size={spriteGridSize()} alt={creature.name} />
+        {/* Same component as the detail panel's, so a painted creature cannot be rainbow in one
+            place and plain in the other — which is precisely what happened before. */}
+        <CreatureSprite
+          spriteFile={creature.spriteFile}
+          size={spriteGridSize()}
+          alt={creature.name}
+          painted={painted}
+        />
       </div>
       <div className={styles.name}>{creature.name}</div>
       <SlotBadges creature={creature} modifiers={modifiers} />
@@ -320,6 +331,7 @@ export function GridPicker({ onHighlightSlot }: GridPickerProps) {
                           creature={creature}
                           level={placement.level}
                           modifiers={placement.modifiers}
+                          painted={creature.types.includes("All") || isPainted(creature.id, config)}
                           onHighlight={() => onHighlightSlot(slot)}
                           onOpenSearch={() => setSearchModalSlot(slot)}
                           onClear={() => setPlacement(slot, null)}

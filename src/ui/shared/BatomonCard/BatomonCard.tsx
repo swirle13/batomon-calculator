@@ -6,8 +6,7 @@ import { displayField, isUnconfirmed } from "../../../data/display";
 import type { PerCastOutput } from "../../../data/types";
 import { formatCooldown } from "../../../data/format";
 import { AllTypeTag, TypeTag } from "../TypeTag";
-import typeStyles from "../TypeTag.module.css";
-import { Sprite } from "../Sprite";
+import { CreatureSprite } from "../CreatureSprite";
 import styles from "./BatomonCard.module.css";
 
 /**
@@ -155,8 +154,13 @@ export function BatomonCard({ creature, children, levelLabel, fixedHeight, meta,
       </header>
 
       <div className={styles.identity}>
-        <div className={`${styles.spriteFrame} ${isAllType ? typeStyles.paintedSprite : ""}`}>
-          <Sprite spriteFile={creature.spriteFile} kind="monster" size={72} alt={creature.name} />
+        <div className={styles.spriteFrame}>
+          <CreatureSprite
+            spriteFile={creature.spriteFile}
+            size={72}
+            alt={creature.name}
+            painted={isAllType}
+          />
         </div>
         <div className={styles.types}>
           {/* T236/FR-092: an all-type creature gets ONE rainbow chip, never one chip per type. */}
