@@ -367,6 +367,17 @@ export function simulate(
   // proportionally across them rather than attributed to nobody / the attacker it hit through.
   const shockLayersBySource = new Map<string, number>();
   const facilitatedDamage = new Map<string, number>();
+  /**
+   * The next tick on the GLOBAL grid strictly after `t`.
+   *
+   * Strictly after, never on `t` itself: Magmite applies Burn at 4.5 — already a half-second
+   * boundary — and the first burn tick is observed at 5.0, not 4.5. A status applied exactly on a
+   * grid line waits for the next one.
+   */
+  function nextGridTick(t: number, interval: number): number {
+    return roundTime((Math.floor(roundTime(t) / interval + 1e-9) + 1) * interval);
+  }
+
   const pools: Record<"Burn" | "Poison", StatusPool> = {
     Burn: { layers: 0, nextTickAt: null, bySource: new Map(), sourceSlot: STABLE_SLOT_ORDER[0]! },
     Poison: { layers: 0, nextTickAt: null, bySource: new Map(), sourceSlot: STABLE_SLOT_ORDER[0]! },
@@ -599,17 +610,20 @@ export function simulate(
     }
 
     /*
-      ORDER OF OPERATIONS WITHIN ONE INSTANT (see research.md B2a).
+      ORDER OF OPERATIONS WITHIN ONE INSTANT (research.md B2a).
 
-      Ticks STRICTLY BEFORE this instant are caught up here; the tick landing exactly ON it is
-      deferred until after the casts have applied their statuses, below.
+      Ticks resolve BEFORE the casts at this instant, so a tick landing on a cast's instant uses
+      the PRE-cast stack — FR-040's snapshot rule.
 
-      That ordering is observed, not assumed. Venopuff (3.5s cooldown, Poison 4) casts at 10.5 on
-      the same instant its 1s Poison cadence ticks. In-game the cast's 4 joins the stack FIRST and
-      the tick then deals 12. Running the tick first dealt 8 and left the engine permanently 4
-      behind for the rest of the fight.
+      This was briefly inverted and is now restored, because frame-by-frame play says otherwise:
+      Venopuff's casts at 7.0, 14.0 and 21.0 each land on a Poison tick, and those ticks deal 4, 12
+      and 20 — the stack as it stood BEFORE the cast, every time.
+
+      The symptom that prompted the inversion was real; the cause was the tick CADENCE below, not
+      the ordering. With the cadence corrected, snapshot ordering reproduces the observed run
+      exactly.
     */
-    runTicksUpTo(roundTime(tSeconds - STEP / 2));
+    runTicksUpTo(tSeconds);
 
     // FR-040 snapshot: every event at this instant resolves against the state as it stood when the
     // instant began. Covers BOTH the scalar total and the per-source attribution map.
@@ -702,12 +716,18 @@ export function simulate(
           const interval = applied.type === "Burn" ? BURN_TICK_SECONDS : POISON_TICK_SECONDS;
           if (applied.type === "Poison") poisonLayers += amount;
 
-          // Into the shared pool, NOT a new instance with its own clock. The cadence starts when
-          // the pool goes from empty to non-empty and then runs uninterrupted; a later application
-          // adds to the stack without resetting or forking the timer, which is what produced two
-          // interleaved Poison cadences before.
+          // Into the shared pool, NOT a new instance with its own clock.
+          //
+          // The cadence is a GLOBAL GRID anchored to battle start, not to the application. Poison
+          // ticks on whole seconds and Burn on half-seconds, whenever anything is on the target.
+          // Frame-by-frame play: Venopuff casts Poison at t=3.5 and the first tick lands at
+          // **4.0** — 0.5s later, the next whole second — where an application-anchored clock
+          // would say 4.5. Likewise its cast at 10.5 is first felt at 11.0.
+          //
+          // An application therefore joins whatever cadence is already running and never resets or
+          // forks it, which is also what stops two casts producing two interleaved clocks.
           const pool = pools[applied.type];
-          if (pool.layers === 0) pool.nextTickAt = roundTime(tSeconds + interval);
+          if (pool.layers === 0) pool.nextTickAt = nextGridTick(tSeconds, interval);
           pool.layers += amount;
           pool.bySource.set(sourceKey, (pool.bySource.get(sourceKey) ?? 0) + amount);
           // Timeline events credit the largest contributor, so a mixed pool reads as belonging to
@@ -822,18 +842,7 @@ export function simulate(
       }
     }
 
-    /*
-      Applications for this instant are in, so the tick landing ON this instant runs NOW and sees
-      them. This is the second half of the ordering described above.
-
-      Note this does not weaken FR-040's snapshot rule, which governs what one creature reads of
-      ANOTHER's stats mid-instant (the capture's Cobrex-used-1027 case). This is a different
-      question: a damage-over-time tick reads the TARGET's stack, and the stack includes everything
-      applied to it this instant.
-    */
-    runTicksUpTo(tSeconds);
-
-    // Record the resulting stack counts.
+    // Applications for this instant are in; record the resulting stack counts.
     snapshotStacks(tSeconds);
 
     // --- T241/FR-095: reactive "permanently" gains from ally status inflictions ---

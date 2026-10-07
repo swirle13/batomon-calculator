@@ -94,50 +94,65 @@ describe("Burn tick damage — the full sequence, confirmed against gameplay 202
   });
 });
 
-describe("statuses tick as ONE pool on the target, not per application", () => {
-  it("Venopuff's second cast grows the SAME pool — 20 cumulative by t=7.5, not 16", () => {
-    // Observed step-by-step against a real turn-1 run. Venopuff (3.5s cooldown, Poison 4) first
-    // applies at t=3.5, so the cadence is 4.5, 5.5, 6.5, 7.5... Its second cast at t=7.0 takes the
-    // pool to 8, and the very next tick at 7.5 deals 8 — cumulative 20.
-    //
-    // Per-application timers gave 16 here and then wrongly ticked AGAIN at 8.0, because the second
-    // cast had started its own clock.
+describe("statuses tick as ONE pool on a GLOBAL clock", () => {
+  it("reproduces the frame-by-frame observed Venopuff series exactly", () => {
+    // Hand-recorded from play. Venopuff (3.5s cooldown, Poison 4) casts at 3.5, 7.0, 10.5, 14.0,
+    // 17.5, 21.0. Poison ticks on WHOLE SECONDS regardless of when it was applied, and a tick
+    // sharing a cast's instant uses the PRE-cast stack.
+    const r = simulate(solo("venopuff", 23), corpus);
+    const ticks = r.timeline
+      .filter((e) => e.kind === "statusTick" && e.damageType === "Poison")
+      .map((e) => `${e.tSeconds}:${e.damage}`);
+    expect(ticks).toEqual([
+      "4:4", "5:4", "6:4",
+      "7:4",            // cast 2 lands here; this tick still reads 4
+      "8:8", "9:8", "10:8",
+      "11:12", "12:12", "13:12",
+      "14:12",          // cast 4 lands here; still 12
+      "15:16", "16:16", "17:16",
+      "18:20", "19:20", "20:20",
+      "21:20",          // cast 6 lands here; still 20
+      "22:24", "23:24",
+    ]);
+  });
+
+  it("the cadence is anchored to BATTLE START, not to the application", () => {
+    // The bug this replaces: the clock started at `application + interval`, so a cast at 3.5 put
+    // the first tick at 4.5. Observed play puts it at 4.0 — the next whole second.
+    const ticks = simulate(solo("venopuff", 10), corpus)
+      .timeline.filter((e) => e.kind === "statusTick" && e.damageType === "Poison")
+      .map((e) => e.tSeconds);
+    expect(ticks[0]).toBe(4);
+    for (const t of ticks) expect(Number.isInteger(t), `tick at ${t} is off the whole-second grid`).toBe(true);
+  });
+
+  it("a tick sharing a cast's instant uses the PRE-cast stack", () => {
+    // FR-040 snapshot semantics. Venopuff casts at 7.0 onto a tick instant; observed damage is 4,
+    // the stack as it stood before the cast, and 8 only from the next tick.
     const r = simulate(solo("venopuff", 10), corpus);
-    const cumulative = r.cumulativeSeries
-      .filter((p) => p.tSeconds >= 6.5 && p.tSeconds <= 9)
-      .map((p) => `${p.tSeconds}:${p.byStatus.Poison}`);
-    expect(cumulative).toEqual(["6.5:12", "7:12", "7.5:20", "8:20", "8.5:28", "9:28"]);
+    const at = (t: number) =>
+      r.timeline.find((e) => e.kind === "statusTick" && e.damageType === "Poison" && e.tSeconds === t)?.damage;
+    expect(at(7)).toBe(4);
+    expect(at(8)).toBe(8);
   });
 
-  it("there is exactly one Poison cadence, on whole seconds from first application", () => {
-    const ticks = simulate(solo("venopuff", 10), corpus)
+  it("a later application joins the running cadence without resetting it", () => {
+    // The opposite failure mode: if a cast restarted the clock, a fast applier could postpone its
+    // own damage indefinitely.
+    const ticks = simulate(solo("venopuff", 12), corpus)
       .timeline.filter((e) => e.kind === "statusTick" && e.damageType === "Poison")
       .map((e) => e.tSeconds);
-    // 1s apart throughout. Two interleaved clocks showed up as 7.5 AND 8.0, 8.5 AND 9.0.
-    expect(ticks).toEqual([4.5, 5.5, 6.5, 7.5, 8.5, 9.5]);
-    for (let i = 1; i < ticks.length; i++) {
-      expect(ticks[i]! - ticks[i - 1]!).toBeCloseTo(1, 5);
-    }
+    for (let i = 1; i < ticks.length; i++) expect(ticks[i]! - ticks[i - 1]!).toBeCloseTo(1, 5);
   });
 
-  it("a later application adds to the stack WITHOUT resetting the cadence", () => {
-    // The opposite failure mode to the one fixed: if a new cast restarted the timer, a fast
-    // applier could postpone its own damage indefinitely.
-    const ticks = simulate(solo("venopuff", 10), corpus)
-      .timeline.filter((e) => e.kind === "statusTick" && e.damageType === "Poison")
-      .map((e) => e.tSeconds);
-    expect(ticks[0]).toBe(4.5); // 1s after the first application at 3.5
-    expect(ticks).toContain(7.5); // unmoved by the second cast at 7.0
-  });
-
-  it("Burn pools too, and still sheds exactly one layer per tick", () => {
-    // Pooling must not change Burn's decay: the pool is one stack, so it loses one layer per tick
-    // no matter how many casts contributed to it.
-    const r = simulate(solo("magmite", 12), corpus);
-    const burnTicks = r.timeline
-      .filter((e) => e.kind === "statusTick" && e.damageType === "Burn")
-      .map((e) => e.damage);
-    expect(burnTicks.slice(0, 4)).toEqual([4, 3, 2, 1]);
+  it("Burn runs on the half-second grid and still sheds one layer per tick", () => {
+    // Magmite casts Burn 4 at 4.5; observed ticks are 5.0, 5.5, 6.0, 6.5 for 4, 3, 2, 1. Note the
+    // first tick is 5.0 and not 4.5, even though 4.5 is already on the grid: a status applied on a
+    // grid line waits for the next one.
+    const ticks = simulate(solo("magmite", 12), corpus)
+      .timeline.filter((e) => e.kind === "statusTick" && e.damageType === "Burn")
+      .map((e) => `${e.tSeconds}:${e.damage}`);
+    expect(ticks.slice(0, 4)).toEqual(["5:4", "5.5:3", "6:2", "6.5:1"]);
   });
 
   it("splits a shared pool's damage across contributors in proportion", () => {
@@ -164,53 +179,77 @@ describe("statuses tick as ONE pool on the target, not per application", () => {
   });
 });
 
-describe("intra-instant ordering: an application resolves BEFORE a tick sharing its instant", () => {
-  it("reproduces the observed Venopuff series through four casts", () => {
-    // Stepped against a recorded run. Venopuff casts at 3.5, 7.0, 10.5, 14.0; the Poison cadence
-    // runs 4.5, 5.5, 6.5, ... Casts 3 and 4 land exactly ON tick instants (10.5, and 14.0 feeding
-    // the 14.5 tick), which is where the ordering shows.
-    const r = simulate(solo("venopuff", 15), corpus);
-    const ticks = new Map(
-      r.timeline
-        .filter((e) => e.kind === "statusTick" && e.damageType === "Poison")
-        .map((e) => [e.tSeconds, e.damage]),
-    );
-    const observed = [...ticks.keys()].map(
-      (t) => `${t}:${ticks.get(t)}:${r.cumulativeSeries.find((p) => p.tSeconds === t)!.byStatus.Poison}`,
-    );
-    expect(observed).toEqual([
-      "4.5:4:4",
-      "5.5:4:8",
-      "6.5:4:12",
-      "7.5:8:20",
-      "8.5:8:28",
-      "9.5:8:36",
-      // The cast at 10.5 joins the stack before this tick reads it — 12, not 8.
-      "10.5:12:48",
-      "11.5:12:60",
-      "12.5:12:72",
-      "13.5:12:84",
-      "14.5:16:100",
-    ]);
+/**
+ * The whole observed battle, as recorded frame by frame from play.
+ *
+ * Venopuff + Magmite + shiny Dribblet against a 300 HP enemy. This is the strongest evidence the
+ * project has about status timing: 28 consecutive events with the enemy's health after each, so
+ * every tick amount AND every tick time is constrained simultaneously. A model that gets any one
+ * of them wrong diverges from the health column and cannot recover, because the column is
+ * cumulative.
+ */
+describe("observed battle: Venopuff + Magmite + shiny Dribblet vs 300 HP", () => {
+  /** [time, poison damage, burn damage, enemy HP after] */
+  const OBSERVED: [number, number, number, number][] = [
+    [4, 4, 0, 296], [5, 4, 4, 288], [5.5, 0, 3, 285], [6, 4, 2, 279], [6.5, 0, 1, 278],
+    [7, 4, 0, 274], [8, 8, 0, 266], [9, 8, 0, 258], [9.5, 0, 4, 254], [10, 8, 3, 243],
+    [10.5, 0, 2, 241], [11, 12, 1, 228], [12, 12, 0, 216], [13, 12, 0, 204], [14, 12, 4, 188],
+    [14.5, 0, 3, 185], [15, 16, 2, 167], [15.5, 0, 1, 166], [16, 16, 0, 150], [17, 16, 0, 134],
+    [18, 20, 0, 114], [18.5, 0, 4, 110], [19, 20, 3, 87], [19.5, 0, 2, 85], [20, 20, 1, 64],
+    [21, 20, 0, 44], [22, 24, 0, 20], [23, 24, 4, -8],
+  ];
+
+  const team: TeamConfiguration = {
+    placements: [
+      { slot: { row: "back", col: 0 }, creatureId: "venopuff", level: 1 },
+      { slot: { row: "back", col: 1 }, creatureId: "magmite", level: 1 },
+      { slot: { row: "back", col: 2 }, creatureId: "dribblet", level: 1, shiny: true },
+    ],
+    trainerId: null,
+    trinketIds: [],
+    itemIds: [],
+    simulationWindowSeconds: 24,
+    teamModifiers: [],
+  };
+
+  it("reproduces every tick, and the enemy's health after each", () => {
+    const r = simulate(team, corpus);
+    const byTime = new Map<number, { Poison: number; Burn: number }>();
+    for (const e of r.timeline) {
+      if (e.kind !== "statusTick" || e.damage === undefined) continue;
+      const slot = byTime.get(e.tSeconds) ?? { Poison: 0, Burn: 0 };
+      slot[e.damageType as "Poison" | "Burn"] += e.damage;
+      byTime.set(e.tSeconds, slot);
+    }
+
+    let hp = 300;
+    const actual: string[] = [];
+    const expected: string[] = [];
+    for (const [t, poison, burn, health] of OBSERVED) {
+      const got = byTime.get(t) ?? { Poison: 0, Burn: 0 };
+      hp -= got.Poison + got.Burn;
+      actual.push(`${t}: ${got.Poison}p ${got.Burn}b -> ${hp}`);
+      expected.push(`${t}: ${poison}p ${burn}b -> ${health}`);
+    }
+    expect(actual).toEqual(expected);
   });
 
-  it("the tick on a cast instant uses the POST-application stack", () => {
-    // The specific inversion that was wrong: running the tick first dealt 8 at t=10.5 and left the
-    // engine 4 behind for the remainder of the fight, since the deficit never catches up.
-    const r = simulate(solo("venopuff", 12), corpus);
-    const tickAt105 = r.timeline.find(
-      (e) => e.kind === "statusTick" && e.damageType === "Poison" && e.tSeconds === 10.5,
-    );
-    expect(tickAt105?.damage).toBe(12);
+  it("kills on the t=23 tick, with the observed 8 points of overkill", () => {
+    const r = simulate(team, corpus);
+    const dealtBy23 = r.cumulativeSeries.find((p) => p.tSeconds === 23)!.totalDamage;
+    expect(dealtBy23).toBe(308); // 300 HP + 8 overkill
   });
 
-  it("a tick strictly BEFORE a cast still uses the pre-cast stack", () => {
-    // The guard against overcorrecting: only a tick sharing the cast's instant sees it. The tick at
-    // 9.5 precedes the 10.5 cast and must still read 8.
-    const r = simulate(solo("venopuff", 12), corpus);
-    const tickAt95 = r.timeline.find(
-      (e) => e.kind === "statusTick" && e.damageType === "Poison" && e.tSeconds === 9.5,
-    );
-    expect(tickAt95?.damage).toBe(8);
+  it("fires no tick at a time the recording has none", () => {
+    // The sharper half of the fixture: a model can match every amount and still be wrong by
+    // ticking where nothing happened. An application-anchored clock did exactly that.
+    const r = simulate(team, corpus);
+    const observedTimes = new Set(OBSERVED.map(([t]) => t));
+    const engineTimes = r.timeline
+      .filter((e) => e.kind === "statusTick" && (e.damage ?? 0) > 0 && e.tSeconds <= 23)
+      .map((e) => e.tSeconds);
+    for (const t of engineTimes) {
+      expect(observedTimes.has(t), `engine ticked at t=${t}, which the recording has no event for`).toBe(true);
+    }
   });
 });
