@@ -72,9 +72,10 @@
   --type-chip-width: 7rem;
   --sprite-card: 56px;
   --sprite-row: 24px;
-  /* 64px, matching --sprite-grid: the user compared the picker against the team grid
-     directly (WI-001). Was 48px, which is why "still not 64x64" survived round 7. */
   /*
+   * Kept equal to --sprite-grid: the picker and the team grid get compared side by side, so a
+   * difference between them reads as a bug (WI-001).
+   *
    * 96px (2026-10-07) — a 50% bump from 64, and deliberately NOT the 112 first tried.
    *
    * The source art is 48x48 and renders with `image-rendering: pixelated`. At 112px that is a
