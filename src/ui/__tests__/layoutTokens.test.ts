@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -122,3 +122,48 @@ describe("the overlays keep the board's three-column shape", () => {
     expect(read("ui/Modifiers/ModifierEditor.module.css")).not.toMatch(/max-width:\s*var\(--team-column-width\)/);
   });
 });
+
+/**
+ * A `var(--x)` with no fallback, where `--x` is defined nowhere, makes the WHOLE declaration invalid
+ * at computed-value time — so the property silently falls back to its inherited or initial value and
+ * the page renders as if the line had not been written.
+ *
+ * That is not hypothetical here: `--surface-sunken`, `--text-primary` and `--text-secondary` were
+ * referenced across five stylesheets and defined nowhere, so the Share panel's code box had no
+ * background, the trainer card's button had no fill, and several text colours were simply inherited.
+ * It is invisible in review — the line looks correct — which is exactly the kind of thing to pin.
+ */
+describe("every custom property referenced without a fallback is defined", () => {
+  /** Set from JS via a `style` prop, so no stylesheet declares them. */
+  const SET_INLINE = new Set(["--sprite-url", "--rarity-color"]);
+
+  it("has no dangling var() references", () => {
+    const cssFiles = cssFilesUnder(join(__dirname, "..", ".."));
+    const defined = new Set<string>();
+    for (const file of cssFiles) {
+      for (const match of readFileSync(file, "utf8").matchAll(/^\s*(--[a-z0-9-]+)\s*:/gm)) {
+        defined.add(match[1]!);
+      }
+    }
+
+    const dangling: string[] = [];
+    for (const file of cssFiles) {
+      // Only references with NO fallback: `var(--x, 1rem)` degrades to the fallback, which is a
+      // deliberate default rather than a defect.
+      for (const match of readFileSync(file, "utf8").matchAll(/var\((--[a-z0-9-]+)\s*\)/g)) {
+        const name = match[1]!;
+        if (!defined.has(name) && !SET_INLINE.has(name)) dangling.push(`${name} in ${file}`);
+      }
+    }
+
+    expect(dangling).toEqual([]);
+  });
+});
+
+function cssFilesUnder(dir: string): string[] {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const full = join(dir, entry.name);
+    if (entry.isDirectory()) return cssFilesUnder(full);
+    return full.endsWith(".css") ? [full] : [];
+  });
+}

@@ -3,7 +3,15 @@ import type { CreatureType } from "../../data/types";
 import { STAT_COLORS, type StatColorKey } from "../../data/statColors";
 import { typeColor } from "../../data/typeColors";
 import { Sprite, type SpriteKind } from "../shared/Sprite";
+import { Button } from "./controls";
 import styles from "./primitives.module.css";
+
+/**
+ * Controls live in `./controls` and are re-exported here, so every surface still imports its
+ * primitives from one place (`../primitives`) and no call site has to know which file a given
+ * primitive is declared in.
+ */
+export { Button, Field, NumberField, Range, Select, TextArea, TextField } from "./controls";
 
 /**
  * The shared UI primitives layer (2026-10-06 round 7, Constitution Principle VII, FR-058).
@@ -284,10 +292,12 @@ export function ResultCount({ shown, total }: { shown: number; total: number }) 
  * so it is never a dead control.
  */
 export function ClearFiltersButton({ onClick, title }: { onClick: () => void; title: string }) {
+  // `secondary`, not `ghost`: it sits in a row of bordered filter controls, and without chrome of
+  // its own it read as a label rather than something to press.
   return (
-    <button type="button" className={styles.clearFilters} title={title} onClick={onClick}>
+    <Button size="sm" title={title} onClick={onClick}>
       Clear
-    </button>
+    </Button>
   );
 }
 
@@ -387,9 +397,7 @@ export function Modal({
       <div ref={panelRef} className={styles.modalPanel} style={width ? { ["--modal-width" as string]: width } : undefined}>
         <div className={styles.modalHeader}>
           <h3 className={styles.modalTitle}>{title}</h3>
-          <button type="button" onClick={onClose}>
-            {closeLabel}
-          </button>
+          <Button onClick={onClose}>{closeLabel}</Button>
         </div>
         {toolbar}
         <div className={styles.modalBody}>{children}</div>

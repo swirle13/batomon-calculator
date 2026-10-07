@@ -1,0 +1,274 @@
+/*
+ * Form controls (2026-10-07). Every value comes from a token in `src/ui/tokens.css`.
+ *
+ * Before this file the app had no control styling at all: every button, select and text field was a
+ * browser default, so a white-on-grey bevelled box sat in the middle of a dark, token-built page.
+ * Five stylesheets had started growing their own one-off button rules, which is the point at which
+ * Principle VII says to stop and make the shared thing.
+ */
+
+/* ---------- the shared base every control wears ---------- */
+.control {
+  box-sizing: border-box;
+  min-height: var(--control-height);
+  padding: 0 var(--control-pad-inline);
+  border: 1px solid var(--control-border);
+  border-radius: var(--control-radius);
+  background: var(--control-bg);
+  color: var(--control-text);
+  font: inherit;
+  font-size: var(--font-lg);
+  line-height: 1.2;
+  /* Colour only: a transform or size transition on a control that sits in a grid of six makes the
+     whole row appear to breathe. */
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.control:hover:not(:disabled) {
+  border-color: var(--control-border-hover);
+  background: var(--control-bg-hover);
+}
+
+/* One focus treatment for every control. `:focus-visible`, not `:focus`, so a mouse click does not
+   leave a ring behind on a button that already shows its state some other way. */
+.control:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 1px;
+}
+
+.control:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sm {
+  min-height: var(--control-height-sm);
+  padding: 0 var(--space-2xs);
+  font-size: var(--font-sm);
+}
+
+/* ---------- Button ---------- */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2xs);
+  /* Buttons need vertical padding of their own: unlike an input they have no intrinsic text box, so
+     min-height alone leaves a short label hugging the top on a wrapped line. */
+  padding-block: var(--space-3xs);
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+}
+
+.block {
+  display: flex;
+  width: 100%;
+}
+
+/* The one primary action in a group — "Load team", "Add", "Apply". At most one per group, or the
+   emphasis means nothing. */
+.primary {
+  border-color: var(--accent-fill);
+  background: var(--accent-fill);
+  color: #fff;
+}
+.primary:hover:not(:disabled) {
+  border-color: var(--accent-fill-hover);
+  background: var(--accent-fill-hover);
+}
+
+/* The default. Everything that is an action but not THE action. */
+.secondary {
+  color: var(--text-strong);
+}
+
+/* No chrome until you touch it: for controls inside dense content (chart headings, filter rows)
+   where a box per control would be more border than text. */
+.ghost {
+  border-color: transparent;
+  background: transparent;
+  color: var(--text-body);
+}
+.ghost:hover:not(:disabled) {
+  border-color: var(--control-border);
+  background: var(--control-bg);
+}
+
+/* Destructive, by colour rather than by a second shape. */
+.danger {
+  color: #ff8a80;
+}
+.danger:hover:not(:disabled) {
+  border-color: #ff8a80;
+}
+
+/* Currently-chosen, in a group of mutually exclusive buttons (the view nav). NOT disabled: a
+   disabled control cannot be focused, so a keyboard user could not read which view they were on. */
+.selected {
+  border-color: var(--focus-ring);
+  background: var(--control-bg-active);
+  color: var(--text-strong);
+}
+.selected:hover:not(:disabled) {
+  border-color: var(--focus-ring);
+  background: var(--control-bg-active);
+}
+
+/* ---------- Select ---------- */
+/* The wrapper exists for the chevron: a native select's own arrow cannot be styled, so it is
+   suppressed and redrawn here. */
+.selectWrap {
+  position: relative;
+  display: inline-flex;
+  min-width: 0;
+}
+
+.select {
+  appearance: none;
+  /* Room for the chevron the wrapper draws. */
+  padding-right: calc(var(--control-pad-inline) + 0.9rem);
+  width: 100%;
+  cursor: pointer;
+  /*
+   * The option LIST is drawn by the OS, not by us. Without this it renders light-on-light in a dark
+   * UI on some platforms; with it the popup follows the control.
+   */
+  color-scheme: dark;
+}
+
+.selectChevron {
+  position: absolute;
+  top: 50%;
+  right: var(--space-2xs);
+  transform: translateY(-50%);
+  font-size: var(--font-2xs);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+/* ---------- text inputs ---------- */
+.input {
+  /* `min-width: 0` so an input inside a flex row can shrink below its default 20-character width
+     instead of forcing the row wider — the filter bars rely on it. */
+  min-width: 0;
+  padding-block: var(--space-3xs);
+}
+
+.input::placeholder {
+  color: var(--text-muted);
+}
+
+/* Number fields: the spinner is suppressed because these sit in cells barely wider than the field
+   itself, where two 10px arrows are a mis-click rather than an affordance. Typing and the arrow
+   keys both still work. */
+.number {
+  appearance: textfield;
+  text-align: right;
+}
+.number::-webkit-outer-spin-button,
+.number::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+.textarea {
+  width: 100%;
+  padding: var(--space-2xs) var(--space-sm);
+  resize: vertical;
+  line-height: 1.4;
+}
+
+/* A build code is an opaque base64 string: monospace so it can be compared character by character,
+   and `break-all` because it has no spaces to wrap at. */
+.mono {
+  font-family: var(--mono);
+  font-size: var(--font-xs);
+  word-break: break-all;
+  background: var(--surface-sunken);
+}
+
+/* ---------- Range ---------- */
+/* The scrubber. Styled in both the WebKit and Firefox idioms because they share no selector for
+   the thumb, and a default range control is the most obviously unstyled thing on the page. */
+.range {
+  appearance: none;
+  min-height: 0;
+  height: 1.1rem;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.range::-webkit-slider-runnable-track {
+  height: 0.3rem;
+  border-radius: var(--radius-pill);
+  background: var(--control-bg-active);
+}
+.range::-moz-range-track {
+  height: 0.3rem;
+  border-radius: var(--radius-pill);
+  background: var(--control-bg-active);
+}
+
+.range::-webkit-slider-thumb {
+  appearance: none;
+  width: 0.9rem;
+  height: 0.9rem;
+  /* Centres the thumb on a 0.3rem track: (track - thumb) / 2. */
+  margin-top: -0.3rem;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--text-accent);
+}
+.range::-moz-range-thumb {
+  width: 0.9rem;
+  height: 0.9rem;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--text-accent);
+}
+
+/* ---------- Field: a label bound to its control ---------- */
+.field {
+  display: flex;
+  min-width: 0;
+}
+
+/* Stacked: the label sits above its control, so it is quiet — small caps, muted, out of the way. */
+.fieldStacked {
+  flex-direction: column;
+  gap: var(--space-3xs);
+  align-items: stretch;
+}
+
+.fieldStacked > .fieldLabel {
+  font-size: var(--font-2xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+/* Inline: the label reads as part of a sentence with its control ("Region: …"), so it keeps normal
+   case and weight. */
+.fieldInline {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-2xs);
+}
+
+.fieldInline > .fieldLabel {
+  font-size: var(--font-lg);
+  color: var(--text-body);
+  white-space: nowrap;
+  /* Set per group via the `labelWidth` prop: several stacked inline fields need one shared label
+     width, or their controls start at different x-positions down the column. */
+  min-width: var(--field-label-width, auto);
+}
+
+.fieldHint {
+  font-size: var(--font-2xs);
+  color: var(--text-muted);
+}

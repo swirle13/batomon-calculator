@@ -881,3 +881,54 @@ The honest fix is to model the missing effects (`cooldownSpeedAdd` is already a 
 `effectTags` and the engine path that reads them are untouched — this removes a UI claim, not a
 capability. `TotalDps`'s existing "N abilities not yet modelled" line remains the place coverage is
 stated, because it is a statement about the whole board rather than a label on one card.
+
+### FR-058 EXTENDED (2026-10-07) — the primitives layer gains form controls
+
+> **FR-058**: all UI must be composed from the shared primitives layer and design tokens.
+
+The layer had a hole in it: **controls**. Every button, select, text field, number box, textarea and
+range input in the app was a bare native element with no styling at all, so browser-default
+white-on-grey bevelled boxes rendered in the middle of a dark, token-built page — the region and
+trainer dropdowns, both search fields, the view nav, the simulation-window box, Modifiers' stat
+select and Add button, the Share panel's copy buttons, and the time scrubber. Meanwhile five
+component stylesheets had each begun growing their own one-off button rules.
+
+Added: `Button` (primary / secondary / ghost / danger, two sizes, `selected`), `Select`, `TextField`,
+`NumberField`, `TextArea`, `Range` and `Field`, with their look defined once in tokens
+(`--control-*`, `--accent-fill`, `--focus-ring`).
+
+Requirements this adds:
+
+- **A control primitive MUST render the real native element** and spread the caller's props onto it,
+  `ref` included. Keyboard behaviour, form semantics, `aria-*` and every role/label query depend on
+  it; three call sites focus a field imperatively.
+- **A component stylesheet MUST NOT restate control chrome.** Five did, and two of them reached for
+  `var(--focus-ring, #8ab4f8)` — a blue from no palette in this project, defaulted to because the
+  token did not exist.
+- **The current item in a mutually exclusive group MUST NOT be `disabled`.** The view nav was:
+  disabling the current view removed it from the tab order, so a keyboard user could not focus the
+  item telling them where they were. `selected` carries the appearance, `aria-current` the meaning.
+
+### Four tokens were referenced and never defined (2026-10-07)
+
+`--surface-sunken`, `--text-primary` and `--text-secondary` were used in five stylesheets with no
+fallback and defined nowhere, and `--focus-ring` only ever appeared with an off-palette fallback. A
+`var()` with no fallback and no definition makes the **whole declaration** invalid at computed-value
+time, so those lines did nothing: the Share panel's code box had no background, the trainer card's
+button no fill, and several text colours were silently inherited. They are defined now, and
+`layoutTokens.test.ts` scans every stylesheet for dangling references — the failure is invisible in
+review, because each line reads correctly.
+
+### FR-006 / FR-087 AMENDED (2026-10-07) — the region and trainer selects live in the trainer card
+
+The two selects were a row above the trainer card, and the card itself was mounted only once a
+trainer was chosen — so using the select appeared to push a new panel into existence beneath it.
+
+They are now **stacked in the trainer card's right half**, and the card **always renders**, in an
+empty state (a dashed placeholder at the art's exact 120x80 footprint, "No trainer", and a muted
+hint) until a trainer is picked. The empty state is load-bearing rather than decorative: without it
+the only control that can choose a trainer would be off the page whenever none is chosen.
+
+Region still comes first and still gates nothing (FR-091). `TrainerCard` takes the selects as a
+**slot** and remains a presentation of a trainer record, so it still renders in tests with no
+`TeamConfigProvider`.

@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { SimulationResult } from "../../data/types";
 import { STAT_COLORS } from "../../data/statColors";
 import { SeriesChart } from "./SeriesChart";
+import { Button } from "../primitives";
 
 interface StatusStackChartProps {
   result: SimulationResult;
@@ -36,14 +37,12 @@ export function StatusStackChart({ result }: StatusStackChartProps) {
   return (
     <section>
       <h2>
-        <button
-          type="button"
-          onClick={() => setOpen((v) => !v)}
-          style={{ font: "inherit", background: "none", border: "none", color: "inherit", cursor: "pointer" }}
-          aria-expanded={open}
-        >
+        {/* `ghost`, so the heading still reads as a heading: this used to be five inline style
+            declarations undoing the browser's button chrome by hand, which is the duplication
+            Principle VII names. The chevron is the open-state affordance. */}
+        <Button variant="ghost" onClick={() => setOpen((v) => !v)} aria-expanded={open}>
           {open ? "▾" : "▸"} Status stacks on the enemy over time
-        </button>
+        </Button>
       </h2>
 
       {open &&

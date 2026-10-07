@@ -2,7 +2,18 @@ import { useRef, useState, type ChangeEvent, type KeyboardEvent } from "react";
 import type { GridCol, GridRow, ModifierStat, GridSlot, TeamPlacement } from "../../data/types";
 import { resolveCreatureVariant } from "../../data/corpus";
 import { useTeamConfig } from "../../context/TeamConfigContext";
-import { CardGrid, Chip, CreatureTile, EditorPanel, Modal, OVERLAY_COLUMNS, Surface } from "../primitives";
+import {
+  Button,
+  CardGrid,
+  Chip,
+  CreatureTile,
+  EditorPanel,
+  Modal,
+  NumberField,
+  OVERLAY_COLUMNS,
+  Select,
+  Surface,
+} from "../primitives";
 import { slotKey } from "../../engine/grid";
 import styles from "./ModifierEditor.module.css";
 
@@ -256,16 +267,22 @@ function PlacementModifierCell({ placement, onAdd, onRemove }: PlacementModifier
       )}
 
       <div className={styles.addControls}>
-        <select value={stat} onChange={handleStatChange} aria-label={`Stat to modify for ${name}`}>
+        <Select
+          size="sm"
+          block
+          value={stat}
+          onChange={handleStatChange}
+          aria-label={`Stat to modify for ${name}`}
+        >
           {STAT_OPTIONS.map((option) => (
             <option key={option.value} value={option.value}>
               {option.label}
             </option>
           ))}
-        </select>
-        <input
+        </Select>
+        <NumberField
           ref={amountRef}
-          type="number"
+          size="sm"
           step="any"
           value={amount}
           placeholder="0"
@@ -274,9 +291,9 @@ function PlacementModifierCell({ placement, onAdd, onRemove }: PlacementModifier
           aria-label={`Amount to add for ${name}`}
           className={styles.amount}
         />
-        <button type="button" onClick={handleAdd} aria-label={`Add modifier to ${name}`}>
+        <Button variant="primary" size="sm" onClick={handleAdd} aria-label={`Add modifier to ${name}`}>
           Add
-        </button>
+        </Button>
       </div>
 
       {/* T211/FR-078: stated before the user commits, not discovered afterwards in an unchanged

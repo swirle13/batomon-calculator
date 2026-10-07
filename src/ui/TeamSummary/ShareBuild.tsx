@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTeamConfig } from "../../context/TeamConfigContext";
 import { InvalidBuildCodeError, buildUrl, exportBuild, importBuild, readBuildFromUrl } from "../../data/share";
-import { Surface } from "../primitives";
+import { Button, Field, Surface, TextArea } from "../primitives";
 import styles from "./ShareBuild.module.css";
 
 /**
@@ -69,27 +69,27 @@ export function ShareBuild() {
     <Surface className={styles.wrap}>
       <div className={styles.heading}>Share/Load team</div>
       <div className={styles.actions}>
-        <button type="button" onClick={() => copy("url")}>
+        <Button block onClick={() => copy("url")}>
           {copied === "url" ? "Url copied" : "Copy url"}
-        </button>
-        <button type="button" onClick={() => copy("code")}>
+        </Button>
+        <Button block onClick={() => copy("code")}>
           {copied === "code" ? "Code copied" : "Copy code"}
-        </button>
+        </Button>
       </div>
 
-      <textarea
+      <TextArea
+        mono
         className={styles.code}
         readOnly
         value={code}
         rows={2}
         aria-label="Build code"
         onFocus={(e) => e.currentTarget.select()}
-        style={{ overflow: "auto", resize: "none" }}
       />
 
-      <label className={styles.field}>
-        <span className={styles.label}>Load a build</span>
-        <textarea
+      <Field label="Load a build">
+        <TextArea
+          mono
           className={styles.code}
           rows={2}
           placeholder="Paste a code…"
@@ -98,12 +98,12 @@ export function ShareBuild() {
             setPasted(e.target.value);
             setError(null);
           }}
-          style={{ overflow: "auto", resize: "none" }}
         />
-      </label>
-      <button type="button" onClick={load} disabled={pasted.trim() === ""}>
+      </Field>
+      {/* The one action this panel exists to perform, so the only one with a fill. */}
+      <Button variant="primary" block onClick={load} disabled={pasted.trim() === ""}>
         Load team
-      </button>
+      </Button>
       {error && (
         <p className={styles.error} role="alert">
           {error}

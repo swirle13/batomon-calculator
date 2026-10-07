@@ -55,7 +55,9 @@
   color: var(--text-muted);
 }
 
-.scrubLabel input { width: 18rem; }
+/* The scrubber is the one control on this row, so it gets real width — a default-width range in a
+   centred row reads as an afterthought. */
+.scrubLabel input { width: 24rem; max-width: 60vw; }
 
 .coverage {
   text-align: center;
@@ -97,13 +99,9 @@
   color: var(--text-secondary);
 }
 
-/* Day picker inside the TTK figure's label — sized to sit in the caption line, not above it. */
+/* Day picker inside the TTK figure's label. `Select size="sm"` carries the look; the only thing left
+   here is that it must sit IN the caption line rather than setting that line's height. */
 .daySelect {
-  font: inherit;
+  min-height: 0;
   font-size: inherit;
-  padding: 0 0.1rem;
-  background: var(--surface-sunken);
-  color: var(--text-secondary);
-  border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-sm);
 }

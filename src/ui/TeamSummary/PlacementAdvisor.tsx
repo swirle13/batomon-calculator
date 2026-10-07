@@ -7,7 +7,7 @@ import {
   TIME_WEIGHT_HALF_LIFE_SECONDS,
 } from "../../engine/optimize";
 import { getCreatureById } from "../../data/corpus";
-import { Disclosure } from "../primitives";
+import { Button, Disclosure } from "../primitives";
 
 /**
  * FR-069 (WI-018): suggests a rearrangement of the placed creatures with higher time-weighted
@@ -81,8 +81,8 @@ export function PlacementAdvisor() {
               </li>
             ))}
           </ul>
-          <button
-            type="button"
+          <Button
+            variant="primary"
             onClick={() => {
               // Apply by moving each creature to its suggested slot, in order.
               for (const target of suggestion.placements ?? []) {
@@ -92,7 +92,7 @@ export function PlacementAdvisor() {
             }}
           >
             Apply this arrangement
-          </button>
+          </Button>
         </div>
       )}
 

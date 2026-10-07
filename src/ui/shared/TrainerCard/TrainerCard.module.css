@@ -1,32 +1,65 @@
 /* Trainer card + affected-species picker (T233-T235). Dark-HUD stance, tokens.css only. */
 
-.card { display: flex; flex-direction: column; gap: var(--space-xs); }
+/*
+ * Two halves (2026-10-07): the trainer on the left, the region and trainer selects on the right.
+ *
+ * The selects were a separate row above this card. They are the controls that CHOOSE what the card
+ * shows, so they belong to it — and moving them inside is what lets the card stay on the page with
+ * nothing selected instead of appearing from nowhere on the first choice.
+ *
+ * `align-items: start` so the selects sit at the top of their half rather than centring themselves
+ * against a two-line ability paragraph.
+ */
+.card {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-md);
+  align-items: start;
+}
+
+/* One above the other on phones: half of a narrow screen fits neither the 120x80 art nor a select. */
+@media (max-width: 640px) {
+  .card { grid-template-columns: 1fr; }
+}
+
+.identity { display: flex; flex-direction: column; gap: var(--space-xs); min-width: 0; }
+
+/* The selects, stacked. Their labels share a width via Field's `labelWidth`, so the two controls
+   start at the same x-position down the column. */
+.controls { display: flex; flex-direction: column; gap: var(--space-xs); min-width: 0; }
+
 /* `center`, not `baseline`: the trainer icon is 120x80 landscape art, and baseline-aligning a
    block image against text pins its bottom edge to the text baseline and drags the row down. */
 .header { display: flex; align-items: center; gap: var(--space-sm); }
 .titles { display: flex; align-items: baseline; gap: var(--space-xs); flex-wrap: wrap; }
 .name { margin: 0; font-size: var(--font-md); }
+
+/* Exactly the art's footprint, so the card does not change size when a trainer is chosen. */
+.spritePlaceholder {
+  flex: none;
+  width: 120px;
+  height: 80px;
+  border: 1px dashed var(--line-subtle);
+  border-radius: var(--radius-md);
+}
+
+.namePlaceholder { color: var(--text-muted); font-weight: 400; }
+.abilityPlaceholder { color: var(--text-muted); font-style: italic; }
 .unconfirmed {
   font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.06em;
   color: var(--text-warn); border: 1px solid currentColor; border-radius: 999px;
   padding: 0 0.35rem;
 }
 .ability { margin: 0; font-size: var(--font-sm); color: var(--text-secondary); line-height: 1.45; }
-.showButton {
-  align-self: flex-start; font-size: var(--font-xs); padding: 0.3rem 0.6rem;
-  border: 1px solid var(--line-subtle); border-radius: var(--radius-sm);
-  background: var(--surface-sunken); color: var(--text-primary); cursor: pointer;
-}
-.showButton:hover { border-color: var(--line-strong); }
-.hint { color: var(--text-muted); }
+/* `Button size="sm"` carries the look. All that is left is where it sits: left, not stretched across
+   the card, because it opens a picker for one of the card's fields rather than acting on the card. */
+.showButton { align-self: flex-start; }
+.hint { color: var(--text-muted); font-weight: 400; }
 
 .pickerIntro { font-size: var(--font-sm); color: var(--text-secondary); margin: 0 0 var(--space-xs); }
 .pickerWarn { font-size: var(--font-sm); color: var(--text-warn); margin: 0 0 var(--space-xs); }
-.pickerSearch {
-  width: 100%; padding: 0.35rem 0.5rem; margin-bottom: var(--space-xs);
-  background: var(--surface-sunken); color: var(--text-primary);
-  border: 1px solid var(--line-subtle); border-radius: var(--radius-sm);
-}
+/* `TextField block` carries the look; the gap below it is this layout's business. */
+.pickerSearch { margin-bottom: var(--space-xs); }
 .shapeRow { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-bottom: var(--space-xs); }
 .shapeChip {
   font-size: 0.65rem; padding: 0.15rem 0.4rem; border-radius: 999px;

@@ -13,7 +13,9 @@ import {
   PickerCard,
   PickerSection,
   ResultCount,
+  Select,
   SpriteTile,
+  TextField,
 } from "../primitives";
 import styles from "./TrinketPicker.module.css";
 
@@ -183,15 +185,15 @@ export function TrinketPicker() {
         width="880px"
         toolbar={
           <FilterBar>
-            <input
+            <TextField
               ref={inputRef}
-              type="text"
+              type="search"
               placeholder="Name or effect text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               aria-label="Search trinkets"
             />
-            <select
+            <Select
               value={rarityFilter}
               onChange={(e) => setRarityFilter(e.target.value as Rarity | "")}
               aria-label="Filter trinkets by rarity"
@@ -202,7 +204,7 @@ export function TrinketPicker() {
                   {r}
                 </option>
               ))}
-            </select>
+            </Select>
             {filtersActive && (
               <ClearFiltersButton
                 title="Clear the search and the rarity filter"

@@ -109,26 +109,32 @@
 
 /* --- the add control --- */
 
+/*
+ * A grid, not a wrapping flex row: the arrangement belongs to the container, which is also the only
+ * thing that can place a control spanning two columns without the control knowing about it.
+ *
+ * `minmax(0, 1fr)` is load-bearing. A bare `1fr` floors the track at the input's min-content width
+ * — a text input's default is about 20 characters — so the cell would overflow its third of the
+ * overlay rather than letting the field shrink.
+ */
 .addControls {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: var(--space-2xs);
   align-items: center;
-  flex-wrap: wrap;
   /* Pushed to the bottom of the cell, so the Add buttons line up across a row even when one
      creature carries more chips than its neighbours. */
   margin-top: auto;
 }
 
-/* `min-width: 0` matters: without it the select's longest option label ("Cooldown (seconds)") sets
-   the grid track and pushes all three columns wider than the overlay. */
-.addControls select {
-  flex: 1 1 8rem;
-  min-width: 0;
+/* The stat select, spanning both columns: its longest option ("Cooldown (seconds)") does not share
+   a line with an amount field and an Add button at a third of the overlay's width. */
+.addControls > :first-child {
+  grid-column: 1 / -1;
 }
 
 .amount {
-  flex: 1 1 3.5rem;
-  min-width: 0;
+  width: 100%;
 }
 
 /* T211 (FR-078): a modifier that cannot apply says so at entry time. Warning-toned rather than

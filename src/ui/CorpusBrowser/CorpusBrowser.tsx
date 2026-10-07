@@ -3,6 +3,7 @@ import { filterCreatures, searchCreatures } from "../../data/corpus";
 import type { CreatureType, Rarity } from "../../data/types";
 import { RARITIES_ASC } from "../../data/statColors";
 import { BatomonCard } from "../shared/BatomonCard/BatomonCard";
+import { Field, Select, TextField } from "../primitives";
 import styles from "./CorpusBrowser.module.css";
 
 /* FR-067 (WI-016): sorted at the point of display. This was a hard-coded, non-alphabetical array --
@@ -44,34 +45,36 @@ export function CorpusBrowser() {
   return (
     <div>
       <h2>Batomon Browser</h2>
-      <p className={styles.filters}>
-        <label>
-          Search:{" "}
-          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Creature name…" />
-        </label>
-        <label>
-          Type:{" "}
-          <select value={type} onChange={(e) => setType(e.target.value as CreatureType | "")}>
+      <div className={styles.filters}>
+        <Field label="Search" inline>
+          <TextField
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Creature name…"
+          />
+        </Field>
+        <Field label="Type" inline>
+          <Select value={type} onChange={(e) => setType(e.target.value as CreatureType | "")}>
             <option value="">(any)</option>
             {TYPES.map((t) => (
               <option key={t} value={t}>
                 {t}
               </option>
             ))}
-          </select>
-        </label>
-        <label>
-          Rarity:{" "}
-          <select value={rarity} onChange={(e) => setRarity(e.target.value as Rarity | "")}>
+          </Select>
+        </Field>
+        <Field label="Rarity" inline>
+          <Select value={rarity} onChange={(e) => setRarity(e.target.value as Rarity | "")}>
             <option value="">(any)</option>
             {RARITIES_ASC.map((r) => (
               <option key={r} value={r}>
                 {r}
               </option>
             ))}
-          </select>
-        </label>
-      </p>
+          </Select>
+        </Field>
+      </div>
 
       {results.length === 0 && <p>No creatures match this search/filter combination.</p>}
 

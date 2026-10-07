@@ -13,19 +13,15 @@
   font-weight: 700;
 }
 .actions { display: flex; gap: var(--space-xs); }
-.actions button { flex: 1; }
-.field { display: flex; flex-direction: column; gap: 2px; }
-.label {
-  font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted);
-}
+
+/*
+ * `.field`, `.label` and most of `.code` are gone: the label/control pair is `Field` and the
+ * textarea is `TextArea mono`, which carry the monospace, the sunken background, the border and the
+ * word-break. What is left is the one thing specific to this panel — a build code is long and
+ * dragging the panel taller to read it is not how you read it, so resizing is off here.
+ */
 .code {
-  width: 100%;
-  box-sizing: border-box; /* without this the padding pushes it past the column */
-  resize: vertical;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: var(--font-xs);
-  background: var(--surface-sunken); color: var(--text-secondary);
-  border: 1px solid var(--line-subtle); border-radius: var(--radius-sm); padding: 0.35rem 0.5rem;
-  word-break: break-all;
+  resize: none;
+  overflow: auto;
 }
 .error { margin: 0; font-size: var(--font-sm); color: var(--text-warn); }

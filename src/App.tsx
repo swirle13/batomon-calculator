@@ -13,6 +13,7 @@ import { CumulativeChart } from "./ui/CumulativeChart/CumulativeChart";
 import { DpsRateChart } from "./ui/CumulativeChart/DpsRateChart";
 import { StatusStackChart } from "./ui/CumulativeChart/StatusStackChart";
 import { CorpusBrowser } from "./ui/CorpusBrowser/CorpusBrowser";
+import { Button, Field, NumberField } from "./ui/primitives";
 import { corpus } from "./data/corpus";
 import { simulate } from "./engine/simulate";
 import type { GridSlot } from "./data/types";
@@ -71,18 +72,17 @@ function CalculatorView() {
       <TeamSummary config={config} result={result} />
       {/* FR-037: the simulation window governs the chart's time axis, not the per-second summary
           values, so it sits immediately above the chart and below the tables. */}
-      <p className={layout.windowControl}>
-        <label>
-          Simulation window (seconds):{" "}
-          <input
-            type="number"
+      <div className={layout.windowControl}>
+        <Field label="Simulation window (seconds)" inline>
+          <NumberField
             min={1}
             max={120}
+            width="5rem"
             value={config.simulationWindowSeconds}
             onChange={(e) => setSimulationWindowSeconds(Number(e.target.value) || 1)}
           />
-        </label>
-      </p>
+        </Field>
+      </div>
       <CumulativeChart result={result} />
       <DpsRateChart result={result} />
       <StatusStackChart result={result} />
@@ -97,21 +97,29 @@ function App() {
     <TeamConfigProvider>
       <header>
         <h1>Batomon Showdown DPS &amp; Status Calculator</h1>
-        <nav aria-label="Primary">
-          <button
+        {/*
+          The current view is marked, not DISABLED (2026-10-07). It used to be disabled, which took
+          it out of the tab order — so a keyboard user arriving at the nav could not focus the item
+          telling them where they were, and the only reachable control was the one they were not on.
+          `selected` carries the appearance and `aria-current` carries the meaning.
+        */}
+        <nav aria-label="Primary" className={layout.viewNav}>
+          <Button
+            variant="ghost"
+            selected={view === "calculator"}
             onClick={() => setView("calculator")}
-            disabled={view === "calculator"}
             aria-current={view === "calculator" ? "page" : undefined}
           >
             Calculator
-          </button>{" "}
-          <button
+          </Button>
+          <Button
+            variant="ghost"
+            selected={view === "corpus"}
             onClick={() => setView("corpus")}
-            disabled={view === "corpus"}
             aria-current={view === "corpus" ? "page" : undefined}
           >
             Corpus Browser
-          </button>
+          </Button>
         </nav>
       </header>
       <main>{view === "calculator" ? <CalculatorView /> : <CorpusBrowser />}</main>

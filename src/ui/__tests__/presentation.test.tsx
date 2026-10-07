@@ -518,6 +518,42 @@ describe("modifier amount input (2026-10-07)", () => {
   });
 });
 
+/**
+ * 2026-10-07: the region and trainer selects moved into the trainer card's right half, which only
+ * works if the card renders before a trainer exists — otherwise the one control that can choose a
+ * trainer is off the page whenever none is chosen. The empty state is load-bearing, not decoration.
+ */
+describe("the trainer card holds its selects before a trainer is chosen", () => {
+  it("renders both selects, and an empty state, with no trainer selected", () => {
+    render(
+      <TeamConfigProvider>
+        <TrainerPicker />
+      </TeamConfigProvider>,
+    );
+    expect(screen.getByRole("combobox", { name: /region/i })).toBeTruthy();
+    expect(screen.getByRole("combobox", { name: /trainer/i })).toBeTruthy();
+    expect(screen.getByText(/choose a trainer to see their ability/i)).toBeTruthy();
+  });
+
+  it("fills the same card in once a trainer is chosen, rather than mounting a new one", () => {
+    render(
+      <TeamConfigProvider>
+        <TrainerPicker />
+      </TeamConfigProvider>,
+    );
+    const twins = corpus.trainers.find((t) => t.id === "twins")!;
+    fireEvent.change(screen.getByRole("combobox", { name: /trainer/i }), { target: { value: twins.id } });
+
+    // By ROLE: the name is now in two places — the card's heading and the select's own option —
+    // because the select that chooses it lives inside the card it fills in.
+    expect(screen.getByRole("heading", { name: twins.name })).toBeTruthy();
+    expect(screen.queryByText(/choose a trainer to see their ability/i)).toBeNull();
+    // The selects are still where they were: they live in the card, so they cannot be displaced by
+    // the card's own content changing.
+    expect(screen.getByRole("combobox", { name: /region/i })).toBeTruthy();
+  });
+});
+
 describe("region never blocks a selection (2026-10-07)", () => {
   it("the trainer select is enabled with no region chosen", () => {
     // It used to be disabled until a region was picked. The Travelling Merchant event can put a

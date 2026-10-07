@@ -1,15 +1,25 @@
 import { corpus } from "../../data/corpus";
 import { useTeamConfig } from "../../context/TeamConfigContext";
 import { TrainerCard } from "../shared/TrainerCard/TrainerCard";
+import { Field, Select } from "../primitives";
 import type { RegionId } from "../../data/types";
 
 /**
  * Region + Trainer selection (FR-006, FR-087, FR-089).
  *
- * The trainer `<select>` is kept and a `TrainerCard` now renders *beneath* it. The card replaces
- * the select as the trainer UI in the sense that matters — it is where the ability, its provenance,
- * and the affected-species picker live — but a 23-item list still picks faster from a native
- * control than from a grid of cards, so selection stays a select.
+ * Both stay `<select>`s: a 23-item list picks faster from a native control than from a grid of
+ * cards, and neither choice benefits from the sprite-and-text card the creature picker needs.
+ *
+ * ## The selects live INSIDE the trainer card (2026-10-07)
+ *
+ * They were a row above it, and the card itself was mounted only once a trainer was chosen — so the
+ * two controls appeared to push a card into existence below them on the first selection. They are
+ * now stacked in the card's right half, and the card renders in an empty state until a trainer is
+ * picked. Same two controls, in the panel whose content they determine, with nothing appearing or
+ * disappearing as they are used.
+ *
+ * This component owns the selects and the config wiring; `TrainerCard` takes them as a slot and
+ * knows nothing about the run's state.
  *
  * ## Region is first, but it does not gate anything
  *
@@ -34,41 +44,49 @@ export function TrainerPicker() {
   const { config, setTrainerId, setSelectedRegion } = useTeamConfig();
   const trainer = corpus.trainers.find((t) => t.id === config.trainerId) ?? null;
 
+  /*
+   * `labelWidth` is what keeps the two controls aligned: stacked inline fields otherwise size each
+   * label to its own text, so "Region" and "Trainer" would start their selects at different
+   * x-positions one above the other.
+   */
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-      <label>
-        Region:{" "}
-        <select
-          value={config.selectedRegion ?? ""}
-          onChange={(e) => setSelectedRegion(e.target.value === "" ? undefined : e.target.value)}
-        >
-          <option value="">— choose a region —</option>
-          {REGIONS.map((r) => (
-            <option key={r.id} value={r.id}>
-              {r.label}
-            </option>
-          ))}
-        </select>
-      </label>
+    <TrainerCard
+      trainer={trainer}
+      controls={
+        <>
+          <Field label="Region" inline labelWidth="4.5rem">
+            <Select
+              block
+              value={config.selectedRegion ?? ""}
+              onChange={(e) => setSelectedRegion(e.target.value === "" ? undefined : e.target.value)}
+            >
+              <option value="">— choose a region —</option>
+              {REGIONS.map((r) => (
+                <option key={r.id} value={r.id}>
+                  {r.label}
+                </option>
+              ))}
+            </Select>
+          </Field>
 
-      <label>
-        Trainer:{" "}
-        <select
-          value={config.trainerId ?? ""}
-          onChange={(e) => setTrainerId(e.target.value === "" ? null : e.target.value)}
-        >
-          <option value="">— none —</option>
-          {[...corpus.trainers]
-            .sort((a, b) => a.name.localeCompare(b.name))
-            .map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.name}
-              </option>
-            ))}
-        </select>
-      </label>
-
-      {trainer && <TrainerCard trainer={trainer} />}
-    </div>
+          <Field label="Trainer" inline labelWidth="4.5rem">
+            <Select
+              block
+              value={config.trainerId ?? ""}
+              onChange={(e) => setTrainerId(e.target.value === "" ? null : e.target.value)}
+            >
+              <option value="">— none —</option>
+              {[...corpus.trainers]
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                  </option>
+                ))}
+            </Select>
+          </Field>
+        </>
+      }
+    />
   );
 }

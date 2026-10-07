@@ -2,6 +2,7 @@ import { useTeamConfig } from "../../context/TeamConfigContext";
 import { manualTriggersFor, modifiersForPress } from "../../data/triggers";
 import { STAT_COLORS, type StatColorKey } from "../../data/statColors";
 import type { CreatureRecord, ModifierStat, TeamPlacement } from "../../data/types";
+import { Button } from "../primitives";
 import styles from "./TriggerButtons.module.css";
 
 /**
@@ -61,8 +62,8 @@ export function TriggerButtons({ creature, placement }: TriggerButtonsProps) {
     <div className={styles.wrap}>
       {triggers.map((trigger) => (
         <div key={trigger.trigger} className={styles.row}>
-          <button
-            type="button"
+          <Button
+            size="sm"
             className={styles.button}
             title={`${trigger.definition.description} Each press banks it once.`}
             onClick={() => {
@@ -72,7 +73,7 @@ export function TriggerButtons({ creature, placement }: TriggerButtonsProps) {
             }}
           >
             + {trigger.definition.actionLabel}
-          </button>
+          </Button>
           <span className={styles.effects}>
             {trigger.effects.map((e) => (
               <span
@@ -88,8 +89,9 @@ export function TriggerButtons({ creature, placement }: TriggerButtonsProps) {
       ))}
 
       {banked.length > 0 && (
-        <button
-          type="button"
+        <Button
+          variant="ghost"
+          size="sm"
           className={styles.reset}
           title="Clears only the bonuses these buttons added, not modifiers you entered yourself."
           onClick={() => {
@@ -97,7 +99,7 @@ export function TriggerButtons({ creature, placement }: TriggerButtonsProps) {
           }}
         >
           Reset banked
-        </button>
+        </Button>
       )}
     </div>
   );

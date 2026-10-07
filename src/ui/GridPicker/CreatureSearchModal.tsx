@@ -13,6 +13,8 @@ import {
   PickerCard,
   PickerSection,
   ResultCount,
+  Select,
+  TextField,
 } from "../primitives";
 import styles from "./CreatureSearchModal.module.css";
 import { creatureHasType, isOutOfRegion } from "../../data/typing";
@@ -108,9 +110,9 @@ export function CreatureSearchModal({ slot, onClose, onSelect, config}: Creature
       width="880px"
       toolbar={
         <FilterBar>
-          <input
+          <TextField
             ref={inputRef}
-            type="text"
+            type="search"
             placeholder="Name or ID"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -126,7 +128,7 @@ export function CreatureSearchModal({ slot, onClose, onSelect, config}: Creature
             }}
             aria-label="Search by name"
           />
-          <select
+          <Select
             value={rarityFilter}
             onChange={(e) => setRarityFilter(e.target.value as Rarity | "")}
             aria-label="Filter by rarity"
@@ -137,8 +139,8 @@ export function CreatureSearchModal({ slot, onClose, onSelect, config}: Creature
                 {r}
               </option>
             ))}
-          </select>
-          <select
+          </Select>
+          <Select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value as CreatureType | "")}
             aria-label="Filter by type"
@@ -149,7 +151,7 @@ export function CreatureSearchModal({ slot, onClose, onSelect, config}: Creature
                 {t}
               </option>
             ))}
-          </select>
+          </Select>
           {(rarityFilter !== "" || typeFilter !== "" || query !== "") && (
             <ClearFiltersButton
               title="Clear the search and both filters"

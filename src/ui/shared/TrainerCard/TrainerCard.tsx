@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import type { TrainerRecord } from "../../../data/types";
-import { Surface } from "../../primitives";
+import { Button, Surface } from "../../primitives";
 import { Sprite } from "../Sprite";
 import { AffectedCreaturePicker } from "./AffectedCreaturePicker";
 import styles from "./TrainerCard.module.css";
@@ -41,41 +41,66 @@ export function designatesCreatureSet(trainerId: string | null | undefined) {
 }
 
 interface TrainerCardProps {
-  trainer: TrainerRecord;
+  /**
+   * `null` renders the card's EMPTY state rather than nothing at all (2026-10-07).
+   *
+   * The card used to be mounted only once a trainer was chosen, and the region and trainer selects
+   * sat above it. Now that those selects live in this card's right half, not rendering the card
+   * would take the only control that can choose a trainer off the page whenever none is chosen —
+   * so the empty state is what makes the card's own content reachable.
+   */
+  trainer: TrainerRecord | null;
+  /**
+   * The region and trainer selects, stacked in the card's right half.
+   *
+   * A SLOT rather than the selects themselves: this component is a presentation of a trainer record
+   * and is rendered in tests with no `TeamConfigProvider`. Reading the run's configuration here to
+   * build its own controls would couple it to that context, which is the coupling `painted` was
+   * deliberately kept out of `BatomonCard` for.
+   */
+  controls?: ReactNode;
 }
 
-export function TrainerCard({ trainer }: TrainerCardProps) {
+export function TrainerCard({ trainer, controls }: TrainerCardProps) {
   const [pickerOpen, setPickerOpen] = useState(false);
-  const designation = designatesCreatureSet(trainer.id);
+  const designation = designatesCreatureSet(trainer?.id);
 
   return (
     <Surface className={styles.card}>
-      <div className={styles.header}>
-        {/* T255/FR-102 */}
-        <Sprite
-          spriteFile={trainer.spriteFile}
-          kind="trainer"
-          width={120}
-          height={80}
-          alt={trainer.name}
-        />
-        <div className={styles.titles}>
-          <h3 className={styles.name}>{trainer.name}</h3>
+      <div className={styles.identity}>
+        <div className={styles.header}>
+          {/* T255/FR-102. The placeholder holds the art's exact 120x80 footprint, so choosing a
+              trainer fills the frame instead of growing the card and shifting the selects beside
+              it — which would move the control you just used. */}
+          {trainer ? (
+            <Sprite spriteFile={trainer.spriteFile} kind="trainer" width={120} height={80} alt={trainer.name} />
+          ) : (
+            <div className={styles.spritePlaceholder} aria-hidden="true" />
+          )}
+          <div className={styles.titles}>
+            <h3 className={`${styles.name} ${trainer ? "" : styles.namePlaceholder}`}>
+              {trainer?.name ?? "No trainer"}
+            </h3>
+          </div>
         </div>
+
+        <p className={`${styles.ability} ${trainer ? "" : styles.abilityPlaceholder}`}>
+          {trainer?.abilityText ?? "Choose a trainer to see their ability."}
+        </p>
+
+        {designation && (
+          <>
+            <Button size="sm" className={styles.showButton} onClick={() => setPickerOpen(true)}>
+              {designation.label} <span className={styles.hint}>— {designation.hint}</span>
+            </Button>
+            {pickerOpen && (
+              <AffectedCreaturePicker kind={designation.kind} onClose={() => setPickerOpen(false)} />
+            )}
+          </>
+        )}
       </div>
 
-      <p className={styles.ability}>{trainer.abilityText}</p>
-
-      {designation && (
-        <>
-          <button type="button" className={styles.showButton} onClick={() => setPickerOpen(true)}>
-            {designation.label} <span className={styles.hint}>— {designation.hint}</span>
-          </button>
-          {pickerOpen && (
-            <AffectedCreaturePicker kind={designation.kind} onClose={() => setPickerOpen(false)} />
-          )}
-        </>
-      )}
+      {controls ? <div className={styles.controls}>{controls}</div> : null}
     </Surface>
   );
 }

@@ -8,30 +8,19 @@
 .wrap { display: flex; flex-direction: column; gap: var(--space-2xs); width: 100%; }
 .row { display: flex; align-items: center; gap: var(--space-xs); }
 
-.button {
-  flex-shrink: 0;
-  font-size: var(--font-xs);
-  padding: 0.2rem 0.5rem;
-  border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-sm);
-  background: var(--surface-sunken);
-  color: var(--text-primary);
-  cursor: pointer;
-}
-.button:hover { border-color: var(--line-strong); }
-.button:focus-visible { outline: 2px solid var(--focus-ring, #8ab4f8); outline-offset: 1px; }
+/* `Button size="sm"` carries the look, including the focus ring this file used to reach for with
+   `var(--focus-ring, #8ab4f8)` — a blue from no palette here, reached because the token did not
+   exist until the controls layer defined it. */
+.button { flex-shrink: 0; }
 
 /* The preview is coloured per stat, matching the badges, so a press has a predictable result. */
 .effects { display: flex; gap: var(--space-xs); font-size: var(--font-xs); font-weight: 600; }
 .effect { white-space: nowrap; }
 
+/* Quieter than the trigger buttons above it: undoing is the rarer act, and `ghost` already means
+   "no chrome until you reach for it". */
 .reset {
   align-self: flex-start;
-  font-size: 0.65rem;
-  padding: 0.1rem 0.4rem;
-  background: none;
-  border: 1px solid transparent;
   color: var(--text-muted);
-  cursor: pointer;
+  font-size: var(--font-2xs);
 }
-.reset:hover { border-color: var(--line-subtle); color: var(--text-secondary); }

@@ -67,6 +67,17 @@
   gap: var(--space-md);
 }
 
+/* Centred, like every other full-width row in this view. The label and its field are one unit, so
+   the Field itself is inline-flex and this just places it. */
 .windowControl {
+  display: flex;
+  justify-content: center;
   margin: var(--space-lg) 0;
+}
+
+/* The two view buttons sit together as one group rather than being separated by a text space, which
+   is what used to hold them apart. */
+.viewNav {
+  display: inline-flex;
+  gap: var(--space-2xs);
 }

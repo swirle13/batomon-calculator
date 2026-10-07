@@ -3,7 +3,7 @@ import { distinctCreatures } from "../../../data/corpus";
 import { isInOppositeRegion, regionsOf } from "../../../data/typing";
 import { useTeamConfig } from "../../../context/TeamConfigContext";
 import { RARITIES_DESC } from "../../../data/statColors";
-import { Modal } from "../../primitives";
+import { Modal, TextField } from "../../primitives";
 import { Sprite } from "../Sprite";
 import styles from "./TrainerCard.module.css";
 
@@ -113,8 +113,9 @@ export function AffectedCreaturePicker({ kind, onClose }: AffectedCreaturePicker
         </div>
       )}
 
-      <input
+      <TextField
         type="search"
+        block
         className={styles.pickerSearch}
         placeholder="Search species…"
         value={query}

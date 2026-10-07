@@ -46,6 +46,53 @@
   --text-warn: #c9a227;
   --text-accent: #e0a93c;
 
+  /*
+   * Aliases for names five stylesheets were already using (2026-10-07).
+   *
+   * `--surface-sunken`, `--text-primary` and `--text-secondary` were referenced in ShareBuild,
+   * TotalDps, TriggerButtons, TrainerCard and VariantToggles with NO fallback, and defined nowhere.
+   * A `var()` with no fallback and no definition makes the whole declaration invalid at
+   * computed-value time, so `background: var(--surface-sunken)` was painting nothing and
+   * `color: var(--text-secondary)` was inheriting — which is a large part of why those surfaces
+   * looked unstyled. Defined as the canonical token each one obviously meant rather than deleted
+   * from the five call sites, because the names read better at the point of use.
+   */
+  --surface-sunken: var(--surface-1);
+  --text-primary: var(--text-strong);
+  --text-secondary: var(--text-body);
+
+  /* --- form controls (2026-10-07) -----------------------------------------------------------
+   * Buttons, selects and text fields were browser-default: a white-on-grey box with a 2px bevel in
+   * the middle of a dark, token-built page. These are the one definition of what a control looks
+   * like, consumed by `primitives/controls.tsx` and by nothing else — a component stylesheet
+   * restating any of them is the defect Principle VII names.
+   */
+  --control-bg: #272a36;
+  --control-bg-hover: #30343f;
+  --control-bg-active: #383d4b;
+  --control-border: #3f4452;
+  --control-border-hover: #596073;
+  --control-text: var(--text-body);
+  --control-radius: var(--radius-md);
+  /* 2rem at an 18px root is a 36px target; the sm variant is for the inside of a card cell. */
+  --control-height: 2rem;
+  --control-height-sm: 1.65rem;
+  --control-pad-inline: var(--space-sm);
+
+  /*
+   * Accent fill for the one primary action in a group. Darker than `--text-accent` so white label
+   * text clears 4.5:1 on it; `--text-accent` itself is the hover state.
+   */
+  --accent-fill: #a9701a;
+  --accent-fill-hover: #c2851f;
+
+  /*
+   * The ONE focus treatment. TriggerButtons and VariantToggles each wrote
+   * `var(--focus-ring, #8ab4f8)` — a blue from no palette in this project, reached because the
+   * token did not exist.
+   */
+  --focus-ring: var(--text-accent);
+
   /* --- type scale --- */
   --font-2xs: 0.7rem;
   --font-xs: 0.75rem;

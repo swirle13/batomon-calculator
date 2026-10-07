@@ -4,6 +4,7 @@ import { corpus } from "../../data/corpus";
 import { analyzePositionalCoverage } from "../../engine/optimize";
 import { formatRate } from "../../data/format";
 import { MAX_RECORDED_DAY, enemyHpForDay, timeToKill } from "../../data/enemyHealth";
+import { Range, Select } from "../primitives";
 import styles from "./TotalDps.module.css";
 
 interface TotalDpsProps {
@@ -102,7 +103,8 @@ export function TotalDps({ config, result }: TotalDpsProps) {
           </div>
           <div className={styles.label}>
             TTK on day{" "}
-            <select
+            <Select
+              size="sm"
               className={styles.daySelect}
               value={day}
               onChange={(e) => setDay(Number(e.target.value))}
@@ -113,7 +115,7 @@ export function TotalDps({ config, result }: TotalDpsProps) {
                   {d}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
         </div>
       </div>
@@ -122,8 +124,7 @@ export function TotalDps({ config, result }: TotalDpsProps) {
         <div className={styles.scrubRow}>
           <label className={styles.scrubLabel}>
             Time{" "}
-            <input
-              type="range"
+            <Range
               min={0}
               max={Math.max(0, series.length - 1)}
               step={1}

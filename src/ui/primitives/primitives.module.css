@@ -221,20 +221,8 @@
   color: var(--text-muted);
 }
 
-.clearFilters {
-  font-size: var(--font-xs);
-  padding: 0.2rem 0.5rem;
-  border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-sm);
-  background: var(--surface-1);
-  color: var(--text-body);
-  cursor: pointer;
-}
-
-.clearFilters:hover {
-  border-color: var(--line-strong);
-  color: var(--text-strong);
-}
+/* `.clearFilters` is gone: it was a hand-rolled small button, which is what `Button variant="ghost"
+   size="sm"` now is for every surface. */
 
 /* One section per rarity: rarity is conveyed by STRUCTURE rather than as a label on every card
    (FR-048). This shows more than the per-card text did — how many of each rarity match the current
