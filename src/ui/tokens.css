@@ -62,6 +62,9 @@
    * is what the user asked for and what batodex displays at; 96 is recorded as the alternative.
    * (Before round 7 this was an arbitrary hard-coded 40 with no reasoning behind it.) */
   --sprite-grid: 64px;
+  /* In-game type chips are a fixed width regardless of label length, so a row of them lines up.
+     Ours were padding-sized, so "All" was narrow and "Electric" wide and nothing aligned. */
+  --type-chip-width: 7rem;
   --sprite-card: 56px;
   --sprite-row: 24px;
   /* 64px, matching --sprite-grid: the user compared the picker against the team grid

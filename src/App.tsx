@@ -8,6 +8,7 @@ import { TotalDps } from "./ui/TeamSummary/TotalDps";
 import { PlacedCreatureDetails } from "./ui/TeamSummary/PlacedCreatureDetails";
 import { ModifierEditor } from "./ui/Modifiers/ModifierEditor";
 import { PlacementAdvisor } from "./ui/TeamSummary/PlacementAdvisor";
+import { ShareBuild } from "./ui/TeamSummary/ShareBuild";
 import { CumulativeChart } from "./ui/CumulativeChart/CumulativeChart";
 import { DpsRateChart } from "./ui/CumulativeChart/DpsRateChart";
 import { CorpusBrowser } from "./ui/CorpusBrowser/CorpusBrowser";
@@ -58,6 +59,7 @@ function CalculatorView() {
       {/* 2026-10-06 round 8 (FR-066 / WI-011): Modifiers sits between the grid and the summary. */}
       <ModifierEditor />
       <PlacementAdvisor />
+      <ShareBuild />
       <TotalDps config={config} result={result} />
       <TeamSummary config={config} result={result} />
       {/* FR-037: the simulation window governs the chart's time axis, not the per-second summary

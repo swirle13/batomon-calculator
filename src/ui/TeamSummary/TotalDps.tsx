@@ -40,7 +40,18 @@ export function TotalDps({ config, result }: TotalDpsProps) {
   // The scrubbed value comes from `dpsRateSeries` itself, so this figure and the DPS-over-time
   // chart agree by construction rather than via a second computation.
   const series = result.dpsRateSeries;
-  const scrubbed = scrubT === null ? null : series.find((p) => p.tSeconds === scrubT)?.dps ?? null;
+  // 2026-10-06. The slider is an INDEX into the series, not a count of seconds.
+  //
+  // It used to look up `series.find((p) => p.tSeconds === scrubT)` while the slider ran 0..length
+  // in steps of 1. That held only while the series happened to be 1-second spaced. Once it became
+  // 0.5s (FR-106) every index above the window length — and index 0, which no bucket has — matched
+  // nothing, fell through `?? null` to `shown = scrubbed ?? windowAverage`, and displayed the
+  // WINDOW AVERAGE under a label reading "at t = Ns". That is the reported "DPS is high at t=0":
+  // it was not a reading at all.
+  //
+  // Indexing cannot desynchronise from the grid, whatever the grid becomes.
+  const scrubPoint = scrubT === null ? null : series[scrubT] ?? null;
+  const scrubbed = scrubPoint?.dps ?? null;
   const shown = scrubbed ?? windowAverage;
 
   const coverage = analyzePositionalCoverage(config, corpus);
@@ -57,7 +68,9 @@ export function TotalDps({ config, result }: TotalDpsProps) {
       <div className={styles.headline}>
         <div className={styles.value}>{formatRate(shown)}</div>
         <div className={styles.label}>
-          {scrubT === null ? "DPS average" : `DPS at t=${scrubT}s`}
+          {scrubT === null || scrubPoint === null
+            ? "DPS average"
+            : `DPS at t=${scrubPoint.tSeconds}s`}
         </div>
       </div>
 
@@ -78,7 +91,7 @@ export function TotalDps({ config, result }: TotalDpsProps) {
             <input
               type="range"
               min={0}
-              max={series.length}
+              max={Math.max(0, series.length - 1)}
               step={1}
               value={scrubT ?? 0}
               onChange={(e) => setScrubT(Number(e.target.value))}

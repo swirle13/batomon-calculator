@@ -971,3 +971,32 @@ engine's effective stats are now `{ output: PerCastOutput; cooldownSeconds }`, s
 `effective.output` straight through with no field list at all. Adding a future output stat breaks
 both producers at compile time, which is the only mechanism that keeps two renderings of one
 concept honest (Constitution Principle VII).
+
+## Build sharing (2026-10-06) — `src/data/share.ts`
+
+Two separate artefacts, deliberately not conflated:
+
+| | what it is | restores a build? |
+|---|---|---|
+| **Build code** (`bat1:<base64url>`) | the build itself | **yes** |
+| **Build id** (8 hex chars) | a fingerprint *of* the build | **no** |
+
+The ask asked for export/import "with a UUID value… so that time-sensitive work isn't lost". A hash
+is not reversible, so a UUID **alone** can never restore a team — and losing work is exactly what a
+hash-only scheme would do. The id is therefore an identity (is this the same team as yours?), and
+the code is the thing you keep.
+
+The id is **content-derived, not random**: a random UUID would differ on every export of the same
+team, defeating both uses.
+
+### Canonicalisation is the load-bearing part
+
+The same team has many representations — slots in a different array order, trinkets listed
+differently, an absent optional versus an empty array, modifiers carrying freshly-generated session
+ids. All must produce the same fingerprint, or the id fingerprints the *editing history* rather than
+the team. `canonicalise()` sorts placements by slot, sorts every id list, normalises `shiny`
+`undefined`/`false`, and strips modifier ids.
+
+Import **replaces** rather than merges: merging has no correct answer for a slot occupied in both
+teams, and guessing would quietly corrupt the imported build. It throws rather than loading a
+partial team — a build that silently drops a creature is worse than one that refuses to load.

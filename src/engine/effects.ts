@@ -11,6 +11,7 @@ import type {
 import { aboveSlot, behindSlot, isAdjacent, slotKey, slotsEqual } from "./grid";
 import { applyShinyOverlay } from "../data/corpus";
 import { creatureHasType } from "../data/typing";
+import { hasAbilityText } from "../data/display";
 import { addFlat, addPostMultiplier, applyMultiplier, readRounded, statValue, type StatValue } from "./statValue";
 import { TYPE_COLORS } from "../data/typeColors";
 
@@ -509,10 +510,7 @@ export function resolveEffects(config: TeamConfiguration, corpus: Corpus): Resol
     // An ability with text but no tag the resolver understands is inert — say so rather than
     // letting a working engine imply the creature's ability is being counted.
     const hasResolvable = resolved.creature.abilityTags.some(isResolvableTag);
-    const hasAbilityText =
-      resolved.creature.abilityText.trim().length > 0 &&
-      !/^no ability text/i.test(resolved.creature.abilityText);
-    if (!hasResolvable && hasAbilityText) {
+    if (!hasResolvable && hasAbilityText(resolved.creature.abilityText)) {
       resolved.unmodelledAbilities.push(resolved.creature.name);
     }
   }

@@ -61,13 +61,18 @@ interface ChipProps {
   onRemove?: () => void;
   removeLabel?: string;
   title?: string;
+  className?: string;
 }
 
 /** The one pill. Used by type tags, modifier chips, and trinket markers. */
-export function Chip({ children, color, onRemove, removeLabel, title }: ChipProps) {
+export function Chip({ children, color, onRemove, removeLabel, title, className }: ChipProps) {
   const toneClass = color ? styles.chipSolid : styles.chipNeutral;
   return (
-    <span className={`${styles.chip} ${toneClass}`} style={color ? { background: color } : undefined} title={title}>
+    <span
+      className={`${styles.chip} ${toneClass} ${className ?? ""}`}
+      style={color ? { background: color } : undefined}
+      title={title}
+    >
       {children}
       {onRemove && (
         <button type="button" className={styles.chipRemove} onClick={onRemove} aria-label={removeLabel}>
@@ -80,7 +85,11 @@ export function Chip({ children, color, onRemove, removeLabel, title }: ChipProp
 
 /** A creature type rendered as a chip — the canonical type→colour surface. */
 export function TypeChip({ type }: { type: CreatureType }) {
-  return <Chip color={typeColor(type)}>{type}</Chip>;
+  return (
+    <Chip color={typeColor(type)} className={styles.chipFixedWidth}>
+      {type}
+    </Chip>
+  );
 }
 
 /* --------------------------------- StatBadge --------------------------------- */

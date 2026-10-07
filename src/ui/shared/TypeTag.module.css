@@ -7,7 +7,11 @@
  */
 
 .allChip {
-  display: inline-block;
+  /* Same fixed width as every other type chip (item 4) — it sits in the same row. */
+  width: var(--type-chip-width);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: 0.1rem 0.45rem;
   border-radius: 999px;
   font-size: var(--font-xs);

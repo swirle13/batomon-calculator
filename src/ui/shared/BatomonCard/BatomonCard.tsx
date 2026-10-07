@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import type { CreatureRecord } from "../../../data/types";
 import { RARITY_COLORS, STAT_COLORS, type StatColorKey } from "../../../data/statColors";
 import { STATUS_COLOR_KEY } from "../../../data/format";
-import { displayField, isUnconfirmed } from "../../../data/display";
+import { displayField, hasAbilityText, isUnconfirmed } from "../../../data/display";
 import type { PerCastOutput } from "../../../data/types";
 import { formatCooldown } from "../../../data/format";
 import { AllTypeTag, TypeTag } from "../TypeTag";
@@ -185,7 +185,9 @@ export function BatomonCard({ creature, children, levelLabel, fixedHeight, meta,
         <StatLines lines={statLines} />
       </div>
 
-      {creature.abilityText ? (
+      {/* A placeholder reads as if the creature has an ability called "No ability text shown",
+          so it renders nothing at all rather than the stand-in string. */}
+      {hasAbilityText(creature.abilityText) ? (
         <div className={styles.ability}>
           {creature.abilityTrigger ? <div className={styles.abilityTrigger}>{creature.abilityTrigger}</div> : null}
           <p className={styles.abilityText}>{creature.abilityText}</p>

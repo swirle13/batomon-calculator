@@ -38,7 +38,7 @@
   );
   /* Oversized so one full cycle of travel never exposes an edge. */
   background-size: 300% 300%;
-  animation: paintedDrift 9s linear infinite;
+  animation: paintedDrift 3s linear infinite;
 }
 
 /*

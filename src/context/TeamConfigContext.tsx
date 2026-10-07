@@ -49,6 +49,8 @@ interface TeamConfigContextValue {
   /** FR-087 (round 11, WI-R11-001): toggle this placement's SHINY variant, independent of level. */
   setPlacementShiny: (slot: GridSlot, shiny: boolean) => void;
   /** T229/T235 (FR-087, FR-090). */
+  /** Replaces the entire team, for build import (item 5). Not a merge — see `ShareBuild`. */
+  replaceConfig: (next: TeamConfiguration) => void;
   setSelectedRegion: (region: RegionId | undefined) => void;
   setPaintedCreatureIds: (ids: string[]) => void;
   setSmuggledCreatureIds: (ids: string[]) => void;
@@ -157,6 +159,7 @@ export function TeamConfigProvider({
             };
           }),
         })),
+      replaceConfig: (next) => setConfig(next),
       setSelectedRegion: (region) => setConfig((prev) => ({ ...prev, selectedRegion: region })),
       setPaintedCreatureIds: (ids) => setConfig((prev) => ({ ...prev, paintedCreatureIds: ids })),
       setSmuggledCreatureIds: (ids) => setConfig((prev) => ({ ...prev, smuggledCreatureIds: ids })),

@@ -13,9 +13,11 @@
  */
 import { corpus } from "../src/data/corpus.ts";
 import { isResolvableTag } from "../src/engine/effects.ts";
+import { hasAbilityText } from "../src/data/display.ts";
 
-const hasRealAbility = (c) =>
-  c.abilityText?.trim() && !/^no ability text/i.test(c.abilityText);
+// Shared with the engine and the card, so "does this creature have an ability?" is answered the
+// same way in the coverage denominator, the resolver and the UI.
+const hasRealAbility = (c) => hasAbilityText(c.abilityText);
 
 const battle = corpus.creatures.filter((c) => c.level === 1 && hasRealAbility(c));
 const resolved = battle.filter((c) => c.abilityTags.some(isResolvableTag));

@@ -1,0 +1,177 @@
+import type { StatModifier, TeamConfiguration, TeamPlacement } from "./types";
+
+/**
+ * Sharing a build: a portable code plus a stable id derived from the build's content.
+ *
+ * ## Two different things, deliberately not conflated
+ *
+ * - **The code** is the build. It round-trips losslessly, so it is what you paste to restore work.
+ * - **The id** is a short fingerprint *of* the build. It cannot restore anything; it exists so two
+ *   people can tell whether they are looking at the same team, and so a saved build has a stable
+ *   name that changes when — and only when — the build changes.
+ *
+ * Conflating them is the obvious mistake: a hash is not reversible, so a "UUID" alone can never
+ * restore a team. The ask said "exported/imported with a UUID value… so that time-sensitive work
+ * isn't lost", and losing work is exactly what a hash-only scheme would do.
+ *
+ * ## Why the id is content-derived rather than random
+ *
+ * A random UUID would differ every time you exported the same team, which defeats both uses above.
+ * Deriving it from the content means the same team always yields the same id, and any change —
+ * a level, a modifier, the region — yields a different one.
+ *
+ * ## Why canonicalisation is the hard part
+ *
+ * The same team can be represented many ways: slots in a different array order, trinkets listed
+ * differently, `paintedCreatureIds` absent versus empty, a modifier carrying a freshly-generated
+ * `id`. All of those must produce the SAME fingerprint, or the id is a fingerprint of the editing
+ * history rather than of the team. `canonicalise` below is what makes that true, and it is the part
+ * worth reading carefully.
+ */
+
+/** Bumped only when the code format changes incompatibly. Guards against silently misreading. */
+const FORMAT_VERSION = 1;
+const PREFIX = "bat1:";
+
+/** A modifier's runtime `id` is a fresh UUID per session and says nothing about the build. */
+function canonicalModifiers(modifiers: StatModifier[] | undefined) {
+  return (modifiers ?? [])
+    .map((m) => ({ stat: m.stat, amount: m.amount }))
+    // Two modifiers added in a different order are the same build.
+    .sort((a, b) => a.stat.localeCompare(b.stat) || a.amount - b.amount);
+}
+
+function canonicalPlacements(placements: TeamPlacement[]) {
+  return placements
+    .map((p) => ({
+      row: p.slot.row,
+      col: p.slot.col,
+      creatureId: p.creatureId,
+      level: p.level,
+      // `undefined` and `false` are the same build; normalise so they hash alike.
+      shiny: p.shiny === true,
+      modifiers: canonicalModifiers(p.modifiers),
+    }))
+    // Sorted by SLOT, not by array position: dragging A onto B's slot and back is the same team.
+    .sort((a, b) => a.row.localeCompare(b.row) || a.col - b.col);
+}
+
+/**
+ * One representation per distinct build.
+ *
+ * Every optional field is normalised to a present value, every list is sorted, and nothing
+ * session-scoped (modifier ids) survives. Key order is fixed by construction because the object
+ * literal below is written in a fixed order and `JSON.stringify` preserves insertion order.
+ */
+export function canonicalise(config: TeamConfiguration) {
+  return {
+    v: FORMAT_VERSION,
+    region: config.selectedRegion ?? null,
+    trainer: config.trainerId ?? null,
+    window: config.simulationWindowSeconds,
+    placements: canonicalPlacements(config.placements),
+    trinkets: [...config.trinketIds].sort(),
+    items: [...config.itemIds].sort(),
+    painted: [...(config.paintedCreatureIds ?? [])].sort(),
+    smuggled: [...(config.smuggledCreatureIds ?? [])].sort(),
+    teamModifiers: canonicalModifiers(config.teamModifiers),
+  };
+}
+
+/**
+ * FNV-1a, 32 bits, run over the canonical JSON and rendered as 8 hex characters.
+ *
+ * Chosen over a cryptographic hash because this is an identity check between humans, not a
+ * security boundary: `crypto.subtle.digest` is async, which would make every call site async for
+ * no benefit here. 32 bits is short enough to read aloud and long enough that an accidental
+ * collision between builds a person is actually comparing is not a practical concern.
+ */
+function fnv1a(input: string): string {
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < input.length; i++) {
+    hash ^= input.charCodeAt(i);
+    // `Math.imul` for a real 32-bit multiply; `*` would lose precision past 2^53.
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return (hash >>> 0).toString(16).padStart(8, "0");
+}
+
+/** The build's stable fingerprint. Same team in, same id out — always. */
+export function buildId(config: TeamConfiguration): string {
+  return fnv1a(JSON.stringify(canonicalise(config)));
+}
+
+/** Base64url: survives a URL, a chat message and a double-click without escaping. */
+function toBase64Url(text: string): string {
+  const bytes = new TextEncoder().encode(text);
+  let binary = "";
+  for (const b of bytes) binary += String.fromCharCode(b);
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+function fromBase64Url(code: string): string {
+  const padded = code.replace(/-/g, "+").replace(/_/g, "/");
+  const binary = atob(padded + "=".repeat((4 - (padded.length % 4)) % 4));
+  const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
+}
+
+/**
+ * The portable code. Encodes the CANONICAL form, so the same team always produces the same string
+ * — which means a user can tell at a glance whether two codes are the same build without decoding.
+ */
+export function exportBuild(config: TeamConfiguration): string {
+  return PREFIX + toBase64Url(JSON.stringify(canonicalise(config)));
+}
+
+export class InvalidBuildCodeError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "InvalidBuildCodeError";
+  }
+}
+
+/**
+ * Decodes a code back into a configuration.
+ *
+ * Throws rather than returning a partial team: a build that silently drops a creature is worse than
+ * one that refuses to load, because the user would keep working against a team they did not build.
+ */
+export function importBuild(code: string): TeamConfiguration {
+  const trimmed = code.trim();
+  if (!trimmed.startsWith(PREFIX)) {
+    throw new InvalidBuildCodeError(`Not a build code — expected it to start with "${PREFIX}".`);
+  }
+
+  let parsed: ReturnType<typeof canonicalise>;
+  try {
+    parsed = JSON.parse(fromBase64Url(trimmed.slice(PREFIX.length)));
+  } catch {
+    throw new InvalidBuildCodeError("Build code is corrupt or incomplete.");
+  }
+
+  if (parsed?.v !== FORMAT_VERSION) {
+    throw new InvalidBuildCodeError(
+      `Build code is format v${parsed?.v}, this app reads v${FORMAT_VERSION}.`,
+    );
+  }
+
+  return {
+    selectedRegion: parsed.region ?? undefined,
+    trainerId: parsed.trainer ?? null,
+    simulationWindowSeconds: parsed.window,
+    placements: parsed.placements.map((p) => ({
+      slot: { row: p.row, col: p.col },
+      creatureId: p.creatureId,
+      level: p.level,
+      ...(p.shiny ? { shiny: true } : {}),
+      // Modifier ids are regenerated: they are session identity, not build content.
+      modifiers: p.modifiers.map((m, i) => ({ ...m, id: `imported-${p.row}${p.col}-${i}` })),
+    })),
+    trinketIds: parsed.trinkets,
+    itemIds: parsed.items,
+    paintedCreatureIds: parsed.painted,
+    smuggledCreatureIds: parsed.smuggled,
+    teamModifiers: parsed.teamModifiers.map((m, i) => ({ ...m, id: `imported-team-${i}` })),
+  };
+}
