@@ -54,7 +54,7 @@
   padding: 0;
   margin: var(--space-sm) 0;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   /* Matches the team grid's gap so the two 2x3 layouts line up column for column. */
   gap: var(--grid-gap);
   align-items: stretch;

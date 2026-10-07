@@ -59,7 +59,16 @@ function CalculatorView() {
         they belong with the team rather than below the whole page. Share in particular was
         full-width before, which stretched a base64 code across the viewport.
       */}
-      <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap", alignItems: "flex-start" }}>
+      <div
+        style={{
+          display: "flex",
+          // Same token `--builder-row-width` budgets for, so the row's own gap cannot drift from
+          // the width reserved for it.
+          gap: "var(--column-gap)",
+          flexWrap: "wrap",
+          alignItems: "flex-start",
+        }}
+      >
         <div
           style={{
             // Sized from the same token as the grid and the Modifiers panel it contains. A 20rem

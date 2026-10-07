@@ -13,7 +13,14 @@
  */
 .grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  /*
+   * minmax(0, 1fr), NOT 1fr. A bare `1fr` is `minmax(auto, 1fr)`, and that `auto` floor is the
+   * card's MIN-CONTENT width — so when this column was squeezed, the tracks refused to shrink, the
+   * grid grew past its own `max-width: 100%`, and it overflowed sideways across the detail panel.
+   * The cards are `overflow: hidden`, so a genuinely cramped viewport now clips a card rather than
+   * painting it on top of its neighbour.
+   */
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--grid-gap);
   /*
    * Derived from the slot size rather than set to a round number, so the columns are always wide
@@ -36,6 +43,13 @@
 }
 
 .dropZone {
+  /*
+   * border-box so this wrapper's border and padding come OUT of the grid track rather than being
+   * added to the card inside it. As content-box it made each cell ~9px wider than
+   * --grid-slot-size, which is min-content the grid tracks then refused to shrink below — the card
+   * overflowed the grid and painted across the detail panel. --grid-cell-chrome budgets for it.
+   */
+  box-sizing: border-box;
   border: 2px dashed transparent;
   border-radius: 6px;
   padding: 0.15rem;

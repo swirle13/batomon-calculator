@@ -53,7 +53,14 @@
 }
 
 #root {
-  width: 1126px;
+  /*
+   * Never narrower than the builder row needs, plus `main`'s padding and this element's own
+   * borders. The flat 1126px predates the team grid growing; the row ended up fitting it with
+   * single-digit pixels to spare, and any further growth pushed the grid across the detail panel.
+   * `max()` keeps the established 1126px frame for every other section while guaranteeing the one
+   * row that cannot compress has somewhere to go.
+   */
+  width: max(1126px, calc(var(--builder-row-width) + 2 * 1rem + 2px + var(--space-xl)));
   max-width: 100%;
   margin: 0 auto;
   text-align: center;
@@ -61,6 +68,30 @@
   min-height: 100svh;
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
+}
+
+/*
+ * Universal border-box, added 2026-10-07.
+ *
+ * box-sizing was previously set ONLY on #root, so every other element was content-box and any
+ * padding or border silently made an element WIDER than the width it was given. That produced three
+ * separate bugs in the team grid alone, all of which read as unrelated symptoms:
+ *
+ *   - `.dropZone`'s border and padding pushed each grid cell ~9px past its track, so the tracks
+ *     refused to shrink and the grid overflowed sideways across the detail panel;
+ *   - `.card` (padding, no border) came out 192.3px inside a 181.5px slot, eating the horizontal
+ *     gap, while vertically the wrapper simply grew — so the 2x3 grid's horizontal and vertical
+ *     spacing visibly disagreed despite one `gap` value;
+ *   - `.emptyCard` (border, no padding) came out 183.5px, 8.8px smaller than a filled card and
+ *     misaligned against it.
+ *
+ * Setting it once here is the fix for the class, not the three instances. Every width token in
+ * tokens.css is now the size the element actually occupies.
+ */
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 

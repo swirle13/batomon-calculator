@@ -38,7 +38,10 @@
 
 .cardFixedPanel .identity { min-height: 1rem; }
 /* .cardFixedPanel .output { min-height: 5.5rem; } */
-.cardFixedPanel .ability { height: 3.5rem; }
+/* 3.5rem + the band's own 1rem of vertical padding. This was written as a bare 3.5rem while cards
+   were content-box, where padding sat OUTSIDE the declared height; under border-box it came out of
+   the usable height instead and the ability text spilled over the level pips below it. */
+.cardFixedPanel .ability { height: calc(3.5rem + 1rem); }
 /* .cardFixedPanel .extra { min-height: 1rem; } */
 /* .cardFixedPanel .meta { min-height: 3.25rem; } */
 

@@ -68,18 +68,29 @@
    */
   --sprite-grid: 96px;
   /*
-   * Everything in a team-grid card that is NOT the sprite: the padding, the "Lv. N" row, the name
-   * row and the stat badges, plus the gaps between them. ~65px of content, rounded up to 76 so a
-   * name that wraps to a second line still has somewhere to go.
+   * The ROWS under the sprite — the "Lv. N" line, the name, the stat badges and the gaps between
+   * them. ~65px of content at a 16px root, rounded up so a name that wraps to a second line still
+   * has somewhere to go.
    *
-   * It exists so --grid-slot-size can be derived rather than guessed. The card was previously a
-   * flat 30rem/3 = 154.67px square while its contents needed ~155px, so the sprite overlapped the
-   * name by a hair — a hand-tuned width and a hand-tuned sprite size that happened to collide.
+   * This EXCLUDES the card's own padding, which --grid-card-padding carries separately. The two
+   * were conflated while cards were content-box and padding sat outside the declared size; once
+   * box-sizing became border-box that padding came out of the usable height instead, and the sprite
+   * went back to overlapping the name.
    */
   --grid-card-chrome: 4.75rem;
+  /* Must match `.card`'s padding in GridPicker.module.css. */
+  --grid-card-padding: 0.3rem;
   /* The square a team-grid card wants to be: big enough to hold the sprite AND the rows under it. */
-  --grid-slot-size: calc(var(--sprite-grid) + var(--grid-card-chrome));
+  --grid-slot-size: calc(
+    var(--sprite-grid) + var(--grid-card-chrome) + 2 * var(--grid-card-padding)
+  );
   --grid-gap: 0.5rem;
+  /*
+   * The drop-zone wrapper's own border and padding, which sit OUTSIDE the card. The grid track has
+   * to hold the card AND this, or the cell's min-content exceeds its track and the whole grid
+   * overflows sideways. Must stay in step with `.dropZone` in GridPicker.module.css.
+   */
+  --grid-cell-chrome: calc(2 * 2px + 2 * 0.15rem);
   /*
    * The width of the whole left-hand team column: three slots and the two gaps between them.
    *
@@ -89,7 +100,17 @@
    * layout open whenever it was expanded, while the column was too narrow to hold the grid at all
    * and spilled it over the detail panel.
    */
-  --team-column-width: calc(3 * var(--grid-slot-size) + 2 * var(--grid-gap));
+  --team-column-width: calc(
+    3 * (var(--grid-slot-size) + var(--grid-cell-chrome)) + 2 * var(--grid-gap)
+  );
+  /* The gap between the team column and the detail panel beside it. */
+  --column-gap: 1.5rem;
+  /*
+   * What the builder row needs to lay its two columns out side by side. `main` must never be
+   * narrower than this: the team grid and the detail panel are both fixed-width, so there is no
+   * width at which they can share less than this and still fit.
+   */
+  --builder-row-width: calc(var(--team-column-width) + var(--column-gap) + var(--detail-panel-width));
   /* In-game type chips are a fixed width regardless of label length, so a row of them lines up.
      Ours were padding-sized, so "All" was narrow and "Electric" wide and nothing aligned. */
   --type-chip-width: 7rem;

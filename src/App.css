@@ -5,7 +5,18 @@ header {
 
 main {
   padding: 1rem;
-  max-width: 60rem;
+  /*
+   * Never narrower than the builder row needs. A flat 60rem looked sufficient but is not derived
+   * from anything, so when the team grid grew the row no longer fit and the grid spilled over the
+   * detail panel. `max()` keeps the comfortable reading width for the prose and tables below while
+   * guaranteeing the one row that cannot compress always has its room.
+   */
+  /*
+   * The padding term matters: `main` is border-box now, so max-width is the OUTER width and the
+   * 1rem padding comes out of the content box. Without it the builder row lost 2rem of usable
+   * width and the detail panel wrapped below the grid.
+   */
+  max-width: max(60rem, calc(var(--builder-row-width) + 2 * 1rem + var(--space-sm)));
   margin: 0 auto;
 }
 
