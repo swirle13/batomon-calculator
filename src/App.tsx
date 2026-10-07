@@ -50,7 +50,7 @@ function CalculatorView() {
         <TrinketPicker />
       </p>
       <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap", alignItems: "flex-start" }}>
-        <GridPicker onHighlightSlot={setHighlightedSlot} result={result} />
+        <GridPicker onHighlightSlot={setHighlightedSlot} />
         <div style={{ flex: "0 0 var(--detail-panel-width)", textAlign: "left" }}>
           <PlacedCreatureDetails result={result} highlightedSlot={highlightedSlot} />
         </div>

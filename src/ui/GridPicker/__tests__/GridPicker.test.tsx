@@ -2,8 +2,6 @@ import { describe, expect, it, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { GridPicker, POINTER_ACTIVATION_CONSTRAINT } from "../GridPicker";
 import { TeamConfigProvider } from "../../../context/TeamConfigContext";
-import { simulate } from "../../../engine/simulate";
-import { corpus } from "../../../data/corpus";
 import type { TeamConfiguration } from "../../../data/types";
 
 /**
@@ -22,10 +20,9 @@ function renderWithPlacement() {
     itemIds: [],
     simulationWindowSeconds: 20,
   };
-  const result = simulate(config, corpus);
   return render(
     <TeamConfigProvider initialConfig={config}>
-      <GridPicker onHighlightSlot={vi.fn()} result={result} />
+      <GridPicker onHighlightSlot={vi.fn()} />
     </TeamConfigProvider>,
   );
 }

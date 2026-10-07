@@ -14,7 +14,6 @@ import type {
   GridCol,
   GridRow,
   GridSlot,
-  SimulationResult,
 } from "../../data/types";
 import { corpus, getCreatureById } from "../../data/corpus";
 import { useTeamConfig } from "../../context/TeamConfigContext";
@@ -65,13 +64,12 @@ interface GridPickerProps {
   /** 2026-10-05 round 3 (FR-021): hovering/focusing an occupied card reports its slot upward so
    * the persistent side panel (PlacedCreatureDetails, lifted state in App.tsx) can update. */
   onHighlightSlot: (slot: GridSlot) => void;
-  /**
-   * 2026-10-06 round 6 (FR-035): the already-computed simulation result, so each slot's stat
-   * badges can read `perCreatureEffectiveStats` — the *modifier-adjusted* values `simulate()`
-   * resolved. Passed in rather than recomputed here so the badges can never disagree with the DPS
-   * tables (data-model.md's single-source-of-truth rule).
+  /*
+   * 2026-10-06 round 9b: the `result` prop is gone. Round 6 threaded the simulation in so the slot
+   * badges could show modifier-adjusted values; those badges now show BASE stats (matching the
+   * game's own team pane), so the grid needs no simulation at all. A side benefit: the grid no
+   * longer re-renders on every simulation change.
    */
-  result: SimulationResult;
 }
 
 /** One colour-coded stat pill. Number-only, like the in-game pane — the colour carries the
@@ -85,7 +83,6 @@ function StatBadge({ statKey, value, label }: { statKey: StatColorKey; value: nu
 }
 
 interface SlotBadgesProps {
-  effective: SimulationResult["perCreatureEffectiveStats"][string] | undefined;
   creature: CreatureRecord;
 }
 
@@ -93,11 +90,19 @@ interface SlotBadgesProps {
  * The in-game pane's bottom row of pills. Shows damage and each applied status; cooldown is
  * deliberately NOT a pill (the game shows cooldown as its own block on the card, not down here),
  * and Multicast only appears when it is actually above 1.
+ *
+ * 2026-10-06 round 9b (user-reported): these show **BASE** stats, matching how the game's own team
+ * pane reads. Round 6 (T128) deliberately drove them from `perCreatureEffectiveStats` so they
+ * "could never disagree with the tables" — that was right while effective meant base-plus-manual-
+ * modifiers, but once round 9's resolver made on-battle-start abilities real it produced a
+ * confusing chip: Miasmaw's tile read **336** while its card read **10**. The game shows base on
+ * the tile and the live value on the inspect sheet, so that split is now mirrored here — the chip
+ * is base, and "Effective this battle" on the detail card is where resolved values live.
  */
-function SlotBadges({ effective, creature }: SlotBadgesProps) {
-  const damage = effective?.damage ?? creature.baseDamage;
-  const appliesStatus = effective?.appliesStatus ?? creature.appliesStatus ?? [];
-  const multicast = effective?.multicast ?? creature.baseMulticast;
+function SlotBadges({ creature }: SlotBadgesProps) {
+  const damage = creature.baseDamage;
+  const appliesStatus = creature.appliesStatus ?? [];
+  const multicast = creature.baseMulticast;
 
   return (
     <div className={styles.badges}>
@@ -121,7 +126,6 @@ interface DraggableCardProps {
   slot: GridSlot;
   creature: CreatureRecord;
   level: number;
-  effective: SimulationResult["perCreatureEffectiveStats"][string] | undefined;
   onHighlight: () => void;
   /** FR-023 (round 4): the card itself is the click target that opens CreatureSearchModal — no
    * separate "Change…" button. Coexists with dragging on the same element: @dnd-kit/core's pointer
@@ -132,7 +136,7 @@ interface DraggableCardProps {
   onClear: () => void;
 }
 
-function DraggableCard({ slot, creature, level, effective, onHighlight, onOpenSearch, onClear }: DraggableCardProps) {
+function DraggableCard({ slot, creature, level, onHighlight, onOpenSearch, onClear }: DraggableCardProps) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: slotKey(slot),
     data: { slot },
@@ -195,7 +199,7 @@ function DraggableCard({ slot, creature, level, effective, onHighlight, onOpenSe
         <Sprite spriteFile={creature.spriteFile} kind="monster" size={spriteGridSize()} alt={creature.name} />
       </div>
       <div className={styles.name}>{creature.name}</div>
-      <SlotBadges effective={effective} creature={creature} />
+      <SlotBadges creature={creature} />
     </div>
   );
 }
@@ -229,7 +233,7 @@ function DroppableZone({ slot, children }: { slot: GridSlot; children: ReactNode
   );
 }
 
-export function GridPicker({ onHighlightSlot, result }: GridPickerProps) {
+export function GridPicker({ onHighlightSlot }: GridPickerProps) {
   const { config, setPlacement, movePlacement } = useTeamConfig();
   const [searchModalSlot, setSearchModalSlot] = useState<GridSlot | null>(null);
 
@@ -274,10 +278,6 @@ export function GridPicker({ onHighlightSlot, result }: GridPickerProps) {
                 const availableLevels = placement
                   ? ([1, 2, 3, 4] as const).filter((lvl) => resolveLevelUp(corpus, placement.creatureId, lvl) !== null)
                   : [];
-                const effective =
-                  placement && creature
-                    ? result.perCreatureEffectiveStats[`${placement.creatureId}@${slotKey(slot)}`]
-                    : undefined;
 
                 return (
                   <div key={`${row}-${col}`} className={styles.slot}>
@@ -287,7 +287,6 @@ export function GridPicker({ onHighlightSlot, result }: GridPickerProps) {
                           slot={slot}
                           creature={creature}
                           level={placement.level}
-                          effective={effective}
                           onHighlight={() => onHighlightSlot(slot)}
                           onOpenSearch={() => setSearchModalSlot(slot)}
                           onClear={() => setPlacement(slot, null)}

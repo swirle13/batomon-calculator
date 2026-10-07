@@ -88,3 +88,50 @@ describe("charge mechanic (FR-073 / WI-009)", () => {
     expect(casts.map((c) => c.tSeconds)).toEqual([15, 30]);
   });
 });
+
+/**
+ * 2026-10-06 round 9b (user-reported): effects must resolve at EVERY level, not just level 1.
+ *
+ * This is the third time this exact bug class has appeared — round 6 found Formiqueen's aura
+ * vanishing at levels 2-4 (T140), and round 9 then shipped the same mistake by tagging only the
+ * level-1 records of the creatures it added. Hence the corpus-wide guard below rather than three
+ * more one-off fixes.
+ */
+describe("effects resolve at every level (round 9b)", () => {
+  it("scales Miasmaw's grant with its level multiplier", () => {
+    // L1 is "1x the total Poison of your allies"; L2 is "2x". Allies here total 326.
+    const atLevel = (level: 1 | 2) =>
+      resolveEffects(
+        {
+          ...USER_TEAM,
+          placements: USER_TEAM.placements.map((p) =>
+            p.creatureId === "miasmaw" ? { ...p, level } : p,
+          ),
+        },
+        corpus,
+      ).find((r) => r.creature.id === "miasmaw")!;
+
+    expect(atLevel(1).appliesStatus.find((s) => s.type === "Poison")?.amount).toBe(336);
+    // L2's own base Poison is 10 as well, +2x326 = 662.
+    const l2 = atLevel(2).appliesStatus.find((s) => s.type === "Poison")?.amount;
+    expect(l2).toBeGreaterThan(336);
+  });
+
+  it("GUARD: if a species has ability tags at level 1, it has them at every level it exists at", () => {
+    // The recurring failure: a creature's ability silently stops working when the user levels it.
+    const byId = new Map<string, { level: number; hasTags: boolean }[]>();
+    for (const c of corpus.creatures) {
+      if (!byId.has(c.id)) byId.set(c.id, []);
+      byId.get(c.id)!.push({ level: c.level, hasTags: c.abilityTags.length > 0 });
+    }
+    const offenders: string[] = [];
+    for (const [id, levels] of byId) {
+      const l1 = levels.find((l) => l.level === 1);
+      if (!l1?.hasTags) continue;
+      for (const lvl of levels) {
+        if (!lvl.hasTags) offenders.push(`${id}@L${lvl.level}`);
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
+});

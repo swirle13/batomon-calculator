@@ -157,10 +157,9 @@ describe("round 7 presentation fixes", () => {
   });
 
   it("renders grid sprites at the shared token size, not a per-call-site literal (FR-053, item 18)", () => {
-    const result = simulate(CONFIG, corpus);
     render(
       <TeamConfigProvider initialConfig={CONFIG}>
-        <GridPicker onHighlightSlot={() => {}} result={result} />
+        <GridPicker onHighlightSlot={() => {}} />
       </TeamConfigProvider>,
     );
     const sprite = screen.getByRole("img", { name: "Bumblebolt" });
