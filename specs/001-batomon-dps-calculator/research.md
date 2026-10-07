@@ -1573,6 +1573,123 @@ is **not** in round 9's ledger — the user did not ask for it — so it is reco
 for the next round rather than silently folded into this one, along with the recommendation to make
 the Steam news API the corpus's primary source.
 
+## L. Round 10 (2026-10-06, via `/speckit-orchestrate`) — the full ability-mechanism audit, and what "100% support" can honestly mean
+
+Twelve work items (ledger: `orchestration/round-3-items.md`). WI-010/011/012 dominate: the user
+asked for a deep research pass over every interaction type, an audit of what works, and then 100%
+coverage. That audit is below, and it changes what the rest of the round can promise.
+
+### L1. WI-010 — the mechanism taxonomy, derived from the data
+
+The game tags its own abilities with a trigger, which this corpus captured in round 6 as
+`abilityTrigger`. Grouping all 135 level-1 creatures that have ability text:
+
+```text
+On Cast 42 | (no trigger) 40 | On Battle Start 20 | Ongoing 15 | On Victory 8
+On Bought 5 | On Trinket Gained 2 | On Knocked Out 2 | On Battle Lost 1
+```
+
+Classifying by what the effect *does* rather than when it fires yields **17 distinct mechanism
+families**:
+
+| Mechanism | Creatures | Tagged | Unsupported |
+|---|---:|---:|---:|
+| Unclassified (mostly simple self-buffs: "+15 Shield for this battle") | 49 | 3 | 46 |
+| Evolution note | 12 | 1 | 11 |
+| Shop / economy | 10 | 0 | 10 |
+| Knockout effect | 9 | 0 | 9 |
+| Adjacency aura | 8 | 1 | 7 |
+| Positional grant ("ally behind") | 8 | 1 | 7 |
+| Count scaling ("for each Trinket you own") | 7 | 0 | 7 |
+| On-battle-start team grant | 6 | 1 | 5 |
+| Multicast grant | 6 | 0 | 6 |
+| Cooldown-speed grant | 4 | 0 | 4 |
+| Trigger-chaining ("Trigger this when…") | 4 | 0 | 4 |
+| Row-wide effect | 3 | 0 | 3 |
+| Enemy-state scaling ("% of the Poison stacks on the enemy") | 3 | 0 | 3 |
+| Ally-event charge | 2 | 1 | 1 |
+| Ally-stat scaling | 2 | 0 | 2 |
+| Ally-cast grant | 1 | 1 | 0 |
+| Self-stat scaling | 1 | 0 | 1 |
+| **TOTAL** | **135** | **9** | **126** |
+
+### L2. WI-011 — the audit result, with a correction that makes it worse
+
+**CORRECTED IN VALIDATION.** This section first said "9 of 135 are modelled", which conflated
+*tagged* with *working* — the exact distinction the user asked for ("audit what abilities currently
+are working and calculated"). A creature can carry a structured tag that no engine code reads.
+
+Counting what the engine **actually resolves** (`battleStartStatusFromAllies` and
+`chargeOnAllyStatus` in `effects.ts`; `cooldownSpeedModifier` in `simulate.ts:109`):
+
+```text
+level-1 creatures                         149
+  with real ability text                  135
+  carrying any abilityTags                  9
+  ACTUALLY RESOLVED BY THE ENGINE           3   <- formiqueen, cobrex, miasmaw
+  unsupported                             132
+```
+
+So the real figure is **3 of 135**, not 9. The other six tagged creatures carry kinds
+(`statusGrant` ×4, `ongoing` ×2, `cooldownSpeedOnAllyCast`) that **no engine code reads** — the tags
+are inert decoration. L1's table column is therefore relabelled "Tagged", and a separate "Resolved"
+count is what any coverage figure must report. Trainers (23) and trinkets (93, of which 6 have
+`effectTags`) are additionally almost entirely unmodelled and are **not yet taxonomised at all**.
+
+This also means **the UI's current "2 of 5" is itself computed from the wrong predicate** —
+`analyzePositionalCoverage` counts tags, not resolved kinds — and must be fixed alongside.
+
+### L3. WI-012 — "100% support" is the right goal with one honest correction
+
+**Roughly 22 of the 135 are not battle calculations at all** and should never be "supported" by a
+DPS engine: 10 shop/economy effects (free purchases, gift rarity, sell value) and 12 evolution
+notes. Excluding them is not a dodge — it is the project's own long-standing scope decision
+(research.md B6), and counting them toward a coverage denominator would make the figure meaningless.
+
+- **Decision**: the target is **100% of battle-relevant mechanisms** (~113 of 135), with
+  shop/economy and evolution explicitly excluded **and counted**, so the excluded set is visible
+  rather than quietly dropped from the denominator.
+- **Decision on sequencing, which matters more than it sounds**: coverage is limited by two
+  different things — the *engine* understanding a mechanism family, and each *creature* carrying a
+  structured tag. There are 17 families but 126 untagged creatures. Building the 17 families is
+  bounded, well-specified work; tagging 126 creatures is bulk data entry that scales linearly and
+  has twice produced silent misalignment (research.md H11, and the level-1-only tag bug found in
+  round 9b). **The families come first, then tagging proceeds family by family with the round-9b
+  per-level guard already in place.**
+- **Honest limit recorded before any work starts**: this round will not reach 100%. It can deliver
+  the mechanism families and a meaningful fraction of the tagging. The coverage figure already shown
+  in the UI is the right instrument — it should go up visibly and keep being told truthfully.
+
+### L4. The bounded bugs (WI-001 … WI-009)
+
+- **WI-001 (missing Heal chip)**: `SlotBadges` reads `baseDamage`, `appliesStatus`, and
+  `baseMulticast` — Heal lives in `healAmount`, so it was never considered. Straightforward.
+- **WI-002 (missing Multicast chip) — the first diagnosis was wrong, and the real cause is much
+  bigger.** Puffloon's level-2 record *does* carry `baseMulticast: 2` (verified), so the
+  `multicast > 1` gate would pass. The actual defect is at `GridPicker.tsx:272`:
+  `getCreatureById(placement.creatureId)` returns the **first matching record — always level 1** —
+  and ignores `placement.level` entirely. **So every chip on every levelled creature shows level-1
+  stats**, not just Multicast. The user reported the one case they could see; the bug is corpus-wide
+  and silent everywhere else, because most stats happen to look plausible at any level.
+- **WI-003 (modifiers don't reach the chips)** — **this directly contradicts the previous round.**
+  Round 9b changed the chips to base stats at the user's explicit request ("it should reflect his
+  base stats, not his effective stats"). The resolution: **base stats plus the user's own manual
+  modifiers**, excluding resolved ability effects. The distinction the user actually drew was
+  between *the creature's printed card* and *what the battle computes*; a modifier they typed in
+  themselves is neither — it is an input they expect to see reflected. Also note `+50 damage` on
+  Puffloon legitimately does nothing (`baseDamage: null`, and a modifier may only scale an effect
+  that exists) — the UI must say so rather than silently ignoring the input.
+- **WI-005/WI-006**: `cooldownSpeedOnAllyCast` is recorded as a tag but never applied, and
+  trigger-chaining has no tag kind at all. Both need the event loop to emit an "ally cast" event
+  that other creatures can subscribe to — the same hook, so they should be built together.
+- **WI-007 (Fumungus)**: round 9 deferred this for want of a modelled target. The minimum needed is
+  a per-status stack counter on the shared implicit target, which the engine already effectively
+  tracks for Shock (`shockLayers`) and could track for Poison the same way. That is a much smaller
+  change than a full target entity, so the deferral no longer holds.
+- **WI-009 (slider vs chart at t=0)**: the slider's "whole window" default shows the window
+  *average* while position 0 reads as "t=0". They are different quantities, not a disagreement —
+  the control is mislabelled rather than miscalculated.
+
 ## C. Resolved Technical Context (feeds plan.md)
 
 | Field | Resolution |

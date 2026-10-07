@@ -373,6 +373,25 @@ correct and show their data source citation(s).
 - **FR-076**: System MUST provide a time control that scrubs through the simulated battle, updating
   the headline output figure to that moment's value, consistent with the damage-rate chart.
 
+- **FR-077**: A grid slot's stat chips MUST show the creature's base stats **plus the user's own
+  manual modifiers**, and MUST NOT include effects the engine resolved from abilities. Every stat the
+  creature has — including Heal and Multicast — MUST be represented.
+- **FR-078**: When a user enters a modifier that cannot apply (because the creature has no such
+  effect to scale), the system MUST say so rather than accepting the input and silently ignoring it.
+- **FR-079**: Modifier editing MUST be laid out as the same 2x3 arrangement as the team grid, with
+  each cell corresponding to that slot.
+- **FR-080**: Abilities that modify another creature when it acts (cooldown-speed grants on cast,
+  trigger-chaining) MUST take effect during the simulated battle and compound as the battle runs.
+- **FR-081**: The simulation MUST track status stacks accumulated on the shared target, so abilities
+  that scale from "the stacks on the enemy" can be computed.
+- **FR-082**: Chart axis labels MUST remain legible regardless of the magnitude of the tick values.
+- **FR-083**: A control that reports a value at a point in time MUST NOT present a whole-window
+  aggregate as though it were that point's value.
+- **FR-084**: System MUST maintain a recorded taxonomy of every ability mechanism present in the
+  corpus, an audit of which are modelled, and a coverage figure visible in the UI. The target is
+  100% of **battle-relevant** mechanisms; shop/economy and evolution-only effects are explicitly
+  out of scope and MUST be counted and named rather than dropped from the denominator.
+
 ### Key Entities
 
 - **Creature (Batomon)**: A collectible unit with name, rarity, one or more types, shop cost, base

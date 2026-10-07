@@ -1864,6 +1864,140 @@ coverage ceiling is stated wherever the numbers are shown.
 
 ---
 
+## Phase 15: Round 10 — Ability Mechanism Coverage, Chip Fixes, Modifier Grid (2026-10-06)
+
+**Goal**: Implement the 12 work items in `orchestration/round-3-items.md` (FR-077..FR-084).
+
+### Traceability
+
+| WI | Ask (abbreviated) | Task(s) | FR |
+|---|---|---|---|
+| WI-001 | Puffloon's Heal shows no chip | T209 | FR-077 |
+| WI-002 | Multicast x2 adds no chip on level-up | T209 | FR-077 |
+| WI-003 | Modifiers add no chip | T210, T211 | FR-077/078 |
+| WI-004 | Modifiers layout must mirror the mon grid | T212 | FR-079 |
+| WI-005 | Drumire's +Cooldown Speed on ally cast not applied | T213 | FR-080 |
+| WI-006 | Puffloon's trigger-on-adjacent-ally-trigger not modelled | T213, T214 | FR-080 |
+| WI-007 | Fumungus damage from enemy Poison stacks | T215 | FR-081 |
+| WI-008 | Y-axis label overwritten by long tick values | T216 | FR-082 |
+| WI-009 | Slider vs chart disagree at t=0 | T217 | FR-083 |
+| WI-010 | *Research*: every interaction type | T218 (answered in research.md L1) | FR-084 |
+| WI-011 | *Audit*: what works vs doesn't | T218 (answered in research.md L2) | FR-084 |
+| WI-012 | Build to 100% ability support | T219, T220, T221 | FR-084 |
+
+**The audit answer, corrected in validation**: **3 of 135** creature abilities are actually
+resolved by the engine (formiqueen, cobrex, miasmaw) — **132 are not**, across **17 mechanism
+families**. The first draft said "9 modelled", which counted *tagged* rather than *working*: six
+tagged creatures carry kinds (`statusGrant`, `ongoing`, `cooldownSpeedOnAllyCast`) that no engine
+code reads. That is exactly the distinction the user asked to audit, so getting it wrong would have
+defeated the item. **The UI's own "2 of 5" counter is computed from the same wrong predicate** and
+is fixed by T221. The UI's "2 of 5" was representative, not a
+rounding artifact. **~22 of the 135 are not battle calculations at all** (10 shop/economy,
+12 evolution-only) and are excluded from the coverage target by the project's own scope rule
+(research.md B6) — counted and named, not dropped from the denominator.
+
+### Implementation — bounded bugs
+
+- [ ] T209 **[WI-001]** Fix `SlotBadges` in `src/ui/GridPicker/GridPicker.tsx` to render a **Heal**
+      chip (FR-077). `healAmount` is not part of `appliesStatus`, so the component never considered
+      it. A `"heal"` stat colour already exists.
+- [ ] T209b **[WI-002]** Fix the slot's creature lookup to honour the placement's level.
+      **CORRECTED DIAGNOSIS — the first draft of this task was wrong and would have concluded
+      nothing was broken.** It said to check whether Puffloon's level-2 record carries
+      `baseMulticast: 2`; it does. The real defect is `GridPicker.tsx:272` calling
+      `getCreatureById(placement.creatureId)`, which returns the **first** matching record — always
+      level 1 — and ignores `placement.level`. Use `getCreatureByIdAndLevel`.
+      **Scope is far wider than the reported symptom**: every chip on every levelled creature has
+      been showing level-1 stats. The user reported Multicast because it was the one visibly absent;
+      the rest looked plausible. Add a test pinning a levelled creature's chips to that level.
+- [ ] T210 **[WI-003]** Make the chips show base stats **plus the user's manual modifiers**, while
+      still excluding engine-resolved ability effects (FR-077). **This deliberately revises round
+      9b**, which set chips to pure base at the user's request. The distinction they drew was
+      between the creature's printed card and what the battle computes; a modifier they typed
+      themselves is neither — it is their own input, and they expect to see it. Record the revision
+      rather than silently flipping it back.
+- [ ] T211 **[WI-003]** Tell the user when a modifier cannot apply (FR-078). `+50 damage` on
+      Puffloon legitimately does nothing — `baseDamage` is `null` and the documented rule is that a
+      modifier only scales an effect that already exists. Surface that at entry time instead of
+      accepting the number and discarding it.
+- [ ] T212 **[WI-004]** Lay the Modifiers section out as the same 2x3 slot arrangement as the team
+      grid (FR-079), including empty cells, so position maps one-to-one.
+- [ ] T216 **[WI-008]** Stop the rotated Y-axis label colliding with long tick values in both charts
+      (FR-082) — increase the left margin with the value magnitude, or move the label. Verify at
+      5-digit values, which is where the user hit it.
+- [ ] T217 **[WI-009]** Fix the slider's t=0 reading (FR-083). The 2366.45-vs-0 gap is **not a
+      calculation disagreement**: the slider's default shows the whole-window *average* while its
+      position reads as t=0. Relabel/renumber so an aggregate is never presented as a point value.
+
+### Implementation — engine mechanisms
+
+- [ ] T213 **[WI-005, WI-006]** Emit an **ally-cast event** from the event loop that other creatures
+      can subscribe to, and implement `cooldownSpeedOnAllyCast` against it so the grant **compounds**
+      as the battle runs (FR-080). Drumire's tag exists but is applied nowhere today. Same hook
+      serves T214, so build them together.
+- [ ] T214 **[WI-006]** Add a trigger-chaining tag kind ("Trigger this when adjacent Toxic allies
+      trigger") and implement it on the T213 hook, so a chained creature casts in response to allies
+      rather than only on its own cooldown (FR-080). **Guard against infinite recursion** — two
+      creatures that trigger each other must not loop; cap chain depth and state the cap.
+- [ ] T215 **[WI-007]** Track accumulated status stacks on the shared implicit target so
+      "additional Damage equal to N% of the Poison stacks on the enemy" resolves (FR-081). The engine
+      already tracks exactly this for Shock (`shockLayers`); Poison needs the same counter. **Round 9
+      deferred this for want of a full target entity — that deferral no longer holds**, because a
+      per-status counter is far smaller than a target model. Record the reversal.
+
+### Implementation — coverage programme (WI-012)
+
+- [ ] T218 **[WI-010, WI-011]** Record the taxonomy and audit in `research.md` L1/L2 and keep them
+      **regenerable**: commit the classification script to `scripts/` so the figures recompute rather
+      than going stale the moment a creature is tagged. The figures were published before the script
+      was committed, which is how the tagged-vs-resolved error survived into two artifacts.
+      **Two gaps the first draft left open and which this task must close:**
+      (a) **"Unclassified" is a residual bucket, not a mechanism.** It is the *largest* row (49) and
+      mostly simple self-buffs ("+15 Shield for this battle", "+4 Burn and +4 Poison permanently").
+      The ask was "every type of interaction", so it must be broken into real families — at minimum
+      self-buff-for-this-battle, self-buff-permanent, and team-buff-permanent — not left as a
+      catch-all that hides a third of the corpus.
+      (b) **Trainers (23) and trinkets (93) are named as unmodelled but never taxonomised.** The ask
+      was not limited to creatures. Classify them on the same axes.
+- [ ] T219 **[WI-012]** Implement the mechanism families from L1. Families first, because there are
+      17 of them versus 132 unsupported creatures: families are bounded, well-specified work, while
+      tagging scales linearly and has twice produced silent misalignment (research.md H11; round 9b's
+      level-1-only tag bug).
+      **Each family needs its own tag schema recorded in `data-model.md` before implementation** —
+      `data-model.md` currently has no round-10 section at all, and T214's trigger-chaining kind and
+      T215's Poison counter both belong there. A family is not done until it has: a tag kind, a
+      resolver branch, a test, and at least one tagged creature exercising it.
+      **In scope this round** (ordered by creatures unlocked): self-buff families from T218(a),
+      adjacency auras (7), positional grants (7), count scaling (7), multicast grants (6),
+      on-battle-start team grants (5), cooldown-speed grants (4), row-wide (3), enemy-state scaling
+      (3), ally-stat scaling (2), self-stat scaling (1).
+      **Explicitly DEFERRED, named rather than silently omitted**: **knockout effects (9)** need a
+      modelled death/HP system this engine does not have; **shop/economy (10)** and
+      **evolution-only (12)** are out of scope by research.md B6. Together that is **31 of 135**,
+      and T223 must report it as the known shortfall.
+- [ ] T220 **[WI-012]** Tag creatures family by family against T219's kinds, **at every level**
+      (round 9b's per-level guard already enforces this). Report the coverage figure after each
+      family rather than only at the end.
+- [ ] T221 **[WI-012]** Make the coverage figure self-reporting and honest (FR-084): compute it from
+      the data, show battle-relevant coverage as the headline, and name the excluded shop/economy,
+      evolution and knockout counts separately so the denominator is never quietly shrunk.
+      **Fix the predicate while you are here**: `analyzePositionalCoverage` counts creatures that
+      carry a *tag*, not creatures the engine *resolves* — which is why the UI says "2 of 5" when
+      only 3 creatures corpus-wide actually work. Count resolved kinds, and derive the list of
+      resolved kinds from the resolver itself so the two can never drift apart.
+
+### Polish
+
+- [ ] T222 [P] Quickstart Validation Scenarios 45-50 for the above.
+- [ ] T223 Verify `npx tsc -b --noEmit`, `npx vitest run`, `npm run build`; report the coverage
+      figure before and after, and **state plainly how far short of 100% the round lands, per
+      family** — the user asked for 100%, so the shortfall is the headline, not the progress.
+      Baseline to report against: **3 of 135 resolved** at the start of this round. The known
+      structural shortfall is **31 of 135** (9 knockout + 10 shop/economy + 12 evolution-only), none
+      of which a DPS engine can or should compute.
+
+---
+
 ## Implementation Strategy
 
 ### MVP First (User Story 1 Only)
