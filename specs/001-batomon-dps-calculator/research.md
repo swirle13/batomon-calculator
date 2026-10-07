@@ -1744,3 +1744,30 @@ effective stats mid-battle), not another resolver pass.
 creatures, making this the single largest unlocked family in the corpus — larger than all seven
 selector families combined. It is a well-defined piece of work, but it is engine work in
 `simulate.ts`, and it was not scoped this round.
+
+> **The "roughly 40" above is RETRACTED — the real figure is 14** (round 11, measured while
+> implementing T224). The 40 came from counting creatures whose ability *text* matched a loose
+> buff-like pattern. Counting the thing that actually defines the family — `abilityTrigger ===
+> "On Cast"` **and** a `+N <stat>` grant in the text — gives **14 species**:
+>
+> | | species |
+> |---|---|
+> | self-buff, accumulates on the holder | mosslug, bambudo, pebbler, bonshell, pyrokami, galvanine |
+> | **grants to an ally** (positional) | magmalith, noxalith, voltalith, zephyrex, saberhorn, noxnimbus, aerophim |
+> | other mechanism | petrirex (knockout), prismagon (unique-type count) |
+>
+> Two things follow, and both cut against what L5 originally concluded:
+>
+> 1. **Half the family is positional, not self-targeted.** "Give the ally above +2 Burn
+>    permanently" is a `buffOnCast` with a *selector* — so T219's selector work and T224's
+>    accumulation work compose, rather than being alternatives. Seven species were unlocked by
+>    having both, and neither alone would have done it.
+> 2. **It is not larger than the seven selector families combined.** That claim followed from the
+>    inflated 40 and does not survive the recount.
+>
+> Still untagged after round 11, and why: **pebbler, bonshell, pyrokami** grant a status they
+> *already apply* ("+15 Shield" against `appliesStatus` Shield 20), and whether those are one
+> effect or two is genuinely unclear from the text — guessing wrong double-counts, which is
+> exactly the trap that doubled Bumblebolt's Shock in round 10. **saberhorn** grants +1 Multicast
+> but also adds 8s to its own cooldown; tagging only the upside would overstate it. **aerophim**
+> also transforms its targets into random monsters, which is unmodellable.

@@ -3,6 +3,7 @@ import type {
   CreatureRecord,
   EffectDescriptor,
   GridSlot,
+  SelectorFilters,
   StatusEffectType,
   TargetSelector,
   TeamConfiguration,
@@ -86,6 +87,8 @@ export const RESOLVED_TAG_KINDS = [
   "onEvent",
   "statFromCount",
   "statFromStat",
+  // Round 11: resolved, but by `simulate()` inside the cast loop rather than here — see T224.
+  "buffOnCast",
 ] as const;
 
 /** True when `tag` is one this resolver understands. Keeps the "can we act on it?" test in one place. */
@@ -104,24 +107,36 @@ export function isResolvableTag(tag: { kind: string }): boolean {
  * Board geometry is `grid.ts`'s, so "adjacent" stays side-sharing and never diagonal (research.md
  * B5) in exactly one place.
  */
-function selectTargets<T extends { slot: GridSlot; key: string; creature: CreatureRecord }>(
+export function selectTargets<T extends { slot: GridSlot; key: string; creature: CreatureRecord }>(
   selector: TargetSelector,
   source: T,
   all: T[],
 ): T[] {
   const others = all.filter((m) => m.key !== source.key);
-  const byType = (list: T[]) =>
-    selector.kind === "adjacent" || selector.kind === "allAllies"
-      ? list.filter((m) => !selector.typeFilter || m.creature.types.includes(selector.typeFilter))
-      : list;
+
+  // T225: type/rarity/level filters apply to every selector that can carry them, in one place.
+  const filtered = (list: T[]) => {
+    const f = selector as Partial<SelectorFilters>;
+    return list.filter(
+      (m) =>
+        (!f.typeFilter || m.creature.types.includes(f.typeFilter)) &&
+        (!f.rarityFilter || m.creature.rarity === f.rarityFilter) &&
+        (!f.minLevelFilter || m.creature.level >= f.minLevelFilter),
+    );
+  };
 
   switch (selector.kind) {
     case "self":
       return [source];
     case "adjacent":
-      return byType(others.filter((m) => isAdjacent(source.slot, m.slot)));
+      return filtered(others.filter((m) => isAdjacent(source.slot, m.slot)));
     case "row":
-      return others.filter((m) => m.slot.row === source.slot.row);
+      return filtered(others.filter((m) => m.slot.row === source.slot.row));
+    case "inFront": {
+      // The mirror of `behind`: defined only from the back row, looking forward.
+      if (source.slot.row !== "back") return [];
+      return others.filter((m) => m.slot.row === "front" && m.slot.col === source.slot.col);
+    }
     case "behind": {
       const slot = behindSlot(source.slot);
       return slot ? others.filter((m) => slotsEqual(m.slot, slot)) : [];
@@ -131,7 +146,7 @@ function selectTargets<T extends { slot: GridSlot; key: string; creature: Creatu
       return slot ? others.filter((m) => slotsEqual(m.slot, slot)) : [];
     }
     case "allAllies":
-      return byType(others);
+      return filtered(others);
     default:
       return [];
   }
@@ -262,6 +277,8 @@ export function resolveEffects(config: TeamConfiguration, corpus: Corpus): Resol
           const matches = base.filter((m) => {
             if (m.key === source.key && !tag.includeSelf) return false;
             if (tag.typeFilter && !m.creature.types.includes(tag.typeFilter)) return false;
+            if (tag.rarityFilter && m.creature.rarity !== tag.rarityFilter) return false;
+            if (tag.minLevelFilter && m.creature.level < tag.minLevelFilter) return false;
             if (tag.rowFilter && m.slot.row !== tag.rowFilter) return false;
             return true;
           }).length;

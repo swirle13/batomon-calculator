@@ -45,6 +45,12 @@ struct Bitmap {
         let mx = max(r, max(g, b)), mn = min(r, min(g, b))
         return mn >= 225 && (mx - mn) <= 26
     }
+    /// HP-bar fill green (#00C100 body, #34EE3D highlight). Deliberately narrow so it cannot
+    /// match the grass background (#ABD761), which is far less saturated.
+    func isHealthGreen(_ x: Int, _ y: Int) -> Bool {
+        let (r, g, b) = rgb(x, y)
+        return g >= 140 && r <= 110 && b <= 110
+    }
 }
 
 final class Video {
@@ -129,7 +135,10 @@ struct Layout: Codable {
     var frameHeight: Int
     var fps: Double
     var slots: [SlotLayout]
-    var hp: [String: Rect]   // "ally" / "enemy"
+    /// Health bars, keyed "ally" / "enemy". Measured as the green/grey boundary rather than by
+    /// reading the HP text: the text is drawn *over* the bar in white, so OCR there is fragile,
+    /// whereas the boundary is a clean monotonic signal at ~0.16% resolution.
+    var hpBars: [String: Rect]
 }
 
 // MARK: - Glyphs

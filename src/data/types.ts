@@ -85,13 +85,33 @@ export interface Provenance {
 
 export type EventLabel = "OnCast" | "OnBattleStart" | "OnVictory" | "OnKnockout";
 
+/**
+ * Filters a selector can additionally apply. Round 11 (T225): real ability text needs all three,
+ * and tagging creatures before these existed would have meant either skipping them or encoding
+ * them wrongly:
+ *   rarity  — "This and Common allies gain +10 Damage permanently." (Brawlmantis)
+ *   level   — "+160 Damage for each ally of level 3 or above." (Orcana)
+ */
+export interface SelectorFilters {
+  typeFilter?: CreatureType;
+  rarityFilter?: Rarity;
+  /** Matches allies at or above this level. */
+  minLevelFilter?: number;
+}
+
 export type TargetSelector =
   | { kind: "self" }
-  | { kind: "adjacent"; sameTeamOnly?: boolean; typeFilter?: CreatureType }
-  | { kind: "row"; sameTeamOnly?: boolean }
+  | ({ kind: "adjacent"; sameTeamOnly?: boolean } & SelectorFilters)
+  | ({ kind: "row"; sameTeamOnly?: boolean } & SelectorFilters)
   | { kind: "behind" }
   | { kind: "above" }
-  | { kind: "allAllies"; typeFilter?: CreatureType };
+  /**
+   * The ally directly IN FRONT — the opposite direction to `behind`. Distinct because the board is
+   * two rows and the relationship is not symmetric: Saberhorn's "give the ally in front +1
+   * Multicast" reads from the back row forward, where `behind`/`above` read from the front row back.
+   */
+  | { kind: "inFront" }
+  | ({ kind: "allAllies" } & SelectorFilters);
 
 export interface EffectDescriptor {
   statChange?: { stat: "cooldownSpeed" | "damage" | "multicast"; amount: number };
@@ -135,6 +155,8 @@ export type AbilityTag =
       target: TargetSelector;
       effect: EffectDescriptor;
       typeFilter?: CreatureType;
+      rarityFilter?: Rarity;
+      minLevelFilter?: number;
       rowFilter?: GridRow;
       /** Default false: "each ally" excludes the creature itself, matching `effects.ts` ally rule. */
       includeSelf?: boolean;
@@ -143,6 +165,19 @@ export type AbilityTag =
    * Stat scaling: "gain <effect> equal to <multiplier>x the <sourceStat> of <sourceSelector>".
    * Reads BASE values of the pool, so two creatures scaling off each other cannot feed back.
    */
+  /**
+   * 2026-10-06 round 11 (T224). "On Cast: +N <stat> for this battle" — the ACCUMULATING buff.
+   *
+   * research.md L5: this is the single largest mechanism in the corpus (~40 creatures) and the
+   * reason the taxonomy's "Unclassified" bucket resisted classification. It reads like a static
+   * self-buff and is not: the trigger fires on every cast, so Mosslug is at +20 Damage after its
+   * first cast, +40 after its second. "For this battle" scopes how long the bonus PERSISTS, not how
+   * often it is GRANTED.
+   *
+   * It cannot live in `effects.ts`, which resolves once before the battle starts. It is applied by
+   * `simulate()` inside the cast loop.
+   */
+  | { kind: "buffOnCast"; target: TargetSelector; effect: EffectDescriptor }
   | {
       kind: "statFromStat";
       sourceSelector: TargetSelector;

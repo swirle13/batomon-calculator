@@ -12,7 +12,7 @@ import type {
 import { effectiveCooldown } from "./cooldown";
 import { applyStatusTick, applyShockProc } from "./status";
 import { isAdjacent, slotKey, slotsEqual, stableSlotIndex } from "./grid";
-import { resolveEffects } from "./effects";
+import { resolveEffects, selectTargets } from "./effects";
 import { InvalidTeamConfigurationError } from "./errors";
 
 /**
@@ -382,6 +382,27 @@ export function simulate(
   /** Repetitions queued from a multicast burst that has already begun. */
   const pendingReps: Cast[] = [];
 
+  /**
+   * T224 (research.md L5): buffs granted BY a cast, accumulating across the battle.
+   *
+   * "+20 Damage for this battle" on an On Cast trigger is not a static buff — it fires every time
+   * the creature casts, so the holder is at +20 after one cast and +40 after two. This is the
+   * largest mechanism family in the corpus (~40 creatures) and the reason the taxonomy's
+   * "Unclassified" bucket resisted classification.
+   *
+   * It lives here rather than in `effects.ts` because `effects.ts` resolves ONCE before the battle
+   * and returns fixed stats; a value that changes mid-window cannot be expressed there.
+   */
+  const runtimeBuffs = new Map<string, { damage: number; multicast: number; status: Map<StatusEffectType, number> }>();
+  const buffFor = (key: string) => {
+    let b = runtimeBuffs.get(key);
+    if (!b) {
+      b = { damage: 0, multicast: 0, status: new Map() };
+      runtimeBuffs.set(key, b);
+    }
+    return b;
+  };
+
   function nextEventTime(): number | null {
     let best: number | null = null;
     for (const entry of schedule) {
@@ -423,7 +444,10 @@ export function simulate(
       const resolvedEntry = resolvedByKey.get(`${entry.creature.id}@${slotKey(entry.sourceSlot)}`);
       const multicastCount = Math.max(
         1,
-        (resolvedEntry?.multicast ?? entry.creature.baseMulticast) + entry.modifiers.multicastAdd,
+        (resolvedEntry?.multicast ?? entry.creature.baseMulticast) +
+          entry.modifiers.multicastAdd +
+          // T224: accumulated multicast grants, e.g. Shelldra's "+1 Multicast for this battle".
+          (runtimeBuffs.get(`${entry.creature.id}@${slotKey(entry.sourceSlot)}`)?.multicast ?? 0),
       );
       for (let rep = 1; rep < multicastCount; rep++) {
         const repT = roundTime(tSeconds + rep * STEP);
@@ -448,7 +472,10 @@ export function simulate(
       const effective = resolvedByKey.get(sourceKey);
       // Modifiers can only scale an effect the creature already has (data-model.md's "Known
       // limitation") — a damageFlatAdd never fabricates an attack on a creature with no damage.
-      const resolvedDamage = effective?.baseDamage ?? creature.baseDamage;
+      // T224: base/resolved damage PLUS whatever this creature has accumulated so far this battle.
+      const accrued = runtimeBuffs.get(sourceKey);
+      const resolvedBase = effective?.baseDamage ?? creature.baseDamage;
+      const resolvedDamage = resolvedBase === null ? null : resolvedBase + (accrued?.damage ?? 0);
       const isDirectHit = creature.damageType === "Direct" && resolvedDamage !== null;
 
       if (isDirectHit) {
@@ -481,7 +508,11 @@ export function simulate(
       // single instance that sheds the same 1 layer per tick.
       const ongoingReps = 1 + (effective?.extraOngoingApplications ?? 0);
       const appliedList = Array.from({ length: ongoingReps }, () =>
-        effective?.appliesStatus ?? creature.appliesStatus ?? [],
+        (effective?.appliesStatus ?? creature.appliesStatus ?? []).map((s) => ({
+          ...s,
+          // T224: accumulated status buffs, e.g. "+4 Burn permanently" on an On Cast trigger.
+          amount: s.amount + (accrued?.status.get(s.type) ?? 0),
+        })),
       ).flat();
       for (const applied of appliedList) {
         if (applied.type === "Shock") {
@@ -513,6 +544,34 @@ export function simulate(
         // KNOWN SCOPE GAP (tasks.md T037): applyShieldReduction() exists and is unit-tested, but
         // Shield still never reduces incoming damage here — that needs a modelled target with its
         // own HP/Shield pool, which this engine's "idealised target" assumption does not provide.
+      }
+    }
+
+    // --- T224: on-cast buffs, granted AFTER the instant completes ---
+    //
+    // Same FR-040 snapshot rule as charges, and for the same reason: a cast resolves against the
+    // state as the instant began, so a creature's own "+20 Damage" does not retroactively inflate
+    // the very cast that granted it. Mosslug's first cast deals its base damage; its SECOND deals
+    // base + 20. Granting inline would make the buff appear one cast early and silently overstate
+    // every creature in the largest family in the corpus.
+    //
+    // Multicast repetitions do NOT re-grant: the buff is "on cast", and a multicast burst is one
+    // cast producing several hits (research.md F2). Only `dueCasts` grants, never `dueReps`.
+    for (const entry of dueCasts) {
+      const sourceKey = `${entry.creature.id}@${slotKey(entry.sourceSlot)}`;
+      const sourceResolved = resolvedByKey.get(sourceKey);
+      if (!sourceResolved) continue;
+      for (const tag of entry.creature.abilityTags) {
+        if (tag.kind !== "buffOnCast") continue;
+        for (const target of selectTargets(tag.target, sourceResolved, resolved)) {
+          const b = buffFor(target.key);
+          if (tag.effect.statChange?.stat === "damage") b.damage += tag.effect.statChange.amount;
+          if (tag.effect.statChange?.stat === "multicast") b.multicast += tag.effect.statChange.amount;
+          if (tag.effect.statusGrant) {
+            const g = tag.effect.statusGrant;
+            b.status.set(g.type, (b.status.get(g.type) ?? 0) + g.amount);
+          }
+        }
       }
     }
 

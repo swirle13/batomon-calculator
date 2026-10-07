@@ -2032,14 +2032,24 @@ rounding artifact. **~22 of the 135 are not battle calculations at all** (10 sho
   re-derive the formula from memory; read research.md B1-B6 and contracts/engine-api.md first.
 - Commit after each task or logical group.
 
-- [ ] T224 **[WI-010, WI-012]** Build **per-cast accumulating buffs** in `simulate.ts` (research.md L5).
+- [x] T224 **[WI-010, WI-012]** Build **per-cast accumulating buffs** in `simulate.ts` (research.md L5).
       Discovered during T219: the 49-creature "Unclassified" bucket is not a grab-bag of static
       self-buffs but one mechanism — "+N Damage for this battle" with an **On Cast** trigger, which
       accumulates on every cast. A pre-battle resolver cannot express it; it needs the event loop to
       mutate the acting creature's effective stats mid-battle. Est. ~40 creatures, the largest single
       family in the corpus, larger than all seven selector families combined. NOT scoped in round 10.
-- [ ] T225 **[WI-010]** Extend `TargetSelector` before mass tagging. Real ability text needs filters
+- [x] T225 **[WI-010]** Extend `TargetSelector` before mass tagging. Real ability text needs filters
       the vocabulary lacks: **rarity** ("This and Common allies gain +10 Damage" — Brawlmantis),
       **level** ("for each ally of level 3 or above" — Orcana), and **"in front"** as a direction
       distinct from `behind`/`above` (Saberhorn). Tagging before this means either skipping those
       creatures or encoding them wrongly.
+
+- [ ] T226 **[WI-010]** Resolve the three ambiguous accumulating buffs — **pebbler, bonshell,
+      pyrokami** — whose ability text grants a status the creature *already applies* ("+15 Shield"
+      vs `appliesStatus` Shield 20). Needs evidence from the game or patch notes, not a guess:
+      either the grant IS the application (tag nothing) or it is additive (tag `buffOnCast`).
+      Guessing wrong double-counts, which is how Bumblebolt's Shock doubled in round 10.
+- [ ] T227 **[WI-010]** Model **saberhorn** (+1 Multicast to the ally in front, but +8s to its OWN
+      cooldown) and **aerophim** (+1 Multicast to adjacent allies, but transforms them into random
+      monsters). Both need a cost the engine cannot currently express; tagging only their upside
+      would overstate them.
