@@ -72,3 +72,19 @@ export function rarityLabel(rarity: Rarity): string {
 export function statusColor(type: StatusEffectType): string {
   return STAT_COLORS[STATUS_COLOR_KEY[type]];
 }
+
+/**
+ * The second colour tier, for ability-text keywords that name a MECHANIC rather than an output stat
+ * (2026-10-07, round 7 WI-007).
+ *
+ * Needed because a vocabulary limited to the seven `StatColorKey`s leaves a visible minority of
+ * cards flat: of 543 ability texts, 318 contain an output-stat term and 225 do not, and those 225
+ * say things like "Give adjacent allies **Protect** 1", "Your team has +50 **HP**", "**Evolves** at
+ * level 3". An ask that says "all mon's ability text" is not met by colouring 318 of 543.
+ *
+ * Deliberately ONE colour for the whole tier rather than one per term. These are not quantities the
+ * player compares -- they are nouns naming a mechanic -- so giving each its own hue would imply a
+ * taxonomy that does not exist and compete with the stat colours, which DO encode meaning. Amber
+ * matches the game's own treatment of the trigger label above the text.
+ */
+export const KEYWORD_MECHANIC_COLOR = "#e0a93c";

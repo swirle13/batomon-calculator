@@ -10,6 +10,7 @@ import { AllTypeTag, TypeTag } from "../TypeTag";
 import { CreatureSprite } from "../CreatureSprite";
 import styles from "./BatomonCard.module.css";
 import { isWildcardType } from "../../../data/vocabularies";
+import { AbilityText } from "../AbilityText";
 
 /**
  * The one creature card, shared by the Corpus Browser and the Calculator's selected-creature panel
@@ -243,7 +244,8 @@ export function BatomonCard({ creature, children, levelLabel, fixedHeight, meta,
       {hasAbilityText(creature.abilityText) ? (
         <div className={styles.ability}>
           {creature.abilityTrigger ? <div className={styles.abilityTrigger}>{creature.abilityTrigger}</div> : null}
-          <p className={styles.abilityText}>{creature.abilityText}</p>
+          {/* Keywords coloured in place, from the same palette as the stat badges above (WI-007). */}
+          <AbilityText text={creature.abilityText} className={styles.abilityText} />
         </div>
       ) : null}
 
