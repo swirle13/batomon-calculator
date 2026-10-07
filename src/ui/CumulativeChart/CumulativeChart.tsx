@@ -27,17 +27,23 @@ export function CumulativeChart({ result }: CumulativeChartProps) {
       <SeriesChart
         xValues={xValues}
         /*
-          EVERY series is `stepAfter`, not just Total and Direct.
-          
+          EVERY series is `stepAfter`.
+
           Cumulative damage is a step function: it changes at an instant — a cast, a tick — and
-          holds until the next one. Only Total and Direct said so; Burn, Poison, Shock and Shield
-          fell back to straight-line interpolation, which drew a DIAGONAL between samples and made
-          damage look like it accrued continuously in between.
-          
-          That was not cosmetic. Magmite casts at t=4.5, and the Shield line sloped up from (4, 0)
-          to (4.5, 40) — so the chart appeared to show the cast beginning at t=4.0, and the engine
-          looked half a second wrong when it was right. A chart that invents intermediate values is
-          worse than a coarse one, because it reads as evidence.
+          holds until the next one. Only Total and Direct said so once; the status lines fell back
+          to straight-line interpolation, which drew a DIAGONAL between samples and made damage look
+          like it accrued continuously in between.
+
+          That was not cosmetic. Magmite casts at t=4.5, and the sloping line reached its new value
+          by then from a start at t=4.0 — so the chart appeared to show the cast beginning half a
+          second early, and the engine looked wrong when it was right. A chart that invents
+          intermediate values is worse than a coarse one, because it reads as evidence.
+
+          SHIELD IS DELIBERATELY ABSENT. It deals no damage and is already excluded from
+          `totalDamage` for that reason, so a Shield line on a damage chart contradicted the
+          chart's own total — the one line that could never add up to it. Shield output still
+          appears in the status table and on the stat badges, where it is not being passed off as
+          damage.
         */
         series={[
           { name: "Total", values: series.map((p) => p.totalDamage), color: "#f5f5f5", lineType: "stepAfter" },
@@ -48,16 +54,12 @@ export function CumulativeChart({ result }: CumulativeChartProps) {
           { name: "Burn", values: series.map((p) => p.byStatus.Burn), color: STAT_COLORS.burn, lineType: "stepAfter" },
           { name: "Poison", values: series.map((p) => p.byStatus.Poison), color: STAT_COLORS.poison, lineType: "stepAfter" },
           { name: "Shock", values: series.map((p) => p.byStatus.Shock), color: STAT_COLORS.shock, lineType: "stepAfter" },
-          // Shield's published colour (#9aa1b8) is a grey-blue that sat too close to the white
-          // Total line to tell apart. Shifted blue for legibility ONLY on this chart; the stat
-          // badges and chips keep the game's own colour, which is what players match against.
-          { name: "Shield", values: series.map((p) => p.byStatus.Shield), color: "#5b8dd9", lineType: "stepAfter" },
         ]}
         xLabel="seconds (0.5s increments)"
-        yLabel="cumulative value"
+        yLabel="cumulative damage"
         xMax={windowSeconds}
         xTickInterval={1}
-        ariaLabel="Line chart of cumulative damage and status output over the simulated time window, sampled every 0.5 seconds"
+        ariaLabel="Line chart of cumulative damage by source over the simulated time window, sampled every 0.5 seconds"
         formatValue={(v) => v.toFixed(0)}
       />
     </section>

@@ -70,7 +70,8 @@ describe("cumulative chart draws steps, not slopes (2026-10-06)", () => {
     // `type` is not recoverable from the markup.
     const src = readFileSync("src/ui/CumulativeChart/CumulativeChart.tsx", "utf8");
     const seriesEntries = src.match(/\{ name: "[^"]+", values:[^}]+\}/g) ?? [];
-    expect(seriesEntries.length).toBe(6); // Total, Direct, Burn, Poison, Shock, Shield
+    // Five: Total, Direct, Burn, Poison, Shock. Shield is deliberately not on a DAMAGE chart.
+    expect(seriesEntries.length).toBe(5);
     for (const entry of seriesEntries) {
       const name = /name: "([^"]+)"/.exec(entry)![1];
       expect(entry, `${name} is not stepAfter`).toContain('lineType: "stepAfter"');
