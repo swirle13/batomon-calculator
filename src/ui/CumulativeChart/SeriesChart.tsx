@@ -67,6 +67,36 @@ export interface SeriesChartProps {
 }
 
 const AXIS = "#9ca3af";
+
+/** Width of the rotated axis label's strip, in px. */
+const LABEL_STRIP = 22;
+/** Approximate advance width of one digit at the tick font size, in px. */
+const CHAR_PX = 7;
+
+/**
+ * Width the y-axis band needs, MEASURED from the tick text rather than fixed.
+ *
+ * A constant gutter cannot serve both charts: the rate chart draws "0.00".."24.00" while the
+ * cumulative one can reach five digits, and whatever constant fits the widest case wastes space on
+ * the narrowest. At a fixed 64px the rotated label sat on top of the ticks and ate their leading
+ * digits — "12.00" rendered as "2.00".
+ *
+ * Ticks are right-aligned inside this band and the label is anchored at its left edge, so sizing
+ * the band from the longest string the chart will actually draw is what keeps them apart — and it
+ * keeps doing so as the numbers grow, which is the part a constant could never do.
+ */
+export function yAxisWidthFor(
+  series: { values: number[] }[],
+  formatValue: (v: number) => string,
+  yMax?: number,
+): number {
+  const widest = Math.max(
+    1,
+    ...series.flatMap((s) => s.values).map((v) => formatValue(v).length),
+    yMax === undefined ? 1 : formatValue(yMax).length,
+  );
+  return LABEL_STRIP + widest * CHAR_PX + 10;
+}
 const GRID = "#444857";
 
 function ticksFor(max: number | undefined, interval: number | undefined): number[] | undefined {
@@ -89,6 +119,8 @@ export function SeriesChart({
   formatValue = (v) => v.toFixed(2),
   height = 284,
 }: SeriesChartProps) {
+  const yAxisWidth = yAxisWidthFor(series, formatValue, yMax);
+
   const data = xValues.map((x, i) => {
     const row: Record<string, number> = { x };
     for (const s of series) row[s.name] = s.values[i] ?? 0;
@@ -103,7 +135,7 @@ export function SeriesChart({
           `left` holds up-to-5-digit ticks AND the rotated y label beside them; `bottom` holds the
           x label alone, now that the legend has moved to the top (see <Legend/>).
         */}
-        <LineChart data={data} margin={{ top: 8, right: 24, bottom: 28, left: 64 }}>
+        <LineChart data={data} margin={{ top: 8, right: 24, bottom: 28, left: 8 }}>
           <CartesianGrid strokeDasharray="3 3" stroke={GRID} />
           <XAxis
             dataKey="x"
@@ -117,6 +149,10 @@ export function SeriesChart({
             label={{ value: xLabel, position: "insideBottom", offset: -20, fill: AXIS }}
           />
           <YAxis
+            // Explicit width rather than Recharts' default 60: the ticks are right-aligned inside
+            // this band and the label is anchored at its left edge, so sizing the band is what
+            // keeps them apart.
+            width={yAxisWidth}
             domain={[0, yMax ?? "auto"]}
             ticks={ticksFor(yMax, yTickInterval)}
             stroke={AXIS}
