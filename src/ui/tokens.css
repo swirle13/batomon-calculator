@@ -69,12 +69,22 @@
   --sprite-row: 24px;
   /* 64px, matching --sprite-grid: the user compared the picker against the team grid
      directly (WI-001). Was 48px, which is why "still not 64x64" survived round 7. */
-  --sprite-picker: 64px;
+  /*
+   * 112px (2026-10-07). The picker's sprites were 64, which read small against the card they sit
+   * in; this is the size the art is actually legible at. Note the card min-width below is sized to
+   * hold it, so the two move together.
+   */
+  --sprite-picker: 112px;
 
   /* --- card geometry ------------------------------------------------------------------------
    * The creature picker's cards follow the in-game shop card's measured proportions:
    * ~175 x 145 px, i.e. ~1.2:1 (landscape, wider than tall). */
-  --picker-card-min-width: 9.5rem;
+  /*
+   * 11rem (176px) — raised with --sprite-picker from 64px to 112px (2026-10-07). The card has to be
+   * wider than the sprite it holds plus padding, or the art is clipped. These two values are a
+   * pair: changing one without the other breaks the tile.
+   */
+  --picker-card-min-width: 11rem;
   --picker-card-aspect: 1.2;
 
   /* FR-062 (WI-007): the selected-creature column is a FIXED width. A content-derived width
@@ -87,5 +97,12 @@
 @media (max-width: 640px) {
   :root {
     --sprite-grid: 48px;
+    /*
+     * The picker scales with it. Raising --sprite-picker to 112px without this would have made the
+     * picker WORSE on mobile than before: a 112px sprite in an 11rem card means roughly two columns
+     * on a phone, where 64px gave three or four. The two sizes and the card width move together.
+     */
+    --sprite-picker: 72px;
+    --picker-card-min-width: 8rem;
   }
 }
