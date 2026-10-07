@@ -1,2 +1,3 @@
 # Compiled scanner — rebuilt automatically by analyze.sh
 bcscan
+__pycache__/

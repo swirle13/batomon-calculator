@@ -14,6 +14,7 @@ automatically when the source is newer, and the binary is gitignored.
 
 ```
 bcscan info      <video>
+bcscan canvas    <video> [t0] [t1]
 bcscan probe     <video> <t> <x> <y> <w> <h>
 bcscan palette   <video> <t> <x> <y> <w> <h>
 bcscan findbars  <video> <t> <x0> <x1> <yTop> <yBot>
@@ -35,7 +36,22 @@ out, but prefer querying `frames.csv` over looking at pictures.
 
 ## Calibrating a new recording
 
-Only needed when the frame size changes. Layouts live in `layouts/<width>x<height>.json`.
+Only needed when the game **canvas aspect** changes, or when you want pixel-exact geometry for a
+canvas size far from the reference. Layouts live in `layouts/canvas-<width>x<height>.json` and
+their coordinates are canvas-relative, with the origin at the canvas's top-left corner.
+
+Check what you are dealing with first:
+
+```bash
+bcscan canvas <video>
+```
+
+If the aspect matches an existing layout, `analyze.sh` will reuse and scale it, and the only work
+needed is re-learning the glyph set at the new scale. Everything below is for a genuinely new
+layout.
+
+**Coordinates below are canvas-relative; `findbars` and `findtext` report frame coordinates.**
+Subtract the reported `canvas_x` / `canvas_y` before writing them into the layout file.
 
 **1. Find the cooldown bar columns.** Bars are narrow bright vertical tracks left of each mon.
 Sweep a y-band that crosses them; the bars are the ~4px runs repeating at a constant pitch.
@@ -45,9 +61,11 @@ bcscan findbars <video> 3.0 400 2000 437 507    # back row
 bcscan findbars <video> 3.0 400 2000 657 727    # front row
 ```
 
-In the reference 2316x1080 layout this gave back-row bars at x = 526, 742, 958 (ally) and 1354,
-1570, 1786 (enemy); front-row at 454, 670, 886 and 1426, 1642, 1858. Pitch is 216 px in both
-rows. Bar track y is 437–507 (back) and 657–727 (front), 71 px tall.
+In the reference recording (frame 2316x1080, canvas 1920x1080 at x=198) this gave back-row bars at
+frame x = 526, 742, 958 (ally) and 1354, 1570, 1786 (enemy); front-row at 454, 670, 886 and 1426,
+1642, 1858. Pitch is 216 px in both rows. Bar track y is 437–507 (back) and 657–727 (front), 71 px
+tall. The layout file stores these minus the 198 px canvas offset, so ally back-row bars read
+328, 544, 760.
 
 To find the y range for a new capture, `probe` a tall thin rect at a bar's x and look for the
 column that is solid bright when the mon is about to cast.
@@ -67,14 +85,17 @@ edge or the bar reads as a badge.
 to span the bar. Give it a y range that covers the green and an x range from the bar's left edge
 to its right edge.
 
-**4. Verify.**
+**4. Set the canvas reference.** `canvasWidth` / `canvasHeight` in the layout must be the canvas
+you measured against, not the frame size. Getting this wrong scales everything.
+
+**5. Verify.**
 
 ```bash
 bcscan overlay <video> layouts/<new>.json 4.0 /tmp/check.png
 ```
 
-Red boxes must sit on cooldown bars, blue on badge groups, yellow on health bars. Fix the JSON
-until they do. This takes one iteration and saves a bad dataset.
+Green box = detected canvas, red = cooldown bars, blue = badge groups, yellow = health bars. Fix
+the JSON until they land. This takes one iteration and saves a bad dataset.
 
 ## Labelling the glyph set
 
@@ -193,18 +214,50 @@ than dropped.
 | `CAST_LOOKBACK` | 6 | Frames to look back for the "was full" half |
 | `CHARGE_MIN_PX` | 4 | Smallest bar jump treated as a charge |
 | `CHARGE_PERSIST` | 3 | Frames the new level must hold (VFX rejection) |
+| `DOT_PHASE_TOLERANCE` | 0.08 | How far off a tick a drop may sit, as a fraction of the period |
+| `DOT_MIN_COVERAGE` | 0.8 | Fraction of expected tick slots that must be filled. This is what stops the period search aliasing onto a submultiple and reporting double the speed |
 
 Re-running after a change costs a second, since it reads `frames.csv` rather than the video.
 `--cluster-ms=N` controls how close two casts must be to be grouped as a tie-break candidate;
 60 ms is the default and ~7 frames at 111 fps.
 
+## The speed factor, concretely
+
+Fast-forward costs you absolute times and nothing else. Ordering, intervals-as-ratios, and every
+badge delta are unaffected, because they are all differences within one recording.
+
+Four ways to recover absolute game time, best first:
+
+1. **Calibrate the speed levels once.** Record one short fight at 1x, then the same board at each
+   fast-forward level, and compare a cooldown interval. That gives a multiplier per level that you
+   then pass as `--speed=N` forever. This is the only method that is exact.
+2. **The damage-over-time cadence**, reported automatically in `timeline.md`. Poison ticks once per
+   game second, so the health bar steps down on a game-time clock; the fit reports its period, how
+   many drops back it and what fraction of expected tick slots are filled. On the reference
+   recording: 0.5014 s per tick at 100% slot coverage, so ~2.0x. Weakness: cast damage moves the
+   same bar, so the fit tolerates unexplained drops, and a side that barely took damage can produce
+   a confident-looking fit from very little. Read the coverage and drop counts before believing it.
+3. **`--charge-slot`, for the one quantity that needs no calibration.** A charge grant is a known
+   number of game seconds and a measurable number of bar pixels, so the bar's full height converts
+   straight into that mon's effective cooldown in game seconds. On the reference recording this
+   gives Cobrex 11.83s against a 15s base — a 21% cooldown reduction — without knowing the speed
+   factor at all. It also yields a speed estimate, but that one carries 10-20% error.
+4. **Assume a mon has no cooldown modifiers** and divide its base cooldown by its measured
+   interval. Weakest of the four: on the reference recording this route gave 2.6x against the
+   charge-based 1.5x and the cadence-based 2.0x, which is what you would expect when the
+   "unmodified" assumption is false.
+
+Do not average disagreeing estimates. If two routes disagree, one of the assumptions is false, and
+the fix is a 1x calibration recording rather than arithmetic.
+
 ## Recording checklist
 
 Worth getting right, because re-recording is cheaper than working around a bad capture.
 
-1. **Fast-forward off.** Otherwise every absolute timing is unusable.
+1. **Note the fast-forward level** and pass `--speed`. Off is ideal for timing-sensitive work, but
+   ordering questions are fine at any speed.
 2. Highest frame rate available. The reference capture is 111 fps, which is ~9 ms per frame and
-   plenty to separate same-tick events.
+   plenty to separate same-tick events. At higher fast-forward you need the frame rate more.
 3. Start recording before the battle begins. The pre-battle board shows base stats, and the
    difference between those and the first in-battle frame is what reveals the battle-start
    phases.

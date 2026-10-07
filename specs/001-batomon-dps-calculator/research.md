@@ -1955,3 +1955,222 @@ scope per B6), leaving ~38 that are reachable with more tagging and a few more m
   position-chosen* knockout is now modelled because its outcome is decidable before the first cast;
   the general case still needs an HP/death model.
 - **v1.3.0 corpus refresh** — the corpus remains pinned to Balance 24 / 1.2.0 (K6).
+
+## N. Round 5 orchestration (2026-10-06) — gameplay-capture handoff, triggers, shiny abilities
+
+### N1. WI-014 ANSWERED: "all shiny mons get better" is right, but NOT at the stat level
+
+The ask states *"All shiny mons get better stats/abilities than their normal counterpart."* That
+contradicts committed, tested data — `shiny.ts` and `shiny.test.ts` pin that some shiny stat lines
+are strictly worse — so it was re-measured rather than assumed either way.
+
+**Per individual stat**, the claim is false. **7 species = 28 level-records** are worse:
+
+| species | stat that regresses |
+|---|---|
+| Velocect | damage 15 → 8 (L1) |
+| Kappow | cooldown 4.5s → **5.5s** (slower) |
+| Plunderbird | heal 25 → 18 |
+| Aristobat | poison |
+| Lignite | cooldown |
+| Steamscuttle | cooldown |
+| Blazewing | burn |
+
+*Corrected in pass-2 remediation: this said "20 level-records" and listed only 3 of the 7 species.
+The undercount came from checking damage, multicast, heal and cooldown but **not status amounts**,
+which is how Aristobat, Lignite, Steamscuttle and Blazewing were missed. Regenerate with
+`node scripts/audit-shiny.mjs`.*
+
+**In aggregate throughput** `(damage + statuses + heal) × multicast ÷ cooldown`, it is mostly true
+but not universally: **222 better, 299 equal, 15 worse** (Kappow, Lignite, Steamscuttle). Velocect
+resolves in shiny's favour once multicast is included — damage 15→8 but multicast 2→4, so 30/cast
+becomes 32/cast.
+
+**The 299 "equal" cases are the real finding, and they are an artefact of our own data.** Round 11
+extracted `shinyLevels` (stats) and nothing else. batodex also carries **`shinyAbility`**, which we
+never pulled — and the uplift is mostly there:
+
+> **Bunchop L1 normal**: "Your team has +50 HP. / On Victory: Increase this ability's HP bonus by +50."
+> **Bunchop L1 shiny**: "Your team has +60 HP. / On Victory: Increase this ability's HP bonus by +60."
+
+**Shiny ability text differs at 343 of the 508 level-records that have both** (165 identical, 28
+normal-only, 40 with neither). *Corrected during validation: the first draft said "315 of 470" and
+did not reproduce. The cause was counting from an uncommitted `/tmp` extract that silently kept
+RSC `$17:props:…` reference strings as if they were ability text. Both the extractor
+(`scripts/extract-batodex.mjs`) and the recount (`scripts/audit-batodex.mjs`) are now committed, so
+every figure in this section is regenerable.* So the user is right
+about the direction of the effect and right that we are missing it; "better stats" is the part that
+needed qualifying. Recorded both ways so neither the ask nor the committed guard is quietly dropped:
+`shiny.test.ts`'s downgrade guard stays valid and must NOT be deleted to make the ask true.
+
+### N2. WI-010 ANSWERED: the trigger vocabulary is closed, with 8 values
+
+batodex stores `ability.trigger` as a discrete field, so the enum does not have to be inferred from
+our prose. Across 144 monsters:
+
+Regenerate with `node scripts/audit-batodex.mjs`. Across the **144** monsters batodex publishes
+(our corpus has 149 — the extra 5 are unsourced there, see M6):
+
+| trigger | count |
+|---|---|
+| *(none)* | 53 |
+| `On Cast` | 42 |
+| `On Battle Start` | 20 |
+| `Ongoing` | 14 |
+| `On Victory` | 6 |
+| `On Bought` | 5 |
+| `On Trinket Gained` | 2 |
+| `On Knocked Out` | 1 |
+| `On Battle Lost` | 1 |
+
+*Corrected during validation: the first draft gave "(none) 36" and "Across 144 monsters" without a
+reproducible source. The `(none)` bucket was undercounted because unresolved RSC references were
+being treated as present data.* The load-bearing conclusion is unchanged and is what matters here:
+there are **exactly 8 non-null trigger values**, and `null` is a real value (an ability with no
+trigger), not missing data — so the union can be closed safely.
+
+### N3. WI-011: ability text is available PER LEVEL
+
+`ability.byLevel` is a `{1,2,3,4}` map, and is the right source **for species batodex carries**.
+
+**It does not solve this ask, which pass-2 validation established.** The records reading "No ability
+text transcribed in sources reviewed." are exactly **three** — `bambudo|1`, `emperooze|1`,
+`sunsage|1` — and **none of those three species exists in the batodex snapshot at all**, by id or
+by name. They are among the species M6 already flags as unsourced there (our corpus has 149, the
+snapshot 144).
+
+So the honest answer to "please add all missing ability text values" is: **the count is 3, and all
+3 are unavailable from our only structured source.** They need a different source or a direct
+in-game transcription. `ability.byLevel` remains worth wiring up for the per-level text it *does*
+provide, but it will not fill these.
+
+### N4. The handoff's confidence gates are binding, and two findings must NOT be implemented
+
+The handoff states that about a quarter of its content "cannot be proven from this recording and
+must not be implemented as though it can". Two findings are explicitly fenced:
+
+- **Finding 8 (tie-break order)** — medium confidence, "Consistent with all evidence, proven by
+  none of it… should not be committed as a confirmed rule on this evidence." Every observed gap was
+  2 frames, never 0, so *no tie was ever exhibited*. `STABLE_SLOT_ORDER` is therefore **not changed**
+  this round. Recording the hypothesis and the experiment that would settle it is the whole task.
+- **Finding 9 (same-tick pre-buff reads)** — low confidence, "**Do not implement a propagation
+  delay on this evidence.**" The actionable half is that the engine's existing FR-040 snapshot rule
+  may already produce the observed 1027 "for the right reason"; that gets a test, not a change.
+
+**Finding 6's `T` vs `T + 0.1`** is likewise suggestive only: 0.1s battle-time is ~38 ms of video
+and "sits inside the render-lag noise floor". Charge stacking is test-locked; the firing offset is
+not changed.
+
+A further constraint the handoff is explicit about, and which this project has twice got wrong:
+adding tags for Thorntail, Puffloon, Noxnimbus and Fumungus "will move the coverage counter by
+four, but the mechanisms behind them… are each new families, not instances of existing ones. The
+counter should not be allowed to imply otherwise."
+
+### N5. The capture was fast-forwarded, so no absolute timing from it is usable
+
+"Video time is compressed by roughly 2.6x relative to battle time… **no absolute second-count from
+this footage is usable**." Every number taken from the capture into a test must therefore be a
+*ratio* or an *arithmetic identity* (Miasmaw's 1080, Cobrex's ×1.7, Thorntail's +24 steps), never a
+wall-clock time. Tests that pin seconds from this recording would encode the fast-forward factor.
+
+### N6. Validation-pass corrections to the handoff's own board table
+
+Three claims in the handoff do not hold against the current codebase. They were true when the
+capture was analysed; the codebase has moved.
+
+**"Four of six mons are completely inert" — it is three.** Noxnimbus was tagged in round 11 and is
+resolved at every level:
+
+```ts
+{ kind: "buffOnCast", target: { kind: "adjacent", typeFilter: "Toxic" },
+  effect: { statusGrant: { type: "Poison", amount: 6 } } }
+```
+
+`buffOnCast` is in `RESOLVED_TAG_KINDS` and is applied every cast with compounding. **Thorntail,
+Puffloon and Fumungus** are the genuinely inert three. This matters because T258 must report the
+coverage delta honestly, and "moves the counter by four" would overstate it by one.
+
+**"Every on-cast and reactive ability is structurally unreachable" — no longer true.** Round 11's
+`buffOnCast` path and round 4's ally-cast hook both already reach them. The time-varying
+restructure (WI-004) may still be the right shape, but it now carries a **double-application
+hazard** that did not exist when the handoff was written: if handlers are added without retiring
+the existing path, Noxnimbus's +6 fires twice per cast. Whichever way it is resolved must be
+explicit.
+
+**Our existing `triggerOnAllyCast` violates Finding 7b.** The handoff states a reactive trigger
+"does not reset or consume the reactor's own cooldown" — Puffloon's bar "climbs monotonically 13 ->
+19 px with no reset". Round 4's implementation sets the listener's `nextAt` to `tSeconds + STEP`,
+and firing then resets its cooldown. So the engine already has a reactive trigger that does the
+forbidden thing. 7b is not merely a constraint on the NEW tag kind; it is a bug report against the
+existing one.
+
+### N7. WI-006 ANSWERED: the charge calibration
+
+One `Charge this by 1 second(s)` = **6 px** of a 71 px cooldown bar. Therefore 71 / 6 = **11.83 s**
+effective cooldown against a 15 s base — a factor of **0.79**, i.e. a ~21% cooldown reduction. That
+figure was independently corroborated by Fumungus's measured cast interval, and "Two unrelated
+measurements agreeing to three significant figures is what makes the 6 px calibration trustworthy."
+
+Recorded here because WI-006 is typed "question to answer" and the answer existed only in the
+handoff. It gives T247's test a cited derivation. **Charge grants stack additively within a tick**
+(+18 = 3 × 6) and the engine already does this correctly.
+
+### N8. Open items carried forward, NOT acted on
+
+- **Thorntail's 7082 entry value** is unexplained by its base stats plus anything in the footage.
+  It does not affect the +24 finding, "but it means we cannot yet reproduce this board's damage
+  numbers end-to-end, and somebody should work out where 7082 comes from."
+- **Self-infliction counting** — whether a mon's own Poison infliction counts toward its own "when
+  allies inflict Poison" counter. One frame implies it does, which would contradict the ability
+  text. "Do not change the exclusion on the strength of one ambiguous frame."
+- **The captured board cannot be reproduced end-to-end**, so Miasmaw's 1080 cannot be pinned as an
+  integration fixture this round. It depends on four run modifiers nothing models: Link Cable
+  (carried as text with `abilityTags: []`), an inferred flat +4 Poison, a +70% effect on cooldowns
+  >= 5 s, and a leftmost-column battle-start effect. Two terms in the handoff's own 1066
+  decomposition also fail to reproduce from our corpus (Puffloon's 19 and Thorntail's unmultiplied
+  5 despite a 6 s cooldown). **The phase-ordering fix is therefore pinned on synthetic values that
+  exercise phase 1 -> 3 ordering directly**, which tests the mechanism without depending on an
+  unobserved loadout.
+
+### N9. WI-017: the "0.5s increments" premise is false in the current code
+
+The ask says both graphs should "indicate that the increments are on 0.5s increments". Neither
+series is on a 0.5 s grid:
+
+- `cumulativeSeries` samples the de-duplicated set of **event timestamps** plus 0 and the window
+  end — an irregular grid.
+- `dpsRateSeries` uses **1-second buckets**, with a comment defending that choice (finer buckets
+  "render as a comb of spikes at each cast").
+
+So labelling them "0.5s" would state something the data contradicts. The ask is satisfiable by
+**resampling both onto a real 0.5 s grid** and then labelling it — which is what T257 now requires —
+rather than by adding a label alone. 0.5 s is also the Burn tick interval, so it is a defensible
+grid rather than an arbitrary one.
+
+### N10. A stale source citation that misled two validation passes
+
+`creatures.ts:3185` and `:3205` cite `batodexExtracted("emperooze")` and
+`batodexExtracted("sunsage")` as source refs. **Neither species exists in the batodex snapshot** —
+verified by id and by name against the committed fixture. The citation is wrong.
+
+This is almost certainly why N3's first draft asserted the three placeholder records were "fillable
+from this field": the provenance said batodex had them. A false citation is worse than a missing
+one, because it reads as evidence. Worth a sweep of `batodexExtracted(...)` refs against the
+committed snapshot in a later round; not done here because it is outside this ledger's asks.
+
+### N11. Trainer sprite id-matching would silently miss over half
+
+Validation pass 3 reported that 3 of 23 trainer ids diverge from batodex's. Re-derived: it is
+**12 of 23**.
+
+| ours | batodex |
+|---|---|
+| `chef` | `pyromaniac` |
+| `lucky-girl` | `youngster_f` |
+| `rich-lady` | `lady` |
+| `youngster` | `youngster_m` |
+| 8 more | hyphen → underscore |
+
+All 23 resolve by **name**. `vendor-sprites.mjs` already records this exact lesson for monsters
+("id-matching silently misses 11"); the trainer case is worse, and an id-keyed script would have
+quietly produced a mostly-empty sprite set that looked like a successful run.

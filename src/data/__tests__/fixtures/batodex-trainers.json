@@ -1,0 +1,146 @@
+[
+ {
+  "id": "mysterious_trainer",
+  "name": "???",
+  "sprite": "/sprites/trainer/mysterious_trainer.png",
+  "ability": null
+ },
+ {
+  "id": "black_belt",
+  "name": "Black Belt",
+  "sprite": "/sprites/trainer/black_belt.png",
+  "ability": null
+ },
+ {
+  "id": "bug_catcher",
+  "name": "Bug Catcher",
+  "sprite": "/sprites/trainer/bug_catcher.png",
+  "ability": null
+ },
+ {
+  "id": "burglar",
+  "name": "Burglar",
+  "sprite": "/sprites/trainer/burglar.png",
+  "ability": null
+ },
+ {
+  "id": "pyromaniac",
+  "name": "Chef",
+  "sprite": "/sprites/trainer/pyromaniac.png",
+  "ability": null
+ },
+ {
+  "id": "chemist",
+  "name": "Chemist",
+  "sprite": "/sprites/trainer/chemist.png",
+  "ability": null
+ },
+ {
+  "id": "egg_breeder",
+  "name": "Egg Breeder",
+  "sprite": "/sprites/trainer/egg_breeder.png",
+  "ability": null
+ },
+ {
+  "id": "gamer",
+  "name": "Gamer",
+  "sprite": "/sprites/trainer/gamer.png",
+  "ability": null
+ },
+ {
+  "id": "gentleman",
+  "name": "Gentleman",
+  "sprite": "/sprites/trainer/gentleman.png",
+  "ability": null
+ },
+ {
+  "id": "youngster_f",
+  "name": "Lucky Girl",
+  "sprite": "/sprites/trainer/youngster_f.png",
+  "ability": null
+ },
+ {
+  "id": "mad_scientist",
+  "name": "Mad Scientist",
+  "sprite": "/sprites/trainer/mad_scientist.png",
+  "ability": null
+ },
+ {
+  "id": "masked_man",
+  "name": "Masked Man",
+  "sprite": "/sprites/trainer/masked_man.png",
+  "ability": null
+ },
+ {
+  "id": "monster_ranger",
+  "name": "Monster Ranger",
+  "sprite": "/sprites/trainer/monster_ranger.png",
+  "ability": null
+ },
+ {
+  "id": "musician",
+  "name": "Musician",
+  "sprite": "/sprites/trainer/musician.png",
+  "ability": null
+ },
+ {
+  "id": "painter",
+  "name": "Painter",
+  "sprite": "/sprites/trainer/painter.png",
+  "ability": null
+ },
+ {
+  "id": "redhead",
+  "name": "Redhead",
+  "sprite": "/sprites/trainer/redhead.png",
+  "ability": null
+ },
+ {
+  "id": "lady",
+  "name": "Rich Lady",
+  "sprite": "/sprites/trainer/lady.png",
+  "ability": null
+ },
+ {
+  "id": "scavenger",
+  "name": "Scavenger",
+  "sprite": "/sprites/trainer/scavenger.png",
+  "ability": null
+ },
+ {
+  "id": "shopkeeper",
+  "name": "Shopkeeper",
+  "sprite": "/sprites/trainer/shopkeeper.png",
+  "ability": null
+ },
+ {
+  "id": "smuggler",
+  "name": "Smuggler",
+  "sprite": "/sprites/trainer/smuggler.png",
+  "ability": null
+ },
+ {
+  "id": "swim_coach",
+  "name": "Swim Coach",
+  "sprite": "/sprites/trainer/swim_coach.png",
+  "ability": null
+ },
+ {
+  "id": "treasure_hunter",
+  "name": "Treasure Hunter",
+  "sprite": "/sprites/trainer/treasure_hunter.png",
+  "ability": null
+ },
+ {
+  "id": "twins",
+  "name": "Twins",
+  "sprite": "/sprites/trainer/twins.png",
+  "ability": null
+ },
+ {
+  "id": "youngster_m",
+  "name": "Youngster",
+  "sprite": "/sprites/trainer/youngster_m.png",
+  "ability": null
+ }
+]

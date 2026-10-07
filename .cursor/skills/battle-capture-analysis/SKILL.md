@@ -17,7 +17,8 @@ board — and all later analysis is a query against that file.
 ## Quick start
 
 ```bash
-.cursor/skills/battle-capture-analysis/scripts/analyze.sh <recording.mp4> <out-dir> [t0] [t1]
+.cursor/skills/battle-capture-analysis/scripts/analyze.sh <recording.mp4> <out-dir> [t0] [t1] \
+    [--speed=N] [--charge-slot=SLOT[:SECONDS]]
 ```
 
 Produces, in `<out-dir>`:
@@ -29,6 +30,12 @@ Produces, in `<out-dir>`:
 | `timeline.md` | Readable narrative, per-slot cooldown cadence, and the near-simultaneous cast clusters. |
 | `layout-check.png` | The frame with every measurement box drawn on it. Check this before trusting numbers. |
 
+Re-deriving events never re-reads the video, so changing a flag or threshold costs a second:
+
+```bash
+python3 scripts/bcevents.py out/frames.csv out --speed=2 --charge-slot=ally_front_2:1
+```
+
 Then query the dataset:
 
 ```bash
@@ -37,6 +44,30 @@ python3 scripts/bcquery.py order   out/frames.csv 4.1 4.4    # which effect land
 python3 scripts/bcquery.py changes out/frames.csv ally_front_0_dmg
 python3 scripts/bcquery.py at      out/frames.csv 3.26       # full board state at a moment
 ```
+
+## Frame size vs. game canvas
+
+**Layouts are keyed on the game canvas, not the video frame, so one layout covers any capture of
+the same aspect ratio.** A phone recording at 2316x1080 holds a 1920x1080 canvas pillarboxed with
+198px black bars either side; a desktop capture of the same game has no bars at all. The pipeline
+detects the canvas per recording and scales the layout onto it.
+
+```bash
+bcscan canvas <video>        # frame size, canvas size and position, aspect, bar widths
+```
+
+Detection votes across nine frames rather than trusting one. A single frame undershoots, because
+the game's own artwork can be near-black at the canvas edge; a union across frames overshoots,
+because one transition frame with content in the bar region widens it permanently.
+
+Two consequences worth knowing:
+
+- **A different frame size with the same 16:9 canvas needs nothing.** Desktop recordings work.
+- **A different canvas *size* needs the glyph set re-learned**, because templates are pixel masks
+  at a specific scale. The geometry scales fine and `analyze.sh` will reuse a same-aspect layout
+  and tell you, but `learn` + `autolabel` has to run once for the new scale. That is two commands.
+- A different canvas *aspect* means the game laid the board out differently, and needs its own
+  layout calibrated.
 
 ## What the dataset contains
 
@@ -75,13 +106,27 @@ The three signals that carry almost all the evidence:
 
 These limits are not incidental; they decide which conclusions the footage can support.
 
-- **Turn fast-forward off when recording.** With it on, video time is compressed by a factor of
-  roughly 2.6 and **no absolute second-count is usable**. Ratios and ordering survive. This is
-  the single most valuable thing to control, and it is free.
+- **Fast-forward does not affect ordering or ratios, only absolute times.** Every cast time,
+  interval and badge delta is still exact; they are just in video seconds. Pass `--speed=N` to get
+  game-seconds printed alongside.
+- **`timeline.md` proposes a speed factor two different ways, and they may disagree.** Poison ticks
+  once per game second, so health-bar drops give a cadence; and a charge grant converts bar pixels
+  into game seconds. On the reference recording these said ~2.0x and ~1.5x. Both are hypotheses:
+  cast damage pollutes the first and pixel error dominates the second. **The only exact method is
+  to record the same board at 1x and at each fast-forward level once**, then pass `--speed=N`
+  forever. Do not average disagreeing estimates — one of the assumptions is false.
+- **One quantity is fast-forward independent and worth more than the rest**: a charge ability
+  grants a known number of *game* seconds and shows up as a known number of bar pixels, so
+  `--charge-slot` yields that mon's effective cooldown in real game seconds with no calibration at
+  all. The tool cannot tell which mon charges, so name it explicitly — the bars are 4px wide and
+  spell effects crossing one look like grants.
 - **A cluster is not a tie.** `timeline.md` lists casts that land close together, but if the gap
   is more than a frame or two the later mon may simply have become ready later. Check the gap
   column. Proving a tie-break rule needs a recording where two mons become ready on the *same*
   frame.
+- **Analysis stops at battle end.** The frame where a side's health hits zero is detected and
+  everything after is dropped, because the post-battle screen puts unrelated artwork under the
+  layout rectangles. On the reference recording that removed 151 of 397 "events".
 - **Spell effects hide badges.** Expect gaps during heavy VFX. If a value changes while hidden,
   you see the total change, not the individual steps.
 - **Large numbers lose precision.** The game abbreviates past ~10000, so `16K` is parsed as

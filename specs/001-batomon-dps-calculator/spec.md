@@ -690,3 +690,29 @@ stopped at FR-084 while every prior round added FRs.
   overlay scrolling slowly south-east, suppressed under `prefers-reduced-motion`.
 - **FR-093**: An ability grant MAY bring a damage effect into existence on a creature whose
   `baseDamage` is null. User-entered modifiers MUST NOT.
+
+### Round 5 requirements (2026-10-06)
+
+- **FR-094**: Resolved stats MUST be an evaluable structure
+  `(base + flatAdd) × multiplier + postMultiplierFlatAdd` read through one helper, not final
+  numbers. Multipliers MUST be applied at read time.
+- **FR-095**: Reactive flat gains MUST land after multiplication and MUST NOT be scaled.
+- **FR-096**: Battle start MUST resolve in three ordered phases — multipliers, positional effects,
+  then dynamic team-reading abilities — each reading the completed output of the previous.
+- **FR-097**: Resolution MUST be time-varying: on-cast and reactive abilities MUST fire during the
+  battle, not only before it.
+- **FR-098**: Damage scaled from the TARGET's accumulated status MUST be supported and recomputed
+  per cast.
+- **FR-099**: A reactive trigger MUST NOT reset or consume the reactor's own cooldown.
+- **FR-100**: `abilityTrigger` MUST be a closed union; no code may match it by string parsing.
+- **FR-101**: Shiny ability text MUST be stored per species-level and used when a placement is
+  shiny.
+- **FR-102**: Shiny and trainer sprites MUST be vendored locally and rendered.
+- **FR-103**: Both charts MUST be rendered by ONE shared component parameterised by series name,
+  values, line colour, and each axis's scale and maximum.
+- **FR-104**: Findings the capture cannot prove MUST NOT be implemented. Specifically the
+  front-row-first tie-break order and any same-tick buff-propagation delay are OUT of scope until a
+  purpose-built 1x recording exists.
+- **FR-105**: Shiny ability text MUST drive resolution, not only display — a shiny placement must
+  resolve the magnitudes its shiny text states.
+- **FR-106**: Both charts MUST be resampled onto a real 0.5s grid before being labelled as such.

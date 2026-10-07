@@ -131,14 +131,113 @@ struct SlotLayout: Codable {
 
 struct Layout: Codable {
     var name: String
-    var frameWidth: Int
-    var frameHeight: Int
+    /// The game canvas these coordinates were measured against, NOT the video frame size.
+    ///
+    /// A recording is usually letterboxed or pillarboxed: a phone capture at 2316x1080 holds a
+    /// 1920x1080 game canvas with 198px black bars either side. Storing coordinates relative to
+    /// the canvas, and detecting the canvas per recording, is what lets one layout serve a phone
+    /// capture and a desktop capture of the same aspect ratio.
+    var canvasWidth: Int
+    var canvasHeight: Int
     var fps: Double
     var slots: [SlotLayout]
     /// Health bars, keyed "ally" / "enemy". Measured as the green/grey boundary rather than by
     /// reading the HP text: the text is drawn *over* the bar in white, so OCR there is fragile,
     /// whereas the boundary is a clean monotonic signal at ~0.16% resolution.
     var hpBars: [String: Rect]
+}
+
+// MARK: - Canvas detection and coordinate mapping
+
+/// The game canvas inside a frame, i.e. the frame minus its black bars.
+///
+/// Detected rather than configured so one layout file covers every capture of a given aspect
+/// ratio: a phone recording with pillarboxing, a desktop window, a cropped clip.
+func detectCanvasInFrame(_ bm: Bitmap) -> Rect {
+    let threshold = 18.0
+    func rowHasContent(_ y: Int) -> Bool {
+        var n = 0
+        for x in stride(from: 0, to: bm.w, by: 4) where bm.lum(x, y) > threshold {
+            n += 1
+            if n > 8 { return true }
+        }
+        return false
+    }
+    func colHasContent(_ x: Int) -> Bool {
+        var n = 0
+        for y in stride(from: 0, to: bm.h, by: 4) where bm.lum(x, y) > threshold {
+            n += 1
+            if n > 8 { return true }
+        }
+        return false
+    }
+    var top = 0, bottom = bm.h - 1, left = 0, right = bm.w - 1
+    while top < bottom && !rowHasContent(top) { top += 1 }
+    while bottom > top && !rowHasContent(bottom) { bottom -= 1 }
+    while left < right && !colHasContent(left) { left += 1 }
+    while right > left && !colHasContent(right) { right -= 1 }
+    return Rect(x: left, y: top, w: right - left + 1, h: bottom - top + 1, minCol: nil)
+}
+
+/// Canvas detected by voting across several frames.
+///
+/// Neither a single frame nor a union works. One frame undershoots, because the game's own artwork
+/// can be near-black at the canvas edge and read as letterboxing. A union overshoots, because one
+/// transition or flash frame with content in the bar region widens it permanently.
+///
+/// Voting is right because the bars are a property of the *container*: a bar row or column is
+/// black in essentially every frame, while canvas content is lit in most of them. So keep the rows
+/// and columns that carry content in at least half the samples.
+func detectCanvas(_ v: Video, _ t0: Double, _ t1: Double, samples: Int = 9) -> Rect {
+    let w = Int(v.size.width), h = Int(v.size.height)
+    guard w > 0, h > 0 else { return Rect(x: 0, y: 0, w: 1, h: 1, minCol: nil) }
+    var colVotes = [Int](repeating: 0, count: w)
+    var rowVotes = [Int](repeating: 0, count: h)
+    var seen = 0
+    let span = max(0, t1 - t0)
+
+    for i in 0..<max(1, samples) {
+        let t = samples <= 1 ? t0 : t0 + span * Double(i) / Double(samples - 1)
+        guard let bm = v.bitmap(at: t) else { continue }
+        let c = detectCanvasInFrame(bm)
+        // Ignore a frame that is essentially blank (fades to black at cuts); it has no opinion.
+        guard c.w > w / 4, c.h > h / 4 else { continue }
+        seen += 1
+        for x in c.x..<min(c.x + c.w, w) { colVotes[x] += 1 }
+        for y in c.y..<min(c.y + c.h, h) { rowVotes[y] += 1 }
+    }
+    guard seen > 0 else { return Rect(x: 0, y: 0, w: w, h: h, minCol: nil) }
+
+    let need = (seen + 1) / 2
+    func contentSpan(_ votes: [Int]) -> (Int, Int) {
+        let first = votes.firstIndex(where: { $0 >= need }) ?? 0
+        let last = votes.lastIndex(where: { $0 >= need }) ?? (votes.count - 1)
+        return (first, last)
+    }
+    let (x0, x1) = contentSpan(colVotes)
+    let (y0, y1) = contentSpan(rowVotes)
+    return Rect(x: x0, y: y0, w: x1 - x0 + 1, h: y1 - y0 + 1, minCol: nil)
+}
+
+/// Maps canvas-relative layout coordinates onto the actual frame.
+struct CanvasMap {
+    let originX: Int, originY: Int, scale: Double
+
+    init(layout: Layout, canvas: Rect) {
+        originX = canvas.x
+        originY = canvas.y
+        scale = layout.canvasWidth > 0 ? Double(canvas.w) / Double(layout.canvasWidth) : 1
+    }
+
+    func map(_ r: Rect) -> Rect {
+        Rect(x: originX + Int((Double(r.x) * scale).rounded()),
+             y: originY + Int((Double(r.y) * scale).rounded()),
+             // round the far edge independently so a scaled rect keeps its boundaries rather
+             // than accumulating a rounding error in its width
+             w: max(1, Int((Double(r.x + r.w) * scale).rounded()) - Int((Double(r.x) * scale).rounded())),
+             h: max(1, Int((Double(r.y + r.h) * scale).rounded()) - Int((Double(r.y) * scale).rounded())),
+             minCol: r.minCol)
+    }
 }
 
 // MARK: - Glyphs
@@ -469,6 +568,24 @@ case "info":
     print("nominal_fps=\(v.fps)")
     print("frame_ms=\(1000.0 / max(v.fps, 1))")
 
+// MARK: canvas
+// Reports the game canvas inside the frame, so a new recording can be matched to a layout.
+case "canvas":
+    let v = Video(args[2])
+    let t0 = args.count > 3 ? Double(args[3])! : 0
+    let t1 = args.count > 4 ? Double(args[4])! : v.duration
+    let c = detectCanvas(v, t0, t1)
+    let ratio = Double(c.w) / Double(c.h)
+    print("frame_width=\(Int(v.size.width))")
+    print("frame_height=\(Int(v.size.height))")
+    print("canvas_x=\(c.x)")
+    print("canvas_y=\(c.y)")
+    print("canvas_width=\(c.w)")
+    print("canvas_height=\(c.h)")
+    print(String(format: "canvas_aspect=%.4f", ratio))
+    print("bars_left_right=\(c.x),\(Int(v.size.width) - c.x - c.w)")
+    print("bars_top_bottom=\(c.y),\(Int(v.size.height) - c.y - c.h)")
+
 // MARK: probe
 case "probe":
     let v = Video(args[2])
@@ -532,6 +649,9 @@ case "overlay":
     let layout = loadLayout(args[3])
     let t = Double(args[4])!
     guard let cg = v.cgImage(at: t) else { die("no frame at \(t)") }
+    let canvas = detectCanvas(v, 0, v.duration)
+    let cmap = CanvasMap(layout: layout, canvas: canvas)
+    print("canvas \(canvas.w)x\(canvas.h) at (\(canvas.x),\(canvas.y)); layout reference \(layout.canvasWidth)x\(layout.canvasHeight); scale \(String(format: "%.4f", cmap.scale))")
     guard let ctx = CGContext(data: nil, width: cg.width, height: cg.height, bitsPerComponent: 8,
                               bytesPerRow: 0, space: CGColorSpaceCreateDeviceRGB(),
                               bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { die("ctx") }
@@ -542,14 +662,15 @@ case "overlay":
         // layout y is measured from the TOP of the frame; CGContext origin is bottom-left
         ctx.stroke(CGRect(x: r.x, y: cg.height - r.y - r.h, width: r.w, height: r.h))
     }
+    stroke(canvas, CGColor(red: 0.6, green: 1, blue: 0.3, alpha: 1))
     for s in layout.slots {
-        stroke(s.bar, CGColor(red: 1, green: 0.2, blue: 0.2, alpha: 1))
-        stroke(s.badges, CGColor(red: 0.2, green: 0.6, blue: 1, alpha: 1))
+        stroke(cmap.map(s.bar), CGColor(red: 1, green: 0.2, blue: 0.2, alpha: 1))
+        stroke(cmap.map(s.badges), CGColor(red: 0.2, green: 0.6, blue: 1, alpha: 1))
     }
-    for (_, r) in layout.hpBars { stroke(r, CGColor(red: 1, green: 0.9, blue: 0.1, alpha: 1)) }
+    for (_, r) in layout.hpBars { stroke(cmap.map(r), CGColor(red: 1, green: 0.9, blue: 0.1, alpha: 1)) }
     guard let out = ctx.makeImage() else { die("image") }
     writePNG(out, to: args[5])
-    print("wrote \(args[5]) — red = cooldown bars, blue = badge bands, yellow = HP")
+    print("wrote \(args[5]) — green = detected canvas, red = cooldown bars, blue = badge bands, yellow = HP")
 
 // MARK: sheet
 case "sheet":
@@ -558,7 +679,8 @@ case "sheet":
     let outPath = args[4]
     let t0 = Double(args[5])!, n = Int(args[6])!
     let stride = Double(args[7])!
-    let cells = layout.slots.map { $0.badges }
+    let cmap = CanvasMap(layout: layout, canvas: detectCanvas(v, 0, v.duration))
+    let cells = layout.slots.map { cmap.map($0.badges) }
     let rowW = cells.reduce(0) { $0 + $1.w }, rowH = cells.map { $0.h }.max() ?? 1
     let zoom = 2
     guard let ctx = CGContext(data: nil, width: rowW * zoom, height: rowH * n * zoom, bitsPerComponent: 8,
@@ -587,7 +709,10 @@ case "learn":
     let layout = loadLayout(args[3])
     let outDir = args[4]
     let t0 = Double(args[5])!, t1 = Double(args[6])!, stride = Double(args[7])!
-    let bands = layout.slots.map { $0.badges }
+    let canvas = detectCanvas(v, t0, t1)
+    let cmap = CanvasMap(layout: layout, canvas: canvas)
+    print("canvas \(canvas.w)x\(canvas.h), scale \(String(format: "%.4f", cmap.scale)) vs layout reference")
+    let bands = layout.slots.map { cmap.map($0.badges) }
 
     // Pass 1: collect every badge text run, and learn the font's pitch.
     //
@@ -705,6 +830,18 @@ case "scan":
     let t0 = Double(args[6])!, t1 = Double(args[7])!
     let fps = layout.fps > 0 ? layout.fps : (v.fps > 0 ? v.fps : 60)
 
+    // Canvas is detected once: it is a property of the recording, not of the frame.
+    let canvas = detectCanvas(v, t0, t1)
+    let cmap = CanvasMap(layout: layout, canvas: canvas)
+    print("canvas \(canvas.w)x\(canvas.h) at (\(canvas.x),\(canvas.y)), scale \(String(format: "%.4f", cmap.scale))")
+    if abs(cmap.scale - 1.0) > 0.01 {
+        print("NOTE: canvas differs from the layout reference. Geometry is scaled, but the glyph")
+        print("      templates are pixel masks at the reference scale and will not match. Re-run")
+        print("      `learn` + `autolabel` for this canvas size.")
+    }
+    let mappedSlots = layout.slots.map { (slot: $0, bar: cmap.map($0.bar), badges: cmap.map($0.badges)) }
+    let mappedHP = layout.hpBars.mapValues { cmap.map($0) }
+
     // One column per measurement, keyed by what the badge *is* rather than where it sat.
     // `_raw` preserves the left-to-right reading as `kind=value|kind=value`, so nothing is lost
     // if a future badge kind shows up that the hue table does not know about yet.
@@ -725,22 +862,22 @@ case "scan":
         guard let bm = v.bitmap(at: t) else { continue }
         var row = [String(format: "%.4f", t), String(frame)]
 
-        for s in layout.slots {
+        for m in mappedSlots {
             // cooldown bar: count filled rows, bottom-up. Normalised so bar.h == full cooldown.
             var filled = 0
-            let need = max(2, s.bar.w / 2)
-            for dy in 0..<s.bar.h {
-                let y = s.bar.y + dy
+            let need = max(1, m.bar.w / 2)
+            for dy in 0..<m.bar.h {
+                let y = m.bar.y + dy
                 guard y >= 0 && y < bm.h else { continue }
                 var n = 0
-                for x in s.bar.x..<min(s.bar.x + s.bar.w, bm.w) where bm.lum(x, y) > 195 { n += 1 }
+                for x in m.bar.x..<min(m.bar.x + m.bar.w, bm.w) where bm.lum(x, y) > 195 { n += 1 }
                 if n >= need { filled += 1 }
             }
             row.append(String(filled))
 
             var byKind: [String: String] = [:]
             var raw: [String] = []
-            for run in textRuns(bm, s.badges) {
+            for run in textRuns(bm, m.badges) {
                 let text = matcher.read(run)
                 let kind = badgeKind(bm, run, text: text)
                 raw.append("\(kind)=\(text ?? "?")")
@@ -752,8 +889,8 @@ case "scan":
             row.append(raw.joined(separator: "|"))
         }
 
-        for k in layout.hpBars.keys.sorted() {
-            let r = layout.hpBars[k]!
+        for k in mappedHP.keys.sorted() {
+            let r = mappedHP[k]!
             // Rightmost green column = the fill boundary. Counting green pixels would undercount,
             // because the white HP text masks the middle of the bar.
             var fill = 0
@@ -823,6 +960,7 @@ case "autolabel":
     guard let truthData = FileManager.default.contents(atPath: args[5]),
           let truth = String(data: truthData, encoding: .utf8) else { die("cannot read \(args[5])") }
 
+    let cmap = CanvasMap(layout: layout, canvas: detectCanvas(v, 0, v.duration))
     var masks = set.templates.map { maskBools($0.mask) }
     // votes[templateIndex][character] -> count, so a disputed template resolves by majority.
     var votes = [[String: Int]](repeating: [:], count: masks.count)
@@ -840,7 +978,7 @@ case "autolabel":
         }
         let expected = Array(f[3]).map(String.init)
         guard let bm = v.bitmap(at: t) else { print("skip (no frame): \(s)"); skipped += 1; continue }
-        let runs = textRuns(bm, slot.badges)
+        let runs = textRuns(bm, cmap.map(slot.badges))
         guard runIdx < runs.count else {
             print("skip (only \(runs.count) runs at t=\(t) \(f[1])): \(s)"); skipped += 1; continue
         }

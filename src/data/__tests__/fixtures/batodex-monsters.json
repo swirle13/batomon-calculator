@@ -1,0 +1,3304 @@
+[
+ {
+  "id": "beetbud",
+  "name": "Beetbud",
+  "rarity": {
+   "label": "Common",
+   "color": "#70707a"
+  },
+  "trigger": null,
+  "sprite": "/sprites/monster/beetbud.png",
+  "shinySprite": "/sprites/monster/beetbud_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "Evolves at level 3.",
+   "2": "Evolves at level 3.",
+   "3": "Evolves at level 3.",
+   "4": "Evolves at level 3."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Evolves at level 3.",
+   "2": "Evolves at level 3.",
+   "3": "Evolves at level 3.",
+   "4": "Evolves at level 3."
+  }
+ },
+ {
+  "id": "bumblebolt",
+  "name": "Bumblebolt",
+  "rarity": "$17:props:children:0:props:entries:0:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/bumblebolt.png",
+  "shinySprite": "/sprites/monster/bumblebolt_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": null,
+   "2": null,
+   "3": null,
+   "4": null
+  },
+  "shinyAbilityByLevel": {
+   "1": "+1 Shock for this battle.",
+   "2": "+2 Shock for this battle.",
+   "3": "+3 Shock for this battle.",
+   "4": "+3 Shock for this battle."
+  }
+ },
+ {
+  "id": "bunchop",
+  "name": "Bunchop",
+  "rarity": "$17:props:children:0:props:entries:0:rarity",
+  "trigger": "Ongoing",
+  "sprite": "/sprites/monster/bunchop.png",
+  "shinySprite": "/sprites/monster/bunchop_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "Your team has +50 HP.\nOn Victory\nIncrease this ability's HP bonus by +50.",
+   "2": "Your team has +50 HP.\nOn Victory\nIncrease this ability's HP bonus by +100.",
+   "3": "Your team has +50 HP.\nOn Victory\nIncrease this ability's HP bonus by +150.",
+   "4": "Your team has +50 HP.\nOn Victory\nIncrease this ability's HP bonus by +300."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Your team has +60 HP.\nOn Victory\nIncrease this ability's HP bonus by +60.",
+   "2": "Your team has +60 HP.\nOn Victory\nIncrease this ability's HP bonus by +120.",
+   "3": "Your team has +60 HP.\nOn Victory\nIncrease this ability's HP bonus by +180.",
+   "4": "Your team has +60 HP.\nOn Victory\nIncrease this ability's HP bonus by +360."
+  }
+ },
+ {
+  "id": "dribblet",
+  "name": "Dribblet",
+  "rarity": "$17:props:children:0:props:entries:0:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/dribblet.png",
+  "shinySprite": "/sprites/monster/dribblet_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": "Evolves at level 3.",
+   "2": "Evolves at level 3.",
+   "3": "Evolves at level 3.",
+   "4": "Evolves at level 3."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Evolves at level 3.",
+   "2": "Evolves at level 3.",
+   "3": "Evolves at level 3.",
+   "4": "Evolves at level 3."
+  }
+ },
+ {
+  "id": "frillet",
+  "name": "Frillet",
+  "rarity": "$17:props:children:0:props:entries:0:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/frillet.png",
+  "shinySprite": "/sprites/monster/frillet_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "Evolves at level 3.",
+   "2": "Evolves at level 3.",
+   "3": "Evolves at level 3.",
+   "4": "Evolves at level 3."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Evolves at level 3.",
+   "2": "Evolves at level 3.",
+   "3": "Evolves at level 3.",
+   "4": "Evolves at level 3."
+  }
+ },
+ {
+  "id": "furnadon",
+  "name": "Furnadon",
+  "rarity": "$17:props:children:0:props:entries:0:rarity",
+  "trigger": "Ongoing",
+  "sprite": "/sprites/monster/furnadon.png",
+  "shinySprite": "/sprites/monster/furnadon_shiny.png",
+  "regions": [],
+  "abilityByLevel": {
+   "1": "Has an additional +1 Burn for each Trinket that you own.",
+   "2": "Has an additional +2 Burn for each Trinket that you own.",
+   "3": "Has an additional +3 Burn for each Trinket that you own.",
+   "4": "Has an additional +6 Burn for each Trinket that you own."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Has an additional +1 Burn for each Trinket that you own.",
+   "2": "Has an additional +2 Burn for each Trinket that you own.",
+   "3": "Has an additional +3 Burn for each Trinket that you own.",
+   "4": "Has an additional +6 Burn for each Trinket that you own."
+  }
+ },
+ {
+  "id": "guardiant",
+  "name": "Guardiant",
+  "rarity": "$17:props:children:0:props:entries:0:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/guardiant.png",
+  "shinySprite": "/sprites/monster/guardiant_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": "After you buy a Bug monster, this gains +8 Damage.",
+   "2": "After you buy a Bug monster, this gains +16 Damage.",
+   "3": "After you buy a Bug monster, this gains +24 Damage.",
+   "4": "After you buy a Bug monster, this gains +48 Damage."
+  },
+  "shinyAbilityByLevel": {
+   "1": "After you buy a Bug monster, this gains +10 Damage.",
+   "2": "After you buy a Bug monster, this gains +20 Damage.",
+   "3": "After you buy a Bug monster, this gains +30 Damage.",
+   "4": "After you buy a Bug monster, this gains +60 Damage."
+  }
+ },
+ {
+  "id": "joltail",
+  "name": "Joltail",
+  "rarity": "$17:props:children:0:props:entries:0:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/joltail.png",
+  "shinySprite": "/sprites/monster/joltail_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": null,
+   "2": null,
+   "3": null,
+   "4": null
+  },
+  "shinyAbilityByLevel": {
+   "1": "+1 Shock permanently.",
+   "2": "+2 Shock permanently.",
+   "3": "+3 Shock permanently.",
+   "4": "+4 Shock permanently."
+  }
+ },
+ {
+  "id": "kindlepot",
+  "name": "Kindlepot",
+  "rarity": "$17:props:children:0:props:entries:0:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/kindlepot.png",
+  "shinySprite": "/sprites/monster/kindlepot_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "Evolve after collecting 5 more Trinkets.(5 left!)",
+   "2": "Evolve after collecting 5 more Trinkets.(5 left!)",
+   "3": "Evolve after collecting 5 more Trinkets.(5 left!)",
+   "4": "Evolve after collecting 5 more Trinkets.(5 left!)"
+  },
+  "shinyAbilityByLevel": {
+   "1": "Evolve after collecting 5 more Trinkets.(5 left!)",
+   "2": "Evolve after collecting 5 more Trinkets.(5 left!)",
+   "3": "Evolve after collecting 5 more Trinkets.(5 left!)",
+   "4": "Evolve after collecting 5 more Trinkets.(5 left!)"
+  }
+ },
+ {
+  "id": "lamplet",
+  "name": "Lamplet",
+  "rarity": "$17:props:children:0:props:entries:0:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/lamplet.png",
+  "shinySprite": "/sprites/monster/lamplet_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": null,
+   "2": null,
+   "3": null,
+   "4": null
+  },
+  "shinyAbilityByLevel": {
+   "1": "+1 Burn permanently.",
+   "2": "+2 Burn permanently.",
+   "3": "+3 Burn permanently.",
+   "4": "+3 Burn permanently."
+  }
+ },
+ {
+  "id": "leafleap",
+  "name": "Leafleap",
+  "rarity": "$17:props:children:0:props:entries:0:rarity",
+  "trigger": "On Bought",
+  "sprite": "/sprites/monster/leafleap.png",
+  "shinySprite": "/sprites/monster/leafleap_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "Give all monsters in the shop +5 Damage for the rest of the run.",
+   "2": "Give all monsters in the shop +10 Damage for the rest of the run.",
+   "3": "Give all monsters in the shop +15 Damage for the rest of the run.",
+   "4": "Give all monsters in the shop +30 Damage for the rest of the run."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Give all monsters in the shop, on your team, and on your bench +5 Damage for the rest of the run.",
+   "2": "Give all monsters in the shop, on your team, and on your bench +10 Damage for the rest of the run.",
+   "3": "Give all monsters in the shop, on your team, and on your bench +15 Damage for the rest of the run.",
+   "4": "Give all monsters in the shop, on your team, and on your bench +30 Damage for the rest of the run."
+  }
+ },
+ {
+  "id": "magmite",
+  "name": "Magmite",
+  "rarity": "$17:props:children:0:props:entries:0:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/magmite.png",
+  "shinySprite": "/sprites/monster/magmite_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": null,
+   "2": null,
+   "3": null,
+   "4": null
+  },
+  "shinyAbilityByLevel": {
+   "1": "+10 Shield and +1 Burn permanently.",
+   "2": "+20 Shield and +2 Burn permanently.",
+   "3": "+30 Shield and +3 Burn permanently.",
+   "4": "+60 Shield and +6 Burn permanently."
+  }
+ },
+ {
+  "id": "mosslug",
+  "name": "Mosslug",
+  "rarity": "$17:props:children:0:props:entries:0:rarity",
+  "trigger": "On Cast",
+  "sprite": "/sprites/monster/mosslug.png",
+  "shinySprite": "/sprites/monster/mosslug_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": "+20 Damage for this battle.",
+   "2": "+40 Damage for this battle.",
+   "3": "+60 Damage for this battle.",
+   "4": "+120 Damage for this battle."
+  },
+  "shinyAbilityByLevel": {
+   "1": "+24 Damage for this battle.",
+   "2": "+48 Damage for this battle.",
+   "3": "+72 Damage for this battle.",
+   "4": "+144 Damage for this battle."
+  }
+ },
+ {
+  "id": "panbud",
+  "name": "Panbud",
+  "rarity": "$17:props:children:0:props:entries:0:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/panbud.png",
+  "shinySprite": "/sprites/monster/panbud_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": "Evolves at level 3.",
+   "2": "Evolves at level 3.",
+   "3": "Evolves at level 3.",
+   "4": "Evolves at level 3."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Evolves at level 3.",
+   "2": "Evolves at level 3.",
+   "3": "Evolves at level 3.",
+   "4": "Evolves at level 3."
+  }
+ },
+ {
+  "id": "pebbler",
+  "name": "Pebbler",
+  "rarity": "$17:props:children:0:props:entries:0:rarity",
+  "trigger": "On Cast",
+  "sprite": "/sprites/monster/pebbler.png",
+  "shinySprite": "/sprites/monster/pebbler_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": "+15 Shield for this battle.",
+   "2": "+30 Shield for this battle.",
+   "3": "+45 Shield for this battle.",
+   "4": "+90 Shield for this battle."
+  },
+  "shinyAbilityByLevel": {
+   "1": "+18 Shield for this battle.",
+   "2": "+36 Shield for this battle.",
+   "3": "+54 Shield for this battle.",
+   "4": "+108 Shield for this battle."
+  }
+ },
+ {
+  "id": "pipskull",
+  "name": "Pipskull",
+  "rarity": "$17:props:children:0:props:entries:0:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/pipskull.png",
+  "shinySprite": "/sprites/monster/pipskull_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "Evolve after this monster experiences Knockout 3 times.",
+   "2": "Evolve after this monster experiences Knockout 3 times.",
+   "3": "Evolve after this monster experiences Knockout 3 times.",
+   "4": "Evolve after this monster experiences Knockout 3 times."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Evolve after this monster experiences Knockout 3 times.",
+   "2": "Evolve after this monster experiences Knockout 3 times.",
+   "3": "Evolve after this monster experiences Knockout 3 times.",
+   "4": "Evolve after this monster experiences Knockout 3 times."
+  }
+ },
+ {
+  "id": "ratacomb",
+  "name": "Ratacomb",
+  "rarity": "$17:props:children:0:props:entries:0:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/ratacomb.png",
+  "shinySprite": "/sprites/monster/ratacomb_shiny.png",
+  "regions": null,
+  "abilityByLevel": {
+   "1": null,
+   "2": null,
+   "3": null,
+   "4": null
+  },
+  "shinyAbilityByLevel": {
+   "1": null,
+   "2": null,
+   "3": null,
+   "4": null
+  }
+ },
+ {
+  "id": "rattleghast",
+  "name": "Rattleghast",
+  "rarity": "$17:props:children:0:props:entries:0:rarity",
+  "trigger": "On Battle Start",
+  "sprite": "/sprites/monster/rattleghast.png",
+  "shinySprite": "/sprites/monster/rattleghast_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "Knockout adjacent allies and gain +4 Poison this battle for each ally Knockout.",
+   "2": "Knockout adjacent allies and gain +8 Poison this battle for each ally Knockout.",
+   "3": "Knockout adjacent allies and gain +12 Poison this battle for each ally Knockout.",
+   "4": "Knockout adjacent allies and gain +24 Poison this battle for each ally Knockout."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Knockout adjacent allies and gain +4 Poison this battle for each ally Knockout.",
+   "2": "Knockout adjacent allies and gain +8 Poison this battle for each ally Knockout.",
+   "3": "Knockout adjacent allies and gain +12 Poison this battle for each ally Knockout.",
+   "4": "Knockout adjacent allies and gain +24 Poison this battle for each ally Knockout."
+  }
+ },
+ {
+  "id": "rubbin",
+  "name": "Rubbin",
+  "rarity": "$17:props:children:0:props:entries:0:rarity",
+  "trigger": "On Battle Start",
+  "sprite": "/sprites/monster/rubbin.png",
+  "shinySprite": "/sprites/monster/rubbin_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "Gain a Junk Trinket.",
+   "2": "Gain 2 Junk Trinkets.",
+   "3": "Gain 3 Junk Trinkets.",
+   "4": "Gain 6 Junk Trinkets."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Gain a random non-unique Common Trinket.",
+   "2": "Gain 2 random non-unique Common Trinkets.",
+   "3": "Gain 3 random non-unique Common Trinkets.",
+   "4": "Gain 6 random non-unique Common Trinkets."
+  }
+ },
+ {
+  "id": "scorchimp",
+  "name": "Scorchimp",
+  "rarity": "$17:props:children:0:props:entries:0:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/scorchimp.png",
+  "shinySprite": "/sprites/monster/scorchimp_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": "Evolves at level 3.",
+   "2": "Evolves at level 3.",
+   "3": "Evolves at level 3.",
+   "4": "Evolves at level 3."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Evolves at level 3.",
+   "2": "Evolves at level 3.",
+   "3": "Evolves at level 3.",
+   "4": "Evolves at level 3."
+  }
+ },
+ {
+  "id": "scorbble",
+  "name": "Scorubble",
+  "rarity": "$17:props:children:0:props:entries:0:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/scorbble.png",
+  "shinySprite": "/sprites/monster/scorbble_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": null,
+   "2": null,
+   "3": null,
+   "4": null
+  },
+  "shinyAbilityByLevel": {
+   "1": "+10% Cooldown Speed permanently.",
+   "2": "+20% Cooldown Speed permanently.",
+   "3": "+30% Cooldown Speed permanently.",
+   "4": "+60% Cooldown Speed permanently."
+  }
+ },
+ {
+  "id": "shellter",
+  "name": "Shellter",
+  "rarity": "$17:props:children:0:props:entries:0:rarity",
+  "trigger": "On Cast",
+  "sprite": "/sprites/monster/shellter.png",
+  "shinySprite": "/sprites/monster/shellter_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "-20 Shield for this battle.",
+   "2": "-40 Shield for this battle.",
+   "3": "-60 Shield for this battle.",
+   "4": "-60 Shield for this battle."
+  },
+  "shinyAbilityByLevel": {
+   "1": "-20 Shield and +10 Damage for this battle.",
+   "2": "-40 Shield and +20 Damage for this battle.",
+   "3": "-60 Shield and +30 Damage for this battle.",
+   "4": "-60 Shield and +60 Damage for this battle."
+  }
+ },
+ {
+  "id": "spinarai",
+  "name": "Spinarai",
+  "rarity": "$17:props:children:0:props:entries:0:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/spinarai.png",
+  "shinySprite": "/sprites/monster/spinarai_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": null,
+   "2": null,
+   "3": null,
+   "4": null
+  },
+  "shinyAbilityByLevel": {
+   "1": "+1 Poison for this battle.",
+   "2": "+2 Poison for this battle.",
+   "3": "+3 Poison for this battle.",
+   "4": "+3 Poison for this battle."
+  }
+ },
+ {
+  "id": "stingarde",
+  "name": "Stingarde",
+  "rarity": "$17:props:children:0:props:entries:0:rarity",
+  "trigger": "On Cast",
+  "sprite": "/sprites/monster/stingarde.png",
+  "shinySprite": "/sprites/monster/stingarde_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": "Knockout self.",
+   "2": "Knockout self.",
+   "3": "Knockout self.",
+   "4": "Knockout self."
+  },
+  "shinyAbilityByLevel": {
+   "1": null,
+   "2": null,
+   "3": null,
+   "4": null
+  }
+ },
+ {
+  "id": "swoonet",
+  "name": "Swoonet",
+  "rarity": "$17:props:children:0:props:entries:0:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/swoonet.png",
+  "shinySprite": "/sprites/monster/swoonet_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "This only needs 2 copies to level up. This can level up indefinitely.",
+   "2": "This only needs 2 copies to level up. This can level up indefinitely.",
+   "3": "This only needs 2 copies to level up. This can level up indefinitely.",
+   "4": "This only needs 2 copies to level up. This can level up indefinitely."
+  },
+  "shinyAbilityByLevel": {
+   "1": "This only needs 2 copies to level up. This can level up indefinitely.",
+   "2": "This only needs 2 copies to level up. This can level up indefinitely.",
+   "3": "This only needs 2 copies to level up. This can level up indefinitely.",
+   "4": "This only needs 2 copies to level up. This can level up indefinitely."
+  }
+ },
+ {
+  "id": "toximoth",
+  "name": "Toximoth",
+  "rarity": "$17:props:children:0:props:entries:0:rarity",
+  "trigger": "On Bought",
+  "sprite": "/sprites/monster/toximoth.png",
+  "shinySprite": "/sprites/monster/toximoth_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "Give Toxic monsters in the shop +1 Poison for the rest of the run.",
+   "2": "Give Toxic monsters in the shop +2 Poison for the rest of the run.",
+   "3": "Give Toxic monsters in the shop +3 Poison for the rest of the run.",
+   "4": "Give Toxic monsters in the shop +6 Poison for the rest of the run."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Give Toxic monsters in the shop and on your team +1 Poison for the rest of the run.",
+   "2": "Give Toxic monsters in the shop and on your team +2 Poison for the rest of the run.",
+   "3": "Give Toxic monsters in the shop and on your team +3 Poison for the rest of the run.",
+   "4": "Give Toxic monsters in the shop and on your team +6 Poison for the rest of the run."
+  }
+ },
+ {
+  "id": "velocect",
+  "name": "Velocect",
+  "rarity": "$17:props:children:0:props:entries:0:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/velocect.png",
+  "shinySprite": "/sprites/monster/velocect_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": null,
+   "2": null,
+   "3": null,
+   "4": null
+  },
+  "shinyAbilityByLevel": {
+   "1": null,
+   "2": null,
+   "3": null,
+   "4": null
+  }
+ },
+ {
+  "id": "venopuff",
+  "name": "Venopuff",
+  "rarity": "$17:props:children:0:props:entries:0:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/venopuff.png",
+  "shinySprite": "/sprites/monster/venopuff_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": null,
+   "2": null,
+   "3": null,
+   "4": null
+  },
+  "shinyAbilityByLevel": {
+   "1": "+1 Poison permanently.",
+   "2": "+2 Poison permanently.",
+   "3": "+3 Poison permanently.",
+   "4": "+4 Poison permanently."
+  }
+ },
+ {
+  "id": "aviarab",
+  "name": "Aviarab",
+  "rarity": {
+   "label": "Uncommon",
+   "color": "#4ab500"
+  },
+  "trigger": "On Bought",
+  "sprite": "/sprites/monster/aviarab.png",
+  "shinySprite": "/sprites/monster/aviarab_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "Give the next Flying monster you buy +1 Multicast. Lost if sold.",
+   "2": "Give the next Flying monster you buy +2 Multicast. Lost if sold.",
+   "3": "Give the next Flying monster you buy +3 Multicast. Lost if sold.",
+   "4": "Give the next Flying monster you buy +6 Multicast. Lost if sold."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Give Flying monsters in the shop +1 Multicast for the rest of the run.",
+   "2": "Give Flying monsters in the shop +2 Multicast for the rest of the run.",
+   "3": "Give Flying monsters in the shop +3 Multicast for the rest of the run.",
+   "4": "Give Flying monsters in the shop +6 Multicast for the rest of the run."
+  }
+ },
+ {
+  "id": "berroon",
+  "name": "Berroon",
+  "rarity": "$17:props:children:0:props:entries:28:rarity",
+  "trigger": "On Battle Start",
+  "sprite": "/sprites/monster/berroon.png",
+  "shinySprite": "/sprites/monster/berroon_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": "The next 1 items in your shop will be Berries.",
+   "2": "The next 2 items in your shop will be Berries.",
+   "3": "The next 3 items in your shop will be Berries.",
+   "4": "The next 6 items in your shop will be Berries."
+  },
+  "shinyAbilityByLevel": {
+   "1": "The next 1 items in your shop will be Berries.\nWhen you use an item, this gains +10 Damage.",
+   "2": "The next 2 items in your shop will be Berries.\nWhen you use an item, this gains +20 Damage.",
+   "3": "The next 3 items in your shop will be Berries.\nWhen you use an item, this gains +30 Damage.",
+   "4": "The next 6 items in your shop will be Berries.\nWhen you use an item, this gains +60 Damage."
+  }
+ },
+ {
+  "id": "blessom",
+  "name": "Blessom",
+  "rarity": "$17:props:children:0:props:entries:28:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/blessom.png",
+  "shinySprite": "/sprites/monster/blessom_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "At the start of each day, monsters in your shop gain +50 Damage.",
+   "2": "At the start of each day, monsters in your shop gain +100 Damage.",
+   "3": "At the start of each day, monsters in your shop gain +150 Damage.",
+   "4": "At the start of each day, monsters in your shop gain +300 Damage."
+  },
+  "shinyAbilityByLevel": {
+   "1": "At the start of each day, monsters in your shop gain +60 Damage.",
+   "2": "At the start of each day, monsters in your shop gain +120 Damage.",
+   "3": "At the start of each day, monsters in your shop gain +180 Damage.",
+   "4": "At the start of each day, monsters in your shop gain +360 Damage."
+  }
+ },
+ {
+  "id": "bonshell",
+  "name": "Bonshell",
+  "rarity": "$17:props:children:0:props:entries:28:rarity",
+  "trigger": "On Cast",
+  "sprite": "/sprites/monster/bonshell.png",
+  "shinySprite": "/sprites/monster/bonshell_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "+80 Damage and +80 Shield for this battle.",
+   "2": "+160 Damage and +160 Shield for this battle.",
+   "3": "+240 Damage and +240 Shield for this battle.",
+   "4": "+480 Damage and +480 Shield for this battle."
+  },
+  "shinyAbilityByLevel": {
+   "1": "+96 Damage and +96 Shield for this battle.",
+   "2": "+192 Damage and +192 Shield for this battle.",
+   "3": "+288 Damage and +288 Shield for this battle.",
+   "4": "+576 Damage and +576 Shield for this battle."
+  }
+ },
+ {
+  "id": "boomagon",
+  "name": "Boomagon",
+  "rarity": "$17:props:children:0:props:entries:28:rarity",
+  "trigger": "On Cast",
+  "sprite": "/sprites/monster/boomagon.png",
+  "shinySprite": "/sprites/monster/boomagon_shiny.png",
+  "regions": [
+   "pantra",
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "Give the ally behind +3% Cooldown Speed permanently.",
+   "2": "Give the ally behind +6% Cooldown Speed permanently.",
+   "3": "Give the ally behind +9% Cooldown Speed permanently.",
+   "4": "Give the ally behind +18% Cooldown Speed permanently."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Give the ally behind +3% Cooldown Speed permanently.",
+   "2": "Give the ally behind +6% Cooldown Speed permanently.",
+   "3": "Give the ally behind +9% Cooldown Speed permanently.",
+   "4": "Give the ally behind +18% Cooldown Speed permanently."
+  }
+ },
+ {
+  "id": "brawlmantis",
+  "name": "Brawlmantis",
+  "rarity": "$17:props:children:0:props:entries:28:rarity",
+  "trigger": "On Victory",
+  "sprite": "/sprites/monster/brawlmantis.png",
+  "shinySprite": "/sprites/monster/brawlmantis_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": "This and Common allies gain +10 Damage permanently.",
+   "2": "This and Common allies gain +20 Damage permanently.",
+   "3": "This and Common allies gain +30 Damage permanently.",
+   "4": "This and Common allies gain +60 Damage permanently."
+  },
+  "shinyAbilityByLevel": {
+   "1": "This and Common allies gain +12 Damage permanently.",
+   "2": "This and Common allies gain +24 Damage permanently.",
+   "3": "This and Common allies gain +36 Damage permanently.",
+   "4": "This and Common allies gain +72 Damage permanently."
+  }
+ },
+ {
+  "id": "brimtoad",
+  "name": "Brimtoad",
+  "rarity": "$17:props:children:0:props:entries:28:rarity",
+  "trigger": "On Battle Start",
+  "sprite": "/sprites/monster/brimtoad.png",
+  "shinySprite": "/sprites/monster/brimtoad_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "+4 Burn and +4 Poison permanently.",
+   "2": "+8 Burn and +8 Poison permanently.",
+   "3": "+12 Burn and +12 Poison permanently.",
+   "4": "+48 Burn and +48 Poison permanently."
+  },
+  "shinyAbilityByLevel": {
+   "1": "+5 Burn and +5 Poison permanently.",
+   "2": "+10 Burn and +10 Poison permanently.",
+   "3": "+14 Burn and +14 Poison permanently.",
+   "4": "+58 Burn and +58 Poison permanently."
+  }
+ },
+ {
+  "id": "cinderfly",
+  "name": "Cinderfly",
+  "rarity": "$17:props:children:0:props:entries:28:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/cinderfly.png",
+  "shinySprite": "/sprites/monster/cinderfly_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": "After you buy a Bug monster, this gains +10% Cooldown Speed.",
+   "2": "After you buy a Bug monster, this gains +20% Cooldown Speed.",
+   "3": "After you buy a Bug monster, this gains +30% Cooldown Speed.",
+   "4": "After you buy a Bug monster, this gains +60% Cooldown Speed."
+  },
+  "shinyAbilityByLevel": {
+   "1": "After you buy a Bug monster, this gains +12% Cooldown Speed.",
+   "2": "After you buy a Bug monster, this gains +24% Cooldown Speed.",
+   "3": "After you buy a Bug monster, this gains +36% Cooldown Speed.",
+   "4": "After you buy a Bug monster, this gains +72% Cooldown Speed."
+  }
+ },
+ {
+  "id": "cinnabark",
+  "name": "Cinnabark",
+  "rarity": "$17:props:children:0:props:entries:28:rarity",
+  "trigger": "Ongoing",
+  "sprite": "/sprites/monster/cinnabark.png",
+  "shinySprite": "/sprites/monster/cinnabark_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "Has additional Shield equal to 100% of the Poison stacks on the enemy.",
+   "2": "Has additional Shield equal to 200% of the Poison stacks on the enemy.",
+   "3": "Has additional Shield equal to 300% of the Poison stacks on the enemy.",
+   "4": "Has additional Shield equal to 600% of the Poison stacks on the enemy."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Has additional Shield equal to 120% of the Poison stacks on the enemy.",
+   "2": "Has additional Shield equal to 240% of the Poison stacks on the enemy.",
+   "3": "Has additional Shield equal to 360% of the Poison stacks on the enemy.",
+   "4": "Has additional Shield equal to 720% of the Poison stacks on the enemy."
+  }
+ },
+ {
+  "id": "alpinine",
+  "name": "Craghorn",
+  "rarity": "$17:props:children:0:props:entries:28:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/alpinine.png",
+  "shinySprite": "/sprites/monster/alpinine_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": "When you use an item, this gains +20 Damage and Shield.",
+   "2": "When you use an item, this gains +40 Damage and Shield.",
+   "3": "When you use an item, this gains +60 Damage and Shield.",
+   "4": "When you use an item, this gains +120 Damage and Shield."
+  },
+  "shinyAbilityByLevel": {
+   "1": "When you use an item, this gains +24 Damage and Shield.",
+   "2": "When you use an item, this gains +48 Damage and Shield.",
+   "3": "When you use an item, this gains +72 Damage and Shield.",
+   "4": "When you use an item, this gains +144 Damage and Shield."
+  }
+ },
+ {
+  "id": "galvanade",
+  "name": "Electranade",
+  "rarity": "$17:props:children:0:props:entries:28:rarity",
+  "trigger": "On Cast",
+  "sprite": "/sprites/monster/galvanade.png",
+  "shinySprite": "/sprites/monster/galvanade_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": "Knockout self.",
+   "2": "Knockout self.",
+   "3": "Knockout self.",
+   "4": "Knockout self."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Knockout self.",
+   "2": "Knockout self.",
+   "3": "Knockout self.",
+   "4": "Knockout self."
+  }
+ },
+ {
+  "id": "emburn",
+  "name": "Emburn",
+  "rarity": "$17:props:children:0:props:entries:28:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/emburn.png",
+  "shinySprite": "/sprites/monster/emburn_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "On Knockout of this or an ally, this gains +3 Burn permanently.",
+   "2": "On Knockout of this or an ally, this gains +6 Burn permanently.",
+   "3": "On Knockout of this or an ally, this gains +9 Burn permanently.",
+   "4": "On Knockout of this or an ally, this gains +18 Burn permanently."
+  },
+  "shinyAbilityByLevel": {
+   "1": "On Knockout of this or an ally, this gains +3 Burn permanently.",
+   "2": "On Knockout of this or an ally, this gains +6 Burn permanently.",
+   "3": "On Knockout of this or an ally, this gains +9 Burn permanently.",
+   "4": "On Knockout of this or an ally, this gains +18 Burn permanently."
+  }
+ },
+ {
+  "id": "frizzly",
+  "name": "Frizzly",
+  "rarity": "$17:props:children:0:props:entries:28:rarity",
+  "trigger": "On Battle Start",
+  "sprite": "/sprites/monster/frizzly.png",
+  "shinySprite": "/sprites/monster/frizzly_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": "Trigger this.",
+   "2": "Trigger this.",
+   "3": "Trigger this.",
+   "4": "Trigger this."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Trigger this and gain +1 Shock permanently.",
+   "2": "Trigger this and gain +2 Shock permanently.",
+   "3": "Trigger this and gain +3 Shock permanently.",
+   "4": "Trigger this and gain +4 Shock permanently."
+  }
+ },
+ {
+  "id": "gildshell",
+  "name": "Gildshell",
+  "rarity": "$17:props:children:0:props:entries:28:rarity",
+  "trigger": "On Battle Start",
+  "sprite": "/sprites/monster/gildshell.png",
+  "shinySprite": "/sprites/monster/gildshell_shiny.png",
+  "regions": [
+   "pantra",
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "+20 Sell Value permanently.",
+   "2": "+40 Sell Value permanently.",
+   "3": "+60 Sell Value permanently.",
+   "4": "+240 Sell Value permanently."
+  },
+  "shinyAbilityByLevel": {
+   "1": "+20 Sell Value permanently.\nOngoing\nHas additional Damage equal to 0.5 times this monster's Sell Value.",
+   "2": "+40 Sell Value permanently.\nOngoing\nHas additional Damage equal to 0.5 times this monster's Sell Value.",
+   "3": "+60 Sell Value permanently.\nOngoing\nHas additional Damage equal to 0.5 times this monster's Sell Value.",
+   "4": "+240 Sell Value permanently.\nOngoing\nHas additional Damage equal to 0.5 times this monster's Sell Value."
+  }
+ },
+ {
+  "id": "kappow",
+  "name": "Kappow",
+  "rarity": "$17:props:children:0:props:entries:28:rarity",
+  "trigger": "On Victory",
+  "sprite": "/sprites/monster/kappow.png",
+  "shinySprite": "/sprites/monster/kappow_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "Level up. This can level up indefinitely.",
+   "2": "Level up. This can level up indefinitely.",
+   "3": "Level up. This can level up indefinitely.",
+   "4": "Level up. This can level up indefinitely."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Level up. This can level up indefinitely.",
+   "2": "Level up. This can level up indefinitely.",
+   "3": "Level up. This can level up indefinitely.",
+   "4": "Level up. This can level up indefinitely."
+  }
+ },
+ {
+  "id": "nekoffin",
+  "name": "Nekoffin",
+  "rarity": "$17:props:children:0:props:entries:28:rarity",
+  "trigger": "On Knocked Out",
+  "sprite": "/sprites/monster/nekoffin.png",
+  "shinySprite": "/sprites/monster/nekoffin_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "Gain a random non-unique Common Trinket.",
+   "2": "Gain 2 random non-unique Common Trinkets.",
+   "3": "Gain 3 random non-unique Common Trinkets.",
+   "4": "Gain 12 random non-unique Common Trinkets."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Gain a random non-unique Uncommon Trinket.",
+   "2": "Gain 2 random non-unique Uncommon Trinkets.",
+   "3": "Gain 3 random non-unique Uncommon Trinkets.",
+   "4": "Gain 12 random non-unique Uncommon Trinkets."
+  }
+ },
+ {
+  "id": "noxnimbus",
+  "name": "Noxnimbus",
+  "rarity": "$17:props:children:0:props:entries:28:rarity",
+  "trigger": "On Cast",
+  "sprite": "/sprites/monster/noxnimbus.png",
+  "shinySprite": "/sprites/monster/noxnimbus_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": "Adjacent Toxic allies gain +3 Poison for this battle.",
+   "2": "Adjacent Toxic allies gain +6 Poison for this battle.",
+   "3": "Adjacent Toxic allies gain +9 Poison for this battle.",
+   "4": "Adjacent Toxic allies gain +18 Poison for this battle."
+  },
+  "shinyAbilityByLevel": {
+   "1": "This and adjacent Toxic allies gain +3 Poison for this battle.",
+   "2": "This and adjacent Toxic allies gain +6 Poison for this battle.",
+   "3": "This and adjacent Toxic allies gain +9 Poison for this battle.",
+   "4": "This and adjacent Toxic allies gain +18 Poison for this battle."
+  }
+ },
+ {
+  "id": "pawsperity",
+  "name": "Pawsperity",
+  "rarity": "$17:props:children:0:props:entries:28:rarity",
+  "trigger": "On Victory",
+  "sprite": "/sprites/monster/pawsperity.png",
+  "shinySprite": "/sprites/monster/pawsperity_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "Gain a random non-unique Common Trinket.",
+   "2": "Gain 2 random non-unique Common Trinkets.",
+   "3": "Gain 3 random non-unique Common Trinkets.",
+   "4": "Gain 6 random non-unique Common Trinkets."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Gain a random non-unique Uncommon Trinket.",
+   "2": "Gain 2 random non-unique Uncommon Trinkets.",
+   "3": "Gain 3 random non-unique Uncommon Trinkets.",
+   "4": "Gain 6 random non-unique Uncommon Trinkets."
+  }
+ },
+ {
+  "id": "plunderbird",
+  "name": "Plunderbird",
+  "rarity": "$17:props:children:0:props:entries:28:rarity",
+  "trigger": "On Cast",
+  "sprite": "/sprites/monster/plunderbird.png",
+  "shinySprite": "/sprites/monster/plunderbird_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": "Gain $1.",
+   "2": "Gain $1.",
+   "3": "Gain $1.",
+   "4": "Gain $2."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Gain $1.",
+   "2": "Gain $1.",
+   "3": "Gain $1.",
+   "4": "Gain $2."
+  }
+ },
+ {
+  "id": "puffloon",
+  "name": "Puffloon",
+  "rarity": "$17:props:children:0:props:entries:28:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/puffloon.png",
+  "shinySprite": "/sprites/monster/puffloon_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": "Trigger this when adjacent Toxic allies trigger.\n(Except other Puffloon)",
+   "2": "Trigger this when adjacent Toxic allies trigger.\n(Except other Puffloon)",
+   "3": "Trigger this when adjacent Toxic allies trigger.\n(Except other Puffloon)",
+   "4": "Trigger this when adjacent Toxic allies trigger.\n(Except other Puffloon)"
+  },
+  "shinyAbilityByLevel": {
+   "1": "Trigger this when adjacent Toxic allies trigger.\n(Except other Puffloon)",
+   "2": "Trigger this when adjacent Toxic allies trigger.\n(Except other Puffloon)",
+   "3": "Trigger this when adjacent Toxic allies trigger.\n(Except other Puffloon)",
+   "4": "Trigger this when adjacent Toxic allies trigger.\n(Except other Puffloon)"
+  }
+ },
+ {
+  "id": "infernade",
+  "name": "Pyronade",
+  "rarity": "$17:props:children:0:props:entries:28:rarity",
+  "trigger": "On Cast",
+  "sprite": "/sprites/monster/infernade.png",
+  "shinySprite": "/sprites/monster/infernade_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": "Knockout self.",
+   "2": "Knockout self.",
+   "3": "Knockout self.",
+   "4": "Knockout self."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Knockout self.",
+   "2": "Knockout self.",
+   "3": "Knockout self.",
+   "4": "Knockout self."
+  }
+ },
+ {
+  "id": "runerock",
+  "name": "Runerock",
+  "rarity": "$17:props:children:0:props:entries:28:rarity",
+  "trigger": "On Cast",
+  "sprite": "/sprites/monster/runerock.png",
+  "shinySprite": "/sprites/monster/runerock_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": "Remove 15 stacks of every debuff on your team.",
+   "2": "Remove 30 stacks of every debuff on your team.",
+   "3": "Remove 45 stacks of every debuff on your team.",
+   "4": "Remove 90 stacks of every debuff on your team."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Remove 15 stacks of every debuff on your team.",
+   "2": "Remove 30 stacks of every debuff on your team.",
+   "3": "Remove 45 stacks of every debuff on your team.",
+   "4": "Remove 90 stacks of every debuff on your team."
+  }
+ },
+ {
+  "id": "shogapede",
+  "name": "Shogapede",
+  "rarity": "$17:props:children:0:props:entries:28:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/shogapede.png",
+  "shinySprite": "/sprites/monster/shogapede_shiny.png",
+  "regions": [
+   "pantra",
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "After you buy a Bug monster, this gains +10% Cooldown Speed.",
+   "2": "After you buy a Bug monster, this gains +20% Cooldown Speed.",
+   "3": "After you buy a Bug monster, this gains +30% Cooldown Speed.",
+   "4": "After you buy a Bug monster, this gains +60% Cooldown Speed."
+  },
+  "shinyAbilityByLevel": {
+   "1": "After you buy a Bug monster, this gains +18% Cooldown Speed.",
+   "2": "After you buy a Bug monster, this gains +36% Cooldown Speed.",
+   "3": "After you buy a Bug monster, this gains +54% Cooldown Speed.",
+   "4": "After you buy a Bug monster, this gains +108% Cooldown Speed."
+  }
+ },
+ {
+  "id": "sukoi",
+  "name": "Sukoi",
+  "rarity": "$17:props:children:0:props:entries:28:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/sukoi.png",
+  "shinySprite": "/sprites/monster/sukoi_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": null,
+   "2": null,
+   "3": null,
+   "4": null
+  },
+  "shinyAbilityByLevel": {
+   "1": null,
+   "2": null,
+   "3": null,
+   "4": null
+  }
+ },
+ {
+  "id": "aristobat",
+  "name": "Aristobat",
+  "rarity": {
+   "label": "Rare",
+   "color": "#0084bd"
+  },
+  "trigger": null,
+  "sprite": "/sprites/monster/aristobat.png",
+  "shinySprite": "/sprites/monster/aristobat_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": null,
+   "2": null,
+   "3": null,
+   "4": null
+  },
+  "shinyAbilityByLevel": {
+   "1": null,
+   "2": null,
+   "3": null,
+   "4": null
+  }
+ },
+ {
+  "id": "aster",
+  "name": "Aster",
+  "rarity": "$17:props:children:0:props:entries:52:rarity",
+  "trigger": "On Battle Start",
+  "sprite": "/sprites/monster/aster.png",
+  "shinySprite": "/sprites/monster/aster_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": "Adjacent Water allies gain +25 Heal permanently.",
+   "2": "Adjacent Water allies gain +50 Heal permanently.",
+   "3": "Adjacent Water allies gain +75 Heal permanently.",
+   "4": "Adjacent Water allies gain +225 Heal permanently."
+  },
+  "shinyAbilityByLevel": {
+   "1": "This and adjacent Water allies gain +25 Heal permanently.",
+   "2": "This and adjacent Water allies gain +50 Heal permanently.",
+   "3": "This and adjacent Water allies gain +75 Heal permanently.",
+   "4": "This and adjacent Water allies gain +225 Heal permanently."
+  }
+ },
+ {
+  "id": "cherubble",
+  "name": "Cherubble",
+  "rarity": "$17:props:children:0:props:entries:52:rarity",
+  "trigger": "On Cast",
+  "sprite": "/sprites/monster/cherubble.png",
+  "shinySprite": "/sprites/monster/cherubble_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": "Give adjacent allies Protect 1.",
+   "2": "Give adjacent allies Protect 1.",
+   "3": "Give adjacent allies Protect 1.",
+   "4": "Give adjacent allies Protect 1."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Give adjacent allies +10 Damage permanently and Protect 1.",
+   "2": "Give adjacent allies +10 Damage permanently and Protect 1.",
+   "3": "Give adjacent allies +10 Damage permanently and Protect 1.",
+   "4": "Give adjacent allies +40 Damage permanently and Protect 1."
+  }
+ },
+ {
+  "id": "cicadence",
+  "name": "Cicadence",
+  "rarity": "$17:props:children:0:props:entries:52:rarity",
+  "trigger": "On Cast",
+  "sprite": "/sprites/monster/cicadence.png",
+  "shinySprite": "/sprites/monster/cicadence_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": "Trigger the Bug ally above.",
+   "2": "Trigger the Bug ally above.",
+   "3": "Trigger the Bug ally above.",
+   "4": "Trigger the Bug ally above."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Trigger the Bug ally above and give it +10 Damage permanently.",
+   "2": "Trigger the Bug ally above and give it +10 Damage permanently.",
+   "3": "Trigger the Bug ally above and give it +10 Damage permanently.",
+   "4": "Trigger the Bug ally above and give it +10 Damage permanently."
+  }
+ },
+ {
+  "id": "cordycant",
+  "name": "Cordycant",
+  "rarity": "$17:props:children:0:props:entries:52:rarity",
+  "trigger": "On Bought",
+  "sprite": "/sprites/monster/cordycant.png",
+  "shinySprite": "/sprites/monster/cordycant_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "Give the next monster you buy Toxic typing and +8 Poison. Lost if sold.",
+   "2": "Give the next monster you buy Toxic typing and +16 Poison. Lost if sold.",
+   "3": "Give the next monster you buy Toxic typing and +24 Poison. Lost if sold.",
+   "4": "Give the next monster you buy Toxic typing and +96 Poison. Lost if sold."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Give the next monster you buy Toxic typing and +10 Poison. Lost if sold.",
+   "2": "Give the next monster you buy Toxic typing and +19 Poison. Lost if sold.",
+   "3": "Give the next monster you buy Toxic typing and +29 Poison. Lost if sold.",
+   "4": "Give the next monster you buy Toxic typing and +115 Poison. Lost if sold."
+  }
+ },
+ {
+  "id": "dirgefin",
+  "name": "Dirgefin",
+  "rarity": "$17:props:children:0:props:entries:52:rarity",
+  "trigger": "On Cast",
+  "sprite": "/sprites/monster/dirgefin.png",
+  "shinySprite": "/sprites/monster/dirgefin_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": "Knockout all Common allies and enemies.",
+   "2": "Knockout all Common allies and enemies.",
+   "3": "Knockout all Common allies and enemies.",
+   "4": "Knockout all Common allies and enemies."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Knockout all Common allies and enemies and gain +10 Damage permanently for each Knockout.",
+   "2": "Knockout all Common allies and enemies and gain +10 Damage permanently for each Knockout.",
+   "3": "Knockout all Common allies and enemies and gain +10 Damage permanently for each Knockout.",
+   "4": "Knockout all Common allies and enemies and gain +10 Damage permanently for each Knockout."
+  }
+ },
+ {
+  "id": "dollhime",
+  "name": "Dollhime",
+  "rarity": "$17:props:children:0:props:entries:52:rarity",
+  "trigger": "On Trinket Gained",
+  "sprite": "/sprites/monster/dollhime.png",
+  "shinySprite": "/sprites/monster/dollhime_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "+50 Damage permanently.",
+   "2": "+100 Damage permanently.",
+   "3": "+150 Damage permanently.",
+   "4": "+600 Damage permanently."
+  },
+  "shinyAbilityByLevel": {
+   "1": "+60 Damage permanently.",
+   "2": "+120 Damage permanently.",
+   "3": "+180 Damage permanently.",
+   "4": "+720 Damage permanently."
+  }
+ },
+ {
+  "id": "dracana",
+  "name": "Dracana",
+  "rarity": "$17:props:children:0:props:entries:52:rarity",
+  "trigger": "On Cast",
+  "sprite": "/sprites/monster/dracana.png",
+  "shinySprite": "/sprites/monster/dracana_shiny.png",
+  "regions": [
+   "pantra",
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "Charge the ally behind by 1 second(s).\n(Dracana can't receive charge)",
+   "2": "Charge the ally behind by 2 second(s).\n(Dracana can't receive charge)",
+   "3": "Charge the ally behind by 3 second(s).\n(Dracana can't receive charge)",
+   "4": "Charge the ally behind by 18 second(s).\n(Dracana can't receive charge)"
+  },
+  "shinyAbilityByLevel": {
+   "1": "Charge the ally behind by 1 second(s) and give this +5% Cooldown Speed for this battle.\n(Dracana can't receive charge)",
+   "2": "Charge the ally behind by 2 second(s) and give this +5% Cooldown Speed for this battle.\n(Dracana can't receive charge)",
+   "3": "Charge the ally behind by 3 second(s) and give this +5% Cooldown Speed for this battle.\n(Dracana can't receive charge)",
+   "4": "Charge the ally behind by 18 second(s) and give this +5% Cooldown Speed for this battle.\n(Dracana can't receive charge)"
+  }
+ },
+ {
+  "id": "formiqueen",
+  "name": "Formiqueen",
+  "rarity": "$17:props:children:0:props:entries:52:rarity",
+  "trigger": "Ongoing",
+  "sprite": "/sprites/monster/formiqueen.png",
+  "shinySprite": "/sprites/monster/formiqueen_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": "Adjacent Common allies have +25% Cooldown Speed.",
+   "2": "Adjacent Common allies have +50% Cooldown Speed.",
+   "3": "Adjacent Common allies have +75% Cooldown Speed.",
+   "4": "Adjacent Common allies have +225% Cooldown Speed."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Adjacent Common allies have +32% Cooldown Speed.",
+   "2": "Adjacent Common allies have +62% Cooldown Speed.",
+   "3": "Adjacent Common allies have +92% Cooldown Speed.",
+   "4": "Adjacent Common allies have +675% Cooldown Speed."
+  }
+ },
+ {
+  "id": "humbolt",
+  "name": "Humbolt",
+  "rarity": "$17:props:children:0:props:entries:52:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/humbolt.png",
+  "shinySprite": "/sprites/monster/humbolt_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": null,
+   "2": null,
+   "3": null,
+   "4": null
+  },
+  "shinyAbilityByLevel": {
+   "1": null,
+   "2": null,
+   "3": null,
+   "4": null
+  }
+ },
+ {
+  "id": "ignit",
+  "name": "Ignit",
+  "rarity": "$17:props:children:0:props:entries:52:rarity",
+  "trigger": "On Victory",
+  "sprite": "/sprites/monster/ignit.png",
+  "shinySprite": "/sprites/monster/ignit_shiny.png",
+  "regions": [],
+  "abilityByLevel": {
+   "1": "Evolve.",
+   "2": "Evolve.",
+   "3": "Evolve.",
+   "4": "Evolve."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Evolve.",
+   "2": "Evolve.",
+   "3": "Evolve.",
+   "4": "Evolve."
+  }
+ },
+ {
+  "id": "ironcore",
+  "name": "Ironcore",
+  "rarity": "$17:props:children:0:props:entries:52:rarity",
+  "trigger": "On Cast",
+  "sprite": "/sprites/monster/ironcore.png",
+  "shinySprite": "/sprites/monster/ironcore_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": "Charge adjacent Electric allies by 1 second(s).\n(Ironcore can't receive charge)",
+   "2": "Charge adjacent Electric allies by 2 second(s).\n(Ironcore can't receive charge)",
+   "3": "Charge adjacent Electric allies by 3 second(s).\n(Ironcore can't receive charge)",
+   "4": "Charge adjacent Electric allies by 6 second(s).\n(Ironcore can't receive charge)"
+  },
+  "shinyAbilityByLevel": {
+   "1": "Charge adjacent Electric allies by 1.2 second(s).\n(Ironcore can't receive charge)",
+   "2": "Charge adjacent Electric allies by 2.4 second(s).\n(Ironcore can't receive charge)",
+   "3": "Charge adjacent Electric allies by 3.6 second(s).\n(Ironcore can't receive charge)",
+   "4": "Charge adjacent Electric allies by 7.2 second(s).\n(Ironcore can't receive charge)"
+  }
+ },
+ {
+  "id": "kickrane",
+  "name": "Kickrane",
+  "rarity": "$17:props:children:0:props:entries:52:rarity",
+  "trigger": "On Victory",
+  "sprite": "/sprites/monster/kickrane.png",
+  "shinySprite": "/sprites/monster/kickrane_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "This and all your allies gain +20 Damage permanently.",
+   "2": "This and all your allies gain +40 Damage permanently.",
+   "3": "This and all your allies gain +60 Damage permanently.",
+   "4": "This and all your allies gain +240 Damage permanently."
+  },
+  "shinyAbilityByLevel": {
+   "1": "This and all your allies gain +24 Damage permanently.",
+   "2": "This and all your allies gain +48 Damage permanently.",
+   "3": "This and all your allies gain +72 Damage permanently.",
+   "4": "This and all your allies gain +288 Damage permanently."
+  }
+ },
+ {
+  "id": "lignite",
+  "name": "Lignite",
+  "rarity": "$17:props:children:0:props:entries:52:rarity",
+  "trigger": "Ongoing",
+  "sprite": "/sprites/monster/lignite.png",
+  "shinySprite": "/sprites/monster/lignite_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": "Has additional Damage equal to 20 times this monster's Burn.",
+   "2": "Has additional Damage equal to 40 times this monster's Burn.",
+   "3": "Has additional Damage equal to 60 times this monster's Burn.",
+   "4": "Has additional Damage equal to 120 times this monster's Burn."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Has additional Damage equal to 24 times this monster's Burn.",
+   "2": "Has additional Damage equal to 48 times this monster's Burn.",
+   "3": "Has additional Damage equal to 72 times this monster's Burn.",
+   "4": "Has additional Damage equal to 144 times this monster's Burn."
+  }
+ },
+ {
+  "id": "lumijel",
+  "name": "Lumijel",
+  "rarity": "$17:props:children:0:props:entries:52:rarity",
+  "trigger": "On Battle Start",
+  "sprite": "/sprites/monster/lumijel.png",
+  "shinySprite": "/sprites/monster/lumijel_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "Allies of level 3 or above gain +15 Damage and +15 Heal permanently.",
+   "2": "Allies of level 3 or above gain +30 Damage and +30 Heal permanently.",
+   "3": "Allies of level 3 or above gain +45 Damage and +45 Heal permanently.",
+   "4": "Allies of level 3 or above gain +180 Damage and +180 Heal permanently."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Allies of level 3 or above gain +18 Damage and +18 Heal permanently.",
+   "2": "Allies of level 3 or above gain +36 Damage and +36 Heal permanently.",
+   "3": "Allies of level 3 or above gain +54 Damage and +54 Heal permanently.",
+   "4": "Allies of level 3 or above gain +216 Damage and +216 Heal permanently."
+  }
+ },
+ {
+  "id": "magmalith",
+  "name": "Magmalith",
+  "rarity": "$17:props:children:0:props:entries:52:rarity",
+  "trigger": "On Cast",
+  "sprite": "/sprites/monster/magmalith.png",
+  "shinySprite": "/sprites/monster/magmalith_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": "Give the ally above +2 Burn permanently.",
+   "2": "Give the ally above +4 Burn permanently.",
+   "3": "Give the ally above +6 Burn permanently.",
+   "4": "Give the ally above +24 Burn permanently."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Adjacent Fire allies gain +2 Burn permanently.",
+   "2": "Adjacent Fire allies gain +4 Burn permanently.",
+   "3": "Adjacent Fire allies gain +6 Burn permanently.",
+   "4": "Adjacent Fire allies gain +24 Burn permanently."
+  }
+ },
+ {
+  "id": "noxalith",
+  "name": "Noxalith",
+  "rarity": "$17:props:children:0:props:entries:52:rarity",
+  "trigger": "On Cast",
+  "sprite": "/sprites/monster/noxalith.png",
+  "shinySprite": "/sprites/monster/noxalith_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": "Give the ally above +3 Poison permanently.",
+   "2": "Give the ally above +6 Poison permanently.",
+   "3": "Give the ally above +9 Poison permanently.",
+   "4": "Give the ally above +36 Poison permanently."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Adjacent Toxic allies gain +3 Poison permanently.",
+   "2": "Adjacent Toxic allies gain +6 Poison permanently.",
+   "3": "Adjacent Toxic allies gain +9 Poison permanently.",
+   "4": "Adjacent Toxic allies gain +36 Poison permanently."
+  }
+ },
+ {
+  "id": "petrirex",
+  "name": "Petrirex",
+  "rarity": "$17:props:children:0:props:entries:52:rarity",
+  "trigger": "On Cast",
+  "sprite": "/sprites/monster/petrirex.png",
+  "shinySprite": "/sprites/monster/petrirex_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "Knockout adjacent allies and gain +20 Shield permanently for each ally Knockout.",
+   "2": "Knockout adjacent allies and gain +40 Shield permanently for each ally Knockout.",
+   "3": "Knockout adjacent allies and gain +60 Shield permanently for each ally Knockout.",
+   "4": "Knockout adjacent allies and gain +240 Shield permanently for each ally Knockout."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Knockout adjacent allies and gain +24 Shield permanently for each ally Knockout.",
+   "2": "Knockout adjacent allies and gain +48 Shield permanently for each ally Knockout.",
+   "3": "Knockout adjacent allies and gain +72 Shield permanently for each ally Knockout.",
+   "4": "Knockout adjacent allies and gain +288 Shield permanently for each ally Knockout."
+  }
+ },
+ {
+  "id": "pyrokami",
+  "name": "Pyrokami",
+  "rarity": "$17:props:children:0:props:entries:52:rarity",
+  "trigger": "On Cast",
+  "sprite": "/sprites/monster/pyrokami.png",
+  "shinySprite": "/sprites/monster/pyrokami_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "+10 Burn for this battle.",
+   "2": "+20 Burn for this battle.",
+   "3": "+30 Burn for this battle.",
+   "4": "+60 Burn for this battle."
+  },
+  "shinyAbilityByLevel": {
+   "1": "+12 Burn for this battle.",
+   "2": "+24 Burn for this battle.",
+   "3": "+36 Burn for this battle.",
+   "4": "+72 Burn for this battle."
+  }
+ },
+ {
+  "id": "rhizuka",
+  "name": "Rhizuka",
+  "rarity": "$17:props:children:0:props:entries:52:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/rhizuka.png",
+  "shinySprite": "/sprites/monster/rhizuka_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "Trigger this when an ally applies Shield.\n(Except other Rhizuka)",
+   "2": "Trigger this when an ally applies Shield.\n(Except other Rhizuka)",
+   "3": "Trigger this when an ally applies Shield.\n(Except other Rhizuka)",
+   "4": "Trigger this when an ally applies Shield.\n(Except other Rhizuka)"
+  },
+  "shinyAbilityByLevel": {
+   "1": "Trigger this when an ally applies Shield.\n(Except other Rhizuka)",
+   "2": "Trigger this when an ally applies Shield.\n(Except other Rhizuka)",
+   "3": "Trigger this when an ally applies Shield.\n(Except other Rhizuka)",
+   "4": "Trigger this when an ally applies Shield.\n(Except other Rhizuka)"
+  }
+ },
+ {
+  "id": "sarudo",
+  "name": "Sarudo",
+  "rarity": "$17:props:children:0:props:entries:52:rarity",
+  "trigger": "On Battle Lost",
+  "sprite": "/sprites/monster/sarudo.png",
+  "shinySprite": "/sprites/monster/sarudo_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "Activate the On Victory abilities of adjacent allies 1 time(s).",
+   "2": "Activate the On Victory abilities of adjacent allies 2 time(s).",
+   "3": "Activate the On Victory abilities of adjacent allies 3 time(s).",
+   "4": "Activate the On Victory abilities of adjacent allies 12 time(s)."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Activate the On Victory abilities of all allies 1 time(s).",
+   "2": "Activate the On Victory abilities of all allies 2 time(s).",
+   "3": "Activate the On Victory abilities of all allies 3 time(s).",
+   "4": "Activate the On Victory abilities of all allies 12 time(s)."
+  }
+ },
+ {
+  "id": "shikitsune",
+  "name": "Shikitsune",
+  "rarity": "$17:props:children:0:props:entries:52:rarity",
+  "trigger": "On Cast",
+  "sprite": "/sprites/monster/shikitsune.png",
+  "shinySprite": "/sprites/monster/shikitsune_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "Knocked-out allies are revived and gain +15% Cooldown Speed for this battle.",
+   "2": "Knocked-out allies are revived and gain +30% Cooldown Speed for this battle.",
+   "3": "Knocked-out allies are revived and gain +45% Cooldown Speed for this battle.",
+   "4": "Knocked-out allies are revived and gain +180% Cooldown Speed for this battle."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Knocked-out allies are revived and gain +18% Cooldown Speed for this battle.",
+   "2": "Knocked-out allies are revived and gain +36% Cooldown Speed for this battle.",
+   "3": "Knocked-out allies are revived and gain +54% Cooldown Speed for this battle.",
+   "4": "Knocked-out allies are revived and gain +216% Cooldown Speed for this battle."
+  }
+ },
+ {
+  "id": "sproach",
+  "name": "Sproach",
+  "rarity": "$17:props:children:0:props:entries:52:rarity",
+  "trigger": "On Bought",
+  "sprite": "/sprites/monster/sproach.png",
+  "shinySprite": "/sprites/monster/sproach_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "+30 Damage permanently for each life lost this run.",
+   "2": "+60 Damage permanently for each life lost this run.",
+   "3": "+90 Damage permanently for each life lost this run.",
+   "4": "+360 Damage permanently for each life lost this run."
+  },
+  "shinyAbilityByLevel": {
+   "1": "+36 Damage permanently for each life lost this run.",
+   "2": "+72 Damage permanently for each life lost this run.",
+   "3": "+108 Damage permanently for each life lost this run.",
+   "4": "+432 Damage permanently for each life lost this run."
+  }
+ },
+ {
+  "id": "stalagrove",
+  "name": "Stalagrove",
+  "rarity": "$17:props:children:0:props:entries:52:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/stalagrove.png",
+  "shinySprite": "/sprites/monster/stalagrove_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": "When you receive shield, this gains Damage for this battle equal to 15% of the amount shielded.",
+   "2": "When you receive shield, this gains Damage for this battle equal to 30% of the amount shielded.",
+   "3": "When you receive shield, this gains Damage for this battle equal to 45% of the amount shielded.",
+   "4": "When you receive shield, this gains Damage for this battle equal to 180% of the amount shielded."
+  },
+  "shinyAbilityByLevel": {
+   "1": "When you receive shield, this gains Damage for this battle equal to 18% of the amount shielded.",
+   "2": "When you receive shield, this gains Damage for this battle equal to 36% of the amount shielded.",
+   "3": "When you receive shield, this gains Damage for this battle equal to 54% of the amount shielded.",
+   "4": "When you receive shield, this gains Damage for this battle equal to 216% of the amount shielded."
+  }
+ },
+ {
+  "id": "steamscuttle",
+  "name": "Steamscuttle",
+  "rarity": "$17:props:children:0:props:entries:52:rarity",
+  "trigger": "On Cast",
+  "sprite": "/sprites/monster/steamscuttle.png",
+  "shinySprite": "/sprites/monster/steamscuttle_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "Charge adjacent Fire and Water allies by 1 second(s).\n(Steamscuttle can't receive charge)",
+   "2": "Charge adjacent Fire and Water allies by 2 second(s).\n(Steamscuttle can't receive charge)",
+   "3": "Charge adjacent Fire and Water allies by 3 second(s).\n(Steamscuttle can't receive charge)",
+   "4": "Charge adjacent Fire and Water allies by 12 second(s).\n(Steamscuttle can't receive charge)"
+  },
+  "shinyAbilityByLevel": {
+   "1": "Charge adjacent Fire and Water allies by 1.2 second(s).\n(Steamscuttle can't receive charge)",
+   "2": "Charge adjacent Fire and Water allies by 2.4 second(s).\n(Steamscuttle can't receive charge)",
+   "3": "Charge adjacent Fire and Water allies by 3.6 second(s).\n(Steamscuttle can't receive charge)",
+   "4": "Charge adjacent Fire and Water allies by 14.4 second(s).\n(Steamscuttle can't receive charge)"
+  }
+ },
+ {
+  "id": "talonite",
+  "name": "Talonite",
+  "rarity": "$17:props:children:0:props:entries:52:rarity",
+  "trigger": "On Battle Start",
+  "sprite": "/sprites/monster/talonite.png",
+  "shinySprite": "/sprites/monster/talonite_shiny.png",
+  "regions": [],
+  "abilityByLevel": {
+   "1": "+20 Shield permanently for each Rock ally and +1 Multicast permanently for each Flying ally.",
+   "2": "+40 Shield permanently for each Rock ally and +2 Multicast permanently for each Flying ally.",
+   "3": "+60 Shield permanently for each Rock ally and +3 Multicast permanently for each Flying ally.",
+   "4": "+120 Shield permanently for each Rock ally and +6 Multicast permanently for each Flying ally."
+  },
+  "shinyAbilityByLevel": {
+   "1": "+20 Shield permanently for each Rock ally and +1 Multicast permanently for each Flying ally.",
+   "2": "+40 Shield permanently for each Rock ally and +2 Multicast permanently for each Flying ally.",
+   "3": "+60 Shield permanently for each Rock ally and +3 Multicast permanently for each Flying ally.",
+   "4": "+120 Shield permanently for each Rock ally and +6 Multicast permanently for each Flying ally."
+  }
+ },
+ {
+  "id": "thorntail",
+  "name": "Thorntail",
+  "rarity": "$17:props:children:0:props:entries:52:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/thorntail.png",
+  "shinySprite": "/sprites/monster/thorntail_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": "When allies inflict Poison, this gains +8 Damage permanently.",
+   "2": "When allies inflict Poison, this gains +16 Damage permanently.",
+   "3": "When allies inflict Poison, this gains +24 Damage permanently.",
+   "4": "When allies inflict Poison, this gains +96 Damage permanently."
+  },
+  "shinyAbilityByLevel": {
+   "1": "When allies inflict Poison, this gains +9 Damage permanently.",
+   "2": "When allies inflict Poison, this gains +18 Damage permanently.",
+   "3": "When allies inflict Poison, this gains +27 Damage permanently.",
+   "4": "When allies inflict Poison, this gains +108 Damage permanently."
+  }
+ },
+ {
+  "id": "vipair",
+  "name": "Vipair",
+  "rarity": "$17:props:children:0:props:entries:52:rarity",
+  "trigger": "On Trinket Gained",
+  "sprite": "/sprites/monster/vipair.png",
+  "shinySprite": "/sprites/monster/vipair_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "+4 Poison permanently.",
+   "2": "+8 Poison permanently.",
+   "3": "+12 Poison permanently.",
+   "4": "+48 Poison permanently."
+  },
+  "shinyAbilityByLevel": {
+   "1": "+4 Poison permanently.",
+   "2": "+8 Poison permanently.",
+   "3": "+12 Poison permanently.",
+   "4": "+48 Poison permanently."
+  }
+ },
+ {
+  "id": "voltalith",
+  "name": "Voltalith",
+  "rarity": "$17:props:children:0:props:entries:52:rarity",
+  "trigger": "On Cast",
+  "sprite": "/sprites/monster/voltalith.png",
+  "shinySprite": "/sprites/monster/voltalith_shiny.png",
+  "regions": [],
+  "abilityByLevel": {
+   "1": "Give the ally above +2 Shock permanently.",
+   "2": "Give the ally above +4 Shock permanently.",
+   "3": "Give the ally above +6 Shock permanently.",
+   "4": "Give the ally above +24 Shock permanently."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Adjacent Electric allies gain +2 Shock permanently.",
+   "2": "Adjacent Electric allies gain +4 Shock permanently.",
+   "3": "Adjacent Electric allies gain +6 Shock permanently.",
+   "4": "Adjacent Electric allies gain +24 Shock permanently."
+  }
+ },
+ {
+  "id": "aegistruct",
+  "name": "Aegistruct",
+  "rarity": "$17:props:children:0:props:entries:62:evolvedForm:rarity",
+  "trigger": "On Battle Start",
+  "sprite": "/sprites/monster/aegistruct.png",
+  "shinySprite": "/sprites/monster/aegistruct_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": "Gain Shield for this battle equal to 1x the Shield of adjacent allies.\n(Except other Aegistruct)",
+   "2": "Gain Shield for this battle equal to 2x the Shield of adjacent allies.\n(Except other Aegistruct)",
+   "3": "Gain Shield for this battle equal to 3x the Shield of adjacent allies.\n(Except other Aegistruct)",
+   "4": "Gain Shield for this battle equal to 12x the Shield of adjacent allies.\n(Except other Aegistruct)"
+  },
+  "shinyAbilityByLevel": {
+   "1": "Gain Shield for this battle equal to 1.2x the Shield of adjacent allies.\n(Except other Aegistruct)",
+   "2": "Gain Shield for this battle equal to 2.4x the Shield of adjacent allies.\n(Except other Aegistruct)",
+   "3": "Gain Shield for this battle equal to 3.6x the Shield of adjacent allies.\n(Except other Aegistruct)",
+   "4": "Gain Shield for this battle equal to 14.4x the Shield of adjacent allies.\n(Except other Aegistruct)"
+  }
+ },
+ {
+  "id": "blazewing",
+  "name": "Blazewing",
+  "rarity": "$17:props:children:0:props:entries:62:evolvedForm:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/blazewing.png",
+  "shinySprite": "/sprites/monster/blazewing_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": null,
+   "2": null,
+   "3": null,
+   "4": null
+  },
+  "shinyAbilityByLevel": {
+   "1": null,
+   "2": null,
+   "3": null,
+   "4": null
+  }
+ },
+ {
+  "id": "cawnushi",
+  "name": "Cawnushi",
+  "rarity": "$17:props:children:0:props:entries:62:evolvedForm:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/cawnushi.png",
+  "shinySprite": "/sprites/monster/cawnushi_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "On Knockout of any monster, this gains +60 Damage permanently.",
+   "2": "On Knockout of any monster, this gains +120 Damage permanently.",
+   "3": "On Knockout of any monster, this gains +180 Damage permanently.",
+   "4": "On Knockout of any monster, this gains +1440 Damage permanently."
+  },
+  "shinyAbilityByLevel": {
+   "1": "On Knockout of any monster, this gains +72 Damage permanently.",
+   "2": "On Knockout of any monster, this gains +144 Damage permanently.",
+   "3": "On Knockout of any monster, this gains +216 Damage permanently.",
+   "4": "On Knockout of any monster, this gains +1728 Damage permanently."
+  }
+ },
+ {
+  "id": "celestia",
+  "name": "Celestia",
+  "rarity": "$17:props:children:0:props:entries:62:evolvedForm:rarity",
+  "trigger": "On Battle Start",
+  "sprite": "/sprites/monster/celestia.png",
+  "shinySprite": "/sprites/monster/celestia_shiny.png",
+  "regions": [
+   "pantra",
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "Disable abilities of all Ongoing monsters in this row.",
+   "2": "Disable abilities of all Ongoing monsters in this row.",
+   "3": "Disable abilities of all Ongoing monsters in this row.",
+   "4": "Disable abilities of all Ongoing monsters in this row."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Disable abilities of enemy Ongoing monsters in this row.",
+   "2": "Disable abilities of enemy Ongoing monsters in this row.",
+   "3": "Disable abilities of enemy Ongoing monsters in this row.",
+   "4": "Disable abilities of enemy Ongoing monsters in this row."
+  }
+ },
+ {
+  "id": "clawnetic",
+  "name": "Clawnetic",
+  "rarity": "$17:props:children:0:props:entries:62:evolvedForm:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/clawnetic.png",
+  "shinySprite": "/sprites/monster/clawnetic_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": "Whenever an ally inflicts Shock, Charge this by 1 second(s).",
+   "2": "Whenever an ally inflicts Shock, Charge this by 1 second(s).",
+   "3": "Whenever an ally inflicts Shock, Charge this by 1 second(s).",
+   "4": "Whenever an ally inflicts Shock, Charge this by 1 second(s)."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Whenever an ally inflicts Shock, Charge this by 1 second(s).",
+   "2": "Whenever an ally inflicts Shock, Charge this by 1 second(s).",
+   "3": "Whenever an ally inflicts Shock, Charge this by 1 second(s).",
+   "4": "Whenever an ally inflicts Shock, Charge this by 1 second(s)."
+  }
+ },
+ {
+  "id": "coalem",
+  "name": "Coalem",
+  "rarity": "$17:props:children:0:props:entries:62:evolvedForm:rarity",
+  "trigger": "On Battle Start",
+  "sprite": "/sprites/monster/coalem.png",
+  "shinySprite": "/sprites/monster/coalem_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": "Trigger this.",
+   "2": "Trigger this.",
+   "3": "Trigger this.",
+   "4": "Trigger this."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Trigger this and gain +30 Shield permanently.",
+   "2": "Trigger this and gain +60 Shield permanently.",
+   "3": "Trigger this and gain +90 Shield permanently.",
+   "4": "Trigger this and gain +540 Shield permanently."
+  }
+ },
+ {
+  "id": "danuki",
+  "name": "Danuki",
+  "rarity": "$17:props:children:0:props:entries:62:evolvedForm:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/danuki.png",
+  "shinySprite": "/sprites/monster/danuki_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "On ally knockout, this gains 70% of their Damage for this battle.\n(Except other Danuki)",
+   "2": "On ally knockout, this gains 70% of their Damage for this battle.\n(Except other Danuki)",
+   "3": "On ally knockout, this gains 70% of their Damage for this battle.\n(Except other Danuki)",
+   "4": "On ally knockout, this gains 70% of their Damage for this battle.\n(Except other Danuki)"
+  },
+  "shinyAbilityByLevel": {
+   "1": "On ally knockout, this gains 84% of their Damage for this battle.\n(Except other Danuki)",
+   "2": "On ally knockout, this gains 84% of their Damage for this battle.\n(Except other Danuki)",
+   "3": "On ally knockout, this gains 84% of their Damage for this battle.\n(Except other Danuki)",
+   "4": "On ally knockout, this gains 84% of their Damage for this battle.\n(Except other Danuki)"
+  }
+ },
+ {
+  "id": "dragon_egg_0",
+  "name": "Dragon Egg",
+  "rarity": "$17:props:children:0:props:entries:62:evolvedForm:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/dragon_egg_0.png",
+  "shinySprite": null,
+  "regions": [],
+  "abilityByLevel": {
+   "1": "Hatches a Legendary Dragon monster in 2 days.",
+   "2": "Hatches a Legendary Dragon monster in 2 days.",
+   "3": "Hatches a Legendary Dragon monster in 2 days.",
+   "4": "Hatches a Legendary Dragon monster in 2 days."
+  },
+  "shinyAbilityByLevel": {
+   "1": null,
+   "2": null,
+   "3": null,
+   "4": null
+  }
+ },
+ {
+  "id": "drumire",
+  "name": "Drumire",
+  "rarity": "$17:props:children:0:props:entries:62:evolvedForm:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/drumire.png",
+  "shinySprite": "/sprites/monster/drumire_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "When a Toxic ally casts, give it +5% Cooldown Speed for this battle.",
+   "2": "When a Toxic ally casts, give it +10% Cooldown Speed for this battle.",
+   "3": "When a Toxic ally casts, give it +15% Cooldown Speed for this battle.",
+   "4": "When a Toxic ally casts, give it +120% Cooldown Speed for this battle."
+  },
+  "shinyAbilityByLevel": {
+   "1": "When a Toxic ally casts, give it +6% Cooldown Speed for this battle.",
+   "2": "When a Toxic ally casts, give it +12% Cooldown Speed for this battle.",
+   "3": "When a Toxic ally casts, give it +18% Cooldown Speed for this battle.",
+   "4": "When a Toxic ally casts, give it +144% Cooldown Speed for this battle."
+  }
+ },
+ {
+  "id": "dryadell",
+  "name": "Dryadell",
+  "rarity": "$17:props:children:0:props:entries:62:evolvedForm:rarity",
+  "trigger": "On Cast",
+  "sprite": "/sprites/monster/dryadell.png",
+  "shinySprite": "/sprites/monster/dryadell_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": "Trigger the Grass ally above.",
+   "2": "Trigger the Grass ally above.",
+   "3": "Trigger the Grass ally above.",
+   "4": "Trigger the Grass ally above."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Trigger the Grass ally above.",
+   "2": "Trigger the Grass ally above.",
+   "3": "Trigger the Grass ally above.",
+   "4": "Trigger the Grass ally above."
+  }
+ },
+ {
+  "id": "emberpaw",
+  "name": "Emberpaw",
+  "rarity": "$17:props:children:0:props:entries:62:evolvedForm:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/emberpaw.png",
+  "shinySprite": "/sprites/monster/emberpaw_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "Evolve when your team inflicts Burn 25 times.",
+   "2": "Evolve when your team inflicts Burn 25 times.",
+   "3": "Evolve when your team inflicts Burn 25 times.",
+   "4": "Evolve when your team inflicts Burn 25 times."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Evolve when your team inflicts Burn 25 times.",
+   "2": "Evolve when your team inflicts Burn 25 times.",
+   "3": "Evolve when your team inflicts Burn 25 times.",
+   "4": "Evolve when your team inflicts Burn 25 times."
+  }
+ },
+ {
+  "id": "flarilisk",
+  "name": "Flarilisk",
+  "rarity": "$17:props:children:0:props:entries:62:evolvedForm:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/flarilisk.png",
+  "shinySprite": "/sprites/monster/flarilisk_shiny.png",
+  "regions": null,
+  "abilityByLevel": {
+   "1": null,
+   "2": null,
+   "3": null,
+   "4": null
+  },
+  "shinyAbilityByLevel": {
+   "1": null,
+   "2": null,
+   "3": null,
+   "4": null
+  }
+ },
+ {
+  "id": "fumungus",
+  "name": "Fumungus",
+  "rarity": "$17:props:children:0:props:entries:62:evolvedForm:rarity",
+  "trigger": "Ongoing",
+  "sprite": "/sprites/monster/fumungus.png",
+  "shinySprite": "/sprites/monster/fumungus_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": "Has additional Damage equal to 100% of the Poison stacks on the enemy.",
+   "2": "Has additional Damage equal to 200% of the Poison stacks on the enemy.",
+   "3": "Has additional Damage equal to 300% of the Poison stacks on the enemy.",
+   "4": "Has additional Damage equal to 1200% of the Poison stacks on the enemy."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Has additional Damage equal to 120% of the Poison stacks on the enemy.",
+   "2": "Has additional Damage equal to 240% of the Poison stacks on the enemy.",
+   "3": "Has additional Damage equal to 360% of the Poison stacks on the enemy.",
+   "4": "Has additional Damage equal to 1440% of the Poison stacks on the enemy."
+  }
+ },
+ {
+  "id": "gemwing",
+  "name": "Gemwing",
+  "rarity": "$17:props:children:0:props:entries:62:evolvedForm:rarity",
+  "trigger": "On Cast",
+  "sprite": "/sprites/monster/gemwing.png",
+  "shinySprite": "/sprites/monster/gemwing_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "Activate the On Bought ability of the ally above 1 time(s).",
+   "2": "Activate the On Bought ability of the ally above 2 time(s).",
+   "3": "Activate the On Bought ability of the ally above 3 time(s).",
+   "4": "Activate the On Bought ability of the ally above 12 time(s)."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Activate the On Bought ability of the ally above 1 time(s).",
+   "2": "Activate the On Bought ability of the ally above 2 time(s).",
+   "3": "Activate the On Bought ability of the ally above 3 time(s).",
+   "4": "Activate the On Bought ability of the ally above 12 time(s)."
+  }
+ },
+ {
+  "id": "ginsage",
+  "name": "Ginsage",
+  "rarity": "$17:props:children:0:props:entries:62:evolvedForm:rarity",
+  "trigger": "On Battle Start",
+  "sprite": "/sprites/monster/ginsage.png",
+  "shinySprite": "/sprites/monster/ginsage_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "Adjacent Grass allies gain +7% Cooldown Speed permanently.",
+   "2": "Adjacent Grass allies gain +14% Cooldown Speed permanently.",
+   "3": "Adjacent Grass allies gain +21% Cooldown Speed permanently.",
+   "4": "Adjacent Grass allies gain +168% Cooldown Speed permanently."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Adjacent Grass allies gain +8% Cooldown Speed permanently.",
+   "2": "Adjacent Grass allies gain +17% Cooldown Speed permanently.",
+   "3": "Adjacent Grass allies gain +25% Cooldown Speed permanently.",
+   "4": "Adjacent Grass allies gain +202% Cooldown Speed permanently."
+  }
+ },
+ {
+  "id": "mallogre",
+  "name": "Mallogre",
+  "rarity": "$17:props:children:0:props:entries:62:evolvedForm:rarity",
+  "trigger": "On Battle Start",
+  "sprite": "/sprites/monster/mallogre.png",
+  "shinySprite": "/sprites/monster/mallogre_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "+4 Damage and +4 Shield permanently for each Trinket that you own.",
+   "2": "+8 Damage and +8 Shield permanently for each Trinket that you own.",
+   "3": "+12 Damage and +12 Shield permanently for each Trinket that you own.",
+   "4": "+96 Damage and +96 Shield permanently for each Trinket that you own."
+  },
+  "shinyAbilityByLevel": {
+   "1": "+5 Damage and +5 Shield permanently for each Trinket that you own.",
+   "2": "+10 Damage and +10 Shield permanently for each Trinket that you own.",
+   "3": "+14 Damage and +14 Shield permanently for each Trinket that you own.",
+   "4": "+115 Damage and +115 Shield permanently for each Trinket that you own."
+  }
+ },
+ {
+  "id": "ninflora",
+  "name": "Ninflora",
+  "rarity": "$17:props:children:0:props:entries:62:evolvedForm:rarity",
+  "trigger": "On Victory",
+  "sprite": "/sprites/monster/ninflora.png",
+  "shinySprite": "/sprites/monster/ninflora_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "This and your Grass allies gain +10% Cooldown Speed permanently.",
+   "2": "This and your Grass allies gain +20% Cooldown Speed permanently.",
+   "3": "This and your Grass allies gain +30% Cooldown Speed permanently.",
+   "4": "This and your Grass allies gain +240% Cooldown Speed permanently."
+  },
+  "shinyAbilityByLevel": {
+   "1": "This and your Grass allies gain +12% Cooldown Speed permanently.",
+   "2": "This and your Grass allies gain +24% Cooldown Speed permanently.",
+   "3": "This and your Grass allies gain +36% Cooldown Speed permanently.",
+   "4": "This and your Grass allies gain +288% Cooldown Speed permanently."
+  }
+ },
+ {
+  "id": "oniclaw",
+  "name": "Oniclaw",
+  "rarity": "$17:props:children:0:props:entries:62:evolvedForm:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/oniclaw.png",
+  "shinySprite": "/sprites/monster/oniclaw_shiny.png",
+  "regions": null,
+  "abilityByLevel": {
+   "1": null,
+   "2": null,
+   "3": null,
+   "4": null
+  },
+  "shinyAbilityByLevel": {
+   "1": null,
+   "2": null,
+   "3": null,
+   "4": null
+  }
+ },
+ {
+  "id": "opalion",
+  "name": "Opalion",
+  "rarity": "$17:props:children:0:props:entries:62:evolvedForm:rarity",
+  "trigger": "On Cast",
+  "sprite": "/sprites/monster/opalion.png",
+  "shinySprite": "/sprites/monster/opalion_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "Trigger a random Rock ally.\n(Except other Opalion)",
+   "2": "Trigger a random Rock ally.\n(Except other Opalion)",
+   "3": "Trigger a random Rock ally.\n(Except other Opalion)",
+   "4": "Trigger a random Rock ally.\n(Except other Opalion)"
+  },
+  "shinyAbilityByLevel": {
+   "1": null,
+   "2": null,
+   "3": null,
+   "4": null
+  }
+ },
+ {
+  "id": "orcana",
+  "name": "Orcana",
+  "rarity": "$17:props:children:0:props:entries:62:evolvedForm:rarity",
+  "trigger": "Ongoing",
+  "sprite": "/sprites/monster/orcana.png",
+  "shinySprite": "/sprites/monster/orcana_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "Has an additional +160 Damage and +160 Heal for each ally of level 3 or above.",
+   "2": "Has an additional +320 Damage and +320 Heal for each ally of level 3 or above.",
+   "3": "Has an additional +480 Damage and +480 Heal for each ally of level 3 or above.",
+   "4": "Has an additional +1920 Damage and +1920 Heal for each ally of level 3 or above."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Has an additional +192 Damage and +192 Heal for each ally of level 3 or above.",
+   "2": "Has an additional +384 Damage and +384 Heal for each ally of level 3 or above.",
+   "3": "Has an additional +576 Damage and +576 Heal for each ally of level 3 or above.",
+   "4": "Has an additional +2304 Damage and +2304 Heal for each ally of level 3 or above."
+  }
+ },
+ {
+  "id": "prismagon",
+  "name": "Prismagon",
+  "rarity": "$17:props:children:0:props:entries:62:evolvedForm:rarity",
+  "trigger": "On Cast",
+  "sprite": "/sprites/monster/prismagon.png",
+  "shinySprite": "/sprites/monster/prismagon_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": "+10 Damage permanently for each unique type on your team.",
+   "2": "+20 Damage permanently for each unique type on your team.",
+   "3": "+30 Damage permanently for each unique type on your team.",
+   "4": "+240 Damage permanently for each unique type on your team."
+  },
+  "shinyAbilityByLevel": {
+   "1": "+12 Damage permanently for each unique type on your team.",
+   "2": "+24 Damage permanently for each unique type on your team.",
+   "3": "+36 Damage permanently for each unique type on your team.",
+   "4": "+288 Damage permanently for each unique type on your team."
+  }
+ },
+ {
+  "id": "purple_egg",
+  "name": "Purple Egg",
+  "rarity": "$17:props:children:0:props:entries:62:evolvedForm:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/purple_egg.png",
+  "shinySprite": null,
+  "regions": [],
+  "abilityByLevel": {
+   "1": "Hatches a level 2 {monster_name} in {amount} day(s).",
+   "2": "Hatches a level 3 {monster_name} in {amount} day(s).",
+   "3": "Hatches a level 4 {monster_name} in {amount} day(s).",
+   "4": "Hatches a level 4 {monster_name} in {amount} day(s)."
+  },
+  "shinyAbilityByLevel": {
+   "1": null,
+   "2": null,
+   "3": null,
+   "4": null
+  }
+ },
+ {
+  "id": "pylong",
+  "name": "Pylong",
+  "rarity": "$17:props:children:0:props:entries:62:evolvedForm:rarity",
+  "trigger": "Ongoing",
+  "sprite": "/sprites/monster/pylong.png",
+  "shinySprite": "/sprites/monster/pylong_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": "Ally behind has +100% Shock.",
+   "2": "Ally behind has +200% Shock.",
+   "3": "Ally behind has +300% Shock.",
+   "4": "Ally behind has +2400% Shock."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Adjacent allies have +100% Shock.",
+   "2": "Adjacent allies have +200% Shock.",
+   "3": "Adjacent allies have +300% Shock.",
+   "4": "Adjacent allies have +2400% Shock."
+  }
+ },
+ {
+  "id": "reapra",
+  "name": "Reapra",
+  "rarity": "$17:props:children:0:props:entries:62:evolvedForm:rarity",
+  "trigger": "On Cast",
+  "sprite": "/sprites/monster/reapra.png",
+  "shinySprite": "/sprites/monster/reapra_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": "Knockout the enemy opposite of this.",
+   "2": "Knockout the enemy opposite of this.",
+   "3": "Knockout the enemy opposite of this.",
+   "4": "Knockout a random enemy."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Knockout the enemy opposite of this.",
+   "2": "Knockout the enemy opposite of this.",
+   "3": "Knockout the enemy opposite of this.",
+   "4": "Knockout a random enemy."
+  }
+ },
+ {
+  "id": "shelldra",
+  "name": "Shelldra",
+  "rarity": "$17:props:children:0:props:entries:62:evolvedForm:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/shelldra.png",
+  "shinySprite": "/sprites/monster/shelldra_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": "Every 4 seconds, +1 Multicast for this battle.",
+   "2": "Every 4 seconds, +2 Multicast for this battle.",
+   "3": "Every 4 seconds, +3 Multicast for this battle.",
+   "4": "Every 4 seconds, +12 Multicast for this battle."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Every 4 seconds, +1 Multicast for this battle.",
+   "2": "Every 4 seconds, +2 Multicast for this battle.",
+   "3": "Every 4 seconds, +3 Multicast for this battle.",
+   "4": "Every 4 seconds, +12 Multicast for this battle."
+  }
+ },
+ {
+  "id": "shrinell",
+  "name": "Shrinell",
+  "rarity": "$17:props:children:0:props:entries:62:evolvedForm:rarity",
+  "trigger": "Ongoing",
+  "sprite": "/sprites/monster/shrinell.png",
+  "shinySprite": "/sprites/monster/shrinell_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "Ally behind has +% Cooldown Speed for each Trinket that you own.",
+   "2": "Ally behind has +% Cooldown Speed for each Trinket that you own.",
+   "3": "Ally behind has +% Cooldown Speed for each Trinket that you own.",
+   "4": "Ally behind has +% Cooldown Speed for each Trinket that you own."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Adjacent allies have +% Cooldown Speed for each Trinket that you own.",
+   "2": "Adjacent allies have +% Cooldown Speed for each Trinket that you own.",
+   "3": "Adjacent allies have +% Cooldown Speed for each Trinket that you own.",
+   "4": "Adjacent allies have +% Cooldown Speed for each Trinket that you own."
+  }
+ },
+ {
+  "id": "sirenade",
+  "name": "Sirenade",
+  "rarity": "$17:props:children:0:props:entries:62:evolvedForm:rarity",
+  "trigger": "On Cast",
+  "sprite": "/sprites/monster/sirenade.png",
+  "shinySprite": "/sprites/monster/sirenade_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": "Remove 20% of debuffs on your team.",
+   "2": "Remove 35% of debuffs on your team.",
+   "3": "Remove 50% of debuffs on your team.",
+   "4": "Remove 80% of debuffs on your team."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Remove 20% of debuffs on your team.",
+   "2": "Remove 35% of debuffs on your team.",
+   "3": "Remove 50% of debuffs on your team.",
+   "4": "Remove 80% of debuffs on your team."
+  }
+ },
+ {
+  "id": "snapscald",
+  "name": "Snapscald",
+  "rarity": "$17:props:children:0:props:entries:62:evolvedForm:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/snapscald.png",
+  "shinySprite": "/sprites/monster/snapscald_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "Trigger this when an ally of level 3 or above casts.\n(Except other Snapscald)",
+   "2": "Trigger this when an ally of level 3 or above casts.\n(Except other Snapscald)",
+   "3": "Trigger this when an ally of level 3 or above casts.\n(Except other Snapscald)",
+   "4": "Trigger this when an ally of level 3 or above casts.\n(Except other Snapscald)"
+  },
+  "shinyAbilityByLevel": {
+   "1": "Trigger this when an ally of level 3 or above casts.\n(Except other Snapscald)",
+   "2": "Trigger this when an ally of level 3 or above casts.\n(Except other Snapscald)",
+   "3": "Trigger this when an ally of level 3 or above casts.\n(Except other Snapscald)",
+   "4": "Trigger this when an ally of level 3 or above casts.\n(Except other Snapscald)"
+  }
+ },
+ {
+  "id": "tengusto",
+  "name": "Tengusto",
+  "rarity": "$17:props:children:0:props:entries:62:evolvedForm:rarity",
+  "trigger": "Ongoing",
+  "sprite": "/sprites/monster/tengusto.png",
+  "shinySprite": "/sprites/monster/tengusto_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "Has an additional +60 Damage for each Badge that you have.",
+   "2": "Has an additional +120 Damage for each Badge that you have.",
+   "3": "Has an additional +180 Damage for each Badge that you have.",
+   "4": "Has an additional +720 Damage for each Badge that you have."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Has an additional +72 Damage for each Badge that you have.",
+   "2": "Has an additional +144 Damage for each Badge that you have.",
+   "3": "Has an additional +216 Damage for each Badge that you have.",
+   "4": "Has an additional +864 Damage for each Badge that you have."
+  }
+ },
+ {
+  "id": "wishwash",
+  "name": "Wishwash",
+  "rarity": "$17:props:children:0:props:entries:62:evolvedForm:rarity",
+  "trigger": "On Battle Start",
+  "sprite": "/sprites/monster/wishwash.png",
+  "shinySprite": "/sprites/monster/wishwash_shiny.png",
+  "regions": [],
+  "abilityByLevel": {
+   "1": "Gain a random non-unique Rare Trinket.",
+   "2": "Gain a random non-unique Super Rare Trinket.",
+   "3": "Gain a random non-unique Legendary Trinket.",
+   "4": "Gain 4 random non-unique Legendary Trinkets."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Gain a random non-unique Super Rare Trinket.",
+   "2": "Gain a random non-unique Legendary Trinket.",
+   "3": "Gain a random non-unique Mythical Trinket.",
+   "4": "Gain 4 random non-unique Mythical Trinkets."
+  }
+ },
+ {
+  "id": "zephyrex",
+  "name": "Zephyrex",
+  "rarity": "$17:props:children:0:props:entries:62:evolvedForm:rarity",
+  "trigger": "On Cast",
+  "sprite": "/sprites/monster/zephyrex.png",
+  "shinySprite": "/sprites/monster/zephyrex_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": "Give the Flying ally in front +1 Multicast permanently.\n(Zephyrex can't have Multicast)",
+   "2": "Give the Flying ally in front +2 Multicast permanently.\n(Zephyrex can't have Multicast)",
+   "3": "Give the Flying ally in front +3 Multicast permanently.\n(Zephyrex can't have Multicast)",
+   "4": "Give the Flying ally in front +12 Multicast permanently.\n(Zephyrex can't have Multicast)"
+  },
+  "shinyAbilityByLevel": {
+   "1": "Adjacent Flying allies gain +1 Multicast permanently.\n(Zephyrex can't have Multicast)",
+   "2": "Adjacent Flying allies gain +2 Multicast permanently.\n(Zephyrex can't have Multicast)",
+   "3": "Adjacent Flying allies gain +3 Multicast permanently.\n(Zephyrex can't have Multicast)",
+   "4": "Adjacent Flying allies gain +12 Multicast permanently.\n(Zephyrex can't have Multicast)"
+  }
+ },
+ {
+  "id": "basilord",
+  "name": "Basilord",
+  "rarity": "$17:props:children:0:props:entries:92:evolvedForm:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/basilord.png",
+  "shinySprite": "/sprites/monster/basilord_shiny.png",
+  "regions": null,
+  "abilityByLevel": {
+   "1": null,
+   "2": null,
+   "3": null,
+   "4": null
+  },
+  "shinyAbilityByLevel": {
+   "1": null,
+   "2": null,
+   "3": null,
+   "4": null
+  }
+ },
+ {
+  "id": "blixie",
+  "name": "Blixie",
+  "rarity": "$17:props:children:0:props:entries:92:evolvedForm:rarity",
+  "trigger": "On Cast",
+  "sprite": "/sprites/monster/blixie.png",
+  "shinySprite": "/sprites/monster/blixie_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": "Give the Fire ally behind this monster's Burn for this battle.",
+   "2": "Give the Fire ally behind 2x this monster's Burn for this battle.",
+   "3": "Give the Fire ally behind 3x this monster's Burn for this battle.",
+   "4": "Give the Fire ally behind 30x this monster's Burn for this battle."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Give the Fire ally behind 1.2x this monster's Burn for this battle.",
+   "2": "Give the Fire ally behind 2.4x this monster's Burn for this battle.",
+   "3": "Give the Fire ally behind 3.6x this monster's Burn for this battle.",
+   "4": "Give the Fire ally behind 36.0x this monster's Burn for this battle."
+  }
+ },
+ {
+  "id": "cairnage",
+  "name": "Cairnage",
+  "rarity": "$17:props:children:0:props:entries:92:evolvedForm:rarity",
+  "trigger": "On Cast",
+  "sprite": "/sprites/monster/cairnage.png",
+  "shinySprite": "/sprites/monster/cairnage_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "Allies gain Damage for this battle equal to 0.8x their Shield.",
+   "2": "Allies gain Damage for this battle equal to 1.6x their Shield.",
+   "3": "Allies gain Damage for this battle equal to 2.4x their Shield.",
+   "4": "Allies gain Damage for this battle equal to 19.2x their Shield."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Allies gain Damage for this battle equal to 1x their Shield.",
+   "2": "Allies gain Damage for this battle equal to 1.9x their Shield.",
+   "3": "Allies gain Damage for this battle equal to 2.9x their Shield.",
+   "4": "Allies gain Damage for this battle equal to 23x their Shield."
+  }
+ },
+ {
+  "id": "cobrex",
+  "name": "Cobrex",
+  "rarity": "$17:props:children:0:props:entries:92:evolvedForm:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/cobrex.png",
+  "shinySprite": "/sprites/monster/cobrex_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": "Whenever an ally inflicts Poison, Charge this by 1 second(s).",
+   "2": "Whenever an ally inflicts Poison, Charge this by 1 second(s).",
+   "3": "Whenever an ally inflicts Poison, Charge this by 1 second(s).",
+   "4": "Whenever an ally inflicts Poison, Charge this by 1 second(s)."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Whenever an ally inflicts Poison, Charge this by 1 second(s).",
+   "2": "Whenever an ally inflicts Poison, Charge this by 1 second(s).",
+   "3": "Whenever an ally inflicts Poison, Charge this by 1 second(s).",
+   "4": "Whenever an ally inflicts Poison, Charge this by 1 second(s)."
+  }
+ },
+ {
+  "id": "dragonarch",
+  "name": "Draconarch",
+  "rarity": "$17:props:children:0:props:entries:92:evolvedForm:rarity",
+  "trigger": "On Cast",
+  "sprite": "/sprites/monster/dragonarch.png",
+  "shinySprite": "/sprites/monster/dragonarch_shiny.png",
+  "regions": [
+   "pantra",
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "Activate the On Battle Start abilities of adjacent allies and increase this monster's Cooldown by 6 for this battle.",
+   "2": "Activate the On Battle Start abilities of adjacent allies and increase this monster's Cooldown by 3 for this battle.",
+   "3": "Activate the On Battle Start abilities of adjacent allies and increase this monster's Cooldown by 2 for this battle.",
+   "4": "Activate the On Battle Start abilities of adjacent allies and increase this monster's Cooldown by 1 for this battle."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Activate the On Battle Start abilities of adjacent allies and increase this monster's Cooldown by 5 for this battle.",
+   "2": "Activate the On Battle Start abilities of adjacent allies and increase this monster's Cooldown by 2 for this battle.",
+   "3": "Activate the On Battle Start abilities of adjacent allies and increase this monster's Cooldown by 1 for this battle.",
+   "4": "Activate the On Battle Start abilities of adjacent allies and increase this monster's Cooldown by 1 for this battle."
+  }
+ },
+ {
+  "id": "fernfowl",
+  "name": "Fernfowl",
+  "rarity": "$17:props:children:0:props:entries:92:evolvedForm:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/fernfowl.png",
+  "shinySprite": "/sprites/monster/fernfowl_shiny.png",
+  "regions": [],
+  "abilityByLevel": {
+   "1": "Evolve after your team deals 15000 non-status Damage.",
+   "2": "Evolve after your team deals 15000 non-status Damage.",
+   "3": "Evolve after your team deals 15000 non-status Damage.",
+   "4": "Evolve after your team deals 15000 non-status Damage."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Evolve after your team deals 15000 non-status Damage.",
+   "2": "Evolve after your team deals 15000 non-status Damage.",
+   "3": "Evolve after your team deals 15000 non-status Damage.",
+   "4": "Evolve after your team deals 15000 non-status Damage."
+  }
+ },
+ {
+  "id": "gachapod",
+  "name": "Gachapod",
+  "rarity": "$17:props:children:0:props:entries:92:evolvedForm:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/gachapod.png",
+  "shinySprite": "/sprites/monster/gachapod_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "When this triggers, gain a random non-unique Common Trinket, then improve this ability for this battle.",
+   "2": "When this triggers, gain 2 random non-unique Common Trinkets, then improve this ability for this battle.",
+   "3": "When this triggers, gain 3 random non-unique Common Trinkets, then improve this ability for this battle.",
+   "4": "When this triggers, gain 24 random non-unique Common Trinkets, then improve this ability for this battle."
+  },
+  "shinyAbilityByLevel": {
+   "1": "When this triggers, gain a random non-unique Common Trinket, then improve this ability for this battle.",
+   "2": "When this triggers, gain 2 random non-unique Common Trinkets, then improve this ability for this battle.",
+   "3": "When this triggers, gain 3 random non-unique Common Trinkets, then improve this ability for this battle.",
+   "4": "When this triggers, gain 24 random non-unique Common Trinkets, then improve this ability for this battle."
+  }
+ },
+ {
+  "id": "gaiadrasil",
+  "name": "Gaiadrasil",
+  "rarity": "$17:props:children:0:props:entries:92:evolvedForm:rarity",
+  "trigger": "Ongoing",
+  "sprite": "/sprites/monster/gaiadrasil.png",
+  "shinySprite": "/sprites/monster/gaiadrasil_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": "Has additional Damage equal to 100% of the total Damage of adjacent allies.\n(Except other Gaiadrasil)",
+   "2": "Has additional Damage equal to 100% of the total Damage of adjacent allies.\n(Except other Gaiadrasil)",
+   "3": "Has additional Damage equal to 100% of the total Damage of adjacent allies.\n(Except other Gaiadrasil)",
+   "4": "Has additional Damage equal to 1000% of the total Damage of adjacent allies.\n(Except other Gaiadrasil)"
+  },
+  "shinyAbilityByLevel": {
+   "1": "Has additional Damage equal to 120% of the total Damage of adjacent allies.\n(Except other Gaiadrasil)",
+   "2": "Has additional Damage equal to 120% of the total Damage of adjacent allies.\n(Except other Gaiadrasil)",
+   "3": "Has additional Damage equal to 120% of the total Damage of adjacent allies.\n(Except other Gaiadrasil)",
+   "4": "Has additional Damage equal to 1200% of the total Damage of adjacent allies.\n(Except other Gaiadrasil)"
+  }
+ },
+ {
+  "id": "galvanine",
+  "name": "Galvanine",
+  "rarity": "$17:props:children:0:props:entries:92:evolvedForm:rarity",
+  "trigger": "On Cast",
+  "sprite": "/sprites/monster/galvanine.png",
+  "shinySprite": "/sprites/monster/galvanine_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": "+50% Cooldown Speed and +2 Shock for this battle.",
+   "2": "+50% Cooldown Speed and +4 Shock for this battle.",
+   "3": "+50% Cooldown Speed and +6 Shock for this battle.",
+   "4": "+50% Cooldown Speed and +48 Shock for this battle."
+  },
+  "shinyAbilityByLevel": {
+   "1": "+60% Cooldown Speed and +2 Shock for this battle.",
+   "2": "+60% Cooldown Speed and +4 Shock for this battle.",
+   "3": "+60% Cooldown Speed and +6 Shock for this battle.",
+   "4": "+60% Cooldown Speed and +48 Shock for this battle."
+  }
+ },
+ {
+  "id": "geminiss",
+  "name": "Geminiss",
+  "rarity": "$17:props:children:0:props:entries:92:evolvedForm:rarity",
+  "trigger": "On Cast",
+  "sprite": "/sprites/monster/geminiss.png",
+  "shinySprite": "/sprites/monster/geminiss_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": "Give adjacent allies +50% Shield for this battle.",
+   "2": "Give adjacent allies +100% Shield for this battle.",
+   "3": "Give adjacent allies +150% Shield for this battle.",
+   "4": "Give adjacent allies +1500% Shield for this battle."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Give adjacent allies +60% Shield for this battle.",
+   "2": "Give adjacent allies +120% Shield for this battle.",
+   "3": "Give adjacent allies +180% Shield for this battle.",
+   "4": "Give adjacent allies +1800% Shield for this battle."
+  }
+ },
+ {
+  "id": "miasmaw",
+  "name": "Miasmaw",
+  "rarity": "$17:props:children:0:props:entries:92:evolvedForm:rarity",
+  "trigger": "On Battle Start",
+  "sprite": "/sprites/monster/miasmaw.png",
+  "shinySprite": "/sprites/monster/miasmaw_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "Gain Poison for this battle equal to 1x the total Poison of your allies.\n(Except other Miasmaw)",
+   "2": "Gain Poison for this battle equal to 2x the total Poison of your allies.\n(Except other Miasmaw)",
+   "3": "Gain Poison for this battle equal to 3x the total Poison of your allies.\n(Except other Miasmaw)",
+   "4": "Gain Poison for this battle equal to 24x the total Poison of your allies.\n(Except other Miasmaw)"
+  },
+  "shinyAbilityByLevel": {
+   "1": "Gain Poison for this battle equal to 1.2x the total Poison of your allies.\n(Except other Miasmaw)",
+   "2": "Gain Poison for this battle equal to 2.4x the total Poison of your allies.\n(Except other Miasmaw)",
+   "3": "Gain Poison for this battle equal to 3.6x the total Poison of your allies.\n(Except other Miasmaw)",
+   "4": "Gain Poison for this battle equal to 28.8x the total Poison of your allies.\n(Except other Miasmaw)"
+  }
+ },
+ {
+  "id": "onsetra",
+  "name": "Onsetra",
+  "rarity": "$17:props:children:0:props:entries:92:evolvedForm:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/onsetra.png",
+  "shinySprite": "/sprites/monster/onsetra_shiny.png",
+  "regions": [
+   "pantra",
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "The ally behind applies its Ongoing abilities 1 additional time(s).",
+   "2": "The ally behind applies its Ongoing abilities 2 additional time(s).",
+   "3": "The ally behind applies its Ongoing abilities 3 additional time(s).",
+   "4": "The ally behind applies its Ongoing abilities 24 additional time(s)."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Adjacent allies apply their Ongoing abilities 1 additional time(s).",
+   "2": "Adjacent allies apply their Ongoing abilities 2 additional time(s).",
+   "3": "Adjacent allies apply their Ongoing abilities 3 additional time(s).",
+   "4": "Adjacent allies apply their Ongoing abilities 24 additional time(s)."
+  }
+ },
+ {
+  "id": "ouroblaze",
+  "name": "Ouroblaze",
+  "rarity": "$17:props:children:0:props:entries:92:evolvedForm:rarity",
+  "trigger": "Ongoing",
+  "sprite": "/sprites/monster/ouroblaze.png",
+  "shinySprite": "/sprites/monster/ouroblaze_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "Has additional Burn equal to 50% of the Burn stacks on the enemy.",
+   "2": "Has additional Burn equal to 100% of the Burn stacks on the enemy.",
+   "3": "Has additional Burn equal to 150% of the Burn stacks on the enemy.",
+   "4": "Has additional Burn equal to 1500% of the Burn stacks on the enemy."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Has additional Burn equal to 60% of the Burn stacks on the enemy.",
+   "2": "Has additional Burn equal to 120% of the Burn stacks on the enemy.",
+   "3": "Has additional Burn equal to 180% of the Burn stacks on the enemy.",
+   "4": "Has additional Burn equal to 1800% of the Burn stacks on the enemy."
+  }
+ },
+ {
+  "id": "pompummel",
+  "name": "Pompummel",
+  "rarity": "$17:props:children:0:props:entries:92:evolvedForm:rarity",
+  "trigger": "On Cast",
+  "sprite": "/sprites/monster/pompummel.png",
+  "shinySprite": "/sprites/monster/pompummel_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "Activate the On Victory ability of the ally above.",
+   "2": "Activate the On Victory ability of the ally above.",
+   "3": "Activate the On Victory ability of the ally above.",
+   "4": "Activate the On Victory ability of the ally above."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Activate the On Victory ability of adjacent allies.",
+   "2": "Activate the On Victory ability of adjacent allies.",
+   "3": "Activate the On Victory ability of adjacent allies.",
+   "4": "Activate the On Victory ability of adjacent allies."
+  }
+ },
+ {
+  "id": "quillustrous",
+  "name": "Quillustrous",
+  "rarity": "$17:props:children:0:props:entries:92:evolvedForm:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/quillustrous.png",
+  "shinySprite": "/sprites/monster/quillustrous_shiny.png",
+  "regions": null,
+  "abilityByLevel": {
+   "1": null,
+   "2": null,
+   "3": null,
+   "4": null
+  },
+  "shinyAbilityByLevel": {
+   "1": null,
+   "2": null,
+   "3": null,
+   "4": null
+  }
+ },
+ {
+  "id": "saberhorn",
+  "name": "Saberhorn",
+  "rarity": "$17:props:children:0:props:entries:92:evolvedForm:rarity",
+  "trigger": "On Cast",
+  "sprite": "/sprites/monster/saberhorn.png",
+  "shinySprite": "/sprites/monster/saberhorn_shiny.png",
+  "regions": [
+   "pantra",
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "Give the ally in front +1 Multicast and increase this monster's Cooldown by 8 seconds for this battle.",
+   "2": "Give the ally in front +2 Multicast and increase this monster's Cooldown by 8 seconds for this battle.",
+   "3": "Give the ally in front +3 Multicast and increase this monster's Cooldown by 8 seconds for this battle.",
+   "4": "Give the ally in front +24 Multicast and increase this monster's Cooldown by 8 seconds for this battle."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Give the ally in front +1 Multicast and increase this monster's Cooldown by 6 seconds for this battle.",
+   "2": "Give the ally in front +2 Multicast and increase this monster's Cooldown by 6 seconds for this battle.",
+   "3": "Give the ally in front +3 Multicast and increase this monster's Cooldown by 6 seconds for this battle.",
+   "4": "Give the ally in front +24 Multicast and increase this monster's Cooldown by 6 seconds for this battle."
+  }
+ },
+ {
+  "id": "sproutquill",
+  "name": "Sproutquill",
+  "rarity": "$17:props:children:0:props:entries:92:evolvedForm:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/sproutquill.png",
+  "shinySprite": "/sprites/monster/sproutquill_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "Evolve after your team deals 10000 non-status Damage.",
+   "2": "Evolve after your team deals 10000 non-status Damage.",
+   "3": "Evolve after your team deals 10000 non-status Damage.",
+   "4": "Evolve after your team deals 10000 non-status Damage."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Evolve after your team deals 10000 non-status Damage.",
+   "2": "Evolve after your team deals 10000 non-status Damage.",
+   "3": "Evolve after your team deals 10000 non-status Damage.",
+   "4": "Evolve after your team deals 10000 non-status Damage."
+  }
+ },
+ {
+  "id": "stellagon",
+  "name": "Stellagon",
+  "rarity": "$17:props:children:0:props:entries:92:evolvedForm:rarity",
+  "trigger": "Ongoing",
+  "sprite": "/sprites/monster/stellagon.png",
+  "shinySprite": "/sprites/monster/stellagon_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": "Adjacent allies with no abilities have +2 Multicast.",
+   "2": "Adjacent allies with no abilities have +4 Multicast.",
+   "3": "Adjacent allies with no abilities have +6 Multicast.",
+   "4": "Adjacent allies with no abilities have +60 Multicast."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Adjacent allies with no abilities gain +1 Multicast permanently.",
+   "2": "Adjacent allies with no abilities gain +2 Multicast permanently.",
+   "3": "Adjacent allies with no abilities gain +3 Multicast permanently.",
+   "4": "Adjacent allies with no abilities gain +30 Multicast permanently."
+  }
+ },
+ {
+  "id": "torrantler",
+  "name": "Torrantler",
+  "rarity": "$17:props:children:0:props:entries:92:evolvedForm:rarity",
+  "trigger": "On Cast",
+  "sprite": "/sprites/monster/torrantler.png",
+  "shinySprite": "/sprites/monster/torrantler_shiny.png",
+  "regions": [
+   "pantra"
+  ],
+  "abilityByLevel": {
+   "1": "Trigger adjacent Water allies.\n(Except other Torrantler)",
+   "2": "Trigger adjacent Water allies.\n(Except other Torrantler)",
+   "3": "Trigger adjacent Water allies.\n(Except other Torrantler)",
+   "4": "Trigger adjacent Water allies.\n(Except other Torrantler)"
+  },
+  "shinyAbilityByLevel": {
+   "1": "Trigger adjacent Water allies.\n(Except other Torrantler)",
+   "2": "Trigger adjacent Water allies.\n(Except other Torrantler)",
+   "3": "Trigger adjacent Water allies.\n(Except other Torrantler)",
+   "4": "Trigger adjacent Water allies.\n(Except other Torrantler)"
+  }
+ },
+ {
+  "id": "tsunamere",
+  "name": "Tsunamere",
+  "rarity": "$17:props:children:0:props:entries:92:evolvedForm:rarity",
+  "trigger": "On Cast",
+  "sprite": "/sprites/monster/tsunamere.png",
+  "shinySprite": "/sprites/monster/tsunamere_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "Level up all adjacent allies for this battle (max level 3).",
+   "2": "Level up all adjacent allies for this battle (max level 3).",
+   "3": "Level up all adjacent allies for this battle (max level 3).",
+   "4": "Level up all adjacent allies for this battle (max level 3)."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Level up all adjacent allies for this battle (max level 3).",
+   "2": "Level up all adjacent allies for this battle (max level 3).",
+   "3": "Level up all adjacent allies for this battle (max level 3).",
+   "4": "Level up all adjacent allies for this battle (max level 3)."
+  }
+ },
+ {
+  "id": "vengrieve",
+  "name": "Vengrieve",
+  "rarity": "$17:props:children:0:props:entries:92:evolvedForm:rarity",
+  "trigger": "On Cast",
+  "sprite": "/sprites/monster/vengrieve.png",
+  "shinySprite": "/sprites/monster/vengrieve_shiny.png",
+  "regions": [
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "Knockout the monster opposite of this and gain their stats for this battle (except Cooldown).",
+   "2": "Knockout the monster opposite of this and gain their stats for this battle (except Cooldown).",
+   "3": "Knockout the monster opposite of this and gain their stats for this battle (except Cooldown).",
+   "4": "Knockout a random enemy and gain their stats for this battle (except Cooldown)."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Knockout the monster opposite of this and gain their stats for this battle (except Cooldown).",
+   "2": "Knockout the monster opposite of this and gain their stats for this battle (except Cooldown).",
+   "3": "Knockout the monster opposite of this and gain their stats for this battle (except Cooldown).",
+   "4": "Knockout a random enemy and gain their stats for this battle (except Cooldown)."
+  }
+ },
+ {
+  "id": "aerophim",
+  "name": "Aerophim",
+  "rarity": {
+   "label": "Mythical",
+   "color": "#dc2844"
+  },
+  "trigger": "On Cast",
+  "sprite": "/sprites/monster/aerophim.png",
+  "shinySprite": "/sprites/monster/aerophim_shiny.png",
+  "regions": [
+   "pantra",
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "Give adjacent allies +1 Multicast permanently and transform them into random monsters of their rarity.",
+   "2": "Give adjacent allies +2 Multicast permanently and transform them into random monsters of their rarity.",
+   "3": "Give adjacent allies +3 Multicast permanently and transform them into random monsters of their rarity.",
+   "4": "Give adjacent allies +60 Multicast permanently and transform them into random monsters of their rarity."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Give adjacent allies +1 Multicast permanently and transform them into random monsters of their rarity.",
+   "2": "Give adjacent allies +2 Multicast permanently and transform them into random monsters of their rarity.",
+   "3": "Give adjacent allies +3 Multicast permanently and transform them into random monsters of their rarity.",
+   "4": "Give adjacent allies +60 Multicast permanently and transform them into random monsters of their rarity."
+  }
+ },
+ {
+  "id": "cosmivore",
+  "name": "Cosmivore",
+  "rarity": "$17:props:children:0:props:entries:133:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/cosmivore.png",
+  "shinySprite": "/sprites/monster/cosmivore_shiny.png",
+  "regions": [
+   "pantra",
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "When rerolling the shop, gain 20% of the total stats of the monsters remaining in the shop (excluding Multicast and Cooldown).",
+   "2": "When rerolling the shop, gain 40% of the total stats of the monsters remaining in the shop (excluding Multicast and Cooldown).",
+   "3": "When rerolling the shop, gain 60% of the total stats of the monsters remaining in the shop (excluding Multicast and Cooldown).",
+   "4": "When rerolling the shop, gain 600% of the total stats of the monsters remaining in the shop (excluding Multicast and Cooldown)."
+  },
+  "shinyAbilityByLevel": {
+   "1": "When rerolling the shop, gain 24% of the total stats of the monsters remaining in the shop (excluding Multicast and Cooldown).",
+   "2": "When rerolling the shop, gain 48% of the total stats of the monsters remaining in the shop (excluding Multicast and Cooldown).",
+   "3": "When rerolling the shop, gain 72% of the total stats of the monsters remaining in the shop (excluding Multicast and Cooldown).",
+   "4": "When rerolling the shop, gain 720% of the total stats of the monsters remaining in the shop (excluding Multicast and Cooldown)."
+  }
+ },
+ {
+  "id": "faebloom",
+  "name": "Faebloom",
+  "rarity": "$17:props:children:0:props:entries:133:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/faebloom.png",
+  "shinySprite": "/sprites/monster/faebloom_shiny.png",
+  "regions": [
+   "pantra",
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "Mythical Item may appear in your shop.\nOngoing\nAdjacent allies have +10% Damage per Mythical Item used. (currently +X% Damage)",
+   "2": "Mythical Item may appear in your shop.\nOngoing\nAdjacent allies have +20% Damage per Mythical Item used. (currently +X% Damage)",
+   "3": "Mythical Item may appear in your shop.\nOngoing\nAdjacent allies have +30% Damage per Mythical Item used. (currently +X% Damage)",
+   "4": "Mythical Item may appear in your shop.\nOngoing\nAdjacent allies have +300% Damage per Mythical Item used. (currently +X% Damage)"
+  },
+  "shinyAbilityByLevel": {
+   "1": "Mythical Item may appear in your shop.\nOngoing\nAdjacent allies have +12% Damage per Mythical Item used. (currently +X% Damage)",
+   "2": "Mythical Item may appear in your shop.\nOngoing\nAdjacent allies have +24% Damage per Mythical Item used. (currently +X% Damage)",
+   "3": "Mythical Item may appear in your shop.\nOngoing\nAdjacent allies have +36% Damage per Mythical Item used. (currently +X% Damage)",
+   "4": "Mythical Item may appear in your shop.\nOngoing\nAdjacent allies have +360% Damage per Mythical Item used. (currently +X% Damage)"
+  }
+ },
+ {
+  "id": "goldora",
+  "name": "Goldora",
+  "rarity": "$17:props:children:0:props:entries:133:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/goldora.png",
+  "shinySprite": "/sprites/monster/goldora_shiny.png",
+  "regions": [
+   "pantra",
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "On the first cast, gain 1 random non-unique Legendary Trinket(s) for each Legendary ally.",
+   "2": "On the first cast, gain 2 random non-unique Legendary Trinket(s) for each Legendary ally.",
+   "3": "On the first cast, gain 3 random non-unique Legendary Trinket(s) for each Legendary ally.",
+   "4": "On the first cast, gain 30 random non-unique Legendary Trinket(s) for each Legendary ally."
+  },
+  "shinyAbilityByLevel": {
+   "1": "On the first cast, gain 1 random non-unique Legendary Trinket(s) for each Legendary ally.",
+   "2": "On the first cast, gain 2 random non-unique Legendary Trinket(s) for each Legendary ally.",
+   "3": "On the first cast, gain 3 random non-unique Legendary Trinket(s) for each Legendary ally.",
+   "4": "On the first cast, gain 30 random non-unique Legendary Trinket(s) for each Legendary ally."
+  }
+ },
+ {
+  "id": "missing_no",
+  "name": "MissingN.",
+  "rarity": "$17:props:children:0:props:entries:133:rarity",
+  "trigger": "On Battle Start",
+  "sprite": "/sprites/monster/missing_no.png",
+  "shinySprite": "/sprites/monster/missing_no_shiny.png",
+  "regions": [],
+  "abilityByLevel": {
+   "1": "For this battle, transform into a random monster 1 rarity above your shop's highest available rarity.",
+   "2": "For this battle, transform into a random monster 1 rarity above your shop's highest available rarity.",
+   "3": "For this battle, transform into a random monster 1 rarity above your shop's highest available rarity.",
+   "4": "For this battle, transform into a random monster 1 rarity above your shop's highest available rarity."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Gain +10 Damage permanently. For this battle, transform into a random monster 1 rarity above your shop's highest available rarity.",
+   "2": "Gain +20 Damage permanently. For this battle, transform into a random monster 1 rarity above your shop's highest available rarity.",
+   "3": "Gain +30 Damage permanently. For this battle, transform into a random monster 1 rarity above your shop's highest available rarity.",
+   "4": "Gain +60 Damage permanently. For this battle, transform into a random monster 1 rarity above your shop's highest available rarity."
+  }
+ },
+ {
+  "id": "null_00",
+  "name": "NULL-00",
+  "rarity": "$17:props:children:0:props:entries:133:rarity",
+  "trigger": "Ongoing",
+  "sprite": "/sprites/monster/null_00.png",
+  "shinySprite": null,
+  "regions": [],
+  "abilityByLevel": {
+   "1": "Allies and enemies in this row have +3 Cooldown.",
+   "2": "Allies and enemies in this row have +6 Cooldown.",
+   "3": "Allies and enemies in this row have +9 Cooldown.",
+   "4": "Allies and enemies in this row have +999 Cooldown."
+  },
+  "shinyAbilityByLevel": {
+   "1": null,
+   "2": null,
+   "3": null,
+   "4": null
+  }
+ },
+ {
+  "id": "null_7f",
+  "name": "NULL-7F",
+  "rarity": "$17:props:children:0:props:entries:133:rarity",
+  "trigger": "On Cast",
+  "sprite": "/sprites/monster/null_7f.png",
+  "shinySprite": null,
+  "regions": [],
+  "abilityByLevel": {
+   "1": "Knockout a random enemy.",
+   "2": "Knockout a random enemy.",
+   "3": "Knockout a random enemy.",
+   "4": "Knockout a random enemy."
+  },
+  "shinyAbilityByLevel": {
+   "1": null,
+   "2": null,
+   "3": null,
+   "4": null
+  }
+ },
+ {
+  "id": "null_ff",
+  "name": "NULL-FF",
+  "rarity": "$17:props:children:0:props:entries:133:rarity",
+  "trigger": "On Battle Start",
+  "sprite": "/sprites/monster/null_ff.png",
+  "shinySprite": null,
+  "regions": [],
+  "abilityByLevel": {
+   "1": "Trigger this and allies in this row.",
+   "2": "Trigger this and allies in this row.",
+   "3": "Trigger this and allies in this row.",
+   "4": "Trigger this and allies in this row."
+  },
+  "shinyAbilityByLevel": {
+   "1": null,
+   "2": null,
+   "3": null,
+   "4": null
+  }
+ },
+ {
+  "id": "omnichrome",
+  "name": "Omnichrome",
+  "rarity": "$17:props:children:0:props:entries:133:rarity",
+  "trigger": "On Battle Start",
+  "sprite": "/sprites/monster/omnichrome.png",
+  "shinySprite": "/sprites/monster/omnichrome_shiny.png",
+  "regions": [
+   "pantra",
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "Gain 80% of the stats of the enemy monster with the highest stats permanently (excluding Multicast and Cooldown).",
+   "2": "Gain 160% of the stats of the enemy monster with the highest stats permanently (excluding Multicast and Cooldown).",
+   "3": "Gain 240% of the stats of the enemy monster with the highest stats permanently (excluding Multicast and Cooldown).",
+   "4": "Gain 2400% of the stats of the enemy monster with the highest stats permanently (excluding Multicast and Cooldown)."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Gain 96% of the stats of the enemy monster with the highest stats permanently (excluding Multicast and Cooldown).",
+   "2": "Gain 192% of the stats of the enemy monster with the highest stats permanently (excluding Multicast and Cooldown).",
+   "3": "Gain 288% of the stats of the enemy monster with the highest stats permanently (excluding Multicast and Cooldown).",
+   "4": "Gain 2880% of the stats of the enemy monster with the highest stats permanently (excluding Multicast and Cooldown)."
+  }
+ },
+ {
+  "id": "rigalord",
+  "name": "Rigalord",
+  "rarity": "$17:props:children:0:props:entries:133:rarity",
+  "trigger": "On Battle Start",
+  "sprite": "/sprites/monster/rigalord.png",
+  "shinySprite": "/sprites/monster/rigalord_shiny.png",
+  "regions": [],
+  "abilityByLevel": {
+   "1": "Spawn exact copies of the Batomon this devoured in empty slots the bottom row. They ONLY trigger when this casts.",
+   "2": "Spawn exact copies of the Batomon this devoured in empty slots the bottom row. They ONLY trigger when this casts.",
+   "3": "Spawn exact copies of the Batomon this devoured in empty slots the bottom row. They ONLY trigger when this casts.",
+   "4": "Spawn exact copies of the Batomon this devoured in empty slots the bottom row. They ONLY trigger when this casts."
+  },
+  "shinyAbilityByLevel": {
+   "1": "Spawn exact copies of the Batomon this devoured in empty slots the bottom row. They ONLY trigger when this casts.",
+   "2": "Spawn exact copies of the Batomon this devoured in empty slots the bottom row. They ONLY trigger when this casts.",
+   "3": "Spawn exact copies of the Batomon this devoured in empty slots the bottom row. They ONLY trigger when this casts.",
+   "4": "Spawn exact copies of the Batomon this devoured in empty slots the bottom row. They ONLY trigger when this casts."
+  }
+ },
+ {
+  "id": "riglet",
+  "name": "Riglet",
+  "rarity": "$17:props:children:0:props:entries:133:rarity",
+  "trigger": null,
+  "sprite": "/sprites/monster/riglet.png",
+  "shinySprite": "/sprites/monster/riglet_shiny.png",
+  "regions": [
+   "pantra",
+   "jinto"
+  ],
+  "abilityByLevel": {
+   "1": "At the start of the next day, devour the ally in front and evolve into Rigalord.",
+   "2": "At the start of the next day, devour the ally in front and evolve into Rigalord.",
+   "3": "At the start of the next day, devour the ally in front and evolve into Rigalord.",
+   "4": "At the start of the next day, devour the ally in front and evolve into Rigalord."
+  },
+  "shinyAbilityByLevel": {
+   "1": "At the start of the next day, devour the ally in front and evolve into Rigalord.",
+   "2": "At the start of the next day, devour the ally in front and evolve into Rigalord.",
+   "3": "At the start of the next day, devour the ally in front and evolve into Rigalord.",
+   "4": "At the start of the next day, devour the ally in front and evolve into Rigalord."
+  }
+ }
+]

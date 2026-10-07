@@ -812,3 +812,122 @@ produces the user's sequences. The change is a **constraint removal**:
 > grants: Bonshell has `baseDamage: null` and demonstrably deals 80 damage from its second cast
 > (research.md M5). An ability grant may bring a damage effect into existence; a user modifier may
 > not.
+
+## Round 5 (2026-10-06): evaluable stats, phased resolution, trigger enum, shiny abilities
+
+### StatValue — the load-bearing change (WI-002, WI-003)
+
+`ResolvedPlacement` stops being a bag of final numbers:
+
+```ts
+interface StatValue {
+  base: number;
+  flatAdd: number;              // added BEFORE the multiplier
+  multiplier: number;           // default 1
+  postMultiplierFlatAdd: number; // added AFTER — reactive gains land here
+}
+const read = (v: StatValue) => (v.base + v.flatAdd) * v.multiplier + v.postMultiplierFlatAdd;
+```
+
+Why each slot exists, with the capture evidence:
+
+- **`multiplier` applies at READ time, not bake time.** Noxnimbus's +6 to a creature carrying +70%
+  produced +10, not +6: `(604+6)×1.7 = 1037`, `(11+6)×1.7 = 29`. Snapshot-then-add gives 1033 and
+  25. The multiplier is re-evaluated on every change.
+- **`postMultiplierFlatAdd` is separate because reactive gains are never scaled.** Thorntail
+  entered at 7082 displayed damage against a listed base of 50 — huge modifiers — yet every
+  increment was exactly **+24**, its unmultiplied listed value. Adding it to `base` would inflate it
+  by ~140× per stack.
+
+A new `statMultiplier` tag kind expresses the +70% effect, which the vocabulary cannot currently
+represent at all.
+
+### ResolutionPhase (WI-001)
+
+Battle start resolves in three ordered phases, each reading the **completed** output of the previous:
+
+| phase | contents | evidence |
+|---|---|---|
+| 1 | percentage / multiplier stat scaling | Cobrex 604 → 1027 before anything else reads it |
+| 2 | position-based battle-start effects | `-COOLDOWN` popups at t=1.9948, before Miasmaw changes at t=2.0396 |
+| 3 | dynamic battle-start abilities reading team state | Miasmaw's 1080 = its 14 + allies **including post-multiplier Cobrex 1027** |
+
+> **Supersedes** `effects.ts`'s current comment that battle-start effects "must read their BASE
+> values, or the result would depend on which creature happened to resolve first". The hazard is
+> real but the game solves it by **phase ordering**, not by reading base values. Writers before
+> readers. Miasmaw is 1080 in-game vs 657 modelled — a 39% understatement on the board's largest
+> Poison application.
+
+Every tag kind must be classified into a phase; an unclassified kind is a bug, not a default.
+
+### Time-varying resolution (WI-004, WI-005, WI-007)
+
+`resolveEffects` returns the **initial** state plus handlers registered by trigger; `simulate()`
+invokes them mid-battle. Required because the resolver runs once, before the event loop, and never again.
+
+> **The handoff's "every on-cast and reactive ability is structurally unreachable" is no longer
+> true**, and the data model must not repeat it: round 11's `buffOnCast` (`simulate.ts:607`) and
+> round 4's ally-cast hook (`:653`) already fire on-cast abilities. The restructure is still the
+> right shape, but it now carries a **double-application hazard** — adding handlers alongside the
+> existing paths makes Noxnimbus's +6 fire twice per cast. Retiring or wrapping them is a required
+> decision, not an implementation detail (research.md N6).
+
+New tag kinds:
+
+- `statMultiplier` — the ×1.7 class of effect (WI-002).
+- `statFromTargetStatus` — "Damage equal to 200% of the Poison stacks on the enemy". Recomputed
+  **per cast** and not persisted; it is neither `base` nor a flat add.
+- `triggerOnAllyTrigger` — a reactive cast. **Must not reset or consume the reactor's own
+  cooldown**: Puffloon's bar climbed monotonically 13→19px through a four-hit cascade and it still
+  cast off its own 10s cycle afterwards.
+
+### Sprite fields (WI-015, WI-016)
+
+`ShinyStatLine` gains `spriteFile?: string`; `TrainerRecord` gains `spriteFile?: string`; and
+`Sprite`'s `kind` union gains `"trainer"` (it is `"monster" | "trinket"` today, and
+`public/sprites/` has only those two directories).
+
+**Availability ceilings, recorded because every other data item this round reports its shortfall:**
+
+- **Shiny sprites: 139 of the 144 snapshot monsters**, against a corpus of 149 species — so ~10
+  species will have no shiny sprite and must fall back to the normal one rather than rendering
+  nothing.
+- **Trainer sprites: 24 published against our 23 records**, but **12 of our 23 ids do not match
+  batodex's** — `chef`→`pyromaniac`, `lucky-girl`→`youngster_f`, `rich-lady`→`lady`, plus nine
+  hyphen-vs-underscore cases. **Match by NAME, not id.** All 23 resolve by name. This is the exact
+  lesson `vendor-sprites.mjs` already records for monsters ("id-matching silently misses 11"), and
+  an id-keyed script here would silently miss **over half** the trainers.
+
+### AbilityTrigger (WI-010)
+
+Closed union replacing the free string, sourced from batodex's own `trigger` field (research.md N2):
+
+```ts
+type AbilityTrigger =
+  | "Ongoing" | "On Cast" | "On Battle Start" | "On Bought"
+  | "On Victory" | "On Knocked Out" | "On Trinket Gained" | "On Battle Lost";
+```
+
+`null` is a legitimate value (an ability with no trigger), distinct from "not yet researched".
+
+### Shiny abilities (WI-012, WI-013, WI-014)
+
+`ShinyStatLine` gains `abilityText?: string`, keyed as today by `id|level`.
+
+**For FR-105 (text must drive calculations), the shape is decided here rather than left to the
+implementer**: `ShinyStatLine` also gains `abilityTags?: AbilityTag[]`. A full tag list, not a
+"magnitude override", because the shiny text can differ structurally and not merely in magnitude,
+and a second override mechanism would be a third way to express an ability. When
+`abilityTags` is absent the normal tags apply unchanged — that is the common case, since 165
+level-records have identical text. Shiny ability text
+differs at **343 of the 508 level-records that have both** (research.md N1), which is where shiny's
+uplift actually lives — the stat lines are identical for 299 of them.
+*Corrected in pass-2 remediation: this said "315 of 470", a figure research.md N1 had already
+retracted. Regenerate with `node scripts/audit-batodex.mjs`.*
+
+> **The ask's "All shiny mons get better stats" is NOT upheld at the stat level** and the existing
+> downgrade guard in `shiny.test.ts` must not be deleted to make it true: **28 stat records across
+> 7 species** are worse (Kappow is 1s SLOWER). In aggregate throughput it is 222 better / 299 equal
+> / 15 worse. *Corrected in pass-3 remediation: this said "20", the figure research.md N1 retracts
+> as an undercount from not checking status amounts. Regenerate with
+> `npx vite-node scripts/audit-shiny.mjs`.*

@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 # One-command pipeline: recording -> frames.csv -> events.csv + timeline.md
 #
-#   analyze.sh <video> <out-dir> [t0] [t1]
+#   analyze.sh <video> <out-dir> [t0] [t1] [--speed=N] [--charge-slot=SLOT[:SECONDS]]
 #
-# Picks the layout and glyph set by the recording's frame size, builds the scanner if needed,
-# then runs the single extraction pass followed by event derivation. If no layout exists for
-# this frame size it says so and points at the calibration steps rather than guessing.
+# Detects the game canvas inside the frame, picks the layout and glyph set by canvas size,
+# builds the scanner if needed, then runs the single extraction pass followed by event
+# derivation. Any --flag is forwarded to bcevents.py. If no layout matches the canvas aspect
+# it says so and points at the calibration steps rather than guessing.
 
 set -euo pipefail
 
@@ -13,13 +14,23 @@ SKILL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SCRIPTS="$SKILL_DIR/scripts"
 LAYOUTS="$SKILL_DIR/layouts"
 
-if [[ $# -lt 2 ]]; then
-  sed -n '2,12p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+# Split positional arguments from flags, so flags can appear anywhere.
+POS=()
+EVENT_FLAGS=()
+for a in "$@"; do
+  case "$a" in
+    --*) EVENT_FLAGS+=("$a") ;;
+    *)   POS+=("$a") ;;
+  esac
+done
+
+if [[ ${#POS[@]} -lt 2 ]]; then
+  sed -n '2,13p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
   exit 1
 fi
 
-VIDEO="$1"
-OUT="$2"
+VIDEO="${POS[0]}"
+OUT="${POS[1]}"
 [[ -f "$VIDEO" ]] || { echo "no such file: $VIDEO" >&2; exit 1; }
 mkdir -p "$OUT"
 
@@ -32,25 +43,51 @@ fi
 # --- identify the recording ---
 echo "==> inspecting $VIDEO"
 eval "$("$SCRIPTS/bcscan" info "$VIDEO")"
-echo "    ${frame_width}x${frame_height}, ${nominal_fps} fps, ${duration_seconds}s (frame = ${frame_ms} ms)"
+echo "    frame ${frame_width}x${frame_height}, ${nominal_fps} fps, ${duration_seconds}s (frame = ${frame_ms} ms)"
 
-T0="${3:-0}"
-T1="${4:-$duration_seconds}"
+T0="${POS[2]:-0}"
+T1="${POS[3]:-$duration_seconds}"
 
-LAYOUT="$LAYOUTS/${frame_width}x${frame_height}.json"
-GLYPHS="$LAYOUTS/${frame_width}x${frame_height}.glyphs.json"
-TRUTH="$LAYOUTS/${frame_width}x${frame_height}.truth.csv"
+# The game canvas, not the frame, is what layouts are keyed on: a recording is usually
+# letterboxed or pillarboxed, and the same canvas can arrive inside very different frames.
+MIDPOINT=$(python3 -c "print(f'{($T0 + $T1) / 2:.4f}')")
+eval "$("$SCRIPTS/bcscan" canvas "$VIDEO" "$MIDPOINT")"
+echo "    canvas ${canvas_width}x${canvas_height} at (${canvas_x},${canvas_y}), aspect ${canvas_aspect}"
+echo "    black bars: ${bars_left_right} left/right, ${bars_top_bottom} top/bottom"
+
+LAYOUT="$LAYOUTS/canvas-${canvas_width}x${canvas_height}.json"
+GLYPHS="$LAYOUTS/canvas-${canvas_width}x${canvas_height}.glyphs.json"
+TRUTH="$LAYOUTS/canvas-${canvas_width}x${canvas_height}.truth.csv"
+
+# Fall back to any layout with the same aspect ratio: the geometry scales cleanly, only the
+# glyph templates are scale-bound.
+if [[ ! -f "$LAYOUT" ]]; then
+  for cand in "$LAYOUTS"/canvas-*.json; do
+    [[ -f "$cand" && "$cand" != *glyphs* ]] || continue
+    CW=$(python3 -c "import json;d=json.load(open('$cand'));print(d['canvasWidth'])")
+    CH=$(python3 -c "import json;d=json.load(open('$cand'));print(d['canvasHeight'])")
+    SAME=$(python3 -c "print(abs($CW/$CH - $canvas_width/$canvas_height) < 0.01)")
+    if [[ "$SAME" == "True" ]]; then
+      echo "    no layout for this canvas size; reusing $(basename "$cand") (same aspect, scaled ${canvas_width}/${CW})"
+      LAYOUT="$cand"
+      GLYPHS="$LAYOUTS/canvas-${canvas_width}x${canvas_height}.glyphs.json"
+      break
+    fi
+  done
+fi
 
 if [[ ! -f "$LAYOUT" ]]; then
   cat >&2 <<EOF
 
-No layout for ${frame_width}x${frame_height}. Layouts are per frame size because every
-measurement is a pixel rectangle. To calibrate a new one, see "Calibrating a new recording"
-in $SKILL_DIR/reference.md — it is four findbars/findtext calls and a copy of an existing
-layout file.
+No layout matches a ${canvas_width}x${canvas_height} canvas (aspect ${canvas_aspect}), and none
+of the existing layouts share its aspect ratio. Layouts are canvas-relative, so any capture of a
+16:9 canvas is covered by the 1920x1080 layout regardless of frame size -- a different *aspect*
+means the game laid the board out differently and needs its own calibration.
+
+See "Calibrating a new recording" in $SKILL_DIR/reference.md.
 
 Existing layouts:
-$(ls -1 "$LAYOUTS"/*.json 2>/dev/null | grep -v glyphs | sed 's/^/  /' || echo "  (none)")
+$(ls -1 "$LAYOUTS"/canvas-*.json 2>/dev/null | grep -v glyphs | sed 's/^/  /' || echo "  (none)")
 EOF
   exit 1
 fi
@@ -81,11 +118,10 @@ echo "==> scanning ${T0}s - ${T1}s (this is the only pass over the video)"
 "$SCRIPTS/bcscan" scan "$VIDEO" "$LAYOUT" "$GLYPHS" "$OUT/frames.csv" "$T0" "$T1"
 
 echo "==> deriving events"
-python3 "$SCRIPTS/bcevents.py" "$OUT/frames.csv" "$OUT"
+python3 "$SCRIPTS/bcevents.py" "$OUT/frames.csv" "$OUT" ${EVENT_FLAGS[@]+"${EVENT_FLAGS[@]}"}
 
 # --- a layout overlay, so the geometry can be eyeballed before trusting the numbers ---
-MID=$(python3 -c "print(f'{($T0 + $T1) / 2:.4f}')")
-"$SCRIPTS/bcscan" overlay "$VIDEO" "$LAYOUT" "$MID" "$OUT/layout-check.png" >/dev/null
+"$SCRIPTS/bcscan" overlay "$VIDEO" "$LAYOUT" "$MIDPOINT" "$OUT/layout-check.png" >/dev/null
 echo "    wrote $OUT/layout-check.png (verify the boxes sit on the right things)"
 
 cat <<EOF
@@ -100,4 +136,8 @@ Done. Everything downstream should query the dataset, not the video:
   python3 $SCRIPTS/bcquery.py cols    $OUT/frames.csv
   python3 $SCRIPTS/bcquery.py order   $OUT/frames.csv <t0> <t1>
   python3 $SCRIPTS/bcquery.py changes $OUT/frames.csv <column>
+
+Re-deriving events is cheap and never re-reads the video:
+
+  python3 $SCRIPTS/bcevents.py $OUT/frames.csv $OUT --speed=2 --charge-slot=ally_front_2:1
 EOF
