@@ -96,3 +96,14 @@
 .secondary {
   color: var(--text-secondary);
 }
+
+/* Day picker inside the TTK figure's label — sized to sit in the caption line, not above it. */
+.daySelect {
+  font: inherit;
+  font-size: inherit;
+  padding: 0 0.1rem;
+  background: var(--surface-sunken);
+  color: var(--text-secondary);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-sm);
+}

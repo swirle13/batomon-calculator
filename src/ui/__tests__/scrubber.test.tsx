@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { TotalDps } from "../TeamSummary/TotalDps";
 import { simulate } from "../../engine/simulate";
 import { corpus } from "../../data/corpus";
 import { hasAbilityText } from "../../data/display";
+import { MAX_RECORDED_DAY } from "../../data/enemyHealth";
 import type { TeamConfiguration } from "../../data/types";
 
 const team: TeamConfiguration = {
@@ -63,5 +64,47 @@ describe("placeholder ability text never reaches the UI (2026-10-06)", () => {
     for (const p of placeholders) {
       expect(hasAbilityText(p), `unrecognised placeholder: ${p}`).toBe(false);
     }
+  });
+});
+
+describe("TTK figure (2026-10-07)", () => {
+  const poisonTeam: TeamConfiguration = {
+    placements: [
+      { slot: { row: "back", col: 0 }, creatureId: "venopuff", level: 1 },
+      { slot: { row: "back", col: 1 }, creatureId: "magmite", level: 1 },
+    ],
+    trainerId: null,
+    trinketIds: [],
+    itemIds: [],
+    simulationWindowSeconds: 30,
+    teamModifiers: [],
+  };
+
+  it("defaults to day 1 and shows a time", () => {
+    const result = simulate(poisonTeam, corpus);
+    render(<TotalDps config={poisonTeam} result={result} />);
+    expect(screen.getByLabelText("Day to compute time-to-kill against")).toHaveProperty("value", "1");
+    expect(screen.getByText(/TTK on day/)).toBeTruthy();
+  });
+
+  it("offers every day the HP table actually has", () => {
+    // Bounded by the data rather than an arbitrary range: offering day 25 would imply we know its
+    // HP, and `enemyHpForDay` deliberately returns null past the recording.
+    const result = simulate(poisonTeam, corpus);
+    render(<TotalDps config={poisonTeam} result={result} />);
+    const select = screen.getByLabelText("Day to compute time-to-kill against") as HTMLSelectElement;
+    expect(select.options.length).toBe(MAX_RECORDED_DAY);
+    expect(select.options[MAX_RECORDED_DAY - 1]!.value).toBe(String(MAX_RECORDED_DAY));
+  });
+
+  it("renders '>window' rather than a dash when the team cannot finish in time", () => {
+    // A late day this pair cannot clear. "Not within this window" is a real answer and reads
+    // differently from missing data.
+    const result = simulate(poisonTeam, corpus);
+    const { container } = render(<TotalDps config={poisonTeam} result={result} />);
+    fireEvent.change(screen.getByLabelText("Day to compute time-to-kill against"), {
+      target: { value: "10" },
+    });
+    expect(container.textContent).toContain(">30s");
   });
 });

@@ -3,6 +3,7 @@ import type { SimulationResult, TeamConfiguration } from "../../data/types";
 import { corpus } from "../../data/corpus";
 import { analyzePositionalCoverage } from "../../engine/optimize";
 import { formatRate } from "../../data/format";
+import { MAX_RECORDED_DAY, enemyHpForDay, timeToKill } from "../../data/enemyHealth";
 import styles from "./TotalDps.module.css";
 
 interface TotalDpsProps {
@@ -33,6 +34,7 @@ interface TotalDpsProps {
 export function TotalDps({ config, result }: TotalDpsProps) {
   // An index into `dpsRateSeries`, never a count of seconds — see the lookup below.
   const [scrubIndex, setScrubIndex] = useState(0);
+  const [day, setDay] = useState(1);
 
   const directTotal = Object.values(result.perCreatureDps).reduce((a, b) => a + b, 0);
   const facilitatedTotal = Object.values(result.perCreatureFacilitatedDps).reduce((a, b) => a + b, 0);
@@ -53,6 +55,15 @@ export function TotalDps({ config, result }: TotalDpsProps) {
   // Indexing cannot desynchronise from the grid, whatever the grid becomes.
   const scrubPoint = series[scrubIndex] ?? null;
   const scrubbedOrZero = scrubPoint?.dps ?? 0;
+
+  /**
+   * Time to kill the day's enemy. Day 1 by default — the day most boards are built against, and
+   * the only one with an observed battle to check against.
+   *
+   * `null` means the team does not get there inside the simulated window, which is a real answer
+   * rather than a missing one, so it renders as "> <window>s" instead of a dash.
+   */
+  const ttkSeconds = timeToKill(result.cumulativeSeries, day);
 
   const coverage = analyzePositionalCoverage(config, corpus);
   // Only creatures with an ability that NEEDS modelling count — see `abilityNeedsModelling`.
@@ -77,6 +88,33 @@ export function TotalDps({ config, result }: TotalDpsProps) {
         <div className={styles.figure}>
           <div className={`${styles.value} ${styles.secondary}`}>{formatRate(windowAverage)}</div>
           <div className={styles.label}>DPS average</div>
+        </div>
+        <div className={styles.figure}>
+          <div
+            className={`${styles.value} ${styles.secondary}`}
+            title={
+              ttkSeconds === null
+                ? `This team does not clear day ${day}'s ${enemyHpForDay(day)?.toLocaleString()} HP within the ${config.simulationWindowSeconds}s window.`
+                : `Clears day ${day}'s ${enemyHpForDay(day)?.toLocaleString()} HP at ${ttkSeconds}s. Assumes an enemy that never heals, shields or clears statuses, so this is a FLOOR on the real time.`
+            }
+          >
+            {ttkSeconds === null ? `>${config.simulationWindowSeconds}s` : `${ttkSeconds}s`}
+          </div>
+          <div className={styles.label}>
+            TTK on day{" "}
+            <select
+              className={styles.daySelect}
+              value={day}
+              onChange={(e) => setDay(Number(e.target.value))}
+              aria-label="Day to compute time-to-kill against"
+            >
+              {Array.from({ length: MAX_RECORDED_DAY }, (_, i) => i + 1).map((d) => (
+                <option key={d} value={d}>
+                  {d}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 

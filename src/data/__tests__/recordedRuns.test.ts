@@ -3,6 +3,7 @@ import { RECORDED_RUNS } from "./fixtures/recordedRuns";
 import { buildId, exportBuild, importBuild } from "../share";
 import { simulate } from "../../engine/simulate";
 import { corpus } from "../corpus";
+import { timeToKill } from "../enemyHealth";
 import { perCastOutputOf } from "../../ui/shared/BatomonCard/BatomonCard";
 
 /**
@@ -54,5 +55,24 @@ describe("recorded run fixtures", () => {
     const shown = perCastOutputOf(record, craghorn.modifiers);
     expect(shown.damage).toBe(40);
     expect(shown.appliesStatus.find((s) => s.type === "Shield")?.amount).toBe(40);
+  });
+});
+
+describe("time-to-kill against the one board with observed ground truth", () => {
+  it("r1d1 kills the day-1 enemy at t=23, matching the recording", () => {
+    // The recorded battle ends at t=23 with 8 points of overkill against 300 HP. This is the only
+    // place TTK can be checked against reality rather than against itself, so it is worth pinning:
+    // it ties the enemy-HP table, the cumulative series and the tick model together in one number.
+    const config = importBuild(RECORDED_RUNS.find((r) => r.id === "r1d1")!.code);
+    const result = simulate(config, corpus);
+    expect(timeToKill(result.cumulativeSeries, 1)).toBe(23);
+  });
+
+  it("returns null past the window rather than guessing", () => {
+    // Day 3 is 800 HP, which this board does not reach inside its 24s window. The UI renders that
+    // as "> 24s" — "not within this window", not "never".
+    const config = importBuild(RECORDED_RUNS.find((r) => r.id === "r1d1")!.code);
+    const result = simulate(config, corpus);
+    expect(timeToKill(result.cumulativeSeries, 3)).toBeNull();
   });
 });
