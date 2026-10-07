@@ -218,12 +218,29 @@ interface DisclosureProps {
   /** Shown next to the label, e.g. a count. */
   hint?: string;
   defaultOpen?: boolean;
-  children: ReactNode;
+  /**
+   * Optional: a Disclosure with nothing to disclose renders as a plain, non-expandable row.
+   * Round 11 (WI-R11-002) needs this for the "no placement suggestion" case, where the whole point
+   * is that there is no body — an expandable arrow promising content that turns out to be empty is
+   * worse than no arrow.
+   */
+  children?: ReactNode;
 }
 
 /** The one collapsible section. Collapsed by default — an expanded default would still displace
  * the content below it, which is the complaint these exist to fix. */
 export function Disclosure({ label, hint, defaultOpen = false, children }: DisclosureProps) {
+  if (!children) {
+    return (
+      <div className={`${styles.disclosure} ${styles.disclosureInert}`}>
+        <div className={styles.disclosureSummary}>
+          {label}
+          {hint ? <span className={styles.disclosureHint}> {hint}</span> : null}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <details className={styles.disclosure} open={defaultOpen}>
       <summary className={styles.disclosureSummary}>

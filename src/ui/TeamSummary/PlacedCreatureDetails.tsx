@@ -1,4 +1,5 @@
-import { getCreatureByIdAndLevel } from "../../data/corpus";
+import { resolveCreatureVariant } from "../../data/corpus";
+import { VariantToggles } from "../shared/VariantToggles/VariantToggles";
 import { useTeamConfig } from "../../context/TeamConfigContext";
 import type { GridSlot, SimulationResult } from "../../data/types";
 import { slotKey } from "../../engine/grid";
@@ -52,7 +53,7 @@ export function PlacedCreatureDetails({ result, highlightedSlot }: PlacedCreatur
     // fall back to the first remaining placement rather than rendering nothing.
     config.placements[0]!;
 
-  const creature = getCreatureByIdAndLevel(placement.creatureId, placement.level);
+  const creature = resolveCreatureVariant(placement.creatureId, placement.level, placement.shiny);
 
   if (!creature) {
     return (
@@ -65,7 +66,12 @@ export function PlacedCreatureDetails({ result, highlightedSlot }: PlacedCreatur
   const effective = result.perCreatureEffectiveStats[`${creature.id}@${slotKey(placement.slot)}`];
 
   return (
-    <BatomonCard creature={creature} levelLabel={`Lv.${placement.level}`} fixedHeight="panel">
+    <BatomonCard
+      creature={creature}
+      levelLabel={`Lv.${placement.level}${placement.shiny ? " ✦" : ""}`}
+      fixedHeight="panel"
+      meta={<VariantToggles placement={placement} />}
+    >
       {effective ? (
         <div title="Reflects any active modifiers and selected Trinkets">
           <div

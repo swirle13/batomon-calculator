@@ -2,6 +2,7 @@ import type { Corpus, GridSlot, TeamConfiguration, TeamPlacement } from "../data
 import { simulate } from "./simulate";
 import { STABLE_SLOT_ORDER, slotKey } from "./grid";
 import { isResolvableTag } from "./effects";
+import { applyShinyOverlay } from "../data/corpus";
 
 /**
  * Placement optimiser (FR-069, WI-018, 2026-10-06 round 8).
@@ -86,7 +87,10 @@ export function analyzePositionalCoverage(config: TeamConfiguration, corpus: Cor
   const actionable: string[] = [];
 
   for (const placement of config.placements) {
-    const creature = corpus.creatures.find((c) => c.id === placement.creatureId && c.level === placement.level);
+    const creature = applyShinyOverlay(
+      corpus.creatures.find((c) => c.id === placement.creatureId && c.level === placement.level) ?? null,
+      placement.shiny,
+    );
     if (!creature) continue;
     // 2026-10-06 round 9 (T203): "has a tag" and "the engine acts on it" are tracked separately,
     // and `actionable` now follows what `effects.ts` ACTUALLY resolves rather than a hard-coded

@@ -37,10 +37,29 @@ export function PlacementAdvisor() {
   const gain = suggestion.bestScore - suggestion.currentScore;
   const gainPercent = suggestion.currentScore > 0 ? (gain / suggestion.currentScore) * 100 : 0;
 
+  // 2026-10-06 round 11 (FR-086 / WI-R11-002): when there is no suggestion there is no body at all
+  // -- no method paragraph, no "nothing scored higher", no blind-spot essay. The user asked for the
+  // prose gone, and in the no-suggestion case every one of those paragraphs was prose about an
+  // absence.
+  //
+  // FR-069's honesty requirement is NOT dropped, because it would be dishonest to let silence read
+  // as "your placement is optimal" when the real reason is usually that the engine cannot see
+  // positional effects. It moves into the collapsed `hint`, which is visible WITHOUT expanding --
+  // so the caveat is now harder to miss than it was buried at the bottom of an expanded panel.
+  if (!suggestion.placements) {
+    const seen = coverage.actionable.length;
+    return (
+      <Disclosure
+        label="Placement suggestion"
+        hint={seen === 0 ? "(none — no positional abilities modelled)" : `(none — ${seen}/${config.placements.length} positional abilities modelled)`}
+      />
+    );
+  }
+
   return (
     <Disclosure
       label="Placement suggestion"
-      hint={suggestion.placements ? `(+${gainPercent.toFixed(1)}% weighted output available)` : "(no improvement found)"}
+      hint={`(+${gainPercent.toFixed(1)}% weighted output available)`}
     >
       <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", lineHeight: 1.45 }}>
         Searched <strong>{suggestion.evaluated}</strong> arrangements of your placed Batomon, scoring
@@ -49,7 +68,7 @@ export function PlacementAdvisor() {
         already dead.
       </p>
 
-      {suggestion.placements ? (
+      {(
         <div style={{ fontSize: "0.85rem" }}>
           <p>
             A different arrangement scores <strong>{gainPercent.toFixed(1)}% higher</strong>:
@@ -75,8 +94,6 @@ export function PlacementAdvisor() {
             Apply this arrangement
           </button>
         </div>
-      ) : (
-        <p style={{ fontSize: "0.85rem" }}>No arrangement scored higher than your current one.</p>
       )}
 
       {/* The blind-spot disclosure. This is mandatory, not a nicety (FR-069). */}

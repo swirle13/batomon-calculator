@@ -18,9 +18,8 @@ import type {
   GridRow,
   GridSlot,
 } from "../../data/types";
-import { corpus, getCreatureByIdAndLevel } from "../../data/corpus";
+import { resolveCreatureVariant } from "../../data/corpus";
 import { useTeamConfig } from "../../context/TeamConfigContext";
-import { resolveLevelUp } from "../../engine/evolution";
 import { typeBackground } from "../../data/typeColors";
 import { STAT_COLORS, type StatColorKey } from "../../data/statColors";
 import { STATUS_COLOR_KEY } from "../../data/format";
@@ -304,16 +303,13 @@ export function GridPicker({ onHighlightSlot }: GridPickerProps) {
                 // reported the missing Multicast chip because it was the one visibly absent; the
                 // rest looked plausible at any level, which is why it went unnoticed.
                 const creature = placement
-                  ? getCreatureByIdAndLevel(placement.creatureId, placement.level)
+                  ? resolveCreatureVariant(placement.creatureId, placement.level, placement.shiny)
                   : null;
                 // FR-022 (data-model.md's "Evolution-aware leveling"): never offer a level the
                 // corpus has no backing record for -- checked via the exact same resolver that
                 // performs the swap (resolveLevelUp), so a level only appears here if selecting
                 // it will actually resolve to something, whether that's the same species or an
                 // evolved one.
-                const availableLevels = placement
-                  ? ([1, 2, 3, 4] as const).filter((lvl) => resolveLevelUp(corpus, placement.creatureId, lvl) !== null)
-                  : [];
 
                 return (
                   <div key={`${row}-${col}`} className={styles.slot}>
@@ -333,29 +329,12 @@ export function GridPicker({ onHighlightSlot }: GridPickerProps) {
                       )}
                     </DroppableZone>
 
-                    {placement && availableLevels.length > 0 && (
-                      <select
-                        value={placement.level}
-                        onChange={(e) => {
-                          const requestedLevel = Number(e.target.value) as 1 | 2 | 3 | 4;
-                          // FR-022: resolve through any evolution chain (e.g. Panbud@3 ->
-                          // Bambudo) rather than just raising the level on the same species id.
-                          const resolved = resolveLevelUp(corpus, placement.creatureId, requestedLevel);
-                          if (resolved) {
-                            setPlacement(slot, resolved.id, requestedLevel);
-                          }
-                        }}
-                        aria-label={`${row} row, slot ${col + 1} level`}
-                        title="Level (restricted to levels this corpus has data for; evolves species where documented)"
-                      >
-                        {availableLevels.map((level) => (
-                          <option key={level} value={level}>
-                            Lv. {level}
-                          </option>
-                        ))}
-                      </select>
-                    )}
-
+                    {/*
+                      Round 11 (WI-R11-001): the per-slot level <select> lived here. It is replaced
+                      by the level/shiny bubbles on the selected-creature card, because a dropdown
+                      cannot express "pick one of four, plus an independent boolean" without
+                      becoming two controls — and at 64px wide this slot had no room for two.
+                    */}
                   </div>
                 );
               })}

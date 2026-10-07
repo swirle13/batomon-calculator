@@ -3,6 +3,7 @@ import { creatures } from "./creatures";
 import { trainers } from "./trainers";
 import { trinkets } from "./trinkets";
 import { items } from "./items";
+import { SHINY_STATS } from "./shiny";
 
 /**
  * The single assembled corpus lookup object. UI and engine code should import `corpus` from
@@ -46,8 +47,58 @@ export const distinctCreatures: CreatureRecord[] = corpus.creatures
  * requires (data-model.md's lookup-fix amendment). `getCreatureById` above is kept for existing
  * callers that don't yet care about level (every corpus record is still level 1 today).
  */
-export function getCreatureByIdAndLevel(id: string, level: number) {
+export function getCreatureByIdAndLevel(id: string, level: number): CreatureRecord | null {
   return corpus.creatures.find((c) => c.id === id && c.level === level) ?? null;
+}
+
+/**
+ * The stat line actually in play for a placement — the normal record, or its SHINY variant.
+ *
+ * Round 11 (WI-R11-001). Returns a NEW record rather than mutating, so the corpus stays the
+ * immutable published data and "shiny" stays a view of it.
+ *
+ * A species with no shiny row falls back to its normal line rather than throwing: the site lists
+ * shiny stats for 134 of our species, and a creature we have but batodex does not should render as
+ * an ordinary creature, not as a crash.
+ */
+export function resolveCreatureVariant(
+  id: string,
+  level: number,
+  shiny?: boolean,
+): CreatureRecord | null {
+  return applyShinyOverlay(getCreatureByIdAndLevel(id, level), shiny);
+}
+
+/**
+ * The shiny overlay as a PURE function of a record you already hold.
+ *
+ * Kept separate from `resolveCreatureVariant` because the engine is given its corpus as a
+ * parameter — `simulate(config, corpus)` is called with an injected fixture in tests. Routing the
+ * engine through the id-based lookup made it silently read the GLOBAL corpus instead, which broke
+ * every test using a fake creature. The lookup and the overlay are now separable for that reason.
+ */
+export function applyShinyOverlay(
+  base: CreatureRecord | null,
+  shiny?: boolean,
+): CreatureRecord | null {
+  if (!base || !shiny) return base;
+  const line = SHINY_STATS[`${base.id}|${base.level}`];
+  if (!line) return base;
+  return {
+    ...base,
+    baseDamage: line.baseDamage,
+    baseCooldownSeconds: line.baseCooldownSeconds,
+    baseMulticast: line.baseMulticast,
+    // `??` not `||`: a published healAmount/appliesStatus of 0 is a real value, and a shiny line
+    // that drops a status the normal line has must drop it, since shiny can be a downgrade.
+    healAmount: line.healAmount,
+    appliesStatus: line.appliesStatus ?? [],
+  };
+}
+
+/** True when this species+level has a published shiny stat line to switch to. */
+export function hasShinyVariant(id: string, level: number): boolean {
+  return SHINY_STATS[`${id}|${level}`] !== undefined;
 }
 
 /** Every level the corpus actually has a record for, for a given species id — sorted

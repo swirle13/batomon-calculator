@@ -48,25 +48,19 @@ export function TotalDps({ config, result }: TotalDpsProps) {
 
   return (
     <section className={styles.wrap}>
+      {/*
+        2026-10-06 round 11 (FR-085 / WI-R11-003). One figure, one caption, no prose.
+        The caption still distinguishes the two readings, because they are genuinely different
+        quantities -- an average over the window versus an instantaneous rate -- and a bare number
+        that silently switched between them would be worse than the prose it replaces.
+      */}
       <div className={styles.headline}>
         <div className={styles.value}>{formatRate(shown)}</div>
         <div className={styles.label}>
-          {scrubT === null
-            ? "total damage per second — average over the whole window, not a reading at any one moment"
-            : `total damage per second at t = ${scrubT}s`}
+          {scrubT === null ? "DPS average" : `DPS at t=${scrubT}s`}
         </div>
       </div>
 
-      <div className={styles.breakdown}>
-        direct {formatRate(directTotal)} + status/facilitated {formatRate(facilitatedTotal)}
-        {directTotal === 0 && facilitatedTotal > 0 && (
-          <span className={styles.note}>
-            {" "}
-            — every per-creature DPS row reads 0.00 because that column counts <em>direct</em> damage
-            only; this team&rsquo;s output is all status damage.
-          </span>
-        )}
-      </div>
 
       {/*
         2026-10-06 round 10 (FR-083 / WI-009). Two bugs here, one reported and one found alongside.
@@ -97,14 +91,14 @@ export function TotalDps({ config, result }: TotalDpsProps) {
         </div>
       )}
 
-      {/* FR-075: a DPS figure reads as authoritative in a way an empty suggestion list does not, so
-          the coverage ceiling is stated right where the number is. */}
-      <p className={styles.coverage}>
-        {coverage.actionable.length === 0
-          ? `None of the ${placedCount} placed Batomon have an ability this engine can act on, so this figure reflects base stats plus your manual modifiers only.`
-          : `${coverage.actionable.length} of ${placedCount} placed Batomon have an ability this engine acts on.`}
-        {coverage.withPositionalTag.length > coverage.actionable.length &&
-          " Some recorded abilities are not yet read by the engine and were ignored."}
+      {/*
+        FR-075 still applies: a DPS figure reads as authoritative in a way an empty list does not, so
+        the coverage ceiling stays next to the number. Round 11 reduces it from a sentence to a
+        counter, which is what the user asked for -- the fact survives, the prose does not. Dropping
+        it entirely would let a confident-looking number imply coverage the engine does not have.
+      */}
+      <p className={styles.coverage} title={`${coverage.actionable.length} of ${placedCount} placed Batomon have an ability this engine computes. The rest contribute base stats and your manual modifiers only.`}>
+        abilities modelled {coverage.actionable.length}/{placedCount}
       </p>
     </section>
   );

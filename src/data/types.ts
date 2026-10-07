@@ -320,6 +320,12 @@ export interface TeamPlacement {
   /** Widened 1-3 -> 1-4 alongside CreatureRecord.level (2026-10-05 round 2) — must match an
    * actual `(creatureId, level)` corpus record; see data-model.md's lookup-fix amendment. */
   level: 1 | 2 | 3 | 4;
+  /**
+   * SHINY variant (round 11, WI-R11-001). Independent of level: a creature can be shiny at any
+   * level. Shiny substitutes a different published stat line (see `shiny.ts`) — it is NOT a
+   * multiplier, and for a handful of creatures it is strictly worse.
+   */
+  shiny?: boolean;
   /** Applies only to this placement's creature, on top of any teamModifiers */
   modifiers?: StatModifier[];
 }

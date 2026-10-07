@@ -224,3 +224,10 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* A Disclosure with no body (round 11, WI-R11-002): same row, no marker, no pointer affordance. */
+.disclosureInert > .disclosureSummary {
+  cursor: default;
+  list-style: none;
+  opacity: 0.75;
+}

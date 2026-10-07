@@ -1,0 +1,72 @@
+/*
+ * Level/shiny bubbles (round 11, WI-R11-001).
+ *
+ * Follows the project's established dark-HUD stance (research.md A4: plain CSS modules, no
+ * component library) and reuses tokens.css rather than introducing a second spacing scale. The one
+ * flourish is the shiny toggle's sheen, and it is earned: shiny is a real stat change, so the
+ * control that enables it is the one thing on this card worth noticing.
+ */
+
+.strip {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.group {
+  display: flex;
+  gap: 2px;
+}
+
+.bubble {
+  min-width: 1.6rem;
+  height: 1.6rem;
+  padding: 0 var(--space-xs);
+  border: 1px solid var(--line-subtle);
+  border-radius: 999px;
+  background: var(--surface-sunken);
+  color: var(--text-muted);
+  font-size: var(--font-xs);
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+
+.bubble:hover:not(:disabled) {
+  border-color: var(--rarity-color, var(--line-strong));
+  color: var(--text-primary);
+}
+
+.bubble:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.bubble:focus-visible {
+  outline: 2px solid var(--focus-ring, #8ab4f8);
+  outline-offset: 1px;
+}
+
+.bubbleActive {
+  background: var(--rarity-color, #8ab4f8);
+  border-color: var(--rarity-color, #8ab4f8);
+  /* The rarity colours are mid-to-light, so dark text is the high-contrast pairing here. */
+  color: #14161c;
+}
+
+.shiny {
+  min-width: auto;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 0.6rem;
+}
+
+.shinyActive {
+  /* The sheen is the differentiation anchor: an angled gradient that reads as foil, rather than a
+     flat accent fill that would be indistinguishable from an active level bubble. */
+  background: linear-gradient(105deg, #f4d774 0%, #fff6d0 42%, #e8b647 60%, #f4d774 100%);
+  border-color: #f4d774;
+  color: #14161c;
+}

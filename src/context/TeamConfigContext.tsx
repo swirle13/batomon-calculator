@@ -46,6 +46,8 @@ interface TeamConfigContextValue {
   setSimulationWindowSeconds: (seconds: number) => void;
   addTeamModifier: (modifier: Omit<StatModifier, "id">) => void;
   removeTeamModifier: (id: string) => void;
+  /** FR-087 (round 11, WI-R11-001): toggle this placement's SHINY variant, independent of level. */
+  setPlacementShiny: (slot: GridSlot, shiny: boolean) => void;
   addPlacementModifier: (slot: GridSlot, modifier: Omit<StatModifier, "id">) => void;
   removePlacementModifier: (slot: GridSlot, id: string) => void;
 }
@@ -150,6 +152,14 @@ export function TeamConfigProvider({
               modifiers: existing.map((m) => (m.id === match.id ? { ...m, amount: total } : m)),
             };
           }),
+        })),
+      setPlacementShiny: (slot, shiny) =>
+        setConfig((prev) => ({
+          ...prev,
+          // Modifiers are preserved: shiny swaps the published stat line, it does not reset the
+          // user's own inputs. (Levelling up goes through `setPlacement`, which does drop them,
+          // because it can change species entirely via evolution.)
+          placements: prev.placements.map((p) => (slotsEqual(p.slot, slot) ? { ...p, shiny } : p)),
         })),
       removePlacementModifier: (slot, id) =>
         setConfig((prev) => ({

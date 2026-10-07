@@ -1,0 +1,6502 @@
+{
+ "Beetbud": [
+  {
+   "level": 1,
+   "cooldown": 4.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 42
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 4.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 84
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 4.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 126
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 4.5,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 126
+    }
+   ]
+  }
+ ],
+ "Bumblebolt": [
+  {
+   "level": 1,
+   "cooldown": 2.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 3
+    },
+    {
+     "key": "shock",
+     "value": 1
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 2.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 6
+    },
+    {
+     "key": "shock",
+     "value": 2
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 2.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 9
+    },
+    {
+     "key": "shock",
+     "value": 3
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 2.5,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 9
+    },
+    {
+     "key": "shock",
+     "value": 3
+    }
+   ]
+  }
+ ],
+ "Bunchop": [
+  {
+   "level": 1,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 50
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 100
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 150
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 300
+    }
+   ]
+  }
+ ],
+ "Dribblet": [
+  {
+   "level": 1,
+   "cooldown": 3,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "heal",
+     "value": 18
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 3,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "heal",
+     "value": 36
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 3,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "heal",
+     "value": 54
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 3,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "heal",
+     "value": 54
+    }
+   ]
+  }
+ ],
+ "Frillet": [
+  {
+   "level": 1,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 12
+    },
+    {
+     "key": "heal",
+     "value": 12
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 24
+    },
+    {
+     "key": "heal",
+     "value": 24
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 36
+    },
+    {
+     "key": "heal",
+     "value": 36
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 4,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 36
+    },
+    {
+     "key": "heal",
+     "value": 36
+    }
+   ]
+  }
+ ],
+ "Furnadon": [
+  {
+   "level": 1,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 4
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 8
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 12
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 24
+    }
+   ]
+  }
+ ],
+ "Guardiant": [
+  {
+   "level": 1,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 18
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 18
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 18
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 36
+    }
+   ]
+  }
+ ],
+ "Joltail": [
+  {
+   "level": 1,
+   "cooldown": 4.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 1
+    },
+    {
+     "key": "shock",
+     "value": 4
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 4.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 2
+    },
+    {
+     "key": "shock",
+     "value": 8
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 4.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 3
+    },
+    {
+     "key": "shock",
+     "value": 12
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 4.5,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 3
+    },
+    {
+     "key": "shock",
+     "value": 12
+    }
+   ]
+  }
+ ],
+ "Kindlepot": [
+  {
+   "level": 1,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 4
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 8
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 12
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 24
+    }
+   ]
+  }
+ ],
+ "Lamplet": [
+  {
+   "level": 1,
+   "cooldown": 2.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 1
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 2.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 2
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 2.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 3
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 2.5,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 3
+    }
+   ]
+  }
+ ],
+ "Leafleap": [
+  {
+   "level": 1,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 40
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 80
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 120
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 240
+    }
+   ]
+  }
+ ],
+ "Magmite": [
+  {
+   "level": 1,
+   "cooldown": 4.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 40
+    },
+    {
+     "key": "burn",
+     "value": 4
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 4.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 80
+    },
+    {
+     "key": "burn",
+     "value": 8
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 4.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 120
+    },
+    {
+     "key": "burn",
+     "value": 12
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 4.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 480
+    },
+    {
+     "key": "burn",
+     "value": 12
+    }
+   ]
+  }
+ ],
+ "Mosslug": [
+  {
+   "level": 1,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "heal",
+     "value": 36
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "heal",
+     "value": 72
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "heal",
+     "value": 108
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "heal",
+     "value": 108
+    }
+   ]
+  }
+ ],
+ "Panbud": [
+  {
+   "level": 1,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 30
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 60
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 90
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 90
+    }
+   ]
+  }
+ ],
+ "Pebbler": [
+  {
+   "level": 1,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 24
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 48
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 72
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 144
+    }
+   ]
+  }
+ ],
+ "Pipskull": [
+  {
+   "level": 1,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 20
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 40
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 60
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 120
+    }
+   ]
+  }
+ ],
+ "Rattleghast": [
+  {
+   "level": 1,
+   "cooldown": 2.8,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 1
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 2.8,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 1
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 2.8,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 1
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 2.8,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 1
+    }
+   ]
+  }
+ ],
+ "Rubbin": [
+  {
+   "level": 1,
+   "cooldown": 6.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 40
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 6.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 80
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 6.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 120
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 6.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 240
+    }
+   ]
+  }
+ ],
+ "Scorchimp": [
+  {
+   "level": 1,
+   "cooldown": 5.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 6
+    },
+    {
+     "key": "burn",
+     "value": 6
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 5.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 12
+    },
+    {
+     "key": "burn",
+     "value": 12
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 5.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 18
+    },
+    {
+     "key": "burn",
+     "value": 18
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 5.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 18
+    },
+    {
+     "key": "burn",
+     "value": 18
+    }
+   ]
+  }
+ ],
+ "Scorubble": [
+  {
+   "level": 1,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 30
+    },
+    {
+     "key": "poison",
+     "value": 2
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 60
+    },
+    {
+     "key": "poison",
+     "value": 4
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 90
+    },
+    {
+     "key": "poison",
+     "value": 6
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 180
+    },
+    {
+     "key": "poison",
+     "value": 12
+    }
+   ]
+  }
+ ],
+ "Shellter": [
+  {
+   "level": 1,
+   "cooldown": 6.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 120
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 6.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 240
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 6.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 360
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 6.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 720
+    }
+   ]
+  }
+ ],
+ "Spinarai": [
+  {
+   "level": 1,
+   "cooldown": 2.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 3
+    },
+    {
+     "key": "poison",
+     "value": 1
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 2.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 6
+    },
+    {
+     "key": "poison",
+     "value": 2
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 2.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 9
+    },
+    {
+     "key": "poison",
+     "value": 3
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 2.5,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 9
+    },
+    {
+     "key": "poison",
+     "value": 3
+    }
+   ]
+  }
+ ],
+ "Stingarde": [
+  {
+   "level": 1,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 150
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 300
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 450
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 1350
+    }
+   ]
+  }
+ ],
+ "Swoonet": [
+  {
+   "level": 1,
+   "cooldown": 6.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 36
+    },
+    {
+     "key": "heal",
+     "value": 36
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 6.5,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 36
+    },
+    {
+     "key": "heal",
+     "value": 36
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 6.5,
+   "multicast": 3,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 36
+    },
+    {
+     "key": "heal",
+     "value": 36
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 6.5,
+   "multicast": 6,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 36
+    },
+    {
+     "key": "heal",
+     "value": 36
+    }
+   ]
+  }
+ ],
+ "Toximoth": [
+  {
+   "level": 1,
+   "cooldown": 3.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 2
+    },
+    {
+     "key": "poison",
+     "value": 2
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 3.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 4
+    },
+    {
+     "key": "poison",
+     "value": 4
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 3.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 6
+    },
+    {
+     "key": "poison",
+     "value": 6
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 3.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 12
+    },
+    {
+     "key": "poison",
+     "value": 12
+    }
+   ]
+  }
+ ],
+ "Velocect": [
+  {
+   "level": 1,
+   "cooldown": 3.5,
+   "multicast": 4,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 8
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 3.5,
+   "multicast": 6,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 10
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 3.5,
+   "multicast": 8,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 13
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 3.5,
+   "multicast": 16,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 13
+    }
+   ]
+  }
+ ],
+ "Venopuff": [
+  {
+   "level": 1,
+   "cooldown": 3.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 4
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 3.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 8
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 3.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 12
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 3.5,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 12
+    }
+   ]
+  }
+ ],
+ "Aviarab": [
+  {
+   "level": 1,
+   "cooldown": 3.5,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 15
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 3.5,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 30
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 3.5,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 45
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 3.5,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 90
+    }
+   ]
+  }
+ ],
+ "Berroon": [
+  {
+   "level": 1,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 40
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 40
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 40
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 160
+    }
+   ]
+  }
+ ],
+ "Blessom": [
+  {
+   "level": 1,
+   "cooldown": 4.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 50
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 4.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 100
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 4.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 150
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 4.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 300
+    }
+   ]
+  }
+ ],
+ "Bonshell": [
+  {
+   "level": 1,
+   "cooldown": 7,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 120
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 7,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 240
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 7,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 360
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 7,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 720
+    }
+   ]
+  }
+ ],
+ "Boomagon": [
+  {
+   "level": 1,
+   "cooldown": 5.6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 40
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 5.6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 40
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 5.6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 40
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 5.6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 40
+    }
+   ]
+  }
+ ],
+ "Brawlmantis": [
+  {
+   "level": 1,
+   "cooldown": 5.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 60
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 5.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 120
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 5.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 180
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 5.5,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 180
+    }
+   ]
+  }
+ ],
+ "Brimtoad": [
+  {
+   "level": 1,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 1
+    },
+    {
+     "key": "poison",
+     "value": 1
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 2
+    },
+    {
+     "key": "poison",
+     "value": 2
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 4
+    },
+    {
+     "key": "poison",
+     "value": 4
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 14
+    },
+    {
+     "key": "poison",
+     "value": 14
+    }
+   ]
+  }
+ ],
+ "Cinderfly": [
+  {
+   "level": 1,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 7
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 7
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 7
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 5,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 14
+    }
+   ]
+  }
+ ],
+ "Cinnabark": [
+  {
+   "level": 1,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 5
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 10
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 15
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 30
+    }
+   ]
+  }
+ ],
+ "Craghorn": [
+  {
+   "level": 1,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 24
+    },
+    {
+     "key": "shield",
+     "value": 24
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 24
+    },
+    {
+     "key": "shield",
+     "value": 24
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 24
+    },
+    {
+     "key": "shield",
+     "value": 24
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 96
+    },
+    {
+     "key": "shield",
+     "value": 96
+    }
+   ]
+  }
+ ],
+ "Electranade": [
+  {
+   "level": 1,
+   "cooldown": 4.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shock",
+     "value": 30
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 4.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shock",
+     "value": 60
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 4.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shock",
+     "value": 90
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 4.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shock",
+     "value": 360
+    }
+   ]
+  }
+ ],
+ "Emburn": [
+  {
+   "level": 1,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 6
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 12
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 18
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 72
+    }
+   ]
+  }
+ ],
+ "Frizzly": [
+  {
+   "level": 1,
+   "cooldown": 7,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 1
+    },
+    {
+     "key": "shock",
+     "value": 8
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 7,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 1
+    },
+    {
+     "key": "shock",
+     "value": 16
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 7,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 1
+    },
+    {
+     "key": "shock",
+     "value": 24
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 7,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 1
+    },
+    {
+     "key": "shock",
+     "value": 48
+    }
+   ]
+  }
+ ],
+ "Gildshell": [
+  {
+   "level": 1,
+   "cooldown": 2,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 1
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 2,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 1
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 2,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 1
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 2,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 100
+    }
+   ]
+  }
+ ],
+ "Kappow": [
+  {
+   "level": 1,
+   "cooldown": 5.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 60
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 5.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 120
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 5.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 180
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 5.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 360
+    }
+   ]
+  }
+ ],
+ "Nekoffin": [
+  {
+   "level": 1,
+   "cooldown": 13,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 200
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 13,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 400
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 13,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 600
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 13,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 2300
+    }
+   ]
+  }
+ ],
+ "Noxnimbus": [
+  {
+   "level": 1,
+   "cooldown": 3,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 1
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 3,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 1
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 3,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 1
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 3,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 1
+    }
+   ]
+  }
+ ],
+ "Pawsperity": [
+  {
+   "level": 1,
+   "cooldown": 6.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 100
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 6.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 200
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 6.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 300
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 6.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 600
+    }
+   ]
+  }
+ ],
+ "Plunderbird": [
+  {
+   "level": 1,
+   "cooldown": 5,
+   "multicast": 3,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 1
+    },
+    {
+     "key": "heal",
+     "value": 18
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 5,
+   "multicast": 4,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 1
+    },
+    {
+     "key": "heal",
+     "value": 28
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 5,
+   "multicast": 5,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 1
+    },
+    {
+     "key": "heal",
+     "value": 44
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 5,
+   "multicast": 10,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 1
+    },
+    {
+     "key": "heal",
+     "value": 44
+    }
+   ]
+  }
+ ],
+ "Puffloon": [
+  {
+   "level": 1,
+   "cooldown": 10,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "heal",
+     "value": 14
+    },
+    {
+     "key": "poison",
+     "value": 1
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 10,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "heal",
+     "value": 14
+    },
+    {
+     "key": "poison",
+     "value": 1
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 10,
+   "multicast": 3,
+   "stats": [
+    {
+     "key": "heal",
+     "value": 14
+    },
+    {
+     "key": "poison",
+     "value": 1
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 10,
+   "multicast": 12,
+   "stats": [
+    {
+     "key": "heal",
+     "value": 14
+    },
+    {
+     "key": "poison",
+     "value": 1
+    }
+   ]
+  }
+ ],
+ "Pyronade": [
+  {
+   "level": 1,
+   "cooldown": 4.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 24
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 4.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 48
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 4.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 72
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 4.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 288
+    }
+   ]
+  }
+ ],
+ "Runerock": [
+  {
+   "level": 1,
+   "cooldown": 6.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 140
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 6.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 280
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 6.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 420
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 6.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 840
+    }
+   ]
+  }
+ ],
+ "Shogapede": [
+  {
+   "level": 1,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 6
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 6
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 6
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 5,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 12
+    }
+   ]
+  }
+ ],
+ "Sukoi": [
+  {
+   "level": 1,
+   "cooldown": 9,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "heal",
+     "value": 80
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 4.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "heal",
+     "value": 80
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 3,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "heal",
+     "value": 80
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 3,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "heal",
+     "value": 80
+    }
+   ]
+  }
+ ],
+ "Aristobat": [
+  {
+   "level": 1,
+   "cooldown": 4,
+   "multicast": 3,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 3
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 4,
+   "multicast": 4,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 5
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 4,
+   "multicast": 5,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 7
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 4,
+   "multicast": 10,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 14
+    }
+   ]
+  }
+ ],
+ "Aster": [
+  {
+   "level": 1,
+   "cooldown": 3,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "heal",
+     "value": 40
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 3,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "heal",
+     "value": 40
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 3,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "heal",
+     "value": 40
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 3,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "heal",
+     "value": 160
+    }
+   ]
+  }
+ ],
+ "Cherubble": [
+  {
+   "level": 1,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 100
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 2,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 100
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 1.3,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 100
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 1.3,
+   "multicast": 4,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 100
+    }
+   ]
+  }
+ ],
+ "Cicadence": [
+  {
+   "level": 1,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 100
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 3,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 100
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 2,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 100
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 2,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 200
+    }
+   ]
+  }
+ ],
+ "Cordycant": [
+  {
+   "level": 1,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 8
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 16
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 24
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 96
+    }
+   ]
+  }
+ ],
+ "Dirgefin": [
+  {
+   "level": 1,
+   "cooldown": 9,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 50
+    },
+    {
+     "key": "heal",
+     "value": 100
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 4.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 50
+    },
+    {
+     "key": "heal",
+     "value": 100
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 3,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 50
+    },
+    {
+     "key": "heal",
+     "value": 100
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 3,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 100
+    },
+    {
+     "key": "heal",
+     "value": 200
+    }
+   ]
+  }
+ ],
+ "Dollhime": [
+  {
+   "level": 1,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": []
+  },
+  {
+   "level": 2,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": []
+  },
+  {
+   "level": 3,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": []
+  },
+  {
+   "level": 4,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": []
+  }
+ ],
+ "Dracana": [
+  {
+   "level": 1,
+   "cooldown": 3,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 5
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 3,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 10
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 3,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 15
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 3,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 45
+    }
+   ]
+  }
+ ],
+ "Formiqueen": [
+  {
+   "level": 1,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 60
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 120
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 180
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 720
+    }
+   ]
+  }
+ ],
+ "Humbolt": [
+  {
+   "level": 1,
+   "cooldown": 4,
+   "multicast": 3,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 36
+    },
+    {
+     "key": "shock",
+     "value": 3
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 4,
+   "multicast": 4,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 48
+    },
+    {
+     "key": "shock",
+     "value": 4
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 4,
+   "multicast": 5,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 54
+    },
+    {
+     "key": "shock",
+     "value": 5
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 4,
+   "multicast": 10,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 54
+    },
+    {
+     "key": "shock",
+     "value": 5
+    }
+   ]
+  }
+ ],
+ "Ignit": [
+  {
+   "level": 1,
+   "cooldown": 8,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 2
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 8,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 3
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 8,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 4
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 1,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 4
+    }
+   ]
+  }
+ ],
+ "Ironcore": [
+  {
+   "level": 1,
+   "cooldown": 2,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 30
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 2,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 30
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 2,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 30
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 2,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 30
+    }
+   ]
+  }
+ ],
+ "Kickrane": [
+  {
+   "level": 1,
+   "cooldown": 4.5,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 30
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 4.5,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 60
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 4.5,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 90
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 4.5,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 360
+    }
+   ]
+  }
+ ],
+ "Lignite": [
+  {
+   "level": 1,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 3
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 3
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 3
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 3
+    }
+   ]
+  }
+ ],
+ "Lumijel": [
+  {
+   "level": 1,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 20
+    },
+    {
+     "key": "heal",
+     "value": 30
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 40
+    },
+    {
+     "key": "heal",
+     "value": 60
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 60
+    },
+    {
+     "key": "heal",
+     "value": 90
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 240
+    },
+    {
+     "key": "heal",
+     "value": 360
+    }
+   ]
+  }
+ ],
+ "Magmalith": [
+  {
+   "level": 1,
+   "cooldown": 9,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 5
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 9,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 10
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 9,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 15
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 9,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 30
+    }
+   ]
+  }
+ ],
+ "Noxalith": [
+  {
+   "level": 1,
+   "cooldown": 7,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 5
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 7,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 10
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 7,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 15
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 7,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 30
+    }
+   ]
+  }
+ ],
+ "Petrirex": [
+  {
+   "level": 1,
+   "cooldown": 5.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 50
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 5.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 100
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 5.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 150
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 5.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 600
+    }
+   ]
+  }
+ ],
+ "Pyrokami": [
+  {
+   "level": 1,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 5
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 10
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 15
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 30
+    }
+   ]
+  }
+ ],
+ "Rhizuka": [
+  {
+   "level": 1,
+   "cooldown": 15,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 240
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 15,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 240
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 15,
+   "multicast": 3,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 240
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 15,
+   "multicast": 12,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 240
+    }
+   ]
+  }
+ ],
+ "Sarudo": [
+  {
+   "level": 1,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 100
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 200
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 300
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 1200
+    }
+   ]
+  }
+ ],
+ "Shikitsune": [
+  {
+   "level": 1,
+   "cooldown": 3,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 50
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 3,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 100
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 3,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 150
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 3,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 1500
+    }
+   ]
+  }
+ ],
+ "Sproach": [
+  {
+   "level": 1,
+   "cooldown": 5.5,
+   "multicast": null,
+   "stats": []
+  },
+  {
+   "level": 2,
+   "cooldown": 5.5,
+   "multicast": null,
+   "stats": []
+  },
+  {
+   "level": 3,
+   "cooldown": 5.5,
+   "multicast": null,
+   "stats": []
+  },
+  {
+   "level": 4,
+   "cooldown": 5.5,
+   "multicast": null,
+   "stats": []
+  }
+ ],
+ "Stalagrove": [
+  {
+   "level": 1,
+   "cooldown": 4.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 60
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 4.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 60
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 4.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 60
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 4.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 60
+    }
+   ]
+  }
+ ],
+ "Steamscuttle": [
+  {
+   "level": 1,
+   "cooldown": 3.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "heal",
+     "value": 30
+    },
+    {
+     "key": "burn",
+     "value": 5
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 3.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "heal",
+     "value": 60
+    },
+    {
+     "key": "burn",
+     "value": 10
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 3.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "heal",
+     "value": 90
+    },
+    {
+     "key": "burn",
+     "value": 15
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 3.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "heal",
+     "value": 360
+    },
+    {
+     "key": "burn",
+     "value": 60
+    }
+   ]
+  }
+ ],
+ "Talonite": [
+  {
+   "level": 1,
+   "cooldown": 12,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 36
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 12,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 72
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 12,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 108
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 12,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 216
+    }
+   ]
+  }
+ ],
+ "Thorntail": [
+  {
+   "level": 1,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 50
+    },
+    {
+     "key": "poison",
+     "value": 1
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 50
+    },
+    {
+     "key": "poison",
+     "value": 1
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 50
+    },
+    {
+     "key": "poison",
+     "value": 1
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 150
+    },
+    {
+     "key": "poison",
+     "value": 1
+    }
+   ]
+  }
+ ],
+ "Vipair": [
+  {
+   "level": 1,
+   "cooldown": 5.2,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 5
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 5.2,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 10
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 5.2,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 15
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 5.2,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 30
+    }
+   ]
+  }
+ ],
+ "Voltalith": [
+  {
+   "level": 1,
+   "cooldown": 8,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shock",
+     "value": 5
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 8,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shock",
+     "value": 10
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 8,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shock",
+     "value": 15
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 8,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shock",
+     "value": 30
+    }
+   ]
+  }
+ ],
+ "Aegistruct": [
+  {
+   "level": 1,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 150
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 150
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 150
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 3,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 150
+    }
+   ]
+  }
+ ],
+ "Blazewing": [
+  {
+   "level": 1,
+   "cooldown": 5,
+   "multicast": 4,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 4
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 5,
+   "multicast": 6,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 4
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 5,
+   "multicast": 8,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 4
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 5,
+   "multicast": 32,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 8
+    }
+   ]
+  }
+ ],
+ "Cawnushi": [
+  {
+   "level": 1,
+   "cooldown": 5.5,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 50
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 5.5,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 100
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 5.5,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 150
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 5.5,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 1200
+    }
+   ]
+  }
+ ],
+ "Celestia": [
+  {
+   "level": 1,
+   "cooldown": 6.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 130
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 6.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 260
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 6.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 390
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 6.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 3120
+    }
+   ]
+  }
+ ],
+ "Clawnetic": [
+  {
+   "level": 1,
+   "cooldown": 2,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 60
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 2,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 60
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 2,
+   "multicast": 3,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 60
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 2,
+   "multicast": 24,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 600
+    }
+   ]
+  }
+ ],
+ "Coalem": [
+  {
+   "level": 1,
+   "cooldown": 15,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 550
+    },
+    {
+     "key": "burn",
+     "value": 20
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 15,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 1100
+    },
+    {
+     "key": "burn",
+     "value": 40
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 15,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 1650
+    },
+    {
+     "key": "burn",
+     "value": 60
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 6600
+    },
+    {
+     "key": "burn",
+     "value": 240
+    }
+   ]
+  }
+ ],
+ "Danuki": [
+  {
+   "level": 1,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 40
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 3,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 40
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 2,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 40
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 2,
+   "multicast": 4,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 40
+    }
+   ]
+  }
+ ],
+ "Drumire": [
+  {
+   "level": 1,
+   "cooldown": 8,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 20
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 8,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 40
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 8,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 60
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 8,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 480
+    }
+   ]
+  }
+ ],
+ "Dryadell": [
+  {
+   "level": 1,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 70
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 5,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 70
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 5,
+   "multicast": 3,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 70
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 5,
+   "multicast": 12,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 140
+    }
+   ]
+  }
+ ],
+ "Emberpaw": [
+  {
+   "level": 1,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 50
+    },
+    {
+     "key": "burn",
+     "value": 5
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 50
+    },
+    {
+     "key": "burn",
+     "value": 5
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 50
+    },
+    {
+     "key": "burn",
+     "value": 5
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 50
+    },
+    {
+     "key": "burn",
+     "value": 5
+    }
+   ]
+  }
+ ],
+ "Fumungus": [
+  {
+   "level": 1,
+   "cooldown": 3,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 6
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 3,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 6
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 3,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 6
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 1.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 12
+    }
+   ]
+  }
+ ],
+ "Gemwing": [
+  {
+   "level": 1,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 150
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 300
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 450
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 3600
+    }
+   ]
+  }
+ ],
+ "Ginsage": [
+  {
+   "level": 1,
+   "cooldown": 7,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 150
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 7,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 300
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 7,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 450
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 7,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 3600
+    }
+   ]
+  }
+ ],
+ "Mallogre": [
+  {
+   "level": 1,
+   "cooldown": 8,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 120
+    },
+    {
+     "key": "shield",
+     "value": 100
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 8,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 120
+    },
+    {
+     "key": "shield",
+     "value": 100
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 8,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 120
+    },
+    {
+     "key": "shield",
+     "value": 100
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 8,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 120
+    },
+    {
+     "key": "shield",
+     "value": 100
+    }
+   ]
+  }
+ ],
+ "Ninflora": [
+  {
+   "level": 1,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 50
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 100
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 150
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 1200
+    }
+   ]
+  }
+ ],
+ "Opalion": [
+  {
+   "level": 1,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 90
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 5,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 90
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 5,
+   "multicast": 3,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 90
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 5,
+   "multicast": 12,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 180
+    }
+   ]
+  }
+ ],
+ "Orcana": [
+  {
+   "level": 1,
+   "cooldown": 8,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "heal",
+     "value": 200
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 8,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "heal",
+     "value": 200
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 8,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "heal",
+     "value": 200
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 8,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "heal",
+     "value": 200
+    }
+   ]
+  }
+ ],
+ "Prismagon": [
+  {
+   "level": 1,
+   "cooldown": 4.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 100
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 4.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 100
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 4.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 100
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 4.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 100
+    }
+   ]
+  }
+ ],
+ "Pylong": [
+  {
+   "level": 1,
+   "cooldown": 7,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 1
+    },
+    {
+     "key": "shock",
+     "value": 15
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 7,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 1
+    },
+    {
+     "key": "shock",
+     "value": 15
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 7,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 1
+    },
+    {
+     "key": "shock",
+     "value": 15
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 7,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 1
+    },
+    {
+     "key": "shock",
+     "value": 15
+    }
+   ]
+  }
+ ],
+ "Reapra": [
+  {
+   "level": 1,
+   "cooldown": 6.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 120
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 3,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 120
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 2,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 120
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 2,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 960
+    }
+   ]
+  }
+ ],
+ "Shelldra": [
+  {
+   "level": 1,
+   "cooldown": 4.5,
+   "multicast": 4,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 15
+    },
+    {
+     "key": "heal",
+     "value": 15
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 4.5,
+   "multicast": 4,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 15
+    },
+    {
+     "key": "heal",
+     "value": 15
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 4.5,
+   "multicast": 4,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 15
+    },
+    {
+     "key": "heal",
+     "value": 15
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 4.5,
+   "multicast": 8,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 30
+    },
+    {
+     "key": "heal",
+     "value": 30
+    }
+   ]
+  }
+ ],
+ "Shrinell": [
+  {
+   "level": 1,
+   "cooldown": 8,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 160
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 8,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 320
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 8,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 480
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 8,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 3840
+    }
+   ]
+  }
+ ],
+ "Sirenade": [
+  {
+   "level": 1,
+   "cooldown": 3,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "heal",
+     "value": 100
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 3,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "heal",
+     "value": 200
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 3,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "heal",
+     "value": 300
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 3,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "heal",
+     "value": 1200
+    }
+   ]
+  }
+ ],
+ "Snapscald": [
+  {
+   "level": 1,
+   "cooldown": 9,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "heal",
+     "value": 48
+    },
+    {
+     "key": "burn",
+     "value": 10
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 9,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "heal",
+     "value": 96
+    },
+    {
+     "key": "burn",
+     "value": 19
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 9,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "heal",
+     "value": 144
+    },
+    {
+     "key": "burn",
+     "value": 29
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 9,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "heal",
+     "value": 115
+    },
+    {
+     "key": "burn",
+     "value": 230
+    }
+   ]
+  }
+ ],
+ "Tengusto": [
+  {
+   "level": 1,
+   "cooldown": 4.5,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 50
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 4.5,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 50
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 4.5,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 50
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 4.5,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 50
+    }
+   ]
+  }
+ ],
+ "Wishwash": [
+  {
+   "level": 1,
+   "cooldown": 3.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "heal",
+     "value": 150
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 3.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "heal",
+     "value": 300
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 3.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "heal",
+     "value": 450
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 3.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "heal",
+     "value": 3600
+    }
+   ]
+  }
+ ],
+ "Zephyrex": [
+  {
+   "level": 1,
+   "cooldown": 10,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 100
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 10,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 100
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 10,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 100
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 10,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 800
+    }
+   ]
+  }
+ ],
+ "Blixie": [
+  {
+   "level": 1,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 30
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 30
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 30
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "burn",
+     "value": 300
+    }
+   ]
+  }
+ ],
+ "Cairnage": [
+  {
+   "level": 1,
+   "cooldown": 5.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 500
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 5.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 1000
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 5.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 1500
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 5.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 12000
+    }
+   ]
+  }
+ ],
+ "Cobrex": [
+  {
+   "level": 1,
+   "cooldown": 15,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 360
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 15,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 720
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 15,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 1080
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 2,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 1080
+    }
+   ]
+  }
+ ],
+ "Draconarch": [
+  {
+   "level": 1,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 100
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 4,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 100
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 4,
+   "multicast": 3,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 100
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 4,
+   "multicast": 24,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 100
+    }
+   ]
+  }
+ ],
+ "Fernfowl": [
+  {
+   "level": 1,
+   "cooldown": 7,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 120
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 7,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 240
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 7,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 360
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 7,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 3600
+    }
+   ]
+  }
+ ],
+ "Gachapod": [
+  {
+   "level": 1,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 120
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 240
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 360
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 2880
+    }
+   ]
+  }
+ ],
+ "Gaiadrasil": [
+  {
+   "level": 1,
+   "cooldown": 9,
+   "multicast": null,
+   "stats": []
+  },
+  {
+   "level": 2,
+   "cooldown": 4.5,
+   "multicast": null,
+   "stats": []
+  },
+  {
+   "level": 3,
+   "cooldown": 3,
+   "multicast": null,
+   "stats": []
+  },
+  {
+   "level": 4,
+   "cooldown": 3,
+   "multicast": null,
+   "stats": []
+  }
+ ],
+ "Galvanine": [
+  {
+   "level": 1,
+   "cooldown": 7,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 10
+    },
+    {
+     "key": "shock",
+     "value": 6
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 7,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 20
+    },
+    {
+     "key": "shock",
+     "value": 12
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 7,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 30
+    },
+    {
+     "key": "shock",
+     "value": 18
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 7,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 30
+    },
+    {
+     "key": "shock",
+     "value": 144
+    }
+   ]
+  }
+ ],
+ "Geminiss": [
+  {
+   "level": 1,
+   "cooldown": 10,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 100
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 10,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 100
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 10,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 100
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 10,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "shield",
+     "value": 1000
+    }
+   ]
+  }
+ ],
+ "Miasmaw": [
+  {
+   "level": 1,
+   "cooldown": 3,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 10
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 3,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 10
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 3,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 10
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 3,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "poison",
+     "value": 10
+    }
+   ]
+  }
+ ],
+ "Onsetra": [
+  {
+   "level": 1,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 100
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 200
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 300
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 4,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 3000
+    }
+   ]
+  }
+ ],
+ "Ouroblaze": [
+  {
+   "level": 1,
+   "cooldown": 8,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 400
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 8,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 400
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 8,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 400
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 8,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 400
+    }
+   ]
+  }
+ ],
+ "Pompummel": [
+  {
+   "level": 1,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 300
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 3,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 300
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 2,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 300
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 2,
+   "multicast": 10,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 300
+    }
+   ]
+  }
+ ],
+ "Saberhorn": [
+  {
+   "level": 1,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 100
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 100
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 100
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 100
+    }
+   ]
+  }
+ ],
+ "Sproutquill": [
+  {
+   "level": 1,
+   "cooldown": 7,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 60
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 7,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 120
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 7,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 180
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 7,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 1800
+    }
+   ]
+  }
+ ],
+ "Stellagon": [
+  {
+   "level": 1,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 150
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 300
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 450
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 4500
+    }
+   ]
+  }
+ ],
+ "Torrantler": [
+  {
+   "level": 1,
+   "cooldown": 5.5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "heal",
+     "value": 200
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 5.5,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "heal",
+     "value": 200
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 5.5,
+   "multicast": 3,
+   "stats": [
+    {
+     "key": "heal",
+     "value": 200
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 5.5,
+   "multicast": 30,
+   "stats": [
+    {
+     "key": "heal",
+     "value": 200
+    }
+   ]
+  }
+ ],
+ "Tsunamere": [
+  {
+   "level": 1,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "heal",
+     "value": 400
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 3,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "heal",
+     "value": 400
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 2,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "heal",
+     "value": 400
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 2,
+   "multicast": 10,
+   "stats": [
+    {
+     "key": "heal",
+     "value": 400
+    }
+   ]
+  }
+ ],
+ "Vengrieve": [
+  {
+   "level": 1,
+   "cooldown": 6,
+   "multicast": null,
+   "stats": []
+  },
+  {
+   "level": 2,
+   "cooldown": 3,
+   "multicast": null,
+   "stats": []
+  },
+  {
+   "level": 3,
+   "cooldown": 2,
+   "multicast": null,
+   "stats": []
+  },
+  {
+   "level": 4,
+   "cooldown": 2,
+   "multicast": null,
+   "stats": []
+  }
+ ],
+ "Aerophim": [
+  {
+   "level": 1,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 666
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 666
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 666
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 666
+    }
+   ]
+  }
+ ],
+ "Cosmivore": [
+  {
+   "level": 1,
+   "cooldown": 7,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 1
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 7,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 1
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 7,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 1
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 7,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 1
+    }
+   ]
+  }
+ ],
+ "Faebloom": [
+  {
+   "level": 1,
+   "cooldown": 7,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 777
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 7,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 777
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 7,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 777
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 7,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 777
+    }
+   ]
+  }
+ ],
+ "Goldora": [
+  {
+   "level": 1,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 333
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 333
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 333
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 333
+    }
+   ]
+  }
+ ],
+ "MissingN.": [
+  {
+   "level": 1,
+   "cooldown": 30,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 1
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 30,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 1
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 30,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 1
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 30,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 1
+    }
+   ]
+  }
+ ],
+ "Omnichrome": [
+  {
+   "level": 1,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 1
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 1
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 1
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 5,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 1
+    }
+   ]
+  }
+ ],
+ "Rigalord": [
+  {
+   "level": 1,
+   "cooldown": 1.6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 1
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 1.6,
+   "multicast": 3,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 1
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 1.6,
+   "multicast": 3,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 1
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 1.6,
+   "multicast": 30,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 1
+    }
+   ]
+  }
+ ],
+ "Riglet": [
+  {
+   "level": 1,
+   "cooldown": 1.6,
+   "multicast": null,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 1
+    }
+   ]
+  },
+  {
+   "level": 2,
+   "cooldown": 1.6,
+   "multicast": 2,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 1
+    }
+   ]
+  },
+  {
+   "level": 3,
+   "cooldown": 1.6,
+   "multicast": 3,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 1
+    }
+   ]
+  },
+  {
+   "level": 4,
+   "cooldown": 1.6,
+   "multicast": 10,
+   "stats": [
+    {
+     "key": "damage",
+     "value": 1
+    }
+   ]
+  }
+ ]
+}

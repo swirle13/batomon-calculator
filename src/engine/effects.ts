@@ -8,6 +8,7 @@ import type {
   TeamConfiguration,
 } from "../data/types";
 import { aboveSlot, behindSlot, isAdjacent, slotKey, slotsEqual } from "./grid";
+import { applyShinyOverlay } from "../data/corpus";
 
 /**
  * Effect resolution (FR-073/FR-074, 2026-10-06 round 9).
@@ -139,8 +140,14 @@ function selectTargets<T extends { slot: GridSlot; key: string; creature: Creatu
 export function resolveEffects(config: TeamConfiguration, corpus: Corpus): ResolvedPlacement[] {
   const members = config.placements
     .map((placement) => {
-      const creature = corpus.creatures.find(
-        (c) => c.id === placement.creatureId && c.level === placement.level,
+      // Round 11 (WI-R11-001): the SHINY line when the placement is shiny. This is the single
+      // point where the engine turns a placement into stats, so routing it here means shiny flows
+      // into DPS, the charts, the optimiser and the effective-stat band without four separate fixes.
+      const creature = applyShinyOverlay(
+        corpus.creatures.find(
+          (c) => c.id === placement.creatureId && c.level === placement.level,
+        ) ?? null,
+        placement.shiny,
       );
       return creature ? { placement, creature } : null;
     })

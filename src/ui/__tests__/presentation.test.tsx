@@ -234,8 +234,18 @@ describe("round 9: total DPS and grid sizing", () => {
   it("states the engine's coverage ceiling right where the number is (FR-075)", () => {
     const result = simulate(poisonTeam, corpus);
     render(<TotalDps config={poisonTeam} result={result} />);
-    // A DPS figure reads as authoritative, so the limit must sit beside it rather than elsewhere.
-    expect(screen.getByText(/engine can act on|engine acts on/)).toBeTruthy();
+    // Round 11 (WI-R11-003) replaced the sentence with a counter at the user's request. The FACT
+    // must survive the prose removal: a DPS figure reads as authoritative, so the limit still sits
+    // beside it. This asserts the counter, not the old wording.
+    expect(screen.getByText(/abilities modelled \d+\/\d+/)).toBeTruthy();
+  });
+
+  it("reads 'DPS average' until the scrubber is moved (WI-R11-003)", () => {
+    const result = simulate(poisonTeam, corpus);
+    render(<TotalDps config={poisonTeam} result={result} />);
+    expect(screen.getByText("DPS average")).toBeTruthy();
+    // The direct-vs-facilitated explanation is gone; only the figure and its caption remain.
+    expect(screen.queryByText(/status\/facilitated/)).toBeNull();
   });
 
   it("adds a total row to the per-creature table (FR-072 / WI-002)", () => {

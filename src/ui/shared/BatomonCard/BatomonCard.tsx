@@ -111,9 +111,15 @@ interface BatomonCardProps {
    * (research.md I3). The user asked for the opposite in round 8 (WI-013), so that is superseded.
    */
   fixedHeight?: "panel" | "browser";
+  /**
+   * Round 11 (WI-R11-001): the level/shiny bubbles, rendered in the card's `meta` band. Passed in
+   * rather than built here so `BatomonCard` stays a pure presentation of a creature record — the
+   * Corpus Browser renders cards for creatures that have no placement to toggle.
+   */
+  meta?: ReactNode;
 }
 
-export function BatomonCard({ creature, children, levelLabel, fixedHeight }: BatomonCardProps) {
+export function BatomonCard({ creature, children, levelLabel, fixedHeight, meta }: BatomonCardProps) {
   const rarityColor = RARITY_COLORS[creature.rarity];
   const cooldownUnconfirmed = isUnconfirmed(creature, "baseCooldownSeconds");
   const statLines = buildStatLines({
@@ -171,18 +177,8 @@ export function BatomonCard({ creature, children, levelLabel, fixedHeight }: Bat
 
       {children ? <div className={styles.extra}>{children}</div> : null}
 
-      {/*
-        <div className={styles.meta}>
-          {!isUnconfirmed(creature, "shopCost") && <span>Cost ${creature.shopCost}</span>}
-          {creature.sellValue != null && <span>Sell ${creature.sellValue}</span>}
-          {creature.evolvesInto && (
-            <span>
-              Evolves into <code>{creature.evolvesInto}</code>
-              {creature.evolvesAtLevel ? ` at Lv.${creature.evolvesAtLevel}` : " (not by levelling)"}
-            </span>
-          )}
-        </div>
-      */}
+      {/* The meta band, previously commented out, now carries the level/shiny bubbles (WI-R11-001). */}
+      {meta ? <div className={styles.meta}>{meta}</div> : null}
     </article>
   );
 }

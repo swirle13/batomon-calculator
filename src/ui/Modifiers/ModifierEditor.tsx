@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { ModifierStat, GridSlot, TeamPlacement } from "../../data/types";
-import { getCreatureByIdAndLevel } from "../../data/corpus";
+import { resolveCreatureVariant } from "../../data/corpus";
 import { useTeamConfig } from "../../context/TeamConfigContext";
 import { Sprite } from "../shared/Sprite";
 import { slotKey } from "../../engine/grid";
@@ -119,7 +119,7 @@ interface PlacementModifierRowProps {
 
 /** One creature's row: who it is, its current modifier chips, and its own add-control. */
 function PlacementModifierRow({ placement, onAdd, onRemove }: PlacementModifierRowProps) {
-  const creature = getCreatureByIdAndLevel(placement.creatureId, placement.level);
+  const creature = resolveCreatureVariant(placement.creatureId, placement.level, placement.shiny);
   const name = creature?.name ?? placement.creatureId;
   const [stat, setStat] = useState<ModifierStat>("damageFlatAdd");
   const [amount, setAmount] = useState("0");
