@@ -68,6 +68,20 @@ must reproduce, each grounded in a cited source rather than assumed.
 >   does. A cast that *applies* new Shock does not boost that same cast's own direct-damage hit
 >   (status application happens after damage resolution).
 
+> **Burn's per-tick damage was queried and is CONFIRMED (2026-10-06).** An alternative model was
+> proposed from a control test — one tick deals 1 damage and consumes 1 stack, so N burn deals N
+> total — and then withdrawn after watching the damage numbers in-game: *"the tick does the damage
+> of the present value of the burn stack (4), it ticks down by one the next 0.5s and then does 3
+> damage, then 2, then 1."*
+>
+> Recorded because the two models differ by N(N+1)/2 against N — for a 170-stack burn, 14,535 damage
+> versus 170 — so this is worth not re-litigating. The sequence is now pinned end-to-end in
+> `statusStacks.test.ts`, not just per-tick, so both the amounts and their timing are locked.
+>
+> Timing, also confirmed: the first tick lands **0.5s after** application, not on it. Stacks exist
+> from the instant of the cast, which is why the stack chart reads 4 at t=4.5 while cumulative burn
+> damage is still 0.
+
 - **Sources**:
   - "Batomon Showdown Status Effects and Debuff Removal" —
     <https://batomonshowdown.wiki/mechanics/status-effects-and-debuff-removal/>. Retrieved
