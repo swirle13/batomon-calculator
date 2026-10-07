@@ -815,9 +815,17 @@ export function simulate(
     Shield: perStatusDamage.Shield / windowSeconds,
   };
 
-  const sampleTimes = Array.from(new Set([0, ...timeline.map((e) => e.tSeconds), windowSeconds])).sort(
-    (a, b) => a - b,
-  );
+  // T257/FR-106: a real 0.5s grid, so the charts' "0.5s increments" label is true rather than
+  // decorative. This previously sampled the de-duplicated set of EVENT timestamps — an irregular
+  // grid whose spacing depended on what happened to fire — which is why the two charts disagreed
+  // about what a point meant.
+  //
+  // 0.5s is the Burn tick interval, so it is the natural quantum rather than an arbitrary one, and
+  // it is fine enough that no cast is hidden between samples at the cooldowns this corpus uses.
+  const GRID = 0.5;
+  const sampleTimes: number[] = [];
+  for (let t = 0; t <= windowSeconds + 1e-9; t = roundTime(t + GRID)) sampleTimes.push(t);
+  if (sampleTimes[sampleTimes.length - 1] !== windowSeconds) sampleTimes.push(windowSeconds);
   const cumulativeSeries = sampleTimes.map((t) => {
     let totalDamage = 0;
     const byStatus: Record<StatusEffectType, number> = { Burn: 0, Poison: 0, Shock: 0, Shield: 0 };
@@ -848,14 +856,27 @@ export function simulate(
   // coarser ones flatten the very ramp this exists to show. Buckets are half-open `(k, k+1]` so a
   // tick landing exactly on a boundary is counted once -- clamping it into the final bucket is the
   // bug that inflated round 7's own evidence by ~2x (research.md I13).
-  const bucketCount = Math.max(1, Math.ceil(windowSeconds));
+  // T257/FR-106: 0.5s buckets, matching the cumulative chart's grid so a point means the same
+  // thing in both. The 1-second choice below was defended on the grounds that finer buckets "render
+  // as a comb of spikes"; at 0.5s that is still readable, and having the two charts disagree about
+  // their x-quantum was the inconsistency the user reported.
+  const BUCKET = 0.5;
+  const bucketCount = Math.max(1, Math.ceil(windowSeconds / BUCKET));
   const damageBuckets = new Array<number>(bucketCount).fill(0);
   for (const event of timeline) {
     if (event.damage === undefined || event.damageType === undefined) continue;
-    const index = Math.max(0, Math.ceil(event.tSeconds) - 1);
+    // Half-open `(k, k+BUCKET]`, preserved from the 1s version: a tick landing exactly on a
+    // boundary is counted once. Clamping it into the final bucket is the bug that inflated round
+    // 7's own evidence by ~2x (research.md I13).
+    const index = Math.max(0, Math.ceil(event.tSeconds / BUCKET) - 1);
     if (index < bucketCount) damageBuckets[index] = (damageBuckets[index] ?? 0) + event.damage;
   }
-  const dpsRateSeries = damageBuckets.map((damage, i) => ({ tSeconds: i + 1, dps: damage }));
+  // `dps` is a RATE: damage in a half-second bucket is twice that per second. The 1s version could
+  // treat bucket damage as the rate directly; at 0.5s it must be scaled, or every value halves.
+  const dpsRateSeries = damageBuckets.map((damage, i) => ({
+    tSeconds: roundTime((i + 1) * BUCKET),
+    dps: damage / BUCKET,
+  }));
 
   return {
     timeline,

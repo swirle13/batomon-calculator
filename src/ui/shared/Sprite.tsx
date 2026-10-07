@@ -15,7 +15,7 @@ interface SpriteProps {
   /** The record's `spriteFile`. Renders nothing when absent. */
   spriteFile: string | undefined;
   /** Selects the subdirectory under `public/sprites/`. */
-  kind: "monster" | "trinket";
+  kind: "monster" | "trinket" | "trainer";
   /** Rendered size in px. Sprites are uniformly 48x48, so scale with `imageRendering: pixelated`. */
   size?: number;
   /** Usually the record's `name`. */

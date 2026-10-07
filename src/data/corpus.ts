@@ -94,6 +94,13 @@ export function applyShinyOverlay(
     // that drops a status the normal line has must drop it, since shiny can be a downgrade.
     healAmount: line.healAmount,
     appliesStatus: line.appliesStatus ?? [],
+    // T252/T252b (FR-101/FR-105): the shiny ability, both for display and for RESOLUTION. Without
+    // the tags a shiny Bunchop would read "+60 HP" while the engine computed +50.
+    // `?? base.x` not `||`: a species with no published shiny ability keeps its normal one.
+    abilityText: line.abilityText ?? base.abilityText,
+    abilityTags: line.abilityTags ?? base.abilityTags,
+    // T254: the shiny sprite where one exists; 10 species have none and keep the normal art.
+    spriteFile: line.spriteFile ?? base.spriteFile,
   };
 }
 

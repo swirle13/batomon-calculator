@@ -90,6 +90,17 @@ export interface Provenance {
  */
 export type RegionId = "pantra" | "jinto" | (string & {});
 
+/** T250/FR-100. The closed set of ability triggers (research.md N2). */
+export type AbilityTrigger =
+  | "Ongoing"
+  | "On Cast"
+  | "On Battle Start"
+  | "On Bought"
+  | "On Victory"
+  | "On Knocked Out"
+  | "On Trinket Gained"
+  | "On Battle Lost";
+
 export type EventLabel = "OnCast" | "OnBattleStart" | "OnVictory" | "OnKnockout";
 
 /**
@@ -326,7 +337,19 @@ export interface CreatureRecord extends Provenance {
    * drops a line the reference card shows. Absent = render the description alone, never an empty
    * trigger line.
    */
-  abilityTrigger?: string;
+  /**
+   * T250/FR-100: a CLOSED union, not a free string.
+   *
+   * Sourced from batodex's own `trigger` field, which is already discrete — 8 values across 144
+   * monsters (research.md N2), matching our corpus's distribution exactly. `undefined` is a real
+   * state (an ability with no trigger), distinct from "not yet researched".
+   *
+   * Note for the record: nothing in this codebase ever parsed this string — it has one consumer, a
+   * display in `BatomonCard`, and the engine branches on `tag.event`. The defect being fixed is
+   * that `string` permitted typos no compiler would catch, which is how `"On Knocked Out"` and
+   * `"On Knockout"` could have silently coexisted.
+   */
+  abilityTrigger?: AbilityTrigger;
   /**
    * Vendored sprite filename (2026-10-06 round 6, research.md H3), resolved at render time
    * against `${import.meta.env.BASE_URL}sprites/monster/` -- see `src/ui/shared/Sprite.tsx`.
@@ -342,6 +365,8 @@ export interface CreatureRecord extends Provenance {
 export interface TrainerRecord extends Provenance {
   id: string;
   name: string;
+  /** Vendored trainer sprite filename (T255/FR-102), under `public/sprites/trainer/`. */
+  spriteFile?: string;
   abilityText: string;
   /**
    * An earlier recorded ability that turned out to be wrong, kept so the correction is auditable

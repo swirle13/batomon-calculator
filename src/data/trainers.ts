@@ -50,6 +50,7 @@ const NAMED_ONLY_1_0_0 = "1.0.0 (named only; ability text is secondary-wiki sour
 export const trainers: TrainerRecord[] = [
   {
     id: "musician",
+    spriteFile: "musician.png",
     name: "Musician",
     abilityText:
       "Passive grants a 150% increase to Shock effects if you only run one Shock minion. " +
@@ -65,6 +66,7 @@ export const trainers: TrainerRecord[] = [
   },
   {
     id: "black-belt",
+    spriteFile: "black-belt.png",
     name: "Black Belt",
     abilityText:
       "On Battle Start: if you have exactly 1 Fighting monster on your team, activate its " +
@@ -76,6 +78,7 @@ export const trainers: TrainerRecord[] = [
   },
   {
     id: "bug-catcher",
+    spriteFile: "bug-catcher.png",
     name: "Bug Catcher",
     abilityText: "The first Bug monster you buy each day/round is free.",
     abilityTags: [],
@@ -84,6 +87,7 @@ export const trainers: TrainerRecord[] = [
   },
   {
     id: "burglar",
+    spriteFile: "burglar.png",
     name: "Burglar",
     abilityText: "Trinket gifts only offer 2 choices, but you can take both of them.",
     abilityTags: [],
@@ -93,6 +97,7 @@ export const trainers: TrainerRecord[] = [
   },
   {
     id: "chef",
+    spriteFile: "chef.png",
     name: "Chef",
     abilityText:
       "Your single-typed monsters gain Fire typing. Your Fire monsters have +2 Burn.",
@@ -102,6 +107,7 @@ export const trainers: TrainerRecord[] = [
   },
   {
     id: "chemist",
+    spriteFile: "chemist.png",
     name: "Chemist",
     abilityText:
       "Your Toxic monsters have +3 Poison. When any monster levels up, increase this effect " +
@@ -124,6 +130,7 @@ export const trainers: TrainerRecord[] = [
   },
   {
     id: "egg-breeder",
+    spriteFile: "egg-breeder.png",
     name: "Egg Breeder",
     abilityText: "Gain a Purple Egg that hatches into a level 2 Super Rare monster in 5 days.",
     abilityTags: [],
@@ -132,6 +139,7 @@ export const trainers: TrainerRecord[] = [
   },
   {
     id: "gamer",
+    spriteFile: "gamer.png",
     name: "Gamer",
     abilityText: "On day 9, gain a Mythical monster and $30.",
     abilityTags: [],
@@ -140,6 +148,7 @@ export const trainers: TrainerRecord[] = [
   },
   {
     id: "gentleman",
+    spriteFile: "gentleman.png",
     name: "Gentleman",
     abilityText: "From day 4 onwards, your shop no longer stocks Common or Uncommon monsters.",
     abilityTags: [],
@@ -149,6 +158,7 @@ export const trainers: TrainerRecord[] = [
   },
   {
     id: "lucky-girl",
+    spriteFile: "lucky-girl.png",
     name: "Lucky Girl",
     abilityText: "SHINY monsters are more likely to appear.",
     abilityTags: [],
@@ -157,6 +167,7 @@ export const trainers: TrainerRecord[] = [
   },
   {
     id: "mad-scientist",
+    spriteFile: "mad-scientist.png",
     name: "Mad Scientist",
     abilityText:
       "On day 7, transform monsters on your active team into random level 1 Legendary monsters.",
@@ -166,6 +177,7 @@ export const trainers: TrainerRecord[] = [
   },
   {
     id: "masked-man",
+    spriteFile: "masked-man.png",
     name: "Masked Man",
     abilityText: "Every 4 days, choose a trainer and gain their ability.",
     abilityTags: [],
@@ -174,6 +186,7 @@ export const trainers: TrainerRecord[] = [
   },
   {
     id: "monster-ranger",
+    spriteFile: "monster-ranger.png",
     name: "Monster Ranger",
     abilityText: "Start with an Uncommon monster. Get another copy of that monster every 2 days.",
     abilityTags: [],
@@ -182,6 +195,7 @@ export const trainers: TrainerRecord[] = [
   },
   {
     id: "painter",
+    spriteFile: "painter.png",
     name: "Painter",
     abilityText:
       "Nine random species are painted with every type. Whenever a painted species appears in " +
@@ -200,6 +214,7 @@ export const trainers: TrainerRecord[] = [
   },
   {
     id: "redhead",
+    spriteFile: "redhead.png",
     name: "Redhead",
     abilityText: "On Victory: give your Fire monsters +3 Burn permanently.",
     abilityTags: [],
@@ -218,6 +233,7 @@ export const trainers: TrainerRecord[] = [
   },
   {
     id: "rich-lady",
+    spriteFile: "rich-lady.png",
     name: "Rich Lady",
     abilityText: "Gain shop rank +2 and $10.",
     abilityTags: [],
@@ -226,6 +242,7 @@ export const trainers: TrainerRecord[] = [
   },
   {
     id: "scavenger",
+    spriteFile: "scavenger.png",
     name: "Scavenger",
     abilityText: "Gain an additional copy of each non-unique Common or Uncommon Trinket from a gift.",
     abilityTags: [],
@@ -235,6 +252,7 @@ export const trainers: TrainerRecord[] = [
   },
   {
     id: "shopkeeper",
+    spriteFile: "shopkeeper.png",
     name: "Shopkeeper",
     abilityText: "Your shop stocks items one rarity tier higher, and 15% cheaper.",
     abilityTags: [],
@@ -243,6 +261,7 @@ export const trainers: TrainerRecord[] = [
   },
   {
     id: "smuggler",
+    spriteFile: "smuggler.png",
     name: "Smuggler",
     abilityText: "Batomon from other regions appear in your shop and cost 25% less.",
     abilityTags: [],
@@ -252,6 +271,7 @@ export const trainers: TrainerRecord[] = [
   },
   {
     id: "swim-coach",
+    spriteFile: "swim-coach.png",
     name: "Swim Coach",
     abilityText: "Gain a random Water monster each day.",
     abilityTags: [],
@@ -260,6 +280,7 @@ export const trainers: TrainerRecord[] = [
   },
   {
     id: "treasure-hunter",
+    spriteFile: "treasure-hunter.png",
     name: "Treasure Hunter",
     abilityText: "When you get Trinket gifts, your choices are 1 rarity tier higher.",
     abilityTags: [],
@@ -268,6 +289,7 @@ export const trainers: TrainerRecord[] = [
   },
   {
     id: "twins",
+    spriteFile: "twins.png",
     name: "Twins",
     abilityText: "When monsters merge into level 3, gain an exact copy with a sell value of 0.",
     abilityTags: [],
@@ -277,6 +299,7 @@ export const trainers: TrainerRecord[] = [
   },
   {
     id: "youngster",
+    spriteFile: "youngster.png",
     name: "Youngster",
     abilityText: "Gain 3 free rerolls every day.",
     abilityTags: [],

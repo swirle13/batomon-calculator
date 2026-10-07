@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { TrainerRecord } from "../../../data/types";
 import { Disclosure, Surface } from "../../primitives";
+import { Sprite } from "../Sprite";
 import { AffectedCreaturePicker } from "./AffectedCreaturePicker";
 import styles from "./TrainerCard.module.css";
 
@@ -51,6 +52,8 @@ export function TrainerCard({ trainer }: TrainerCardProps) {
   return (
     <Surface className={styles.card}>
       <div className={styles.header}>
+        {/* T255/FR-102 */}
+        <Sprite spriteFile={trainer.spriteFile} kind="trainer" size={40} alt={trainer.name} />
         <h3 className={styles.name}>{trainer.name}</h3>
         {unconfirmed && (
           <span className={styles.unconfirmed} title="This ability text is not yet confirmed against a primary source">

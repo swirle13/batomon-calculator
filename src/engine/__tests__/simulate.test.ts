@@ -849,7 +849,11 @@ describe("instantaneous DPS series (FR-068)", () => {
   it("agrees with the cumulative series it is derived from", () => {
     // Single source of truth: integrating the rate must reproduce the cumulative total.
     const result = simulate(teamOf(["drumire", "rubbin"], 20), corpus);
-    const integrated = result.dpsRateSeries.reduce((sum, p) => sum + p.dps, 0);
+    // 2026-10-06 (T257/FR-106): buckets are 0.5s now, and `dps` is a RATE, so integrating means
+    // rate x width. This previously summed `dps` directly, which was only correct while the bucket
+    // width happened to be exactly 1 second — the sum and the integral silently coincided.
+    const BUCKET = 0.5;
+    const integrated = result.dpsRateSeries.reduce((sum, p) => sum + p.dps * BUCKET, 0);
     const cumulative = result.cumulativeSeries[result.cumulativeSeries.length - 1]!.totalDamage;
     expect(integrated).toBeCloseTo(cumulative, 5);
   });

@@ -2304,7 +2304,7 @@ Source brief: `orchestration/engine-handoff-gameplay-capture.md`.
 
 ### Data
 
-- [ ] T250 **[WI-010]** `AbilityTrigger` as a closed union (FR-100), sourced from batodex's own
+- [x] T250 **[WI-010]** `AbilityTrigger` as a closed union (FR-100), sourced from batodex's own
       `trigger` field — 8 values, `null` legitimate (research.md N2).
       **This is a type-only change; there is nothing to "remove".** The user's premise was that we
       rely on string parsing — we do not: `abilityTrigger` has exactly one consumer, a display
@@ -2312,12 +2312,12 @@ Source brief: `orchestration/engine-handoff-gameplay-capture.md`.
       real defect is the free `abilityTrigger?: string` at `types.ts:296`, which permits typos that
       no compiler would catch. Confirm this to the user rather than reporting a removal that found
       nothing.
-- [ ] T251 **[WI-011]** Fill missing ability text from `ability.byLevel`, which is per-level.
+- [x] T251 **[WI-011]** Fill missing ability text from `ability.byLevel`, which is per-level.
       **The count is 3** — `bambudo|1`, `emperooze|1`, `sunsage|1` — and **all three are absent from
       the batodex snapshot entirely** (research.md N3), so `ability.byLevel` cannot fill them. Wire
       up `byLevel` for the per-level text it does provide, and **report these three to the user as
       unavailable from our only structured source** rather than leaving the ask looking satisfied.
-- [ ] T252 **[WI-012, WI-013]** Extract `shinyAbility.byLevel` into `ShinyStatLine.abilityText`
+- [x] T252 **[WI-012, WI-013]** Extract `shinyAbility.byLevel` into `ShinyStatLine.abilityText`
       (FR-101) and display it when the placement is shiny, driven by the existing shiny toggle.
       Differs at **343 of the 508 level-records that have both** (research.md N1 — the earlier
       "315 of 470" did not reproduce and is corrected).
@@ -2325,7 +2325,7 @@ Source brief: `orchestration/engine-handoff-gameplay-capture.md`.
       The user called it "the cardFixedBrowser" — `cardFixedBrowser` is a CSS class on
       `BatomonCard`, not a component, and no component by that name exists. Confirm this to them
       rather than silently substituting a different control.
-- [ ] T252b **[WI-012]** Make shiny ability text **drive calculations, not just display**
+- [x] T252b **[WI-012]** Make shiny ability text **drive calculations, not just display**
       (**FR-105**). This is the explicit second half of the ask — "and use those in calculations" — and
       T252 only stores and shows it. `applyShinyOverlay` (`corpus.ts:81-98`) overrides
       `baseDamage`, `baseCooldownSeconds`, `baseMulticast`, `healAmount` and `appliesStatus` and
@@ -2333,17 +2333,17 @@ Source brief: `orchestration/engine-handoff-gameplay-capture.md`.
       Bunchop shiny reads "+60 HP" while resolving +50. Shiny must carry its own `abilityTags` (or
       a magnitude override) and the resolver must use them.
       Report the count of species with no upstream shiny ability rather than defaulting them.
-- [ ] T253 **[WI-014]** Resolve the "all shiny are better" claim against the data (research.md N1).
+- [x] T253 **[WI-014]** Resolve the "all shiny are better" claim against the data (research.md N1).
       It is **not** true per-stat — **7 species = 28 records** worse, Kappow is 1s SLOWER — and 222/299/15 in
       aggregate. **`shiny.test.ts`'s downgrade guard MUST NOT be deleted to make the ask true.**
       Report the discrepancy to the user rather than silently picking a side.
-- [ ] T254 **[WI-015]** Vendor shiny sprites from batodex (`shinySprite`) into `public/sprites/`
+- [x] T254 **[WI-015]** Vendor shiny sprites from batodex (`shinySprite`) into `public/sprites/`
       via a committed script, and render them for shiny placements (FR-102). Store the filename on
       `ShinyStatLine.spriteFile` (data-model.md).
       **Report the shortfall**: only **139 of 144** snapshot monsters have a shiny sprite, against
       149 corpus species, so ~10 have none. Those fall back to the normal sprite rather than
       rendering nothing. "All" is not reachable and saying so is part of the task.
-- [ ] T255 **[WI-016]** Vendor trainer sprites from batodex.com/trainers and render them in the
+- [x] T255 **[WI-016]** Vendor trainer sprites from batodex.com/trainers and render them in the
       trainer card (FR-102). Add `TrainerRecord.spriteFile` and a `"trainer"` case to `Sprite`'s
       `kind` union — it is `"monster" | "trinket"` today and `public/sprites/` has only those dirs.
       **MATCH BY NAME, NOT ID.** **12 of our 23 trainer ids do not match batodex's**
@@ -2354,7 +2354,7 @@ Source brief: `orchestration/engine-handoff-gameplay-capture.md`.
 
 ### UI
 
-- [ ] T256 **[WI-018]** ONE shared chart component (FR-103). **The prop contract is a LIST of
+- [x] T256 **[WI-018]** ONE shared chart component (FR-103). **The prop contract is a LIST of
       series, not one** — `CumulativeChart` draws five (Total, Burn, Poison, Shock, Shield), each
       with its own `STAT_COLORS` stroke and one using `type="stepAfter"`, while `DpsRateChart` draws
       one. A single-series signature could not express the existing charts, so the ask's "name, list
@@ -2364,7 +2364,7 @@ Source brief: `orchestration/engine-handoff-gameplay-capture.md`.
       axis max amount"), not a log/linear switch — no chart here is non-linear. Replaces the divergent `CumulativeChart` and
       `DpsRateChart` — "Another DRY UI component violation" (Constitution Principle VII).
       Tooltips must be consistent; today they "represent different values".
-- [ ] T257 **[WI-017]** (**FR-106**) Both charts state the **0.5s increment**, and per-point timing
+- [x] T257 **[WI-017]** (**FR-106**) Both charts state the **0.5s increment**, and per-point timing
       is removed from the tooltip.
       **The premise is currently false and labelling alone would lie** (research.md N9):
       `cumulativeSeries` samples irregular event timestamps, and `dpsRateSeries` uses **1-second**
@@ -2375,7 +2375,7 @@ Source brief: `orchestration/engine-handoff-gameplay-capture.md`.
 
 ### Verification
 
-- [ ] T258 `npx tsc -b --noEmit`, `npx vitest run`, `npm run build`, `scripts/audit-coverage.mjs`.
+- [x] T258 `npx tsc -b --noEmit`, `npx vitest run`, `npm run build`, `scripts/audit-coverage.mjs`.
       Report coverage before/after AND state plainly that the **three** newly-tagged mons (T246 —
       Noxnimbus was already resolved) represent new
       mechanism families, not incremental instances.

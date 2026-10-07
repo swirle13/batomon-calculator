@@ -2174,3 +2174,27 @@ Validation pass 3 reported that 3 of 23 trainer ids diverge from batodex's. Re-d
 All 23 resolve by **name**. `vendor-sprites.mjs` already records this exact lesson for monsters
 ("id-matching silently misses 11"); the trainer case is worse, and an id-keyed script would have
 quietly produced a mostly-empty sprite set that looked like a successful run.
+
+### N12. T258 — round-5 coverage report
+
+| | before | after |
+|---|---|---|
+| battle-relevant abilities | 135 | 135 |
+| **resolved by the engine** | **17** | **20** |
+| tags carried but inert | 0 | **0** |
+| structurally excluded | 40 | 40 |
+| remaining unsupported | 78 | **75** |
+
+Newly resolved: **Thorntail, Puffloon, Fumungus** — three, not the handoff's four, because
+Noxnimbus was already tagged in round 11.
+
+**The counter understates the work, and the handoff was explicit that it would**: "the mechanisms
+behind them… are each new families, not instances of existing ones. The counter should not be
+allowed to imply otherwise." The +3 required four new tag kinds (`statMultiplier`,
+`statFromTargetStatus`, `triggerOnAllyTrigger`, `gainOnAllyStatus`), an evaluable stat structure,
+three-phase resolution, and reactive casts that do not consume the reactor's cooldown. A later
+round reading "+3" without this note would conclude round 5 was a small one.
+
+**Shiny now drives resolution**, which the counter does not capture at all: 508 records carry shiny
+ability text and 28 carry derived shiny tags, so e.g. shiny Mosslug resolves +24 Damage where the
+normal form resolves +20.

@@ -1,0 +1,138 @@
+import {
+  CartesianGrid,
+  Legend,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+
+/**
+ * The ONE line chart (T256 / FR-103), parameterised rather than duplicated.
+ *
+ * Both charts previously hand-rolled their own axes, margins, dark-mode colours, legend and
+ * tooltip. They diverged in exactly the way the user reported — "the hover tooltip representing
+ * different values" — because only one of them had a tooltip `formatter` at all, so the same hover
+ * gesture produced a formatted rate on one chart and a raw number on the other. That is a
+ * Constitution Principle VII violation, and the user named it as one.
+ *
+ * ## Why the contract is a LIST of series
+ *
+ * The ask says "name, list of values, color of line". Singular would not fit: the cumulative chart
+ * draws five lines (Total, Burn, Poison, Shock, Shield), each with its own stat colour and one
+ * using a stepped interpolation, while the rate chart draws one. So "name / values / colour" is
+ * read as a property of each series rather than of the chart.
+ *
+ * ## Why x values are indices into a shared grid
+ *
+ * Both series are now sampled on the same 0.5s grid (FR-106), so a point means the same thing in
+ * both charts. The chart states the increment itself rather than repeating it per-point in the
+ * tooltip — which is what the user asked for, and is also why the tooltip no longer needs a
+ * `labelFormatter`.
+ */
+export interface ChartSeries {
+  /** Legend label, e.g. "Poison". */
+  name: string;
+  /** One value per `xValues` entry. */
+  values: number[];
+  /** Stroke colour. */
+  color: string;
+  /** `stepAfter` for quantities that change discretely; defaults to a straight line. */
+  lineType?: "linear" | "stepAfter";
+}
+
+export interface SeriesChartProps {
+  /** Shared x positions, in seconds. */
+  xValues: number[];
+  series: ChartSeries[];
+  xLabel: string;
+  yLabel: string;
+  /** Upper bound of each axis. Omit for Recharts' auto-domain. */
+  xMax?: number;
+  yMax?: number;
+  /** Tick interval. The user's "x axis scale" — a spacing, not a log/linear switch. */
+  xTickInterval?: number;
+  yTickInterval?: number;
+  /** Accessible description of the whole chart. */
+  ariaLabel: string;
+  /** Formats values in the tooltip and on the y axis, so both charts read alike. */
+  formatValue?: (value: number) => string;
+  height?: number;
+}
+
+const AXIS = "#9ca3af";
+const GRID = "#444857";
+
+function ticksFor(max: number | undefined, interval: number | undefined): number[] | undefined {
+  if (max === undefined || interval === undefined || interval <= 0) return undefined;
+  const out: number[] = [];
+  for (let v = 0; v <= max + 1e-9; v += interval) out.push(Number(v.toFixed(4)));
+  return out;
+}
+
+export function SeriesChart({
+  xValues,
+  series,
+  xLabel,
+  yLabel,
+  xMax,
+  yMax,
+  xTickInterval,
+  yTickInterval,
+  ariaLabel,
+  formatValue = (v) => v.toFixed(2),
+  height = 260,
+}: SeriesChartProps) {
+  const data = xValues.map((x, i) => {
+    const row: Record<string, number> = { x };
+    for (const s of series) row[s.name] = s.values[i] ?? 0;
+    return row;
+  });
+
+  return (
+    <div role="img" aria-label={ariaLabel} style={{ width: "100%", height }}>
+      <ResponsiveContainer>
+        {/* `left` is 56 because 5-digit totals overflowed a narrower gutter and collided with the
+            rotated axis label. */}
+        <LineChart data={data} margin={{ top: 8, right: 24, bottom: 24, left: 56 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke={GRID} />
+          <XAxis
+            dataKey="x"
+            type="number"
+            domain={[0, xMax ?? "dataMax"]}
+            ticks={ticksFor(xMax, xTickInterval)}
+            stroke={AXIS}
+            label={{ value: xLabel, position: "insideBottom", offset: -12, fill: AXIS }}
+          />
+          <YAxis
+            domain={[0, yMax ?? "auto"]}
+            ticks={ticksFor(yMax, yTickInterval)}
+            stroke={AXIS}
+            tickFormatter={formatValue}
+            label={{ value: yLabel, angle: -90, position: "insideLeft", offset: -40, fill: AXIS }}
+          />
+          <Tooltip
+            contentStyle={{ background: "#24262e", border: `1px solid ${GRID}`, color: "#e8eaed" }}
+            formatter={(value, name) => [formatValue(Number(value)), String(name)]}
+            // Deliberately NO `labelFormatter`: the per-point time is removed from the hover card
+            // (FR-106). The chart states its 0.5s increment once, in the axis label.
+            labelFormatter={() => ""}
+          />
+          <Legend wrapperStyle={{ color: AXIS }} />
+          {series.map((s) => (
+            <Line
+              key={s.name}
+              type={s.lineType ?? "linear"}
+              dataKey={s.name}
+              stroke={s.color}
+              dot={false}
+              isAnimationActive={false}
+            />
+          ))}
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
