@@ -83,3 +83,29 @@ picker **worse** on mobile: a 112px sprite in an 11rem card is roughly two colum
 Fixed in the same commit — the 640px rule now also sets `--sprite-picker: 72px` and
 `--picker-card-min-width: 8rem`. Worth recording because it is exactly the failure mode the mobile
 spec needs to prevent: a desktop-motivated size change with no viewport counterpart.
+
+
+## Addendum: sprite sizes must be integer multiples of 48 (2026-10-07)
+
+Raising `--sprite-picker` to 112px made sprites render visibly off-centre and slightly stretched.
+The cause is not a layout rule and not the browser's user-agent stylesheet, which is where the
+investigation first pointed.
+
+All source art is **48x48** (288 files; only `aviarab` and `aviarab_shiny` differ, at 44x44) and
+renders with `image-rendering: pixelated`. That tells the browser to map each source pixel to whole
+device pixels, so a non-integer scale has to distribute the remainder unevenly:
+
+| size | scale | result |
+|---|---|---|
+| 48 | 1x | crisp |
+| 64 | 1.333x | uneven |
+| 96 | **2x** | crisp |
+| 112 | 2.333x | uneven — the reported bug |
+| 144 | **3x** | crisp |
+
+Settled on **96px** (2x), which is also the "50% bump" from 64 that was actually asked for, with
+**48px** (1x) under the 640px breakpoint.
+
+Worth noting for the mobile spec: the long-standing `--sprite-grid: 64px` is itself a 1.333x scale
+and has the same defect, just less visibly at smaller sizes. Any sprite token should be constrained
+to 48/96/144/192.

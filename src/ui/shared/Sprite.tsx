@@ -58,7 +58,16 @@ export function Sprite({ spriteFile, kind, size = 48, width, height, alt, classN
       height={height ?? size}
       className={className}
       loading="lazy"
-      // 48x48 source art: keep the pixel grid crisp when scaled up rather than blurring it.
+      /*
+       * 48x48 source art: keep the pixel grid crisp when scaled up rather than blurring it.
+       *
+       * This makes the rendered size matter. `pixelated` maps each source pixel to whole device
+       * pixels, so a non-integer scale distributes the remainder unevenly — some source pixels get
+       * 2 device pixels and some get 3 — and the art reads as stretched and off-centre. Only
+       * integer multiples of 48 are safe: 48, 96, 144, 192.
+       *
+       * A 112px size was tried and produced exactly that (2.333x); see --sprite-picker in tokens.css.
+       */
       style={{ imageRendering: "pixelated", flexShrink: 0 }}
     />
   );

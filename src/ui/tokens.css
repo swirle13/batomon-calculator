@@ -70,21 +70,25 @@
   /* 64px, matching --sprite-grid: the user compared the picker against the team grid
      directly (WI-001). Was 48px, which is why "still not 64x64" survived round 7. */
   /*
-   * 112px (2026-10-07). The picker's sprites were 64, which read small against the card they sit
-   * in; this is the size the art is actually legible at. Note the card min-width below is sized to
-   * hold it, so the two move together.
+   * 96px (2026-10-07) — a 50% bump from 64, and deliberately NOT the 112 first tried.
+   *
+   * The source art is 48x48 and renders with `image-rendering: pixelated`. At 112px that is a
+   * 2.333x upscale, so each source pixel becomes 2 or 3 device pixels depending on where it lands —
+   * the art looks subtly stretched and off-centre, which is exactly the reported symptom. Only
+   * integer multiples of 48 stay crisp: 96 (2x) or 144 (3x).
+   *
+   * 96 is the closest clean size to 112 and matches the "50% bump" that was actually asked for.
    */
-  --sprite-picker: 112px;
+  --sprite-picker: 96px;
 
   /* --- card geometry ------------------------------------------------------------------------
    * The creature picker's cards follow the in-game shop card's measured proportions:
    * ~175 x 145 px, i.e. ~1.2:1 (landscape, wider than tall). */
   /*
-   * 11rem (176px) — raised with --sprite-picker from 64px to 112px (2026-10-07). The card has to be
-   * wider than the sprite it holds plus padding, or the art is clipped. These two values are a
-   * pair: changing one without the other breaks the tile.
+   * 10rem (160px) — holds the 96px sprite plus padding. These two values are a pair: the card must
+   * be wider than the sprite it holds, so changing one without the other clips the art.
    */
-  --picker-card-min-width: 11rem;
+  --picker-card-min-width: 10rem;
   --picker-card-aspect: 1.2;
 
   /* FR-062 (WI-007): the selected-creature column is a FIXED width. A content-derived width
@@ -102,7 +106,8 @@
      * picker WORSE on mobile than before: a 112px sprite in an 11rem card means roughly two columns
      * on a phone, where 64px gave three or four. The two sizes and the card width move together.
      */
-    --sprite-picker: 72px;
-    --picker-card-min-width: 8rem;
+    /* 48px = 1x the source art, so it stays crisp on phones too. */
+    --sprite-picker: 48px;
+    --picker-card-min-width: 7.5rem;
   }
 }
