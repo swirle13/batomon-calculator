@@ -1,6 +1,7 @@
 import type { Corpus, GridSlot, TeamConfiguration, TeamPlacement } from "../data/types";
 import { simulate } from "./simulate";
 import { STABLE_SLOT_ORDER, slotKey } from "./grid";
+import { isResolvableTag } from "./effects";
 
 /**
  * Placement optimiser (FR-069, WI-018, 2026-10-06 round 8).
@@ -87,15 +88,25 @@ export function analyzePositionalCoverage(config: TeamConfiguration, corpus: Cor
   for (const placement of config.placements) {
     const creature = corpus.creatures.find((c) => c.id === placement.creatureId && c.level === placement.level);
     if (!creature) continue;
+    // 2026-10-06 round 9 (T203): "has a tag" and "the engine acts on it" are tracked separately,
+    // and `actionable` now follows what `effects.ts` ACTUALLY resolves rather than a hard-coded
+    // single kind. Before this it checked only `cooldownSpeedModifier`, which would have
+    // *understated* coverage the moment the resolver learned new kinds -- inverting round 8's
+    // honesty mechanism into a different kind of wrong number.
     const positional = creature.abilityTags.filter((tag) => {
       const target = (tag as { target?: { kind?: string } }).target;
-      return target?.kind === "adjacent" || target?.kind === "behind" || target?.kind === "above";
+      return (
+        target?.kind === "adjacent" ||
+        target?.kind === "behind" ||
+        target?.kind === "above" ||
+        tag.kind === "battleStartStatusFromAllies" ||
+        tag.kind === "chargeOnAllyStatus" ||
+        tag.kind === "cooldownSpeedOnAllyCast"
+      );
     });
     if (positional.length === 0) continue;
     withPositionalTag.push(creature.name);
-    // Only `cooldownSpeedModifier` is read by simulate()'s resolver; every other positional tag is
-    // present in the data and ignored by the engine.
-    if (positional.some((tag) => tag.kind === "cooldownSpeedModifier")) actionable.push(creature.name);
+    if (positional.some(isResolvableTag)) actionable.push(creature.name);
   }
 
   const unmodelledTrinkets = config.trinketIds

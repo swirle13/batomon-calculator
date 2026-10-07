@@ -12,6 +12,7 @@ import type {
 import { effectiveCooldown } from "./cooldown";
 import { applyStatusTick, applyShockProc } from "./status";
 import { isAdjacent, slotKey, slotsEqual, stableSlotIndex } from "./grid";
+import { resolveEffects } from "./effects";
 import { InvalidTeamConfigurationError } from "./errors";
 
 /**
@@ -186,17 +187,44 @@ export function simulate(
     }));
   });
   const teamModifiers = [...(config.teamModifiers ?? []), ...trinketModifiers];
-  const teamMembers = config.placements.map((p) => ({
-    slot: p.slot,
+  // 2026-10-06 round 9 (FR-073/T202): every creature's EFFECTIVE stats, after on-battle-start
+  // abilities and any other effect the resolver understands. Phase A and Phase B both read from
+  // here rather than from the raw `CreatureRecord`, so the simulation actually uses the resolved
+  // values instead of merely reporting them. Before this, `perCreatureEffectiveStats` was built in
+  // Phase A and read by nothing downstream -- Miasmaw's card could show Poison 336 while its
+  // timeline still applied Poison 10.
+  const resolved = resolveEffects(config, corpus);
+  const resolvedByKey = new Map(resolved.map((r) => [r.key, r]));
+
+  const teamMembers = config.placements.map((p) => {
     // Safe to assert: validate() above already confirmed a record exists for this exact
     // (creatureId, level) pair — see the lookup-fix amendment in data-model.md.
-    creature: corpus.creatures.find((c) => c.id === p.creatureId && c.level === p.level)!,
-    placementModifiers: p.modifiers ?? [],
-  }));
+    const creature = corpus.creatures.find((c) => c.id === p.creatureId && c.level === p.level)!;
+    return {
+      slot: p.slot,
+      creature,
+      resolved: resolvedByKey.get(`${creature.id}@${slotKey(p.slot)}`)!,
+      placementModifiers: p.modifiers ?? [],
+    };
+  });
 
   // --- Phase A: generate every creature's cast times across the window, and resolve each
   //     placement's modifier-adjusted "effective stats" snapshot (2026-10-05 round 2) ---
-  const casts: Cast[] = [];
+  /**
+   * 2026-10-06 round 9 (T200b): pending next-cast times, mutated as the battle runs.
+   * Replaces Phase A's fixed `n * cooldown` precomputation, which assumed a cooldown could never
+   * change during a battle — true until charge/haste abilities were modelled, false now.
+   */
+  interface Scheduled {
+    nextAt: number;
+    cooldown: number;
+    sourceSlot: GridSlot;
+    creature: CreatureRecord;
+    modifiers: Cast["modifiers"];
+    key: string;
+    chargeRules: { status: StatusEffectType; seconds: number }[];
+  }
+  const schedule: Scheduled[] = [];
   const perCreatureEffectiveStats: Record<
     string,
     {
@@ -222,7 +250,7 @@ export function simulate(
       Shock: sumModifier("shockAmountAdd", teamModifiers, placementModifiers),
       Shield: sumModifier("shieldAmountAdd", teamModifiers, placementModifiers),
     };
-    const isDirectHitCapable = creature.damageType === "Direct" && creature.baseDamage !== null;
+    const isDirectHitCapable = creature.damageType === "Direct" && member.resolved.baseDamage !== null;
     const effectiveMulticast = Math.max(1, creature.baseMulticast + multicastAdd);
 
     if (creature.baseCooldownSeconds === null) {
@@ -230,11 +258,11 @@ export function simulate(
       // already has, and there's no cast at all here to attach any modifier to — report raw,
       // unmodified values rather than a modifier that silently never applies.
       perCreatureEffectiveStats[key] = {
-        damage: creature.baseDamage,
+        damage: member.resolved.baseDamage,
         damageType: creature.damageType,
         cooldownSeconds: null,
         multicast: creature.baseMulticast,
-        appliesStatus: creature.appliesStatus ?? [],
+        appliesStatus: member.resolved.appliesStatus,
       };
       continue;
     }
@@ -254,24 +282,30 @@ export function simulate(
     };
 
     perCreatureEffectiveStats[key] = {
-      damage: isDirectHitCapable ? creature.baseDamage! + damageFlatAdd : creature.baseDamage,
+      damage: isDirectHitCapable ? member.resolved.baseDamage! + damageFlatAdd : member.resolved.baseDamage,
       damageType: creature.damageType,
       cooldownSeconds: cooldown,
       multicast: effectiveMulticast,
-      appliesStatus: (creature.appliesStatus ?? []).map((s) => ({
+      appliesStatus: member.resolved.appliesStatus.map((s) => ({
         type: s.type,
         amount: s.amount + statusAmountAdd[s.type],
       })),
     };
 
-    // Index multiplication, not repeated `+=` addition (research.md D4) — avoids accumulating
-    // IEEE-754 drift across many casts; each resulting timestamp is still explicitly rounded.
-    for (let n = 1; startAt + n * cooldown <= windowSeconds + 1e-9; n++) {
-      const t = roundTime(startAt + n * cooldown);
-      casts.push({ tSeconds: t, sourceSlot: slot, creature, modifiers });
-    }
+    // 2026-10-06 round 9 (T200b): only the FIRST cast is scheduled here. Subsequent casts are
+    // scheduled as each one fires, because a cooldown can now shorten mid-battle (Cobrex's
+    // "Charge this by 1 second whenever an ally inflicts Poison"). The previous fixed
+    // `n * cooldown` precomputation could not express that at all.
+    schedule.push({
+      nextAt: roundTime(startAt + cooldown),
+      cooldown,
+      sourceSlot: slot,
+      creature,
+      modifiers,
+      key: `${creature.id}@${slotKey(slot)}`,
+      chargeRules: member.resolved.chargeRules,
+    });
   }
-  casts.sort((a, b) => a.tSeconds - b.tSeconds || stableSlotIndex(a.sourceSlot) - stableSlotIndex(b.sourceSlot));
 
   // --- Phase B: walk casts in order, interleaving Burn/Poison ticks, tracking Shock layers ---
   const timeline: TimelineEvent[] = [];
@@ -326,66 +360,92 @@ export function simulate(
     }
   }
 
-  // Multicast (2026-10-05 round 2, research.md D3; corrected round 4, research.md F2): a cast
-  // with Multicast > 1 resolves as multiple full, independent repetitions — each repetition has
-  // its own direct-damage event (own potential Shock proc) AND its own status-grant application,
-  // not just a damage multiplier. Repetitions are staggered 0.1s apart (round 4 correction),
-  // confirmed by multiple independent 1.2.0-era sources: "its first cast resolves immediately,
-  // its second cast resolves 0.1 seconds later, and its third cast resolves 0.1 seconds after
-  // that." Every existing corpus record defaults to baseMulticast: 1, so most casts expand to
-  // exactly one event with no stagger.
+  // Multicast (round 2, research.md D3; corrected round 4, research.md F2): a cast with
+  // Multicast > 1 resolves as multiple full, independent repetitions, staggered 0.1s apart.
   //
-  // 2026-10-06 round 6 (FR-040, research.md H8, part 1 of 2): repetitions are flattened into a
-  // single list and sorted chronologically BEFORE Phase B walks it. They used to be expanded
-  // inline inside the cast loop, which meant a cast at t=4.0 with a repetition at t=4.1 was
-  // fully processed before another creature's cast at t=4.0 that happened to sort later — so
-  // Phase B never actually visited timestamps in order, and grid position changed Shock output
-  // for creatures with no positional ability at all (user-reported).
-  const castEvents = casts.flatMap((cast) => {
-    const multicastCount = Math.max(1, cast.creature.baseMulticast + cast.modifiers.multicastAdd);
-    const events: Cast[] = [];
-    for (let rep = 0; rep < multicastCount; rep++) {
-      // A repetition staggered past the simulation window simply doesn't happen — same boundary
-      // rule as ordinary cast generation in Phase A.
-      const repTSeconds = roundTime(cast.tSeconds + rep * 0.1);
-      if (repTSeconds > windowSeconds + 1e-9) break;
-      events.push({ ...cast, tSeconds: repTSeconds });
+  // 2026-10-06 round 9 (T200b): the event loop below replaces round 6's "flatten every cast then
+  // walk the list" approach. Casts can no longer be precomputed, because a charge ability shortens
+  // a creature's remaining cooldown while the battle runs. Round 6's two correctness properties are
+  // preserved exactly (research.md H8 / FR-040):
+  //   1. events are processed in true chronological order, and
+  //   2. everything sharing a timestamp resolves against a snapshot taken before that timestamp.
+  //
+  // CHARGE TIMING, pinned deliberately. A charge applied at instant T takes effect *after* T, the
+  // same pre-timestamp-snapshot rule FR-040 already uses for Shock. If charges bring a creature's
+  // next cast to at-or-before the current instant, it fires at the next representable step
+  // (T + 0.1, the same granularity Multicast repetitions use) rather than retroactively at a time
+  // that has passed. For the user's team this puts Cobrex's first cast at t=9.1: in continuous time
+  // it becomes ready at t=9 as the 7th charge lands, and the snapshot rule defers it by one step.
+  // The alternative (charges counting within their own instant) would fire it at t=9; that is the
+  // arbitrary half of the choice, and FR-040 already decided which half this engine takes.
+  const STEP = 0.1;
+  /** Repetitions queued from a multicast burst that has already begun. */
+  const pendingReps: Cast[] = [];
+
+  function nextEventTime(): number | null {
+    let best: number | null = null;
+    for (const entry of schedule) {
+      if (entry.nextAt > windowSeconds + 1e-9) continue;
+      if (best === null || entry.nextAt < best) best = entry.nextAt;
     }
-    return events;
-  });
-  castEvents.sort((a, b) => a.tSeconds - b.tSeconds || stableSlotIndex(a.sourceSlot) - stableSlotIndex(b.sourceSlot));
+    for (const rep of pendingReps) {
+      if (rep.tSeconds > windowSeconds + 1e-9) continue;
+      if (best === null || rep.tSeconds < best) best = rep.tSeconds;
+    }
+    return best;
+  }
 
-  // Walk the events in timestamp *groups*, not one at a time (FR-040, research.md H8, part 2 of
-  // 2): every event sharing a timestamp resolves its Shock proc against the layer state as of the
-  // moment that timestamp began, so whether creature X's layer empowers creature Y's simultaneous
-  // hit no longer depends on which slot each occupies. Layers granted at T take effect from the
-  // next distinct timestamp onward.
-  for (let i = 0; i < castEvents.length; ) {
-    const tSeconds = castEvents[i]!.tSeconds;
-    let groupEnd = i;
-    while (groupEnd < castEvents.length && castEvents[groupEnd]!.tSeconds === tSeconds) groupEnd++;
+  while (true) {
+    const tSeconds = nextEventTime();
+    if (tSeconds === null) break;
 
-    // Any Burn/Poison ticks landing at or before this timestamp — including ticks strictly
-    // between two repetitions of the same Multicast burst — are processed first, once per
-    // timestamp rather than once per event.
+    // Everything due at exactly this instant, in the documented stable order.
+    const dueReps = pendingReps.filter((r) => r.tSeconds === tSeconds);
+    for (const r of dueReps) pendingReps.splice(pendingReps.indexOf(r), 1);
+    const dueCasts = schedule.filter((e) => e.nextAt === tSeconds);
+
+    const group: Cast[] = [
+      ...dueReps,
+      ...dueCasts.map((e) => ({
+        tSeconds,
+        sourceSlot: e.sourceSlot,
+        creature: e.creature,
+        modifiers: e.modifiers,
+      })),
+    ].sort((a, b) => stableSlotIndex(a.sourceSlot) - stableSlotIndex(b.sourceSlot));
+
+    // Queue each firing creature's remaining repetitions and its next cast before resolving, so a
+    // charge landing in this instant adjusts a next-cast time that already exists.
+    for (const entry of dueCasts) {
+      const multicastCount = Math.max(1, entry.creature.baseMulticast + entry.modifiers.multicastAdd);
+      for (let rep = 1; rep < multicastCount; rep++) {
+        const repT = roundTime(tSeconds + rep * STEP);
+        if (repT > windowSeconds + 1e-9) break;
+        pendingReps.push({ tSeconds: repT, sourceSlot: entry.sourceSlot, creature: entry.creature, modifiers: entry.modifiers });
+      }
+      entry.nextAt = roundTime(tSeconds + entry.cooldown);
+    }
+
     runTicksUpTo(tSeconds);
 
-    // The snapshot covers BOTH the scalar total and the per-source attribution map. Snapshotting
-    // only the total would make `perStatusPerSecond.Shock` order-independent while leaving
-    // `perCreatureFacilitatedDps` — the exact column the user reported — still dependent on slot
-    // order, since a proc's damage is split by each source's *share* of the live total.
+    // FR-040 snapshot: every event at this instant resolves against the state as it stood when the
+    // instant began. Covers BOTH the scalar total and the per-source attribution map.
     const snapshotShockLayers = shockLayers;
     const snapshotShockLayersBySource = new Map(shockLayersBySource);
+    /** Status applications made during this instant, used to charge allies AFTER it completes. */
+    const appliedThisInstant: { sourceKey: string; type: StatusEffectType; amount: number }[] = [];
 
-    for (let e = i; e < groupEnd; e++) {
-      const { creature, sourceSlot, modifiers } = castEvents[e]!;
+    for (const cast of group) {
+      const { creature, sourceSlot, modifiers } = cast;
+      const sourceKey = `${creature.id}@${slotKey(sourceSlot)}`;
+      const effective = resolvedByKey.get(sourceKey);
       // Modifiers can only scale an effect the creature already has (data-model.md's "Known
-      // limitation" on StatModifiers) — a damageFlatAdd modifier never fabricates a new attack
-      // on a creature whose baseDamage is null.
-      const isDirectHit = creature.damageType === "Direct" && creature.baseDamage !== null;
+      // limitation") — a damageFlatAdd never fabricates an attack on a creature with no damage.
+      const resolvedDamage = effective?.baseDamage ?? creature.baseDamage;
+      const isDirectHit = creature.damageType === "Direct" && resolvedDamage !== null;
 
       if (isDirectHit) {
-        const effectiveDamage = creature.baseDamage! + modifiers.damageFlatAdd;
+        const effectiveDamage = resolvedDamage! + modifiers.damageFlatAdd;
         const shockInstance: StatusEffectInstance | null =
           snapshotShockLayers > 0
             ? { type: "Shock", layers: snapshotShockLayers, sourceSlot, targetSlot: placeholderTargetSlot(sourceSlot), appliedAtSeconds: tSeconds }
@@ -394,34 +454,26 @@ export function simulate(
         if (procResult.shockDamage > 0) {
           timeline.push({ tSeconds, kind: "shockProc", sourceSlot, damage: procResult.shockDamage, damageType: "Shock" });
           perStatusDamage.Shock += procResult.shockDamage;
-          // Split this proc's damage proportionally across every creature contributing Shock
-          // layers as of this timestamp's start, by their share — see "Facilitated damage".
-          for (const [sourceKey, sourceLayers] of snapshotShockLayersBySource) {
-            const share = (procResult.shockDamage * sourceLayers) / snapshotShockLayers;
-            facilitatedDamage.set(sourceKey, (facilitatedDamage.get(sourceKey) ?? 0) + share);
+          for (const [key, layers] of snapshotShockLayersBySource) {
+            const share = (procResult.shockDamage * layers) / snapshotShockLayers;
+            facilitatedDamage.set(key, (facilitatedDamage.get(key) ?? 0) + share);
           }
         }
         timeline.push({ tSeconds, kind: "attack", sourceSlot, damage: effectiveDamage, damageType: "Direct" });
-        const key = `${creature.id}@${slotKey(sourceSlot)}`;
-        perCreatureDamage.set(key, (perCreatureDamage.get(key) ?? 0) + effectiveDamage);
+        perCreatureDamage.set(sourceKey, (perCreatureDamage.get(sourceKey) ?? 0) + effectiveDamage);
       } else {
-        // A cast with no direct-damage component still occupies a timeline entry (it happened),
-        // but contributes nothing to perCreatureDps.
         timeline.push({ tSeconds, kind: "attack", sourceSlot });
       }
 
-      for (const applied of creature.appliesStatus ?? []) {
+      // RESOLVED status amounts, not the creature's base ones — this is what makes the simulation
+      // actually use the resolution layer rather than merely report it (T202).
+      for (const applied of effective?.appliesStatus ?? creature.appliesStatus ?? []) {
         if (applied.type === "Shock") {
           const amount = applied.amount + modifiers.shockAmountAdd;
           shockLayers += amount;
-          const sourceKey = `${creature.id}@${slotKey(sourceSlot)}`;
           shockLayersBySource.set(sourceKey, (shockLayersBySource.get(sourceKey) ?? 0) + amount);
-          timeline.push({
-            tSeconds,
-            kind: "ongoingChange",
-            sourceSlot,
-            statusDelta: { type: "Shock", slot: placeholderTargetSlot(sourceSlot), layerDelta: amount },
-          });
+          timeline.push({ tSeconds, kind: "ongoingChange", sourceSlot, statusDelta: { type: "Shock", slot: placeholderTargetSlot(sourceSlot), layerDelta: amount } });
+          appliedThisInstant.push({ sourceKey, type: "Shock", amount });
         } else if (applied.type === "Burn" || applied.type === "Poison") {
           const amount = applied.amount + (applied.type === "Burn" ? modifiers.burnAmountAdd : modifiers.poisonAmountAdd);
           const interval = applied.type === "Burn" ? BURN_TICK_SECONDS : POISON_TICK_SECONDS;
@@ -432,47 +484,38 @@ export function simulate(
             targetSlot: placeholderTargetSlot(sourceSlot),
             appliedAtSeconds: tSeconds,
             nextTickAt: roundTime(tSeconds + interval),
-            // 2026-10-06 round 7 (FR-056): remember WHO applied this, so each tick's damage can be
-            // attributed back to them. Without it a pure DOT applier reports 0.00 own DPS and
-            // 0.00 facilitated DPS -- i.e. "contributes nothing".
-            sourceKey: `${creature.id}@${slotKey(sourceSlot)}`,
+            sourceKey,
           });
-          // 2026-10-06 round 7 (FR-057): Burn/Poison applications were the only status
-          // applications NOT recorded in the timeline -- Shock and Shield already were. That
-          // asymmetry made application rates underivable for exactly the two statuses whose
-          // rates matter most (research.md I13).
-          timeline.push({
-            tSeconds,
-            kind: "ongoingChange",
-            sourceSlot,
-            statusDelta: { type: applied.type, slot: placeholderTargetSlot(sourceSlot), layerDelta: amount },
-          });
+          timeline.push({ tSeconds, kind: "ongoingChange", sourceSlot, statusDelta: { type: applied.type, slot: placeholderTargetSlot(sourceSlot), layerDelta: amount } });
+          appliedThisInstant.push({ sourceKey, type: applied.type, amount });
         } else if (applied.type === "Shield") {
-          // Shield counters (data-model.md "Shield counted as an output stat", 2026-10-05):
-          // tracked as cumulative Shield *granted* by the team's own casts — same treatment as
-          // Burn/Poison/Shock in spirit, via the existing statusDelta field (Shield isn't a
-          // DamageType, since it never deals damage — see research.md B3) — not as absorption
-          // against an opposing target (still unmodeled, see the T037 note below).
           const amount = applied.amount + modifiers.shieldAmountAdd;
-          timeline.push({
-            tSeconds,
-            kind: "ongoingChange",
-            sourceSlot,
-            statusDelta: { type: "Shield", slot: placeholderTargetSlot(sourceSlot), layerDelta: amount },
-          });
+          timeline.push({ tSeconds, kind: "ongoingChange", sourceSlot, statusDelta: { type: "Shield", slot: placeholderTargetSlot(sourceSlot), layerDelta: amount } });
           perStatusDamage.Shield += amount;
+          appliedThisInstant.push({ sourceKey, type: "Shield", amount });
         }
-        //
-        // KNOWN SCOPE GAP (tasks.md T037): applyShieldReduction() is implemented and unit-tested
-        // (shield.ts) but Shield is still never used to *reduce* incoming damage here. Doing that
-        // meaningfully requires a modeled *target* with its own HP/Shield pool, which does not
-        // exist under this engine's "idealized target" assumption (spec.md Assumptions) —
-        // simulate() only measures the user's team's outgoing damage, never anything absorbing
-        // it. Wiring that in is deferred until/unless the spec grows a real target entity.
+        // KNOWN SCOPE GAP (tasks.md T037): applyShieldReduction() exists and is unit-tested, but
+        // Shield still never reduces incoming damage here — that needs a modelled target with its
+        // own HP/Shield pool, which this engine's "idealised target" assumption does not provide.
       }
     }
 
-    i = groupEnd;
+    // --- Charges, applied AFTER the instant completes (FR-040 snapshot semantics) ---
+    for (const entry of schedule) {
+      if (entry.chargeRules.length === 0) continue;
+      let charge = 0;
+      for (const application of appliedThisInstant) {
+        // A creature is never charged by its own applications — "whenever an ALLY inflicts".
+        if (application.sourceKey === entry.key) continue;
+        for (const rule of entry.chargeRules) {
+          if (rule.status === application.type) charge += rule.seconds;
+        }
+      }
+      if (charge <= 0) continue;
+      const pulled = roundTime(entry.nextAt - charge);
+      // Never schedule into the past: a creature made ready by charges fires at the next step.
+      entry.nextAt = pulled <= tSeconds ? roundTime(tSeconds + STEP) : pulled;
+    }
   }
 
   runTicksUpTo(windowSeconds);

@@ -1743,7 +1743,7 @@ at t = 3, 3, 6, 6, 8, 9, 9, 12, 12.
 
 ### Tests first (Constitution Principle III, NON-NEGOTIABLE)
 
-- [ ] T199 **[WI-003, WI-004]** Write **failing** tests in `src/engine/__tests__/effects.test.ts`
+- [x] T199 **[WI-003, WI-004]** Write **failing** tests in `src/engine/__tests__/effects.test.ts`
       (new) pinning the user's own worked example as the acceptance criterion:
       - with Miasmaw + Cobrex + Drumire + Fumungus placed, Miasmaw's resolved `appliesStatus` is
         **Poison 336** (own 10 + allies 6 + 20 + 300 = 326). The user supplied this arithmetic; it is
@@ -1762,7 +1762,7 @@ at t = 3, 3, 6, 6, 8, 9, 9, 12, 12.
 
 ### Implementation — engine
 
-- [ ] T200 **[WI-003, WI-004, WI-009]** Create `src/engine/effects.ts`: a single resolution pass that
+- [x] T200 **[WI-003, WI-004, WI-009]** Create `src/engine/effects.ts`: a single resolution pass that
       takes a `TeamConfiguration` + `Corpus` and returns each placement's effective stats after
       on-battle-start abilities, ally-triggered abilities, positional abilities, and selected
       trinkets. Add the `AbilityTag` kinds these need (a battle-start status grant scaled from
@@ -1788,7 +1788,7 @@ at t = 3, 3, 6, 6, 8, 9, 9, 12, 12.
          unmodelled this round and say so in the UI coverage count** — inventing a target model is a
          larger change than this round's scope, and silently granting it damage would fabricate output.
       Satisfies T199.
-- [ ] T200b **[WI-004, WI-009]** Convert Phase A's fixed `n * cooldown` cast precomputation
+- [x] T200b **[WI-004, WI-009]** Convert Phase A's fixed `n * cooldown` cast precomputation
       (`simulate.ts:269-272`) into an **event-driven scheduler**, so a cooldown can change during the
       battle. Without it, Cobrex's charge and Drumire's cumulative Cooldown-Speed grant cannot be
       modelled at all — T200's static pass reaches only Miasmaw's family.
@@ -1802,14 +1802,14 @@ at t = 3, 3, 6, 6, 8, 9, 9, 12, 12.
       **This is the largest structural engine change since the original build**; the suite pins exact
       numbers against the current scheduler, so re-derive each and explain it in its test comment
       rather than re-baselining. (depends on T200)
-- [ ] T201 **[WI-004, WI-009]** Populate `abilityTags` for the creatures this round exercises
+- [x] T201 **[WI-004, WI-009]** Populate `abilityTags` for the creatures this round exercises
       (Miasmaw, Cobrex, Drumire, Fumungus at minimum) so the resolver has structured input. **State
       the ceiling honestly in the file header, as a figure that stays true after this task runs**:
       **6 of 149** level-1 creatures had any `abilityTags` before this round and **10 of 149** will
       after it, so the engine does not retroactively make the other 139 creatures' prose abilities
       work. **Compute the number at test time rather than hard-coding a figure that goes stale** —
       the first draft of this task mandated stating "6 of 149" inside the very task that makes it 10.
-- [ ] T202 **[WI-003]** Make `simulate()` consume `effects.ts`. **Reporting is not enough, and the
+- [x] T202 **[WI-003]** Make `simulate()` consume `effects.ts`. **Reporting is not enough, and the
       first draft of this task permitted the entire round to land without a single DPS number
       changing**: `perCreatureEffectiveStats` is built in Phase A and read by nothing downstream,
       while Phase B independently recomputes damage from `creature.baseDamage`
@@ -1818,7 +1818,7 @@ at t = 3, 3, 6, 6, 8, 9, 9, 12, 12.
       336 while its timeline still applies Poison 10 — leaving FR-073's "the simulation MUST use
       those resolved values" unmet and T208's delta report empty. Existing engine tests pin exact numbers; any that change MUST be re-derived and the
       change explained in the test comment, never silently re-baselined.
-- [ ] T203 **[WI-005]** Point the placement optimiser at the same resolution layer (FR-074), and
+- [x] T203 **[WI-005]** Point the placement optimiser at the same resolution layer (FR-074), and
       **update `analyzePositionalCoverage()`** — it currently counts only `cooldownSpeedModifier` as
       actionable, which will *understate* coverage once the resolver handles more kinds. The count
       must track what the resolver actually handles, or round 8's honesty mechanism inverts into a
@@ -1849,11 +1849,11 @@ at t = 3, 3, 6, 6, 8, 9, 9, 12, 12.
 
 ### Polish
 
-- [ ] T207 [P] Write quickstart Validation Scenarios 39–44 covering: grid sizing restored; combined
+- [x] T207 [P] Write quickstart Validation Scenarios 39–44 covering: grid sizing restored; combined
       total + headline DPS; Miasmaw resolving to Poison 336; Cobrex firing at the time T200b's
       tie-break rule fixes (t=9 or t=10, not t=4); the scrubber
       agreeing with the chart; and the coverage disclosure.
-- [ ] T208 Verify `npx tsc -b --noEmit`, full `npx vitest run`, and `npm run build`; report the test
+- [x] T208 Verify `npx tsc -b --noEmit`, full `npx vitest run`, and `npm run build`; report the test
       count, and **report honestly whether the DPS numbers changed** as a result of T202 — the user
       asked whether the measurement is off, so the delta is the answer to their question.
 

@@ -864,7 +864,9 @@ export const creatures: CreatureRecord[] = [
     damageType: null,
     appliesStatus: [{ type: "Poison", amount: 300 }],
     abilityText: "Whenever an ally inflicts Poison, Charge this by 1 second(s).",
-    abilityTags: [],
+    // 2026-10-06 round 9 (T201 / WI-009). "Charge" is a first-class game stat -- patch 1.1.0
+    // lists "Clawnetic - Charge: 1/2/3 seconds -> 1 second at every level" (research.md K6).
+    abilityTags: [{ kind: "chargeOnAllyStatus", status: "Poison", seconds: 1 }],
     spriteFile: "cobrex.png",
     sourceRefs: [communityDex, demoTierCostTable, batodexPage("cobrex", "Cobrex"), batodexExtracted("cobrex", "Cobrex")],
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
@@ -1089,7 +1091,9 @@ export const creatures: CreatureRecord[] = [
     damageType: null,
     appliesStatus: [{ type: "Poison", amount: 20 }],
     abilityText: "When a Toxic ally casts, give it +5% Cooldown Speed for this battle.",
-    abilityTags: [],
+    // 2026-10-06 round 9 (T201). Recorded structurally; the resolver does not yet apply a
+    // cumulative per-cast grant, so this creature is still reported as uncovered.
+    abilityTags: [{ kind: "cooldownSpeedOnAllyCast", typeFilter: "Toxic", amount: 0.05 }],
     unconfirmedFields: ["shopCost"],
     spriteFile: "drumire.png",
     sourceRefs: [communityDex, batodexPage("drumire", "Drumire")],
@@ -1771,7 +1775,9 @@ export const creatures: CreatureRecord[] = [
     damageType: null,
     appliesStatus: [{ type: "Poison", amount: 10 }],
     abilityText: "Gain Poison for this battle equal to 1x the total Poison of your allies. (Except other Miasmaw)",
-    abilityTags: [],
+    // 2026-10-06 round 9 (T201): structured so the resolver can act on it. "1x" is the
+    // multiplier; "(Except other Miasmaw)" is handled by the resolver excluding same-species allies.
+    abilityTags: [{ kind: "battleStartStatusFromAllies", status: "Poison", multiplier: 1 }],
     unconfirmedFields: ["shopCost"],
     spriteFile: "miasmaw.png",
     abilityTrigger: "On Battle Start",

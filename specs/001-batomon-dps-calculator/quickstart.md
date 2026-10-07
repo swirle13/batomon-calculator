@@ -629,6 +629,80 @@ Two corrections this round, neither user-reported:
 **Not verified in a browser**: scenarios 32, 33, 34 and 38's visual halves are code-traced or
 unit-tested only. jsdom has no layout, so sizes and borders need a real-browser pass.
 
+## Validation scenario 39 — the team grid holds its size (FR-071)
+
+1. Place creatures and hover different ones so the detail panel's contents change.
+2. **Expected**: the grid's slot cards and their 64px sprites do not change size.
+
+## Validation scenario 40 — total DPS (FR-072)
+
+1. Build an all-status team (e.g. Miasmaw, Cobrex, Drumire, Fumungus).
+2. **Expected**: every per-creature **DPS** row reads `0.00` (that column is direct damage only),
+   the **Facilitated DPS** column carries the output, a **Total** row sums both, and a prominent
+   headline figure shows the combined number.
+
+## Validation scenario 41 — effects actually resolve (FR-073)
+
+1. With that team placed, select Miasmaw.
+2. **Expected**: "Effective this battle" reads **Poison 336** — its own 10 plus allies' 6 + 20 + 300.
+3. **Expected**: the simulation *uses* that value, not just displays it — the timeline shows Miasmaw
+   applying 336, not 10.
+
+## Validation scenario 42 — the charge mechanic (FR-073 / WI-009)
+
+1. Same team. Find Cobrex's first Poison application.
+2. **Expected**: **t = 9.1**, not t = 15. Allies apply Poison at t = 3, 3, 6, 6, 8, 9, 9, each
+   charging Cobrex 1 second.
+3. **The 0.1 is the tie-break, and it is deliberate**: in continuous time Cobrex becomes ready at
+   t=9 as the 7th charge lands, and FR-040's pre-timestamp snapshot rule (already used for Shock)
+   defers an effect applied at an instant to after that instant. Place Cobrex alone and it falls
+   back to casts at t=15 and t=30 — a creature is never charged by its own applications.
+
+## Validation scenario 43 — the time scrubber (FR-076)
+
+1. Drag the scrubber under the headline figure.
+2. **Expected**: the number updates to that second's value and matches the DPS-over-time chart at
+   the same x position (both read `dpsRateSeries`, so they agree by construction).
+
+## Validation scenario 44 — coverage honesty (FR-075)
+
+1. **Expected**: the headline states how many placed creatures have an ability the engine acts on.
+2. Place a team of creatures with no tags.
+3. **Expected**: it says none of them are covered, so the figure is not mistaken for a full model.
+
+## Validation results (2026-10-06, round 9 implementation — Scenarios 39-44)
+
+122 tests pass, up from 117. **The user asked whether the DPS measurement was off. It was, and
+here is the measured delta** for their own team (Miasmaw, Cobrex, Drumire, Fumungus, 20s window):
+
+```text
+before round 9:  136.60 damage/second     Miasmaw Poison 10    Cobrex first cast t=15
+after  round 9: 1155.70 damage/second     Miasmaw Poison 336   Cobrex first cast t=9.1
+                 ~8.5x
+```
+
+- **39 — PASS (code-traced).** `.grid` now has an explicit `width: 30rem`; the orphaned
+  `.slot select` rule is gone.
+- **40 — PASS (automated).** Asserted that the per-creature DPS record is empty for this team while
+  the headline shows the combined figure, and that a `Total` row renders.
+- **41 — PASS (automated).** `effects.test.ts` pins Poison 336, and a lone Miasmaw correctly stays
+  at 10 (no allies), confirming "ally" excludes self.
+- **42 — PASS (automated).** Cobrex's first cast pinned at t=9.1, and a solo Cobrex pinned at
+  exactly t=15/30 so self-charging can't creep in.
+- **43 — PASS (code-traced).** The scrubber reads `dpsRateSeries`; jsdom has no layout so the
+  chart's visual agreement is not unit-testable.
+- **44 — PASS (automated).** The coverage line renders beside the headline.
+
+**One pre-existing test was re-derived, not re-baselined**: the round-9 headline assertion moved
+136.60 → 1155.70, with the reason recorded inline. **Every other engine assertion from rounds 5-8
+still passes unchanged**, which is the evidence that replacing the fixed `n * cooldown`
+precomputation with an event-driven scheduler preserved semantics for teams without charge abilities.
+
+**Still not modelled, stated plainly**: Fumungus ("additional Damage equal to 100% of the Poison
+stacks on the enemy") needs a modelled target carrying stacks, which this engine does not have;
+Drumire's cumulative per-cast Cooldown-Speed grant is recorded as a tag but not yet applied. Both
+are reported as uncovered rather than silently approximated.
+
 ## Automated checks
 
 ```bash

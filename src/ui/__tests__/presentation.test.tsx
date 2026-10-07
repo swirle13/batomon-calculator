@@ -224,7 +224,12 @@ describe("round 9: total DPS and grid sizing", () => {
     // everywhere while dealing ~136.6/s.
     expect(Object.keys(result.perCreatureDps).length).toBe(0);
     render(<TotalDps config={poisonTeam} result={result} />);
-    expect(screen.getByText("136.60")).toBeTruthy();
+    // RE-DERIVED round 9 (T202/T200b), not re-baselined. This read 136.60 while every creature
+    // ability on this board was inert. With the effect resolver and the event-driven scheduler,
+    // Miasmaw applies Poison 336 instead of 10 and Cobrex fires at t=9.1 instead of t=15, so the
+    // team's real output is 1155.70/s. The ~8.5x jump IS the answer to the user's "I think the DPS
+    // measurement is off" -- it was, by that factor, for this archetype.
+    expect(screen.getByText("1155.70")).toBeTruthy();
   });
 
   it("states the engine's coverage ceiling right where the number is (FR-075)", () => {

@@ -123,6 +123,16 @@ them with `node scripts/vendor-sprites.mjs`.
   monsters are now considered adjacent") would invalidate the single interaction that *is* visible.
   So "no improvement found" usually means "the effects that would make position matter aren't
   modelled yet". The UI says so rather than implying your layout is optimal.
+- **Creature abilities are only modelled where they carry structured tags.** Round 9 added an
+  effect-resolution layer (`src/engine/effects.ts`) and an event-driven scheduler, so on-battle-start
+  grants and charge mechanics now actually affect the simulation — Miasmaw resolves to Poison 336
+  instead of 10, and Cobrex fires at t=9.1 instead of t=15, which changed one real team's measured
+  output from 136.6 to 1155.7 damage/second. **But only 10 of 149 level-1 creatures carry any
+  `abilityTags`**; the rest have their abilities recorded as prose only and remain inert. The UI
+  states the covered count beside the DPS figure rather than letting a working engine imply full
+  coverage. Two known non-coverages: Fumungus ("damage equal to the Poison stacks on the enemy")
+  needs a modelled target this engine does not have, and Drumire's cumulative per-cast
+  Cooldown-Speed grant is tagged but not yet applied.
 - **Items are still an empty seed stub.** Trinkets were completed in round 5 (`tasks.md` T109);
   Items have not been — see `tasks.md` T046.
 - **Only 6 of 93 Trinkets' effects are wired into the DPS simulation.** The rest are real,

@@ -108,7 +108,21 @@ export type AbilityTag =
   | { kind: "trigger"; target: TargetSelector; event: EventLabel }
   | { kind: "onEvent"; event: EventLabel; effect: EffectDescriptor }
   | { kind: "cooldownSpeedModifier"; target: TargetSelector; amount: number }
-  | { kind: "statusGrant"; target: TargetSelector; status: StatusEffectType; amount: number };
+  | { kind: "statusGrant"; target: TargetSelector; status: StatusEffectType; amount: number }
+  /**
+   * 2026-10-06 round 9 (FR-073). Three kinds the effect resolver acts on.
+   *
+   * "On Battle Start: gain <status> equal to <multiplier>x the total <status> of your allies."
+   * Reads allies' per-application amounts (not accumulated stacks) and excludes self and
+   * same-species allies — see `effects.ts` for why each of those is decided rather than guessed.
+   */
+  | { kind: "battleStartStatusFromAllies"; status: StatusEffectType; multiplier: number }
+  /** "Whenever an ally inflicts <status>, Charge this by <seconds> second(s)." Shortens this
+   * creature's remaining cooldown during the battle, so it needs the event-driven scheduler. */
+  | { kind: "chargeOnAllyStatus"; status: StatusEffectType; seconds: number }
+  /** "When a <typeFilter> ally casts, give it +<amount> Cooldown Speed for this battle."
+   * Recorded for completeness; see `effects.ts` for current coverage. */
+  | { kind: "cooldownSpeedOnAllyCast"; typeFilter?: CreatureType; amount: number };
 
 // ---------------------------------------------------------------------------
 // Corpus entities
