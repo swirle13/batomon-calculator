@@ -437,10 +437,10 @@ describe("simulate", () => {
     const key = Object.keys(result.perCreatureEffectiveStats).find((k) => k.startsWith("bumblebolt@"));
     expect(key).toBeDefined();
     const stats = result.perCreatureEffectiveStats[key!]!;
-    expect(stats.damage).toBeCloseTo(3 + 10, 5);
-    expect(stats.damageType).toBe("Direct");
+    expect(stats.output.damage).toBeCloseTo(3 + 10, 5);
+    expect(stats.output.damageType).toBe("Direct");
     expect(stats.cooldownSeconds).toBeCloseTo(2.5, 5);
-    expect(stats.multicast).toBe(1);
+    expect(stats.output.multicast).toBe(1);
   });
 
   /**

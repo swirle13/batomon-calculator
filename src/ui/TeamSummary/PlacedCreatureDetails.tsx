@@ -93,12 +93,9 @@ export function PlacedCreatureDetails({ result, highlightedSlot }: PlacedCreatur
               seconds={formatCooldown(effective.cooldownSeconds)}
             />
             <StatLines
-              lines={buildStatLines({
-                damage: effective.damage,
-                damageType: effective.damageType,
-                appliesStatus: effective.appliesStatus,
-                multicast: effective.multicast,
-              })}
+              // No mapping: the engine produces the same `PerCastOutput` the card renders from,
+              // so there is no hand-written field list here to forget a stat in.
+              lines={buildStatLines(effective.output)}
             />
           </div>
         </div>

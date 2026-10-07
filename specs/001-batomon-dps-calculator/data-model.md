@@ -934,3 +934,40 @@ retracted. Regenerate with `node scripts/audit-batodex.mjs`.*
 > / 15 worse. *Corrected in pass-3 remediation: this said "20", the figure research.md N1 retracts
 > as an undercount from not checking status amounts. Regenerate with
 > `npx vite-node scripts/audit-shiny.mjs`.*
+
+## PerCastOutput (2026-10-06) — one shape for "what a creature emits per cast"
+
+```ts
+interface PerCastOutput {
+  damage: number | null;
+  damageType: DamageType | null;
+  appliesStatus: { type: StatusEffectType; amount: number }[];
+  heal: number | null;
+  multicast: number;
+  damageUnconfirmed: boolean;   // all fields REQUIRED — see below
+}
+```
+
+Produced by both renderers of that concept:
+
+- `perCastOutputOf(creature)` — a record's published output.
+- `SimulationResult.perCreatureEffectiveStats[key].output` — the battle-adjusted output.
+
+### Why this exists, and why nothing is optional
+
+`buildStatLines` was *already* shared by the creature card and the "Effective this battle" band, so
+the component was never duplicated. The duplication was one level down: the function took a loose
+parameter bag in which `healAmount` and `multicast` were **optional**, and each call site
+hand-mapped its own differently-named source onto it — `creature.healAmount` against
+`effective.heal`, `creature.baseMulticast` against `effective.multicast`.
+
+Optional fields plus hand-mapping meant forgetting one compiled cleanly, and one was forgotten:
+the effective band never passed healing, so **9 species whose only output is a heal rendered "No
+published per-cast output" directly beneath a card showing their heal**, and 20 more silently lost
+a Heal line.
+
+Every field is required so a producer that forgets one is a **type error**, not a blank panel. The
+engine's effective stats are now `{ output: PerCastOutput; cooldownSeconds }`, so the band passes
+`effective.output` straight through with no field list at all. Adding a future output stat breaks
+both producers at compile time, which is the only mechanism that keeps two renderings of one
+concept honest (Constitution Principle VII).

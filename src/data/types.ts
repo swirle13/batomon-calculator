@@ -362,6 +362,36 @@ export interface CreatureRecord extends Provenance {
   spriteFile?: string;
 }
 
+/**
+ * Everything a creature emits in one cast — the ONE shape the stat band renders from.
+ *
+ * ## Why this type exists
+ *
+ * `buildStatLines` was already shared by both bands, so the *component* was never duplicated. The
+ * duplication was one level down: it took a loose bag of parameters in which `healAmount` and
+ * `multicast` were **optional**, and each call site hand-mapped its own differently-named source
+ * onto them — `creature.healAmount` here, `effective.heal` there; `creature.baseMulticast` here,
+ * `effective.multicast` there.
+ *
+ * Optional plus hand-mapping meant forgetting a field compiled cleanly. It did: the effective band
+ * omitted healing, so nine creatures whose only output is a heal rendered "No published per-cast
+ * output" directly beneath a card showing their heal.
+ *
+ * Every field here is **required**, so a producer that forgets one is a type error rather than a
+ * blank panel. Adding a future output stat breaks both producers at compile time, which is the
+ * point — that is the only thing that keeps two renderings of the same concept honest.
+ */
+export interface PerCastOutput {
+  damage: number | null;
+  damageType: DamageType | null;
+  appliesStatus: { type: StatusEffectType; amount: number }[];
+  heal: number | null;
+  multicast: number;
+  /** True when `damage` is sourced but not confirmed, so it renders no line rather than a wrong one. */
+  damageUnconfirmed: boolean;
+}
+
+
 export interface TrainerRecord extends Provenance {
   id: string;
   name: string;
@@ -586,11 +616,13 @@ export interface SimulationResult {
   perCreatureEffectiveStats: Record<
     string,
     {
-      damage: number | null;
-      damageType: DamageType | null;
+      /**
+       * The same `PerCastOutput` the creature card renders, so the "Effective this battle" band
+       * needs no mapping layer at all — it passes this straight to `buildStatLines`. Hand-mapping
+       * between two parallel shapes is what silently dropped healing.
+       */
+      output: PerCastOutput;
       cooldownSeconds: number | null;
-      multicast: number;
-      appliesStatus: { type: StatusEffectType; amount: number }[];
     }
   >;
   cumulativeSeries: {

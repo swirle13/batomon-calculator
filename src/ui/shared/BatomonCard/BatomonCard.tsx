@@ -1,8 +1,9 @@
 import type { ReactNode } from "react";
-import type { CreatureRecord, StatusEffectType } from "../../../data/types";
+import type { CreatureRecord } from "../../../data/types";
 import { RARITY_COLORS, STAT_COLORS, type StatColorKey } from "../../../data/statColors";
 import { STATUS_COLOR_KEY } from "../../../data/format";
 import { displayField, isUnconfirmed } from "../../../data/display";
+import type { PerCastOutput } from "../../../data/types";
 import { formatCooldown } from "../../../data/format";
 import { AllTypeTag, TypeTag } from "../TypeTag";
 import typeStyles from "../TypeTag.module.css";
@@ -39,14 +40,19 @@ interface StatLine {
  * band can render the modifier-adjusted numbers in the identical shape rather than falling back to
  * a run-on sentence (FR-028 applies to the effective values too, not only the base stats).
  */
-export function buildStatLines(input: {
-  damage: number | null;
-  damageType: CreatureRecord["damageType"];
-  appliesStatus: { type: StatusEffectType; amount: number }[] | undefined;
-  healAmount?: number | null;
-  multicast?: number;
-  damageUnconfirmed?: boolean;
-}): StatLine[] {
+/** A creature record's own published output. One of the two producers of `PerCastOutput`. */
+export function perCastOutputOf(creature: CreatureRecord): PerCastOutput {
+  return {
+    damage: creature.baseDamage,
+    damageType: creature.damageType,
+    appliesStatus: creature.appliesStatus ?? [],
+    heal: creature.healAmount ?? null,
+    multicast: creature.baseMulticast,
+    damageUnconfirmed: isUnconfirmed(creature, "baseDamage"),
+  };
+}
+
+export function buildStatLines(input: PerCastOutput): StatLine[] {
   const lines: StatLine[] = [];
   // An unknown damage value renders no line at all rather than "0" or "unknown damage" -- 62 of
   // 149 species still have `baseDamage: null`, so this is the common path, not an edge case
@@ -55,13 +61,13 @@ export function buildStatLines(input: {
     const verb = input.damageType === "Direct" ? "Deal" : "Deal";
     lines.push({ key: "damage", label: `${verb} ${input.damage} damage` });
   }
-  for (const status of input.appliesStatus ?? []) {
+  for (const status of input.appliesStatus) {
     lines.push({ key: STATUS_COLOR_KEY[status.type], label: `${status.type} ${status.amount}` });
   }
-  if (input.healAmount != null && input.healAmount > 0) {
-    lines.push({ key: "heal", label: `Heal ${input.healAmount}` });
+  if (input.heal != null && input.heal > 0) {
+    lines.push({ key: "heal", label: `Heal ${input.heal}` });
   }
-  if (input.multicast != null && input.multicast > 1) {
+  if (input.multicast > 1) {
     lines.push({ key: "multicast", label: `Multicast ×${input.multicast}` });
   }
   return lines;
@@ -133,14 +139,7 @@ export function BatomonCard({ creature, children, levelLabel, fixedHeight, meta,
   const isAllType = creature.types.includes("All") || painted === true;
   const rarityColor = RARITY_COLORS[creature.rarity];
   const cooldownUnconfirmed = isUnconfirmed(creature, "baseCooldownSeconds");
-  const statLines = buildStatLines({
-    damage: creature.baseDamage,
-    damageType: creature.damageType,
-    appliesStatus: creature.appliesStatus,
-    healAmount: creature.healAmount,
-    multicast: creature.baseMulticast,
-    damageUnconfirmed: isUnconfirmed(creature, "baseDamage"),
-  });
+  const statLines = buildStatLines(perCastOutputOf(creature));
 
   return (
     <article

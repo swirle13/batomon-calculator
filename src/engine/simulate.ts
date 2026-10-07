@@ -1,4 +1,5 @@
 import type {
+  PerCastOutput,
   Corpus,
   CreatureRecord,
   GridSlot,
@@ -233,11 +234,8 @@ export function simulate(
   const perCreatureEffectiveStats: Record<
     string,
     {
-      damage: number | null;
-      damageType: CreatureRecord["damageType"];
+      output: PerCastOutput;
       cooldownSeconds: number | null;
-      multicast: number;
-      appliesStatus: { type: StatusEffectType; amount: number }[];
     }
   > = {};
 
@@ -263,11 +261,15 @@ export function simulate(
       // already has, and there's no cast at all here to attach any modifier to — report raw,
       // unmodified values rather than a modifier that silently never applies.
       perCreatureEffectiveStats[key] = {
-        damage: member.resolved.baseDamage,
-        damageType: creature.damageType,
         cooldownSeconds: null,
-        multicast: creature.baseMulticast,
-        appliesStatus: member.resolved.appliesStatus,
+        output: {
+          damage: member.resolved.baseDamage,
+          damageType: creature.damageType,
+          appliesStatus: member.resolved.appliesStatus,
+          heal: creature.healAmount ?? null,
+          multicast: creature.baseMulticast,
+          damageUnconfirmed: false,
+        },
       };
       continue;
     }
@@ -287,14 +289,24 @@ export function simulate(
     };
 
     perCreatureEffectiveStats[key] = {
-      damage: isDirectHitCapable ? member.resolved.baseDamage! + damageFlatAdd : member.resolved.baseDamage,
-      damageType: creature.damageType,
       cooldownSeconds: cooldown,
-      multicast: effectiveMulticast,
-      appliesStatus: member.resolved.appliesStatus.map((s) => ({
-        type: s.type,
-        amount: s.amount + statusAmountAdd[s.type],
-      })),
+      output: {
+        damage: isDirectHitCapable ? member.resolved.baseDamage! + damageFlatAdd : member.resolved.baseDamage,
+        damageType: creature.damageType,
+        appliesStatus: member.resolved.appliesStatus.map((s) => ({
+          type: s.type,
+          amount: s.amount + statusAmountAdd[s.type],
+        })),
+        // No modifier targets healing today, so this is the base value rather than an adjusted one.
+        // It still belongs here: the band shows what this creature does THIS battle, and omitting a
+        // stat because nothing currently modifies it is how 9 healers ended up reading "No published
+        // per-cast output" beside a card showing their heal.
+        heal: creature.healAmount ?? null,
+        multicast: effectiveMulticast,
+        // Effective values are computed, not transcribed, so they are never "unconfirmed" the way a
+        // sourced base stat can be.
+        damageUnconfirmed: false,
+      },
     };
 
     // 2026-10-06 round 9 (T200b): only the FIRST cast is scheduled here. Subsequent casts are

@@ -8,6 +8,7 @@ import App from "../../App";
 import { TotalDps } from "../TeamSummary/TotalDps";
 import { TeamConfigProvider } from "../../context/TeamConfigContext";
 import { PlacedCreatureDetails } from "../TeamSummary/PlacedCreatureDetails";
+import { buildStatLines, perCastOutputOf } from "../shared/BatomonCard/BatomonCard";
 import { GridPicker } from "../GridPicker/GridPicker";
 import { simulate } from "../../engine/simulate";
 import { corpus } from "../../data/corpus";
@@ -268,5 +269,50 @@ describe("round 9: total DPS and grid sizing", () => {
     const result = simulate(poisonTeam, corpus);
     render(<TeamSummary config={poisonTeam} result={result} />);
     expect(screen.getByRole("rowheader", { name: "Total" })).toBeTruthy();
+  });
+});
+
+describe("effective band renders healing (2026-10-06)", () => {
+  // Dribblet is a pure healer: healAmount 15, no damage, no status. The "Effective this battle"
+  // band read "No published per-cast output" beside a card that showed "Heal 15" — because
+  // `perCreatureEffectiveStats` carried no heal field at all, and the band's `buildStatLines` call
+  // omitted it. 9 species were fully blank this way and 20 were missing a heal line.
+  const healerTeam: TeamConfiguration = {
+    placements: [{ slot: { row: "back", col: 0 }, creatureId: "dribblet", level: 1 }],
+    trainerId: null,
+    trinketIds: [],
+    itemIds: [],
+    simulationWindowSeconds: 20,
+    teamModifiers: [],
+  };
+
+  it("carries heal through to the effective stats", () => {
+    const result = simulate(healerTeam, corpus);
+    expect(result.perCreatureEffectiveStats["dribblet@back0"]!.output.heal).toBe(15);
+  });
+
+  it("renders a Heal line rather than an empty band", () => {
+    const effective = simulate(healerTeam, corpus).perCreatureEffectiveStats["dribblet@back0"]!;
+    // The point of `PerCastOutput`: the band passes the engine's shape straight through, with no
+    // field list to forget a stat in.
+    const lines = buildStatLines(effective.output);
+    // An empty list is what `StatLines` renders as "No published per-cast output".
+    expect(lines).not.toHaveLength(0);
+    expect(lines.map((l) => l.label)).toContain("Heal 15");
+  });
+
+  it("GUARD: no creature whose only output is healing can produce an empty effective band", () => {
+    const healOnly = corpus.creatures.filter(
+      (c) =>
+        c.level === 1 &&
+        (c.healAmount ?? 0) > 0 &&
+        c.baseDamage === null &&
+        (c.appliesStatus ?? []).length === 0,
+    );
+    expect(healOnly.length, "fixture depends on heal-only species existing").toBeGreaterThan(0);
+    for (const c of healOnly) {
+      const lines = buildStatLines(perCastOutputOf(c));
+      expect(lines.length, `${c.name} renders an empty effective band`).toBeGreaterThan(0);
+    }
   });
 });
