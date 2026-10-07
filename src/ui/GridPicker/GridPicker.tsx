@@ -12,9 +12,7 @@ import type {
   CreatureRecord,
   CreatureType,
   GridCol,
-  ModifierStat,
   StatModifier,
-  StatusEffectType,
   GridRow,
   GridSlot,
 } from "../../data/types";
@@ -27,6 +25,7 @@ import { STATUS_COLOR_KEY } from "../../data/format";
 import { slotKey, slotsEqual } from "../../engine/grid";
 import { spriteGridSize } from "../shared/Sprite";
 import { CreatureSprite } from "../shared/CreatureSprite";
+import { perCastOutputOf } from "../shared/BatomonCard/BatomonCard";
 import { CreatureSearchModal } from "./CreatureSearchModal";
 import styles from "./GridPicker.module.css";
 
@@ -106,28 +105,10 @@ interface SlotBadgesProps {
  * is base, and "Effective this battle" on the detail card is where resolved values live.
  */
 function SlotBadges({ creature, modifiers }: SlotBadgesProps) {
-  // 2026-10-06 round 10 (T210 / FR-077): base stats PLUS the user's own manual modifiers, still
-  // excluding engine-resolved ability effects.
-  //
-  // This revises round 9b, which set chips to pure base at the user's request. The distinction they
-  // drew was between the creature's printed card and what the battle computes — and a modifier the
-  // user typed in themselves is neither. It is their own input, and they reasonably expect to see
-  // it reflected. Resolved ability effects stay out; those belong in "Effective this battle".
-  const sum = (stat: ModifierStat) =>
-    (modifiers ?? []).filter((m) => m.stat === stat).reduce((total, m) => total + m.amount, 0);
-
-  const damage = creature.baseDamage === null ? null : creature.baseDamage + sum("damageFlatAdd");
-  const statusAdd: Record<StatusEffectType, number> = {
-    Burn: sum("burnAmountAdd"),
-    Poison: sum("poisonAmountAdd"),
-    Shock: sum("shockAmountAdd"),
-    Shield: sum("shieldAmountAdd"),
-  };
-  const appliesStatus = (creature.appliesStatus ?? []).map((s) => ({
-    ...s,
-    amount: s.amount + (statusAdd[s.type] ?? 0),
-  }));
-  const multicast = creature.baseMulticast + sum("multicastAdd");
+  // Base stats PLUS the user's own manual modifiers (T210 / FR-077), through the SAME producer the
+  // card uses. The arithmetic lived here and nowhere else, so the card showed unmodified stats
+  // while these chips showed modified ones — the inconsistency this now removes.
+  const { damage, appliesStatus, multicast } = perCastOutputOf(creature, modifiers);
 
   return (
     <div className={styles.badges}>

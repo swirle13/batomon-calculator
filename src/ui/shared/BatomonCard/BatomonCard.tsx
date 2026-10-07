@@ -3,7 +3,7 @@ import type { CreatureRecord } from "../../../data/types";
 import { RARITY_COLORS, STAT_COLORS, type StatColorKey } from "../../../data/statColors";
 import { STATUS_COLOR_KEY } from "../../../data/format";
 import { displayField, hasAbilityText, isUnconfirmed } from "../../../data/display";
-import type { PerCastOutput } from "../../../data/types";
+import type { ModifierStat, PerCastOutput, StatModifier, StatusEffectType } from "../../../data/types";
 import { formatCooldown } from "../../../data/format";
 import { AllTypeTag, TypeTag } from "../TypeTag";
 import { CreatureSprite } from "../CreatureSprite";
@@ -39,14 +39,49 @@ interface StatLine {
  * band can render the modifier-adjusted numbers in the identical shape rather than falling back to
  * a run-on sentence (FR-028 applies to the effective values too, not only the base stats).
  */
-/** A creature record's own published output. One of the two producers of `PerCastOutput`. */
-export function perCastOutputOf(creature: CreatureRecord): PerCastOutput {
+/**
+ * A creature's published output, plus the user's own manual modifiers.
+ *
+ * ## Why modifiers belong in the BASE figure, not only in "Effective this battle"
+ *
+ * A modifier is how you record something the engine has no trigger for — a carry-over bonus from
+ * an earlier round, an On Victory grant, a buff the run already applied. Once entered, it is part
+ * of what the creature *is*; it is not something the battle does to it. Showing Craghorn's card as
+ * "Deal 20" with a separate band reading "Deal 40" invites you to hunt for a battle effect that
+ * does not exist — the 20 came from you.
+ *
+ * The grid chips already worked this way. The card did not, which is the inconsistency this fixes,
+ * and the arithmetic now lives here rather than in both places.
+ *
+ * "Effective this battle" keeps its own job: the difference the *battle* makes — ally auras,
+ * resolved abilities, trinkets. With only manual modifiers in play the two now agree, so the band
+ * correctly hides.
+ */
+export function perCastOutputOf(
+  creature: CreatureRecord,
+  modifiers?: StatModifier[],
+): PerCastOutput {
+  const sum = (stat: ModifierStat) =>
+    (modifiers ?? []).filter((m) => m.stat === stat).reduce((total, m) => total + m.amount, 0);
+
+  const statusAdd: Record<StatusEffectType, number> = {
+    Burn: sum("burnAmountAdd"),
+    Poison: sum("poisonAmountAdd"),
+    Shock: sum("shockAmountAdd"),
+    Shield: sum("shieldAmountAdd"),
+  };
+
   return {
-    damage: creature.baseDamage,
+    // A modifier can only scale an effect the creature already has: `null` damage stays `null`
+    // rather than a modifier conjuring an attack (data-model.md's "Known limitation").
+    damage: creature.baseDamage === null ? null : creature.baseDamage + sum("damageFlatAdd"),
     damageType: creature.damageType,
-    appliesStatus: creature.appliesStatus ?? [],
+    appliesStatus: (creature.appliesStatus ?? []).map((s) => ({
+      ...s,
+      amount: s.amount + (statusAdd[s.type] ?? 0),
+    })),
     heal: creature.healAmount ?? null,
-    multicast: creature.baseMulticast,
+    multicast: creature.baseMulticast + sum("multicastAdd"),
     damageUnconfirmed: isUnconfirmed(creature, "baseDamage"),
   };
 }
@@ -125,9 +160,11 @@ interface BatomonCardProps {
   meta?: ReactNode;
   /** True when Painter has painted this species this run (T236/FR-092). */
   painted?: boolean;
+  /** The user's own manual modifiers for this placement — folded into the displayed stats. */
+  modifiers?: StatModifier[];
 }
 
-export function BatomonCard({ creature, children, levelLabel, fixedHeight, meta, painted }: BatomonCardProps) {
+export function BatomonCard({ creature, children, levelLabel, fixedHeight, meta, painted, modifiers }: BatomonCardProps) {
   // Painted species and natively-"All" species render identically — they mean the same thing
   // in-game and differ only in provenance (run configuration vs corpus data).
   //
@@ -138,7 +175,7 @@ export function BatomonCard({ creature, children, levelLabel, fixedHeight, meta,
   const isAllType = creature.types.includes("All") || painted === true;
   const rarityColor = RARITY_COLORS[creature.rarity];
   const cooldownUnconfirmed = isUnconfirmed(creature, "baseCooldownSeconds");
-  const statLines = buildStatLines(perCastOutputOf(creature));
+  const statLines = buildStatLines(perCastOutputOf(creature, modifiers));
 
   return (
     <article

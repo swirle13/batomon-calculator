@@ -76,7 +76,9 @@ export function PlacedCreatureDetails({ result, highlightedSlot }: PlacedCreatur
    * Compared through the shared `PerCastOutput` shape, so a future output stat is included in the
    * comparison automatically rather than being silently ignored here.
    */
-  const base = perCastOutputOf(creature);
+  // Includes the user's manual modifiers, so the band compares like with like. Without that, every
+  // modifier made the band appear and show a difference the user had typed in themselves.
+  const base = perCastOutputOf(creature, placement.modifiers);
   const differs =
     effective !== undefined &&
     (JSON.stringify(effective.output) !== JSON.stringify(base) ||
@@ -89,6 +91,7 @@ export function PlacedCreatureDetails({ result, highlightedSlot }: PlacedCreatur
       levelLabel={`Lv.${placement.level}${placement.shiny ? " ✦" : ""}`}
       fixedHeight="panel"
       painted={isPainted(creature.id, config)}
+      modifiers={placement.modifiers}
       meta={<VariantToggles placement={placement} />}
     >
       {effective && differs ? (
