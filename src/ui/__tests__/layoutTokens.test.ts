@@ -142,6 +142,13 @@ describe("the trainer card holds one height for every trainer", () => {
     // no unit test in jsdom can see — jsdom does no layout.
     expect(card).toMatch(/min-height:\s*4\.5rem/);
   });
+
+  it("anchors the affected-species button to the bottom of that reserved space", () => {
+    // Only Painter and Smuggler have this button, and their ability texts are one and two lines, so
+    // following the text put the same control 21px apart between them. Anchored, both sit 10px above
+    // the card's bottom edge — measured.
+    expect(card).toMatch(/\.showButton \{[^}]*margin-top: auto/);
+  });
 });
 
 /**

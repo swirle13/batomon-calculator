@@ -73,9 +73,18 @@
 }
 
 .ability { margin: 0; font-size: var(--font-sm); color: var(--text-secondary); line-height: 1.45; }
-/* `Button size="sm"` carries the look. All that is left is where it sits: left, not stretched across
-   the card, because it opens a picker for one of the card's fields rather than acting on the card. */
-.showButton { align-self: flex-start; }
+/*
+ * `Button size="sm"` carries the look. What is left is where it sits.
+ *
+ * `align-self: flex-start` — left, not stretched across the card, because it opens a picker for one
+ * of the card's fields rather than acting on the card.
+ *
+ * `margin-top: auto` — pinned to the BOTTOM of the reserved footer rather than floating directly
+ * under the ability text (2026-10-07). Only two trainers have this button, and their ability texts
+ * are different lengths: Painter's wraps to two lines and Smuggler's to one, so following the text
+ * put the same control 21px apart between them. Anchored, it is in the same place in both.
+ */
+.showButton { align-self: flex-start; margin-top: auto; }
 .hint { color: var(--text-muted); font-weight: 400; }
 
 .pickerIntro { font-size: var(--font-sm); color: var(--text-secondary); margin: 0 0 var(--space-xs); }
