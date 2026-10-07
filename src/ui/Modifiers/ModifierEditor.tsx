@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { ModifierStat, GridSlot, TeamPlacement } from "../../data/types";
 import { resolveCreatureVariant } from "../../data/corpus";
 import { useTeamConfig } from "../../context/TeamConfigContext";
@@ -122,7 +122,11 @@ function PlacementModifierRow({ placement, onAdd, onRemove }: PlacementModifierR
   const creature = resolveCreatureVariant(placement.creatureId, placement.level, placement.shiny);
   const name = creature?.name ?? placement.creatureId;
   const [stat, setStat] = useState<ModifierStat>("damageFlatAdd");
-  const [amount, setAmount] = useState("0");
+  // Starts EMPTY, not "0". A prefilled zero meant typing 20 produced "020" unless you deleted it
+  // first — the field is for a number you are about to type, so it should not already contain one.
+  // The placeholder still shows a 0 so the expected shape is obvious.
+  const [amount, setAmount] = useState("");
+  const amountRef = useRef<HTMLInputElement>(null);
 
   /**
    * T211 (FR-078): say so when a modifier would do nothing, AT ENTRY TIME.
@@ -156,7 +160,10 @@ function PlacementModifierRow({ placement, onAdd, onRemove }: PlacementModifierR
     // be recording a trinket they are about to buy, and refusing the input would be worse than
     // telling them it currently does nothing.
     onAdd(stat, parsed);
-    setAmount("0");
+    setAmount("");
+    // Keep focus here so a second modifier can be typed straight away. Adding several in a row is
+    // the normal case, and returning to the mouse between each is the thing being fixed.
+    amountRef.current?.focus();
   }
 
   return (
@@ -199,10 +206,20 @@ function PlacementModifierRow({ placement, onAdd, onRemove }: PlacementModifierR
           ))}
         </select>
         <input
+          ref={amountRef}
           type="number"
           step="any"
           value={amount}
+          placeholder="0"
           onChange={(e) => setAmount(e.target.value)}
+          // Enter submits. This sits inside a form-less layout, so there is no implicit submit to
+          // rely on and the key has to be handled explicitly.
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              handleAdd();
+            }
+          }}
           aria-label={`Amount to add for ${name}`}
           className={styles.amount}
         />

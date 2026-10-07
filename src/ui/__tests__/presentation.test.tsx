@@ -8,6 +8,7 @@ import App from "../../App";
 import { TotalDps } from "../TeamSummary/TotalDps";
 import { TeamConfigProvider } from "../../context/TeamConfigContext";
 import { PlacedCreatureDetails } from "../TeamSummary/PlacedCreatureDetails";
+import { ModifierEditor } from "../Modifiers/ModifierEditor";
 import { buildStatLines, perCastOutputOf } from "../shared/BatomonCard/BatomonCard";
 import { GridPicker } from "../GridPicker/GridPicker";
 import { simulate } from "../../engine/simulate";
@@ -351,5 +352,59 @@ describe("effective band renders healing (2026-10-06)", () => {
       const lines = buildStatLines(perCastOutputOf(c));
       expect(lines.length, `${c.name} renders an empty effective band`).toBeGreaterThan(0);
     }
+  });
+});
+
+describe("modifier amount input (2026-10-07)", () => {
+  const CFG: TeamConfiguration = {
+    placements: [{ slot: { row: "back", col: 0 }, creatureId: "bumblebolt", level: 1 }],
+    trainerId: null,
+    trinketIds: [],
+    itemIds: [],
+    simulationWindowSeconds: 30,
+    teamModifiers: [],
+  };
+
+  it("starts empty rather than prefilled with 0", () => {
+    // A prefilled zero meant typing 20 produced "020" unless you deleted it first. The placeholder
+    // still shows the expected shape without putting a value in the field.
+    render(
+      <TeamConfigProvider initialConfig={CFG}>
+        <ModifierEditor />
+      </TeamConfigProvider>,
+    );
+    const input = screen.getByLabelText(/Amount to add for Bumblebolt/) as HTMLInputElement;
+    expect(input.value).toBe("");
+    expect(input.placeholder).toBe("0");
+  });
+
+  it("Enter adds the modifier, without reaching for the Add button", () => {
+    render(
+      <TeamConfigProvider initialConfig={CFG}>
+        <ModifierEditor />
+      </TeamConfigProvider>,
+    );
+    const input = screen.getByLabelText(/Amount to add for Bumblebolt/) as HTMLInputElement;
+    fireEvent.change(input, { target: { value: "20" } });
+    fireEvent.keyDown(input, { key: "Enter" });
+
+    expect(screen.getByText(/Damage \+20/)).toBeTruthy();
+    // Cleared and still focused, so a second modifier can be typed straight away — adding several
+    // in a row is the normal case.
+    expect(input.value).toBe("");
+    expect(document.activeElement).toBe(input);
+  });
+
+  it("Enter with an empty or zero amount does nothing", () => {
+    render(
+      <TeamConfigProvider initialConfig={CFG}>
+        <ModifierEditor />
+      </TeamConfigProvider>,
+    );
+    const input = screen.getByLabelText(/Amount to add for Bumblebolt/) as HTMLInputElement;
+    fireEvent.keyDown(input, { key: "Enter" });
+    fireEvent.change(input, { target: { value: "0" } });
+    fireEvent.keyDown(input, { key: "Enter" });
+    expect(screen.queryByText(/Damage \+0/)).toBeNull();
   });
 });

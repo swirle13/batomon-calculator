@@ -65,4 +65,16 @@ export const RECORDED_RUNS: readonly RecordedRun[] = [
       "'when you use an item' ability, which the engine has no trigger for. The only fixture here " +
       "exercising that path.",
   },
+  {
+    id: "r2d3",
+    label: "Round 2, day 3",
+    code:
+      "bat1:eyJ2IjoxLCJyZWdpb24iOm51bGwsInRyYWluZXIiOiJ0d2lucyIsIndpbmRvdyI6MzAsInBsYWNlbWVudHMiOlt7InJvdyI6ImJhY2siLCJjb2wiOjAsImNyZWF0dXJlSWQiOiJzaGlraXRzdW5lIiwibGV2ZWwiOjEsInNoaW55IjpmYWxzZSwibW9kaWZpZXJzIjpbXX0seyJyb3ciOiJiYWNrIiwiY29sIjoyLCJjcmVhdHVyZUlkIjoicGViYmxlciIsImxldmVsIjoyLCJzaGlueSI6ZmFsc2UsIm1vZGlmaWVycyI6W119LHsicm93IjoiZnJvbnQiLCJjb2wiOjAsImNyZWF0dXJlSWQiOiJicmF3bG1hbnRpcyIsImxldmVsIjoxLCJzaGlueSI6ZmFsc2UsIm1vZGlmaWVycyI6W119LHsicm93IjoiZnJvbnQiLCJjb2wiOjEsImNyZWF0dXJlSWQiOiJ2ZW5vcHVmZiIsImxldmVsIjoxLCJzaGlueSI6ZmFsc2UsIm1vZGlmaWVycyI6W119LHsicm93IjoiZnJvbnQiLCJjb2wiOjIsImNyZWF0dXJlSWQiOiJjcmFnaG9ybiIsImxldmVsIjoxLCJzaGlueSI6ZmFsc2UsIm1vZGlmaWVycyI6W3sic3RhdCI6ImRhbWFnZUZsYXRBZGQiLCJhbW91bnQiOjQwfSx7InN0YXQiOiJzaGllbGRBbW91bnRBZGQiLCJhbW91bnQiOjQwfV19XSwidHJpbmtldHMiOlsidHJlYXN1cmVfbWFwIl0sIml0ZW1zIjpbXSwicGFpbnRlZCI6WyJtYWdtaXRlIl0sInNtdWdnbGVkIjpbXSwidGVhbU1vZGlmaWVycyI6W119",
+    video: VIDEO_NL_RUN_1,
+    timestamp: "26:11",
+    note:
+      "Widest coverage of the four: the only fixture carrying a TRINKET (Treasure Map), the only " +
+      "one with a creature above level 1 (Pebbler L2), and the only one with no region set. " +
+      "Craghorn's banked item bonus has grown to +40/+40, one more press than r2d2.",
+  },
 ];
