@@ -5,7 +5,7 @@ import { RARITIES_DESC, RARITY_COLORS } from "../../data/statColors";
 import { slotKey } from "../../engine/grid";
 import { CardGrid, CreatureTile, Modal } from "../primitives";
 import styles from "./CreatureSearchModal.module.css";
-import { creatureHasType, isAvailableInRun } from "../../data/typing";
+import { creatureHasType, isOutOfRegion } from "../../data/typing";
 import type { TeamConfiguration } from "../../data/types";
 
 interface CreatureSearchModalProps {
@@ -65,10 +65,9 @@ export function CreatureSearchModal({ slot, onClose, onSelect, config}: Creature
     if (rarityFilter !== "" && c.rarity !== rarityFilter) return false;
     // T230/FR-086: painted and natively-"All" species match every type filter.
     if (typeFilter !== "" && !creatureHasType(c, typeFilter, config)) return false;
-    // T235b/FR-091: the pool is the selected region plus whatever Smuggler brought in. Region-less
-    // species (events, fossils) stay available — they were never regional stock, and hiding them
-    // would break existing teams.
-    if (!isAvailableInRun(c.id, config)) return false;
+    // Region is NOT a filter. It used to be, and that hid creatures the Travelling Merchant event
+    // can legitimately put on your team — leaving no way to select them at all. Out-of-region
+    // creatures are marked below instead.
     return true;
   });
 
@@ -165,8 +164,14 @@ export function CreatureSearchModal({ slot, onClose, onSelect, config}: Creature
                   name={creature.name}
                   types={creature.types}
                   spriteFile={creature.spriteFile}
-                  className={styles.cardTile}
+                  className={`${styles.cardTile} ${isOutOfRegion(creature.id, config) ? styles.outOfRegion : ""}`}
                 />
+                {/* Marked, not hidden: an event can legitimately put this on your team. */}
+                {isOutOfRegion(creature.id, config) && (
+                  <span className={styles.outOfRegionTag} title="Not from your selected region — reachable via events, gifts or Smuggler">
+                    other region
+                  </span>
+                )}
               </button>
             ))}
           </CardGrid>

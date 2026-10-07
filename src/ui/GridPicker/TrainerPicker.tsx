@@ -11,12 +11,19 @@ import type { RegionId } from "../../data/types";
  * and the affected-species picker live — but a 23-item list still picks faster from a native
  * control than from a grid of cards, so selection stays a select.
  *
- * ## Region comes first, and gates
+ * ## Region is first, but it does not gate anything
  *
- * "The player chooses a region before they choose anything else when starting a game." The region
- * control is therefore rendered above the trainer and the trainer is disabled until a region is
- * chosen. That ordering is not cosmetic: Smuggler's entire ability is "the other region", which has
- * no referent until one is picked.
+ * The ask was "the player chooses a region before they choose anything else", so the region control
+ * sits above the trainer — but it no longer DISABLES the trainer, and the creature pool no longer
+ * excludes other regions.
+ *
+ * Gating was wrong because the region is not actually a wall: the Travelling Merchant event can put
+ * a rare creature from another region in your shop, and once it is on your team you need to be able
+ * to find it. A filter that hides it makes the tool unable to represent a board the player is
+ * looking at, which is the one thing it must always do.
+ *
+ * Region still earns its place: it drives Smuggler's "opposite region" list, and out-of-region
+ * creatures are MARKED in the picker rather than removed.
  */
 const REGIONS: { id: RegionId; label: string }[] = [
   { id: "pantra", label: "Pantra" },
@@ -48,8 +55,6 @@ export function TrainerPicker() {
         Trainer:{" "}
         <select
           value={config.trainerId ?? ""}
-          disabled={!config.selectedRegion}
-          title={config.selectedRegion ? undefined : "Choose a region first"}
           onChange={(e) => setTrainerId(e.target.value === "" ? null : e.target.value)}
         >
           <option value="">— none —</option>

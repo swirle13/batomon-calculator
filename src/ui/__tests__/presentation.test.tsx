@@ -9,6 +9,9 @@ import { TotalDps } from "../TeamSummary/TotalDps";
 import { TeamConfigProvider } from "../../context/TeamConfigContext";
 import { PlacedCreatureDetails } from "../TeamSummary/PlacedCreatureDetails";
 import { ModifierEditor } from "../Modifiers/ModifierEditor";
+import { TrainerPicker } from "../GridPicker/TrainerPicker";
+import { TrainerCard } from "../shared/TrainerCard/TrainerCard";
+import { regionsOf } from "../../data/typing";
 import { buildStatLines, perCastOutputOf } from "../shared/BatomonCard/BatomonCard";
 import { GridPicker } from "../GridPicker/GridPicker";
 import { simulate } from "../../engine/simulate";
@@ -406,5 +409,58 @@ describe("modifier amount input (2026-10-07)", () => {
     fireEvent.change(input, { target: { value: "0" } });
     fireEvent.keyDown(input, { key: "Enter" });
     expect(screen.queryByText(/Damage \+0/)).toBeNull();
+  });
+});
+
+describe("region never blocks a selection (2026-10-07)", () => {
+  it("the trainer select is enabled with no region chosen", () => {
+    // It used to be disabled until a region was picked. The Travelling Merchant event can put a
+    // creature from another region on your team, so a region is not a commitment the UI may enforce.
+    render(
+      <TeamConfigProvider>
+        <TrainerPicker />
+      </TeamConfigProvider>,
+    );
+    const select = screen.getByRole("combobox", { name: /Trainer/i }) as HTMLSelectElement;
+    expect(select.disabled).toBe(false);
+  });
+
+  it("an out-of-region creature is still selectable in the picker", () => {
+    // The actual bug: searching for an event-granted creature returned nothing, because the pool
+    // excluded other regions outright.
+    const jintoOnly = corpus.creatures.find(
+      (c) => c.level === 1 && regionsOf(c.id).length === 1 && regionsOf(c.id)[0] === "jinto",
+    )!;
+    render(
+      <TeamConfigProvider initialConfig={{
+        placements: [], trainerId: null, trinketIds: [], itemIds: [],
+        simulationWindowSeconds: 30, teamModifiers: [], selectedRegion: "pantra",
+      }}>
+        <CreatureSearchModal
+          slot={{ row: "back", col: 0 }}
+          onClose={() => {}}
+          onSelect={() => {}}
+          config={{ selectedRegion: "pantra" }}
+        />
+      </TeamConfigProvider>,
+    );
+    expect(screen.getAllByText(jintoOnly.name).length).toBeGreaterThan(0);
+    // ...and marked, so the information survives the filter's removal.
+    expect(screen.getAllByText(/other region/i).length).toBeGreaterThan(0);
+  });
+});
+
+describe("trainer card (2026-10-07)", () => {
+  it("shows no 'unconfirmed' chip", () => {
+    // Removed: it appeared on straightforward trainers like Twins, where it told the user nothing
+    // actionable and only cast doubt on text that reads plainly.
+    const twins = corpus.trainers.find((t) => t.id === "twins")!;
+    render(
+      <TeamConfigProvider>
+        <TrainerCard trainer={twins} />
+      </TeamConfigProvider>,
+    );
+    expect(screen.queryByText(/unconfirmed/i)).toBeNull();
+    expect(screen.getByText(twins.name)).toBeTruthy();
   });
 });

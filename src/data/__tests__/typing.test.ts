@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { corpus } from "../corpus";
 import { CREATURE_REGIONS, REGION_UNSOURCED } from "../regions";
-import { creatureHasType, isAvailableInRun, isInOppositeRegion, isPainted } from "../typing";
+import { creatureHasType, isInOppositeRegion, isOutOfRegion, isPainted } from "../typing";
 
 /** Round 4 orchestration: painting, the "All" type, and region membership. */
 describe("type matching (T230 / FR-086)", () => {
@@ -59,14 +59,20 @@ describe("regions (T229 / FR-087, FR-088)", () => {
     expect(isInOppositeRegion(none, "pantra"), "region-less was never regional stock").toBe(false);
   });
 
-  it("the pool is the selected region, plus smuggled species, plus region-less ones", () => {
+  it("marks out-of-region species without ever hiding them", () => {
+    // This was a FILTER until 2026-10-07, which made creatures the Travelling Merchant event can
+    // put on your team unselectable — the tool could not represent a board the player was looking
+    // at. It is now a marker, so nothing is unreachable.
     const jintoOnly = Object.entries(CREATURE_REGIONS).find(([, r]) => r.length === 1 && r[0] === "jinto")![0];
     const none = Object.entries(CREATURE_REGIONS).find(([, r]) => r.length === 0)![0];
 
-    expect(isAvailableInRun(jintoOnly, { selectedRegion: "pantra" })).toBe(false);
-    expect(isAvailableInRun(jintoOnly, { selectedRegion: "pantra", smuggledCreatureIds: [jintoOnly] })).toBe(true);
-    expect(isAvailableInRun(none, { selectedRegion: "pantra" }), "events/fossils stay available").toBe(true);
-    expect(isAvailableInRun(jintoOnly, {}), "no region chosen filters nothing").toBe(true);
+    expect(isOutOfRegion(jintoOnly, { selectedRegion: "pantra" })).toBe(true);
+    // Smuggled in deliberately, so not foreign.
+    expect(isOutOfRegion(jintoOnly, { selectedRegion: "pantra", smuggledCreatureIds: [jintoOnly] })).toBe(false);
+    // Events and fossils were never regional stock.
+    expect(isOutOfRegion(none, { selectedRegion: "pantra" })).toBe(false);
+    // Nothing is foreign before a region is chosen.
+    expect(isOutOfRegion(jintoOnly, {})).toBe(false);
   });
 
   it("species missing from the source are tracked separately from species with no region", () => {

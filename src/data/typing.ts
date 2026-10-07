@@ -58,19 +58,29 @@ export function isInOppositeRegion(creatureId: string, current: RegionId | undef
 }
 
 /**
- * Whether a species is obtainable this run: in the selected region, or smuggled in, or region-less.
+ * Whether a species is OUT of the run's region — shown as a marker, never used to hide it.
  *
- * Region-less species stay available deliberately — they are events, fossils and shop-only
- * creatures rather than regional stock, so gating them behind a region would hide them entirely
- * and break teams that already use them.
+ * ## Why this stopped being a filter
+ *
+ * It used to exclude out-of-region creatures from the picker. That is wrong, because the region is
+ * not a wall: the **Travelling Merchant** event can put a rare creature from another region in your
+ * shop, and once it is on your team you have to be able to find it. A filter that hides it makes
+ * the tool unable to represent a board the player is looking at — the one thing it must always do.
+ * Events, gifts and fossils all create the same situation.
+ *
+ * So region became information rather than a gate. The picker marks these creatures; it does not
+ * remove them, and nothing is unreachable.
+ *
+ * Returns `false` when no region is chosen (nothing is foreign yet), for region-less species
+ * (events and fossils were never regional stock), and for anything smuggled in deliberately.
  */
-export function isAvailableInRun(
+export function isOutOfRegion(
   creatureId: string,
   config?: Pick<TeamConfiguration, "selectedRegion" | "smuggledCreatureIds">,
 ): boolean {
-  if (!config?.selectedRegion) return true; // no region chosen yet — nothing is filtered out
+  if (!config?.selectedRegion) return false;
   const regions = regionsOf(creatureId);
-  if (regions.length === 0) return true;
-  if (regions.includes(config.selectedRegion)) return true;
-  return config.smuggledCreatureIds?.includes(creatureId) === true;
+  if (regions.length === 0) return false;
+  if (regions.includes(config.selectedRegion)) return false;
+  return config.smuggledCreatureIds?.includes(creatureId) !== true;
 }

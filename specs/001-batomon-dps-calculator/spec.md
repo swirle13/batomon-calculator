@@ -684,8 +684,15 @@ stopped at FR-084 while every prior round added FRs.
   that designate an enumerable set (Painter, Smuggler) and not for rule-based type grants (Chef).
 - **FR-090**: The painted/smuggled sets MUST be user-selected and persisted in the team
   configuration; the app MUST NOT generate or randomise them.
-- **FR-091**: Smuggled creatures MUST become selectable in the creature pool where they otherwise
-  would not be; recording the set without that effect does not satisfy the requirement.
+- **FR-091** **AMENDED 2026-10-07**: ~~Smuggled creatures MUST become selectable in the creature
+  pool where they otherwise would not be.~~
+  Region MUST NOT exclude any creature from the picker. The original wording presumed the pool was
+  gated by region, and it was — which made creatures the **Travelling Merchant** event can put on
+  your team unselectable, so the app could not represent a board the player was looking at. Events,
+  gifts and fossils all create the same case.
+  Region is now shown as a **marker** on out-of-region creatures, and still drives Smuggler's
+  "opposite region" list. Smuggling no longer changes what is *selectable*, because nothing is
+  unselectable; it changes what is marked.
 - **FR-092**: Painted creatures MUST render a rainbow type chip and a translucent rainbow sprite
   overlay scrolling slowly south-east, suppressed under `prefers-reduced-motion`.
 - **FR-093**: An ability grant MAY bring a damage effect into existence on a creature whose

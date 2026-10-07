@@ -47,7 +47,6 @@ interface TrainerCardProps {
 export function TrainerCard({ trainer }: TrainerCardProps) {
   const [pickerOpen, setPickerOpen] = useState(false);
   const designation = designatesCreatureSet(trainer.id);
-  const unconfirmed = trainer.unconfirmedFields?.includes("abilityText");
 
   return (
     <Surface className={styles.card}>
@@ -62,11 +61,6 @@ export function TrainerCard({ trainer }: TrainerCardProps) {
         />
         <div className={styles.titles}>
           <h3 className={styles.name}>{trainer.name}</h3>
-          {unconfirmed && (
-            <span className={styles.unconfirmed} title="This ability text is not yet confirmed against a primary source">
-              unconfirmed
-            </span>
-          )}
         </div>
       </div>
 
