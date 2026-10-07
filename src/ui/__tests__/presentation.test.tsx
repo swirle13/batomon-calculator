@@ -219,9 +219,14 @@ describe("round 9: total DPS and grid sizing", () => {
 
   it("shows a non-zero headline total for a team whose every DPS row reads 0.00 (FR-072)", () => {
     const result = simulate(poisonTeam, corpus);
-    // The defect this fixes: perCreatureDps counts DIRECT damage only, so this team reads 0.00
+    // The defect this fixes: perCreatureDps counts DIRECT damage only, so this team read 0.00
     // everywhere while dealing ~136.6/s.
-    expect(Object.keys(result.perCreatureDps).length).toBe(0);
+    //
+    // 2026-10-06 (T244): this asserted ZERO rows. It is now 1 — Fumungus's "additional Damage equal
+    // to 200% of the Poison stacks on the enemy" is modelled, and that damage is DIRECT, so the
+    // board is no longer a pure-status team. The headline figure still matters (3 of 4 creatures
+    // contribute nothing to the direct column), so the test's point survives; its premise moved.
+    expect(Object.keys(result.perCreatureDps).length).toBe(1);
     render(<TotalDps config={poisonTeam} result={result} />);
     // RE-DERIVED round 9 (T202/T200b), not re-baselined. This read 136.60 while every creature
     // ability on this board was inert. With the effect resolver and the event-driven scheduler,
