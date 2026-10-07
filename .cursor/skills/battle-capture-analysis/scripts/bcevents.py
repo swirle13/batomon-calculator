@@ -34,7 +34,7 @@ import sys
 from collections import defaultdict
 
 # A cast is a cooldown bar falling from (near) full to (near) empty. Both thresholds are
-# fractions of that slot's own bar height, which bcscan normalises so full == that mon's
+# fractions of that slot's own bar height, which bcscan normalizes so full == that mon's
 # whole cooldown regardless of its length.
 FULL_FRAC = 0.85
 EMPTY_FRAC = 0.25
@@ -68,7 +68,7 @@ def slot_ids(fieldnames):
 def badge_kinds(fieldnames, slot):
     pre = slot + "_"
     return [
-        f[len(pre):]
+        f[len(pre) :]
         for f in fieldnames
         if f.startswith(pre) and not f.endswith(("_cd", "_raw"))
     ]
@@ -159,21 +159,31 @@ def detect(rows, cluster_ms, charge_slots):
         for i in range(1, len(cd)):
             if cd[i] > empty:
                 continue
-            back = cd[max(0, i - CAST_LOOKBACK):i]
+            back = cd[max(0, i - CAST_LOOKBACK) : i]
             if back and max(back) >= full:
                 # collapse repeats: one cast per descent
                 if casts and times[i] - casts[-1] < 0.05:
                     continue
                 casts.append(times[i])
-                events.append({
-                    "t": times[i], "kind": "cast", "slot": slot, "field": "cooldown",
-                    "from": max(back), "to": cd[i], "delta": "",
-                    "detail": "bar full -> reset", "confidence": "high",
-                })
+                events.append(
+                    {
+                        "t": times[i],
+                        "kind": "cast",
+                        "slot": slot,
+                        "field": "cooldown",
+                        "from": max(back),
+                        "to": cd[i],
+                        "delta": "",
+                        "detail": "bar full -> reset",
+                        "confidence": "high",
+                    }
+                )
 
         # Natural fill per frame, from the median upward step, so a charge can be told apart
         # from ordinary progress.
-        ups = sorted(d for d in (cd[i] - cd[i - 1] for i in range(1, len(cd))) if 0 < d <= 3)
+        ups = sorted(
+            d for d in (cd[i] - cd[i - 1] for i in range(1, len(cd))) if 0 < d <= 3
+        )
         typical = ups[len(ups) // 2] if ups else 1
         for i in range(1, len(cd) - CHARGE_PERSIST):
             d = cd[i] - cd[i - 1]
@@ -182,15 +192,22 @@ def detect(rows, cluster_ms, charge_slots):
             # A real charge moves the bar and the bar *stays* moved. The bars are only 4px wide,
             # so a white VFX flash crossing one reads as a big jump for a frame or two and then
             # falls back; requiring the new level to hold removes almost all of that.
-            after = cd[i + 1:i + 1 + CHARGE_PERSIST]
+            after = cd[i + 1 : i + 1 + CHARGE_PERSIST]
             if not after or min(after) < cd[i] - 2:
                 continue
-            events.append({
-                "t": times[i], "kind": "charge", "slot": slot, "field": "cooldown",
-                "from": cd[i - 1], "to": cd[i], "delta": d,
-                "detail": f"jump of {d}px (normal fill {typical}px/frame)",
-                "confidence": "medium",
-            })
+            events.append(
+                {
+                    "t": times[i],
+                    "kind": "charge",
+                    "slot": slot,
+                    "field": "cooldown",
+                    "from": cd[i - 1],
+                    "to": cd[i],
+                    "delta": d,
+                    "detail": f"jump of {d}px (normal fill {typical}px/frame)",
+                    "confidence": "medium",
+                }
+            )
 
         intervals = [round(b - a, 4) for a, b in zip(casts, casts[1:])]
         bar_stats[slot] = {"height": height, "casts": casts, "intervals": intervals}
@@ -205,13 +222,22 @@ def detect(rows, cluster_ms, charge_slots):
                 if v is None:
                     continue
                 if prev is not None and v != prev:
-                    events.append({
-                        "t": t, "kind": "stat", "slot": slot, "field": kind,
-                        "from": prev, "to": v, "delta": v - prev,
-                        "detail": f"{kind} {prev} -> {v}",
-                        # A single-frame blip between two stable values is a misread, not a change.
-                        "confidence": "high" if prev_t is None or t - prev_t < 0.5 else "medium",
-                    })
+                    events.append(
+                        {
+                            "t": t,
+                            "kind": "stat",
+                            "slot": slot,
+                            "field": kind,
+                            "from": prev,
+                            "to": v,
+                            "delta": v - prev,
+                            "detail": f"{kind} {prev} -> {v}",
+                            # A single-frame blip between two stable values is a misread, not a change.
+                            "confidence": "high"
+                            if prev_t is None or t - prev_t < 0.5
+                            else "medium",
+                        }
+                    )
                 prev, prev_t = v, t
 
     # ---- health bars ----
@@ -226,24 +252,39 @@ def detect(rows, cluster_ms, charge_slots):
             # The fill boundary jitters by a few pixels when VFX cross the bar, so only accept a
             # drop that still holds a few frames later. Health only ever decreases.
             if prev is not None and v < prev - 1:
-                after = series[i + 1:i + 1 + CHARGE_PERSIST]
+                after = series[i + 1 : i + 1 + CHARGE_PERSIST]
                 if after and max(after) <= prev - 1:
-                    events.append({
-                        "t": t, "kind": "hp", "slot": side, "field": "hp_px",
-                        "from": prev, "to": v, "delta": v - prev,
-                        "detail": f"{side} health bar {prev}px -> {v}px", "confidence": "medium",
-                    })
+                    events.append(
+                        {
+                            "t": t,
+                            "kind": "hp",
+                            "slot": side,
+                            "field": "hp_px",
+                            "from": prev,
+                            "to": v,
+                            "delta": v - prev,
+                            "detail": f"{side} health bar {prev}px -> {v}px",
+                            "confidence": "medium",
+                        }
+                    )
                     prev = v
             elif prev is None or v > prev:
                 prev = v
 
     if battle_end:
-        events.append({
-            "t": battle_end[0], "kind": "battle_end", "slot": battle_end[1],
-            "field": "hp_px", "from": "", "to": 0, "delta": "",
-            "detail": f"{battle_end[1]} health reached zero — data past here is the post-battle screen",
-            "confidence": "high",
-        })
+        events.append(
+            {
+                "t": battle_end[0],
+                "kind": "battle_end",
+                "slot": battle_end[1],
+                "field": "hp_px",
+                "from": "",
+                "to": 0,
+                "delta": "",
+                "detail": f"{battle_end[1]} health reached zero — data past here is the post-battle screen",
+                "confidence": "high",
+            }
+        )
 
     events.sort(key=lambda e: (e["t"], e["kind"], e["slot"]))
 
@@ -260,7 +301,9 @@ def detect(rows, cluster_ms, charge_slots):
     # independent cadences into one series destroys both.
     dot = None
     for side in ("enemy", "ally"):
-        drops = sorted({e["t"] for e in events if e["kind"] == "hp" and e["slot"] == side})
+        drops = sorted(
+            {e["t"] for e in events if e["kind"] == "hp" and e["slot"] == side}
+        )
         if len(drops) < 5:
             continue
         # Grid-search the period, scored by COVERAGE rather than by match count.
@@ -290,7 +333,9 @@ def detect(rows, cluster_ms, charge_slots):
                 coverage = filled / expected_slots
                 if coverage < DOT_MIN_COVERAGE:
                     continue
-                residual = sum(abs((t - anchor) - k * period) for k, t in zip(ks, ts)) / len(ks)
+                residual = sum(
+                    abs((t - anchor) - k * period) for k, t in zip(ks, ts)
+                ) / len(ks)
                 score = (filled, -residual)
                 if best is None or score > best[0]:
                     best = (score, period, ks, ts, coverage)
@@ -329,13 +374,19 @@ def detect(rows, cluster_ms, charge_slots):
     speed_estimates = []
     for slot, charge_seconds in charge_slots.items():
         if slot not in slots:
-            print(f"warning: --charge-slot named '{slot}', which is not in this dataset",
-                  file=sys.stderr)
+            print(
+                f"warning: --charge-slot named '{slot}', which is not in this dataset",
+                file=sys.stderr,
+            )
             continue
-        grants = [e["delta"] for e in events if e["kind"] == "charge" and e["slot"] == slot]
+        grants = [
+            e["delta"] for e in events if e["kind"] == "charge" and e["slot"] == slot
+        ]
         if len(grants) < 3:
-            print(f"warning: only {len(grants)} charge grants on {slot}; too few to estimate speed",
-                  file=sys.stderr)
+            print(
+                f"warning: only {len(grants)} charge grants on {slot}; too few to estimate speed",
+                file=sys.stderr,
+            )
             continue
         px_per_grant = sorted(grants)[len(grants) // 2]
         cd = [int(r[slot + "_cd"] or 0) for r in rows]
@@ -349,24 +400,28 @@ def detect(rows, cluster_ms, charge_slots):
                 start = i
         a, b = best
         if b - a < 20:
-            print(f"warning: no clean fill stretch on {slot}; cannot estimate speed",
-                  file=sys.stderr)
+            print(
+                f"warning: no clean fill stretch on {slot}; cannot estimate speed",
+                file=sys.stderr,
+            )
             continue
         rise, dur = cd[b] - cd[a], times[b] - times[a]
         if rise <= 0 or dur <= 0:
             continue
         px_per_video_s = rise / dur
         px_per_game_s = px_per_grant / charge_seconds
-        speed_estimates.append({
-            "slot": slot,
-            "charge_seconds": charge_seconds,
-            "px_per_grant": px_per_grant,
-            "px_per_game_s": round(px_per_game_s, 2),
-            "px_per_video_s": round(px_per_video_s, 2),
-            "window": (round(times[a], 3), round(times[b], 3)),
-            "speed": round(px_per_video_s / px_per_game_s, 3),
-            "full_cooldown_game_s": round(height / px_per_game_s, 2),
-        })
+        speed_estimates.append(
+            {
+                "slot": slot,
+                "charge_seconds": charge_seconds,
+                "px_per_grant": px_per_grant,
+                "px_per_game_s": round(px_per_game_s, 2),
+                "px_per_video_s": round(px_per_video_s, 2),
+                "window": (round(times[a], 3), round(times[b], 3)),
+                "speed": round(px_per_video_s / px_per_game_s, 3),
+                "full_cooldown_game_s": round(height / px_per_game_s, 2),
+            }
+        )
 
     # ---- clusters of near-simultaneous casts: the tie-break candidates ----
     casts = [e for e in events if e["kind"] == "cast"]
@@ -392,81 +447,155 @@ def write_events(events, path):
             w.writerow({c: e.get(c, "") for c in cols})
 
 
-def write_timeline(events, bar_stats, clusters, speed_estimates, battle_start, battle_end, dot,
-                   rows, path, cluster_ms, speed, dot_interval):
+def write_timeline(
+    events,
+    bar_stats,
+    clusters,
+    speed_estimates,
+    battle_start,
+    battle_end,
+    dot,
+    rows,
+    path,
+    cluster_ms,
+    speed,
+    dot_interval,
+):
     times = [float(r["t"]) for r in rows]
     out = []
     out.append("# Battle timeline")
     out.append("")
-    out.append(f"Battle window {times[0]:.4f}s - {times[-1]:.4f}s, {len(rows)} frames analysed.")
+    out.append(
+        f"Battle window {times[0]:.4f}s - {times[-1]:.4f}s, {len(rows)} frames analysed."
+    )
     out.append("")
     if battle_start is not None:
-        out.append(f"Battle started at t={battle_start:.4f} (both health bars full). Frames before")
-        out.append("that are the pre-battle board or a transition and are excluded here -- though the")
-        out.append("pre-battle frames are worth querying directly in `frames.csv`, since they show")
+        out.append(
+            f"Battle started at t={battle_start:.4f} (both health bars full). Frames before"
+        )
+        out.append(
+            "that are the pre-battle board or a transition and are excluded here -- though the"
+        )
+        out.append(
+            "pre-battle frames are worth querying directly in `frames.csv`, since they show"
+        )
         out.append("base stats before any battle-start effect has resolved.")
         out.append("")
     if battle_end:
-        out.append(f"**Battle ended at t={battle_end[0]:.4f}** ({battle_end[1]} health reached zero).")
+        out.append(
+            f"**Battle ended at t={battle_end[0]:.4f}** ({battle_end[1]} health reached zero)."
+        )
         out.append("Everything after that is the post-battle screen and is excluded.")
         out.append("")
 
     out.append("## Clock")
     out.append("")
     if speed:
-        out.append(f"Speed factor supplied as **{speed}x**, so every interval below is also given in")
+        out.append(
+            f"Speed factor supplied as **{speed}x**, so every interval below is also given in"
+        )
         out.append("game-seconds. Check that against the estimate, if there is one.")
     else:
-        out.append("No speed factor supplied (`--speed=N`), so all times are **video** seconds. With")
-        out.append("fast-forward engaged these are compressed relative to game time. Ordering and")
+        out.append(
+            "No speed factor supplied (`--speed=N`), so all times are **video** seconds. With"
+        )
+        out.append(
+            "fast-forward engaged these are compressed relative to game time. Ordering and"
+        )
         out.append("ratios are unaffected; absolute second-counts are not usable.")
     out.append("")
     if dot:
-        out.append(f"**Candidate damage-over-time cadence: a health drop every "
-                   f"{dot['period']:.4f} s of video**,")
-        out.append(f"on the {dot['side']} health bar: {dot['matches']} of {dot['total_drops']} drops "
-                   f"across t={dot['span'][0]}-{dot['span'][1]}, filling "
-                   f"{dot['coverage'] * 100:.0f}% of the expected tick slots.")
+        out.append(
+            f"**Candidate damage-over-time cadence: a health drop every "
+            f"{dot['period']:.4f} s of video**,"
+        )
+        out.append(
+            f"on the {dot['side']} health bar: {dot['matches']} of {dot['total_drops']} drops "
+            f"across t={dot['span'][0]}-{dot['span'][1]}, filling "
+            f"{dot['coverage'] * 100:.0f}% of the expected tick slots."
+        )
         out.append("")
-        out.append("Poison ticks once per game second (Burn twice), so this cadence is a clock")
+        out.append(
+            "Poison ticks once per game second (Burn twice), so this cadence is a clock"
+        )
         out.append("running in game time:")
         out.append("")
-        out.append(f"  tick interval assumed {dot_interval} game-s  ->  "
-                   f"**speed ~ {dot_interval / dot['period']:.2f}x**")
+        out.append(
+            f"  tick interval assumed {dot_interval} game-s  ->  "
+            f"**speed ~ {dot_interval / dot['period']:.2f}x**"
+        )
         out.append("")
-        out.append("**Treat this as a hypothesis, not a measurement.** Cast damage moves the same bar,")
-        out.append("so the fit has to tolerate unexplained drops, and on the reference recording the")
-        out.append("answer moved between 1.96x and 2.37x depending on which side was fitted. Judge it")
-        out.append("by the coverage and drop counts above: a fit backed by six ticks spanning most of")
-        out.append("the battle is worth something, one backed by four points on a barely-damaged bar")
+        out.append(
+            "**Treat this as a hypothesis, not a measurement.** Cast damage moves the same bar,"
+        )
+        out.append(
+            "so the fit has to tolerate unexplained drops, and on the reference recording the"
+        )
+        out.append(
+            "answer moved between 1.96x and 2.37x depending on which side was fitted. Judge it"
+        )
+        out.append(
+            "by the coverage and drop counts above: a fit backed by six ticks spanning most of"
+        )
+        out.append(
+            "the battle is worth something, one backed by four points on a barely-damaged bar"
+        )
         out.append("is not. Pass `--dot-interval=0.5` if these are Burn ticks.")
         out.append("")
 
     if speed_estimates:
-        out.append("A second, independent route via charge grants (a grant is a known number of *game* seconds, and")
-        out.append("shows up as a known number of bar pixels, so the ratio against the natural fill")
-        out.append("rate gives the multiplier with no assumptions about cooldown modifiers):")
+        out.append(
+            "A second, independent route via charge grants (a grant is a known number of *game* seconds, and"
+        )
+        out.append(
+            "shows up as a known number of bar pixels, so the ratio against the natural fill"
+        )
+        out.append(
+            "rate gives the multiplier with no assumptions about cooldown modifiers):"
+        )
         out.append("")
-        out.append("| Slot | charge | px/grant | px/game-s | px/video-s | implied speed | that mon's full cooldown |")
+        out.append(
+            "| Slot | charge | px/grant | px/game-s | px/video-s | implied speed | that mon's full cooldown |"
+        )
         out.append("|---|---|---|---|---|---|---|")
         for e in speed_estimates:
-            out.append(f"| `{e['slot']}` | {e['charge_seconds']}s | {e['px_per_grant']} | "
-                       f"{e['px_per_game_s']} | {e['px_per_video_s']} | **{e['speed']}x** | "
-                       f"{e['full_cooldown_game_s']}s |")
+            out.append(
+                f"| `{e['slot']}` | {e['charge_seconds']}s | {e['px_per_grant']} | "
+                f"{e['px_per_game_s']} | {e['px_per_video_s']} | **{e['speed']}x** | "
+                f"{e['full_cooldown_game_s']}s |"
+            )
         out.append("")
-        out.append("The last column is a bonus and is **fast-forward independent**: the bar's full")
-        out.append("height divided by pixels-per-game-second is that mon's effective cooldown in")
-        out.append("real game seconds, which compared against its base cooldown gives the run's")
+        out.append(
+            "The last column is a bonus and is **fast-forward independent**: the bar's full"
+        )
+        out.append(
+            "height divided by pixels-per-game-second is that mon's effective cooldown in"
+        )
+        out.append(
+            "real game seconds, which compared against its base cooldown gives the run's"
+        )
         out.append("cooldown modifier directly.")
         out.append("")
-        out.append("Treat this speed figure as a sanity check only. Both inputs carry a pixel or two")
-        out.append("of error, which is 10-20% on the result, and on the reference recording it")
-        out.append("disagreed with the metronome (1.50x vs 1.98x). When two routes disagree, one of")
-        out.append("the assumptions is false -- do not average them. Record the same board at 1x to")
+        out.append(
+            "Treat this speed figure as a sanity check only. Both inputs carry a pixel or two"
+        )
+        out.append(
+            "of error, which is 10-20% on the result, and on the reference recording it"
+        )
+        out.append(
+            "disagreed with the metronome (1.50x vs 1.98x). When two routes disagree, one of"
+        )
+        out.append(
+            "the assumptions is false -- do not average them. Record the same board at 1x to"
+        )
         out.append("settle it.")
     if not dot and not speed_estimates:
-        out.append("Neither a DOT cadence nor charge grants were found, so the speed factor cannot")
-        out.append("be estimated here. Record a known board at 1x to calibrate each level once.")
+        out.append(
+            "Neither a DOT cadence nor charge grants were found, so the speed factor cannot"
+        )
+        out.append(
+            "be estimated here. Record a known board at 1x to calibrate each level once."
+        )
     out.append("")
 
     out.append("## Cooldown cadence per slot")
@@ -485,34 +614,48 @@ def write_timeline(events, bar_stats, clusters, speed_estimates, battle_start, b
             iv = ", ".join(f"{i:.3f}" for i in ivs)
         out.append(f"| `{slot}` | {s['height']} | {len(s['casts'])} | {ts} | {iv} |")
     out.append("")
-    out.append("An interval that stays constant across cycles is that mon's effective cooldown.")
-    out.append("Comparing it against the creature's base cooldown gives the run's cooldown")
+    out.append(
+        "An interval that stays constant across cycles is that mon's effective cooldown."
+    )
+    out.append(
+        "Comparing it against the creature's base cooldown gives the run's cooldown"
+    )
     out.append("modifier, without needing to know the fast-forward factor.")
     out.append("")
 
     out.append(f"## Near-simultaneous cast clusters (within {cluster_ms:.0f} ms)")
     out.append("")
     if not clusters:
-        out.append("None. No two mons cast close enough together to be tie-break candidates.")
+        out.append(
+            "None. No two mons cast close enough together to be tie-break candidates."
+        )
     else:
-        out.append("These are the tie-break candidates. A cluster is **not** proof of a tie: if the")
-        out.append("gap is more than a frame or two, the later mon may simply have become ready")
+        out.append(
+            "These are the tie-break candidates. A cluster is **not** proof of a tie: if the"
+        )
+        out.append(
+            "gap is more than a frame or two, the later mon may simply have become ready"
+        )
         out.append("later. Check the gap column before drawing conclusions.")
         out.append("")
         for i, c in enumerate(clusters, 1):
             span = (c[-1]["t"] - c[0]["t"]) * 1000
-            out.append(f"**Cluster {i}** — t={c[0]['t']:.4f} to {c[-1]['t']:.4f} ({span:.1f} ms span)")
+            out.append(
+                f"**Cluster {i}** — t={c[0]['t']:.4f} to {c[-1]['t']:.4f} ({span:.1f} ms span)"
+            )
             out.append("")
             out.append("| t | slot | gap from previous |")
             out.append("|---|---|---|")
             for j, e in enumerate(c):
-                gap = "—" if j == 0 else f"{(e['t'] - c[j-1]['t']) * 1000:.1f} ms"
+                gap = "—" if j == 0 else f"{(e['t'] - c[j - 1]['t']) * 1000:.1f} ms"
                 out.append(f"| {e['t']:.4f} | `{e['slot']}` | {gap} |")
             out.append("")
 
     out.append("## Event log")
     out.append("")
-    out.append("`stat` rows are the load-bearing ones: a badge delta is a *value* the game")
+    out.append(
+        "`stat` rows are the load-bearing ones: a badge delta is a *value* the game"
+    )
     out.append("computed, which is what pins down which inputs an effect read.")
     out.append("")
     out.append("| t | kind | slot | change | delta | conf |")
@@ -553,29 +696,56 @@ def main():
     frames_path, out_dir = args[0], args[1]
     os.makedirs(out_dir, exist_ok=True)
     rows = read_frames(frames_path)
-    events, bar_stats, clusters, speed_estimates, battle_start, battle_end, dot = detect(
-        rows, cluster_ms, charge_slots)
+    events, bar_stats, clusters, speed_estimates, battle_start, battle_end, dot = (
+        detect(rows, cluster_ms, charge_slots)
+    )
 
     write_events(events, os.path.join(out_dir, "events.csv"))
-    write_timeline(events, bar_stats, clusters, speed_estimates, battle_start, battle_end, dot,
-                   rows, os.path.join(out_dir, "timeline.md"), cluster_ms, speed, dot_interval)
+    write_timeline(
+        events,
+        bar_stats,
+        clusters,
+        speed_estimates,
+        battle_start,
+        battle_end,
+        dot,
+        rows,
+        os.path.join(out_dir, "timeline.md"),
+        cluster_ms,
+        speed,
+        dot_interval,
+    )
 
     by_kind = defaultdict(int)
     for e in events:
         by_kind[e["kind"]] += 1
     if battle_start is not None:
-        print(f"battle window: t={battle_start:.4f} .. "
-              + (f"{battle_end[0]:.4f} ({battle_end[1]} reached 0 HP)" if battle_end else "end of clip"))
-    print(f"{len(events)} events: " +
-          ", ".join(f"{k}={v}" for k, v in sorted(by_kind.items())))
-    print(f"{len(clusters)} near-simultaneous cast cluster(s) within {cluster_ms:.0f} ms")
+        print(
+            f"battle window: t={battle_start:.4f} .. "
+            + (
+                f"{battle_end[0]:.4f} ({battle_end[1]} reached 0 HP)"
+                if battle_end
+                else "end of clip"
+            )
+        )
+    print(
+        f"{len(events)} events: "
+        + ", ".join(f"{k}={v}" for k, v in sorted(by_kind.items()))
+    )
+    print(
+        f"{len(clusters)} near-simultaneous cast cluster(s) within {cluster_ms:.0f} ms"
+    )
     if dot:
-        print(f"DOT metronome ({dot['side']}): tick every {dot['period']:.4f}s video, "
-              f"{dot['matches']}/{dot['total_drops']} drops, {dot['coverage'] * 100:.0f}% slot "
-              f"coverage -> speed {dot_interval / dot['period']:.3f}x at a {dot_interval}s tick")
+        print(
+            f"DOT metronome ({dot['side']}): tick every {dot['period']:.4f}s video, "
+            f"{dot['matches']}/{dot['total_drops']} drops, {dot['coverage'] * 100:.0f}% slot "
+            f"coverage -> speed {dot_interval / dot['period']:.3f}x at a {dot_interval}s tick"
+        )
     for e in speed_estimates:
-        print(f"charge-based speed estimate from {e['slot']}: {e['speed']}x "
-              f"(its effective cooldown: {e['full_cooldown_game_s']} game-s)")
+        print(
+            f"charge-based speed estimate from {e['slot']}: {e['speed']}x "
+            f"(its effective cooldown: {e['full_cooldown_game_s']} game-s)"
+        )
     print(f"wrote {out_dir}/events.csv and {out_dir}/timeline.md")
 
 

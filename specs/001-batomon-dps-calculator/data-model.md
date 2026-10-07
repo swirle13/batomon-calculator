@@ -1005,7 +1005,7 @@ team, defeating both uses.
 The same team has many representations — slots in a different array order, trinkets listed
 differently, an absent optional versus an empty array, modifiers carrying freshly-generated session
 ids. All must produce the same fingerprint, or the id fingerprints the *editing history* rather than
-the team. `canonicalise()` sorts placements by slot, sorts every id list, normalises `shiny`
+the team. `canonicalize()` sorts placements by slot, sorts every id list, normalizes `shiny`
 `undefined`/`false`, and strips modifier ids.
 
 Import **replaces** rather than merges: merging has no correct answer for a slot occupied in both

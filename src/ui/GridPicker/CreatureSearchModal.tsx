@@ -10,6 +10,7 @@ import {
   EmptyNote,
   FilterBar,
   Modal,
+  PickerCard,
   PickerSection,
   ResultCount,
 } from "../primitives";
@@ -188,9 +189,8 @@ export function CreatureSearchModal({ slot, onClose, onSelect, config}: Creature
           cardMinWidth="var(--picker-card-min-width)"
         >
           {section.creatures.map((creature) => (
-            <button
+            <PickerCard
               key={creature.id}
-              type="button"
               className={styles.card}
               onClick={() => {
                 onSelect(creature.id);
@@ -209,7 +209,7 @@ export function CreatureSearchModal({ slot, onClose, onSelect, config}: Creature
                   other region
                 </span>
               )}
-            </button>
+            </PickerCard>
           ))}
         </PickerSection>
       ))}

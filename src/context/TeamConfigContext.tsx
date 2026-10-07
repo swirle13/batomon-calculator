@@ -125,14 +125,30 @@ export function TeamConfigProvider({
         });
       },
       setTrainerId: (trainerId) => setConfig((prev) => ({ ...prev, trainerId })),
+      /**
+       * DUPLICATES ARE ALLOWED (2026-10-07, user-reported).
+       *
+       * This used to return `prev` unchanged when the trinket was already selected, which modelled
+       * a rule the game does not have: a shop can offer the same trinket again, and two Hero's
+       * Swords are two lots of +12 Damage. Silently dropping the second copy meant the tool could
+       * not represent a board the player was looking at, and `trinketIds` is a LIST precisely
+       * because a count matters.
+       *
+       * `simulate()` already summed per entry, so the engine needed no change beyond making each
+       * copy's modifier id unique.
+       */
       addTrinketId: (trinketId) =>
-        setConfig((prev) =>
-          prev.trinketIds.includes(trinketId)
-            ? prev // already selected -- no duplicate entries
-            : { ...prev, trinketIds: [...prev.trinketIds, trinketId] },
-        ),
+        setConfig((prev) => ({ ...prev, trinketIds: [...prev.trinketIds, trinketId] })),
+      /** Removes ONE copy. A `filter` here would drop all of them, which is now a different act. */
       removeTrinketId: (trinketId) =>
-        setConfig((prev) => ({ ...prev, trinketIds: prev.trinketIds.filter((id) => id !== trinketId) })),
+        setConfig((prev) => {
+          const index = prev.trinketIds.lastIndexOf(trinketId);
+          if (index === -1) return prev;
+          return {
+            ...prev,
+            trinketIds: [...prev.trinketIds.slice(0, index), ...prev.trinketIds.slice(index + 1)],
+          };
+        }),
       setSimulationWindowSeconds: (seconds) =>
         setConfig((prev) => ({ ...prev, simulationWindowSeconds: seconds })),
       addTeamModifier: (modifier) =>

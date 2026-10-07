@@ -1,0 +1,72 @@
+/*
+ * The Calculator view's layout (2026-10-07).
+ *
+ * Previously five inline `style={{...}}` blocks in App.tsx. Constitution Principle VII names an
+ * inline style block duplicating an existing pattern as a defect, and these were duplicating the
+ * token system itself: every value in them was already a token, re-typed in JS where no media
+ * query could reach it. That is what made the panel pair impossible to collapse on a phone.
+ */
+
+/* Two columns: the team and everything that edits it on the left, the creature detail panel on the
+   right. Wraps on narrow viewports rather than compressing either one. */
+.builderRow {
+  display: flex;
+  gap: var(--column-gap);
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+/*
+ * Sized from the same token as the team grid it contains. A 20rem basis let this column settle
+ * NARROWER than the grid inside it, and since the grid sets an explicit width it overflowed onto
+ * the detail panel rather than being clipped.
+ */
+.teamColumn {
+  flex: 1 1 var(--team-column-width);
+  max-width: var(--team-column-width);
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  align-items: stretch;
+}
+
+/*
+ * Trinkets and Modifiers, side by side above the grid and below the trainer card.
+ *
+ * They are a pair because they are the same kind of thing — a count of what you have set, and the
+ * panel itself opens the overlay where you set it — so they are the same component (`EditorPanel`)
+ * at the same size, and neither reads as more important than the other. Equal `minmax(0, 1fr)`
+ * tracks rather than `auto`, so a long hint cannot widen its own panel and shrink the other one.
+ *
+ * `stretch`, not `start`: if one panel's action wraps to a second line at some width, both panels
+ * still read as one pressable row rather than one being visibly shorter than the other.
+ */
+.panelPair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-md);
+  align-items: stretch;
+}
+
+/* One above the other on phones: at half of a narrow screen neither panel's title and count fit on
+   a line with its action. */
+@media (max-width: 640px) {
+  .panelPair {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* FR-062 (WI-007): a FIXED width. A content-derived width visibly resized this column, and the
+   charts below it, on every hover. */
+.detailColumn {
+  flex: 0 0 var(--detail-panel-width);
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.windowControl {
+  margin: var(--space-lg) 0;
+}

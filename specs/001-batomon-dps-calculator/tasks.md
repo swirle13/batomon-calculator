@@ -950,7 +950,7 @@ modifier wipe (T138), and tripwire assertions for the six items that had no auto
       `addTrinketId`/`removeTrinketId`. Two decisions to make explicitly rather than by accident:
       (a) trinkets are **multi-select**, unlike the single-select creature slot — so the picker must
       stay open across selections (or clearly support picking several), not close after the first
-      like `CreatureSearchModal` does; (b) state whether you generalise `CreatureSearchModal` or add
+      like `CreatureSearchModal` does; (b) state whether you generalize `CreatureSearchModal` or add
       a sibling component, and put shared grid/modal styling in one place either way.
       (depends on T115, T116, T137)
 - [x] T126 [US1] In `src/ui/GridPicker/GridPicker.tsx` + `GridPicker.module.css`: delete the
@@ -1516,7 +1516,7 @@ colours, labels, sprite size, and chart axes all say what the user actually aske
       `spriteSize` is a numeric prop rendered as `<img width={size}>`, and a CSS custom property
       cannot supply it. `--sprite-picker`, `--sprite-card`, and `--sprite-row` are currently read by
       **nothing** in `src/` — only `--sprite-grid` has a reader (`spriteGridSize()`). So either
-      generalise that reader to take a token name, or have `CreatureTile` call it. Verify the
+      generalize that reader to take a token name, or have `CreatureTile` call it. Verify the
       rendered `<img width>` is actually 64; do not assume the token resolved.
       **This is the round's headline lesson — record it in the component's comment**: every call site
       inherited one defect identically, so shared components bought consistency, not correctness.
@@ -1540,7 +1540,7 @@ colours, labels, sprite size, and chart axes all say what the user actually aske
       right**: the two blocks are *already* one shared component. The divergence came from
       `.cooldown` having no height of its own — the base band's parent carries
       `min-height: 5.5rem` and stretches it, the effective band's parent does not. A primitive whose
-      appearance depends on its container is not reusable; that is the generalised rule FR-059 adds.
+      appearance depends on its container is not reusable; that is the generalized rule FR-059 adds.
 - [x] T179b **[WI-006]** Resolve the `Cost $unknown` the user also pointed at. T179 removes only the
       *marker*; the cost itself still renders as "unknown" (`displayField` → `unconfirmedFields`
       contains `"shopCost"`), so removing the marker alone **strictly reduces information** — the
@@ -1589,7 +1589,7 @@ colours, labels, sprite size, and chart axes all say what the user actually aske
       `src/ui/Modifiers/ModifierEditor.tsx`. Keep the active-count hint, which is not redundant.
 - [x] T185 **[WI-013]** Pass `fixedHeight` to `BatomonCard` from `CorpusBrowser.tsx` so browser cards
       share one height (FR-070). **This reverses a round 7 decision** (research.md I3 deliberately
-      left it off there, reasoning the grid already equalises rows and freezing 149 cards wastes
+      left it off there, reasoning the grid already equalizes rows and freezing 149 cards wastes
       space) — record it as superseded by the user's explicit request, not as an oversight.
       **`fixedHeight` is currently a boolean selecting one class with a single value sized for the
       side panel** (`.cardFixed { height: 33rem }`), so "pass `fixedHeight`" and "size it for the

@@ -78,26 +78,47 @@ describe("layout width tokens", () => {
   });
 });
 
-describe("the two 2x3 grids stay aligned", () => {
+/**
+ * The modifier cells used to sit on the page beside the team grid, so the invariant worth pinning
+ * was that the two were the same width and shared a gap token — at 44rem the panel was 172px wider
+ * and the cells no longer sat above their creatures.
+ *
+ * They moved into an overlay on 2026-10-07, so that invariant is retired rather than weakened: the
+ * cells are no longer beside the grid, and a width assertion against the panel would now be
+ * asserting against a half-column summary that holds no cells at all. What survives is the SHAPE —
+ * three columns in board order — which every overlay now shares through one declaration.
+ */
+describe("the overlays keep the board's three-column shape", () => {
   const grid = read("ui/GridPicker/GridPicker.module.css");
-  const modifiers = read("ui/Modifiers/ModifierEditor.module.css");
+  const primitives = read("ui/primitives/primitives.module.css");
+  const primitivesSource = read("ui/primitives/index.tsx");
 
-  it("the Modifiers panel is exactly as wide as the team grid it mirrors", () => {
-    // At 44rem it was 172px wider, so expanding it stretched the whole layout open and the cells
-    // no longer sat above their creatures.
-    expect(modifiers).toMatch(/max-width:\s*var\(--team-column-width\)/);
+  it("the team grid still declares the board itself", () => {
     expect(grid).toMatch(/width:\s*var\(--team-column-width\)/);
-  });
-
-  it("both share one gap token, so columns line up", () => {
     expect(grid).toMatch(/gap:\s*var\(--grid-gap\)/);
-    expect(modifiers).toMatch(/gap:\s*var\(--grid-gap\)/);
+    expect(grid).toMatch(/repeat\(3,\s*minmax\(0,\s*1fr\)\)/);
   });
 
-  it("both use minmax(0, 1fr) so a squeezed column cannot overflow sideways", () => {
+  it("three columns is declared once, for every overlay", () => {
+    // Three call sites that merely happen to pass 3 would drift; one constant cannot.
+    expect(primitivesSource).toMatch(/export const OVERLAY_COLUMNS = 3;/);
+  });
+
+  it("the overlay grid uses minmax(0, 1fr) so a squeezed column cannot overflow sideways", () => {
     // A bare `1fr` floors each track at the card's min-content width; the grid then grows past its
-    // own max-width and paints across the detail panel instead of shrinking.
-    expect(grid).toMatch(/repeat\(3,\s*minmax\(0,\s*1fr\)\)/);
-    expect(modifiers).toMatch(/repeat\(3,\s*minmax\(0,\s*1fr\)\)/);
+    // container and paints across it instead of shrinking. The stat select inside a modifier cell
+    // is exactly the kind of wide min-content that does it.
+    expect(primitives).toMatch(/repeat\(var\(--grid-columns,\s*3\),\s*minmax\(0,\s*1fr\)\)/);
+  });
+
+  it("the overlay grid stretches its rows rather than reserving a worst-case card height", () => {
+    // The reserved height was measured honestly and still left ~3rem of dead space under most
+    // cards. Row stretch is what replaced it, so it is what has to stay.
+    expect(primitives.replace(/\s+/g, " ")).toMatch(/\.cardGridFixed \{[^}]*align-items: stretch/);
+  });
+
+  it("Modifiers declares no width of its own", () => {
+    // It is one track of the panel pair now. A width here would fight the grid that places it.
+    expect(read("ui/Modifiers/ModifierEditor.module.css")).not.toMatch(/max-width:\s*var\(--team-column-width\)/);
   });
 });

@@ -1357,7 +1357,7 @@ heights, entirely decided by context.
 
 **This is still a design-system failure, just not the one named**: a primitive whose appearance is
 determined by its parent is not actually reusable. **Decision**: give the block a fixed intrinsic
-size and `align-self: start` so it renders identically wherever it is placed. Generalised rule for
+size and `align-self: start` so it renders identically wherever it is placed. Generalized rule for
 Principle VII: a primitive must look the same in every container, or it is a fragment, not a
 primitive.
 

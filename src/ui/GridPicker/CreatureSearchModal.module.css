@@ -14,22 +14,14 @@
  * which was both wrong and inverted.) The previous card was far wider than tall and crammed the
  * sprite, name, rarity and types side by side; this gives the art room and puts the name in a band
  * across the bottom, as the shop card does.
+ *
+ * The button reset, reserved border and hover/focus treatment are `PickerCard`'s. All that is left
+ * here is the geometry specific to a creature card: its aspect ratio, and a transparent background
+ * because its tile covers the card edge to edge.
  */
 .card {
   aspect-ratio: var(--picker-card-aspect);
-  padding: 0;
-  border: 2px solid transparent;
-  border-radius: var(--radius-md);
   background: transparent;
-  cursor: pointer;
-  font: inherit;
-  color: inherit;
-  overflow: hidden;
-}
-
-.card:hover,
-.card:focus-visible {
-  border-color: var(--text-strong);
 }
 
 .cardTile {

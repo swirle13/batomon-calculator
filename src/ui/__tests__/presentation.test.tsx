@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, within } from "@testing-library/react";
 import { TrinketPicker } from "../GridPicker/TrinketPicker";
 import { CreatureSearchModal } from "../GridPicker/CreatureSearchModal";
 import { TeamSummary } from "../TeamSummary/TeamSummary";
@@ -109,6 +109,55 @@ describe("TrinketPicker ordering (FR-032/FR-067, 2026-10-07)", () => {
         .sort((a, b) => a.localeCompare(b)),
     );
     expect(rendered).toEqual(expected);
+  });
+});
+
+/**
+ * 2026-10-07, all three the user's: the same trinket can be acquired more than once, a selected
+ * trinket must stay in the list you choose from, and the panel must not grow as trinkets are added.
+ */
+describe("TrinketPicker duplicates and the Selected section (2026-10-07)", () => {
+  function openPicker() {
+    render(
+      <TeamConfigProvider initialConfig={CONFIG}>
+        <TrinketPicker />
+      </TeamConfigProvider>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: /choose trinkets/i }));
+    return screen.getByRole("dialog", { name: /choose trinkets/i });
+  }
+
+  const panel = () => screen.getByRole("button", { name: /choose trinkets/i });
+
+  it("keeps a selected trinket in the browse list and adds a copy on each click", () => {
+    const dialog = openPicker();
+    fireEvent.click(within(dialog).getByRole("button", { name: /^Add Bargain Bin/ }));
+
+    // Still listed, and now stating how many are held. Removing it from the list — which is what
+    // a toggle amounts to — made a second copy unreachable.
+    fireEvent.click(within(dialog).getByRole("button", { name: /^Add Bargain Bin, 1 already selected/ }));
+    expect(panel().textContent).toMatch(/2 selected/);
+  });
+
+  it("removes one copy per click, from the Selected section", () => {
+    const dialog = openPicker();
+    fireEvent.click(within(dialog).getByRole("button", { name: /^Add Bargain Bin/ }));
+    fireEvent.click(within(dialog).getByRole("button", { name: /^Add Bargain Bin, 1 already selected/ }));
+
+    fireEvent.click(within(dialog).getByRole("button", { name: /^Remove one Bargain Bin of 2/ }));
+    // One left, not none: a `filter` by id would have dropped both.
+    expect(within(dialog).getByRole("button", { name: "Remove one Bargain Bin" })).toBeTruthy();
+    expect(panel().textContent).toMatch(/1 selected/);
+  });
+
+  it("shows the selection in the overlay and only a count on the panel", () => {
+    const dialog = openPicker();
+    fireEvent.click(within(dialog).getByRole("button", { name: /^Add Bargain Bin/ }));
+    expect(within(dialog).getByRole("heading", { name: /^Selected/ })).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Done" }));
+    expect(screen.queryByText("Bargain Bin")).toBeNull();
+    expect(panel().textContent).toMatch(/1 selected/);
   });
 });
 
@@ -419,30 +468,33 @@ describe("modifier amount input (2026-10-07)", () => {
     teamModifiers: [],
   };
 
-  it("starts empty rather than prefilled with 0", () => {
-    // A prefilled zero meant typing 20 produced "020" unless you deleted it first. The placeholder
-    // still shows the expected shape without putting a value in the field.
+  /** The add-controls live in the editing overlay as of 2026-10-07; the panel holds the summary. */
+  function openOverlay() {
     render(
       <TeamConfigProvider initialConfig={CFG}>
         <ModifierEditor />
       </TeamConfigProvider>,
     );
-    const input = screen.getByLabelText(/Amount to add for Bumblebolt/) as HTMLInputElement;
+    fireEvent.click(screen.getByRole("button", { name: /edit modifiers/i }));
+    return screen.getByLabelText(/Amount to add for Bumblebolt/) as HTMLInputElement;
+  }
+
+  it("starts empty rather than prefilled with 0", () => {
+    // A prefilled zero meant typing 20 produced "020" unless you deleted it first. The placeholder
+    // still shows the expected shape without putting a value in the field.
+    const input = openOverlay();
     expect(input.value).toBe("");
     expect(input.placeholder).toBe("0");
   });
 
   it("Enter adds the modifier, without reaching for the Add button", () => {
-    render(
-      <TeamConfigProvider initialConfig={CFG}>
-        <ModifierEditor />
-      </TeamConfigProvider>,
-    );
-    const input = screen.getByLabelText(/Amount to add for Bumblebolt/) as HTMLInputElement;
+    const input = openOverlay();
     fireEvent.change(input, { target: { value: "20" } });
     fireEvent.keyDown(input, { key: "Enter" });
 
-    expect(screen.getByText(/Damage \+20/)).toBeTruthy();
+    // Once: the overlay's cell. The panel behind it used to render the same chip, which is what
+    // made its height change as modifiers were added (2026-10-07).
+    expect(screen.getAllByText(/Damage \+20/).length).toBe(1);
     // Cleared and still focused, so a second modifier can be typed straight away — adding several
     // in a row is the normal case.
     expect(input.value).toBe("");
@@ -450,12 +502,7 @@ describe("modifier amount input (2026-10-07)", () => {
   });
 
   it("Enter with an empty or zero amount does nothing", () => {
-    render(
-      <TeamConfigProvider initialConfig={CFG}>
-        <ModifierEditor />
-      </TeamConfigProvider>,
-    );
-    const input = screen.getByLabelText(/Amount to add for Bumblebolt/) as HTMLInputElement;
+    const input = openOverlay();
     fireEvent.keyDown(input, { key: "Enter" });
     fireEvent.change(input, { target: { value: "0" } });
     fireEvent.keyDown(input, { key: "Enter" });

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { InvalidBuildCodeError, buildId, canonicalise, exportBuild, importBuild, readBuildFromUrl } from "../share";
+import { InvalidBuildCodeError, buildId, canonicalize, exportBuild, importBuild, readBuildFromUrl } from "../share";
 import type { TeamConfiguration } from "../types";
 
 const base: TeamConfiguration = {
@@ -21,7 +21,7 @@ const base: TeamConfiguration = {
 describe("build export/import", () => {
   it("round-trips losslessly", () => {
     const restored = importBuild(exportBuild(base));
-    expect(canonicalise(restored)).toEqual(canonicalise(base));
+    expect(canonicalize(restored)).toEqual(canonicalize(base));
     expect(restored.placements).toHaveLength(2);
     expect(restored.placements.find((p) => p.creatureId === "miasmaw")!.shiny).toBe(true);
     expect(restored.selectedRegion).toBe("pantra");
@@ -93,14 +93,14 @@ describe("sharing by URL", () => {
     // People paste whichever they were handed; the import field must not care which.
     const code = exportBuild(base);
     const asUrl = `https://example.test/batomon-calculator/?b=${code}`;
-    expect(canonicalise(importBuild(asUrl))).toEqual(canonicalise(base));
-    expect(canonicalise(importBuild(code))).toEqual(canonicalise(base));
+    expect(canonicalize(importBuild(asUrl))).toEqual(canonicalize(base));
+    expect(canonicalize(importBuild(code))).toEqual(canonicalize(base));
   });
 
   it("a URL carrying other params still round-trips", () => {
     const code = exportBuild(base);
     const asUrl = `https://example.test/?utm=x&b=${code}&other=1`;
-    expect(canonicalise(importBuild(asUrl))).toEqual(canonicalise(base));
+    expect(canonicalize(importBuild(asUrl))).toEqual(canonicalize(base));
   });
 
   it("a malformed URL still produces a readable error, not a crash", () => {

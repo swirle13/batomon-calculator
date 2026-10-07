@@ -219,7 +219,7 @@ subagent passes (`orchestration/round-1-validation.md`).
 consistency, not correctness. `CreatureTile` applied its layout class to `TypeSplit`'s host while
 the children rendered inside `TypeSplit`'s inner wrapper, so the class governed nothing — and every
 call site inherited that one defect identically. `CooldownBlock` had no intrinsic size and rendered
-at two heights purely from its parents' layouts. FR-059 generalises the rule: a primitive whose
+at two heights purely from its parents' layouts. FR-059 generalizes the rule: a primitive whose
 appearance is decided by its container is not a primitive.
 
 **Two validation passes caught four of my own errors**, recorded rather than quietly fixed: the

@@ -16,6 +16,7 @@ import { CorpusBrowser } from "./ui/CorpusBrowser/CorpusBrowser";
 import { corpus } from "./data/corpus";
 import { simulate } from "./engine/simulate";
 import type { GridSlot } from "./data/types";
+import layout from "./App.module.css";
 import "./App.css";
 
 /*
@@ -45,51 +46,22 @@ function CalculatorView() {
         Two columns. The left one holds the grid and everything that edits the team; the right is
         the creature detail panel.
 
-        Modifiers and Share live in the LEFT column, under the grid, because the detail panel is
-        tall and the space beside it was empty — and because both are things you do TO the team, so
-        they belong with the team rather than below the whole page. Share in particular was
-        full-width before, which stretched a base64 code across the viewport.
+        The editors live in the LEFT column because they are things you do TO the team, so they
+        belong with the team rather than below the whole page — and because the detail panel is tall
+        and the space beside it was empty.
       */}
-      <div aria-label="Team Builder"
-        style={{
-          display: "flex",
-          // Same token `--builder-row-width` budgets for, so the row's own gap cannot drift from
-          // the width reserved for it.
-          gap: "var(--column-gap)",
-          flexWrap: "wrap",
-          alignItems: "flex-start",
-        }}
-      >
-        <div aria-label="Team Grid"
-          style={{
-            // Sized from the same token as the grid and the Modifiers panel it contains. A 20rem
-            // basis let this column settle NARROWER than the grid inside it, and since the grid
-            // sets an explicit width it overflowed onto the detail panel rather than being clipped.
-            flex: "1 1 var(--team-column-width)",
-            maxWidth: "var(--team-column-width)",
-            minWidth: 0,
-            display: "flex",
-            flexDirection: "column",
-            gap: "var(--space-md)",
-            alignItems: "stretch",
-          }}
-        >
+      <div aria-label="Team Builder" className={layout.builderRow}>
+        <div aria-label="Team Grid" className={layout.teamColumn}>
           <TrainerPicker />
-          <TrinketPicker />
+          {/* Trinkets and Modifiers are a matched pair of EditorPanels, so they sit side by side
+              rather than stacking two near-identical full-width rows above the grid. */}
+          <div className={layout.panelPair}>
+            <TrinketPicker />
+            <ModifierEditor />
+          </div>
           <GridPicker onHighlightSlot={setHighlightedSlot} />
-          <ModifierEditor />
         </div>
-        <div
-          style={{
-            flex: "0 0 var(--detail-panel-width)",
-            textAlign: "left",
-            // Same stacking as the team column opposite: this was a plain block, so ShareBuild sat
-            // flush against the creature card below it with no separation at all.
-            display: "flex",
-            flexDirection: "column",
-            gap: "var(--space-md)",
-          }}
-        >
+        <div className={layout.detailColumn}>
           <ShareBuild />
           <PlacedCreatureDetails result={result} highlightedSlot={highlightedSlot} />
         </div>
@@ -97,7 +69,9 @@ function CalculatorView() {
       <PlacementAdvisor />
       <TotalDps config={config} result={result} />
       <TeamSummary config={config} result={result} />
-      <p>
+      {/* FR-037: the simulation window governs the chart's time axis, not the per-second summary
+          values, so it sits immediately above the chart and below the tables. */}
+      <p className={layout.windowControl}>
         <label>
           Simulation window (seconds):{" "}
           <input

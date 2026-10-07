@@ -136,7 +136,7 @@
      is placed. It previously had only `min-width` and inherited its height from its parent -- the
      base band's parent carries `min-height: 5.5rem` and stretched it, the effective band's parent
      did not, so one shared component rendered at two sizes. A primitive whose appearance is
-     decided by its container is not reusable; that is the rule FR-059 generalises. */
+     decided by its container is not reusable; that is the rule FR-059 generalizes. */
   width: 3.75rem;
   height: 3.25rem;
   align-self: start;

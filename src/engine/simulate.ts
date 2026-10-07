@@ -206,10 +206,15 @@ export function simulate(
   // teamModifiers list the user's manual carry-over StatModifiers already use -- additive with
   // them, no precedence, same rule the manual modifiers already follow with each other. This
   // reuses 100% of the existing sumModifier() resolution path rather than adding a parallel one.
-  const trinketModifiers: StatModifier[] = config.trinketIds.flatMap((trinketId) => {
+  //
+  // The same trinket MAY appear more than once (2026-10-07): a shop can offer it again, and two
+  // Hero's Swords are two lots of +12 Damage. The sum below was already per-entry, so a duplicate
+  // counts twice as it should — only the id needed the copy index, which previously collided
+  // between copies and made the two entries indistinguishable in any debugging that reads it.
+  const trinketModifiers: StatModifier[] = config.trinketIds.flatMap((trinketId, copy) => {
     const trinket = corpus.trinkets.find((t) => t.id === trinketId);
     return (trinket?.effectTags ?? []).map((tag, i) => ({
-      id: `trinket-${trinketId}-${i}`,
+      id: `trinket-${trinketId}-${copy}-${i}`,
       stat: tag.stat,
       amount: tag.amount,
     }));

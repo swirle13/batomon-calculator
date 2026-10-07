@@ -52,7 +52,7 @@ Three on-screen signals act as free instrumentation. Each finding below cites wh
    whole battle matched a known ally Poison value exactly, which is what validates the reading.
 2. **Thorntail's red damage badge is an ally-infliction event counter.** It moves in exact +24
    steps. 7082 -> 7994 across the measured window = 38 inflictions.
-3. **Each mon's cooldown bar** is a 4 px-wide, 71 px-tall track that fills bottom-up, normalised so
+3. **Each mon's cooldown bar** is a 4 px-wide, 71 px-tall track that fills bottom-up, normalized so
    71 px = that mon's full cooldown regardless of its length. Scanned numerically for every frame,
    this yields cast times (resets), cooldown periods (reset-to-reset), and Cobrex's charge grants
    (mid-fill jumps) directly.

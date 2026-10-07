@@ -150,7 +150,7 @@ interface BatomonCardProps {
    * surfaces need different heights: `"panel"` is the Calculator's selected-creature card (wide,
    * with an extra "Effective this battle" band), `"browser"` is the narrower grid card.
    *
-   * Round 7 deliberately left the browser unfixed, reasoning its grid already equalised rows
+   * Round 7 deliberately left the browser unfixed, reasoning its grid already equalized rows
    * (research.md I3). The user asked for the opposite in round 8 (WI-013), so that is superseded.
    */
   fixedHeight?: "panel" | "browser";

@@ -23,13 +23,11 @@ import styles from "./primitives.module.css";
 type SurfaceTone = "default" | "flat" | "inset";
 type SurfacePad = "none" | "sm" | "md";
 
-interface SurfaceProps {
+type SurfaceProps = {
   children: ReactNode;
   tone?: SurfaceTone;
   pad?: SurfacePad;
-  className?: string;
-  style?: React.CSSProperties;
-}
+} & Omit<React.ComponentPropsWithoutRef<"div">, "children">;
 
 const TONE_CLASS: Record<SurfaceTone, string> = {
   default: "",
@@ -43,9 +41,9 @@ const PAD_CLASS: Record<SurfacePad, string> = {
 };
 
 /** The one card/panel container. */
-export function Surface({ children, tone = "default", pad = "md", className = "", style }: SurfaceProps) {
+export function Surface({ children, tone = "default", pad = "md", className = "", ...rest }: SurfaceProps) {
   return (
-    <div className={`${styles.surface} ${TONE_CLASS[tone]} ${PAD_CLASS[pad]} ${className}`} style={style}>
+    <div className={`${styles.surface} ${TONE_CLASS[tone]} ${PAD_CLASS[pad]} ${className}`} {...rest}>
       {children}
     </div>
   );
@@ -130,29 +128,135 @@ export function SectionHeading({ children, accent = false }: { children: ReactNo
 
 /* --------------------------------- CardGrid ---------------------------------- */
 
-/** The one responsive auto-fit grid. Four bespoke copies existed before this. */
-export function CardGrid({
-  children,
-  minWidth = "15rem",
-  maxWidth,
-  className = "",
-}: {
+type CardGridProps = {
   children: ReactNode;
+  /** Auto-fit mode: as many columns as fit at this minimum width. */
   minWidth?: string;
+  /**
+   * Fixed mode: exactly this many equal columns, collapsing to one on phones.
+   *
+   * Used by the overlay panels, which all show **three** columns — the same shape as the team
+   * grid. Auto-fit was wrong for them: it gave the trinket picker two 400px columns on a narrower
+   * window, which wasted horizontal space and left the cards mostly empty.
+   */
+  columns?: number;
   maxWidth?: string;
-  className?: string;
-}) {
+} & Omit<React.ComponentPropsWithoutRef<"div">, "children" | "style">;
+
+/** The one responsive grid. Four bespoke copies existed before this. */
+export function CardGrid({ children, minWidth = "15rem", columns, maxWidth, className = "", ...rest }: CardGridProps) {
+  const fixed = columns !== undefined;
   return (
     <div
-      className={`${styles.cardGrid} ${className}`}
-      style={{ ["--grid-min" as string]: minWidth, maxWidth, marginInline: maxWidth ? "auto" : undefined }}
+      className={`${styles.cardGrid} ${fixed ? styles.cardGridFixed : ""} ${className}`}
+      style={{
+        ...(fixed ? { ["--grid-columns" as string]: String(columns) } : { ["--grid-min" as string]: minWidth }),
+        maxWidth,
+        marginInline: maxWidth ? "auto" : undefined,
+      }}
+      {...rest}
     >
       {children}
     </div>
   );
 }
 
+/* -------------------------------- PickerCard --------------------------------- */
+
+type PickerCardProps = {
+  /**
+   * Present only for MULTI-select pickers, which must show selection on the card because the modal
+   * stays open across choices. Omitted entirely by the creature picker, which closes on the single
+   * choice it exists to make — so it renders no `aria-pressed` rather than a permanent "false".
+   */
+  selected?: boolean;
+} & React.ComponentPropsWithoutRef<"button">;
+
+/**
+ * The one clickable result card in a picker grid (2026-10-07).
+ *
+ * The creature picker and the trinket picker each had their own `.card` rule: the same button
+ * reset, the same 2px reserved border, the same hover/focus treatment, written twice with
+ * different backgrounds. The CONTENT differs between them — a creature card is all tile, a trinket
+ * card is a tile plus its effect text — so the content stays at the call site and only the card
+ * itself is shared.
+ */
+export function PickerCard({ selected, className = "", children, ...rest }: PickerCardProps) {
+  return (
+    <button
+      type="button"
+      aria-pressed={selected}
+      className={`${styles.pickerCard} ${selected ? styles.pickerCardSelected : ""} ${className}`}
+      {...rest}
+    >
+      {children}
+    </button>
+  );
+}
+
+/* -------------------------------- EditorPanel -------------------------------- */
+
+interface EditorPanelProps {
+  title: string;
+  /** The panel's current state in a few words: "1 selected", "2 active", "none active". */
+  hint: string;
+  /** What activating the panel opens: "Choose trinkets…", "Edit modifiers…". */
+  action: string;
+  onOpen: () => void;
+  /** True when there is nothing to edit yet — a disabled panel states that better than an overlay
+   * of six empty cells would. The reason belongs in `hint`. */
+  disabled?: boolean;
+}
+
+/**
+ * The one "what you have, and the editor that changes it" panel, shared by Trinkets and Modifiers
+ * (2026-10-07, at the user's request that the two look alike).
+ *
+ * Both were previously squeezed into the team column full-width — Modifiers as a disclosure whose
+ * six creature cells each got a third of half the page, which is what ran it out of room. The
+ * editing happens in an overlay with room to do it in, and the two panels sit side by side above
+ * the grid.
+ *
+ * ## The panel IS the control, and it holds nothing that can grow
+ *
+ * Second revision the same day, both parts the user's:
+ *
+ * 1. **No embedded button.** It was a panel containing a full-width `<button>` whose only job was
+ *    to open the panel's own editor — a control inside a control, where the outer box looked
+ *    clickable and wasn't. The panel is now the button. It reuses the `Surface` classes rather than
+ *    restating them, so it is the same box as every other panel; it just happens to be pressable.
+ * 2. **No summary chips.** Each selected trinket and each modifier used to render a chip here, so
+ *    the panel grew and shrank as they were added and removed — and the team grid below it moved
+ *    every time. The count in `hint` is fixed-width in practice, so these two panels now hold a
+ *    constant shape for the whole session. What the chips showed lives in the overlay, which can
+ *    grow without displacing anything.
+ */
+export function EditorPanel({ title, hint, action, onOpen, disabled = false }: EditorPanelProps) {
+  return (
+    <button
+      type="button"
+      className={`${styles.surface} ${styles.padSm} ${styles.editorPanel}`}
+      onClick={onOpen}
+      disabled={disabled}
+      aria-haspopup="dialog"
+    >
+      <span className={styles.editorPanelTitle}>{title}</span>
+      <span className={styles.editorPanelHint}>{hint}</span>
+      {/* Part of the accessible name on purpose: "Trinkets, 1 selected, Choose trinkets…" says what
+          pressing this does, which a chevron alone would not. */}
+      <span className={styles.editorPanelCue}>{action}</span>
+    </button>
+  );
+}
+
 /* ------------------------------- Picker chrome ------------------------------- */
+
+/**
+ * Every overlay panel lays its cards out in THREE columns — the same shape as the team grid, which
+ * is the board the whole app is about. Declared once, so "the overlays all look alike" is a fact
+ * about the code rather than three call sites that currently agree.
+ */
+export const OVERLAY_COLUMNS = 3;
 
 /**
  * The parts a picker modal is made of, shared by the creature picker and the trinket picker
@@ -197,12 +301,15 @@ export function PickerSection({
   color,
   count,
   cardMinWidth,
+  columns,
   children,
 }: {
   heading: string;
   color?: string;
   count: number;
-  cardMinWidth: string;
+  /** Auto-fit column sizing. Mutually exclusive with `columns`; `columns` wins. */
+  cardMinWidth?: string;
+  columns?: number;
   children: ReactNode;
 }) {
   return (
@@ -211,7 +318,9 @@ export function PickerSection({
         {heading}
         <span className={styles.pickerSectionCount}>({count})</span>
       </h4>
-      <CardGrid minWidth={cardMinWidth}>{children}</CardGrid>
+      <CardGrid minWidth={cardMinWidth} columns={columns}>
+        {children}
+      </CardGrid>
     </section>
   );
 }
@@ -397,7 +506,7 @@ interface SpriteTileProps {
  * subframe". Used by the team grid's slot, the creature picker's result card, the trinket picker's
  * result card, and each Modifiers cell's header.
  *
- * Generalised from `CreatureTile` on 2026-10-07: the trinket picker needed the same tile over a
+ * Generalized from `CreatureTile` on 2026-10-07: the trinket picker needed the same tile over a
  * rarity colour instead of a type colour, and a second copy differing only in where the background
  * colour came from is exactly what Constitution Principle VII forbids.
  */

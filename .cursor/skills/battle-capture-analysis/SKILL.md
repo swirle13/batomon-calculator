@@ -74,7 +74,7 @@ Two consequences worth knowing:
 Slots are `{ally,enemy}_{back,front}_{0,1,2}` — row then column, left to right from the
 viewer's perspective. Per slot:
 
-- `<slot>_cd` — cooldown bar fill in pixels. **Normalised: the bar's full height is that mon's
+- `<slot>_cd` — cooldown bar fill in pixels. **normalized: the bar's full height is that mon's
   entire cooldown**, whatever its length. So `cd` is effectively percent-charged, and the step
   between consecutive casts gives the effective cooldown without needing to know the game's
   clock.

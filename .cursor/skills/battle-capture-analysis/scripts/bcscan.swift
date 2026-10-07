@@ -863,7 +863,7 @@ case "scan":
         var row = [String(format: "%.4f", t), String(frame)]
 
         for m in mappedSlots {
-            // cooldown bar: count filled rows, bottom-up. Normalised so bar.h == full cooldown.
+            // cooldown bar: count filled rows, bottom-up. normalized so bar.h == full cooldown.
             var filled = 0
             let need = max(1, m.bar.w / 2)
             for dy in 0..<m.bar.h {

@@ -25,7 +25,7 @@ import type { StatModifier, TeamConfiguration, TeamPlacement } from "./types";
  * The same team can be represented many ways: slots in a different array order, trinkets listed
  * differently, `paintedCreatureIds` absent versus empty, a modifier carrying a freshly-generated
  * `id`. All of those must produce the SAME fingerprint, or the id is a fingerprint of the editing
- * history rather than of the team. `canonicalise` below is what makes that true, and it is the part
+ * history rather than of the team. `canonicalize` below is what makes that true, and it is the part
  * worth reading carefully.
  */
 
@@ -48,7 +48,7 @@ function canonicalPlacements(placements: TeamPlacement[]) {
       col: p.slot.col,
       creatureId: p.creatureId,
       level: p.level,
-      // `undefined` and `false` are the same build; normalise so they hash alike.
+      // `undefined` and `false` are the same build; normalize so they hash alike.
       shiny: p.shiny === true,
       modifiers: canonicalModifiers(p.modifiers),
     }))
@@ -59,11 +59,11 @@ function canonicalPlacements(placements: TeamPlacement[]) {
 /**
  * One representation per distinct build.
  *
- * Every optional field is normalised to a present value, every list is sorted, and nothing
+ * Every optional field is normalized to a present value, every list is sorted, and nothing
  * session-scoped (modifier ids) survives. Key order is fixed by construction because the object
  * literal below is written in a fixed order and `JSON.stringify` preserves insertion order.
  */
-export function canonicalise(config: TeamConfiguration) {
+export function canonicalize(config: TeamConfiguration) {
   return {
     v: FORMAT_VERSION,
     region: config.selectedRegion ?? null,
@@ -98,7 +98,7 @@ function fnv1a(input: string): string {
 
 /** The build's stable fingerprint. Same team in, same id out — always. */
 export function buildId(config: TeamConfiguration): string {
-  return fnv1a(JSON.stringify(canonicalise(config)));
+  return fnv1a(JSON.stringify(canonicalize(config)));
 }
 
 /** Base64url: survives a URL, a chat message and a double-click without escaping. */
@@ -121,7 +121,7 @@ function fromBase64Url(code: string): string {
  * — which means a user can tell at a glance whether two codes are the same build without decoding.
  */
 export function exportBuild(config: TeamConfiguration): string {
-  return PREFIX + toBase64Url(JSON.stringify(canonicalise(config)));
+  return PREFIX + toBase64Url(JSON.stringify(canonicalize(config)));
 }
 
 /** The query parameter a shared link carries, e.g. `?b=bat1:...`. */
@@ -188,7 +188,7 @@ export function importBuild(code: string): TeamConfiguration {
     throw new InvalidBuildCodeError(`Not a build code — expected it to start with "${PREFIX}".`);
   }
 
-  let parsed: ReturnType<typeof canonicalise>;
+  let parsed: ReturnType<typeof canonicalize>;
   try {
     parsed = JSON.parse(fromBase64Url(trimmed.slice(PREFIX.length)));
   } catch {

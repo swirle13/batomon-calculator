@@ -97,12 +97,109 @@
 
 .sectionHeadingAccent { color: var(--text-accent); }
 
-/* ---------- CardGrid: the ONE responsive auto-fit grid ---------- */
+/* ---------- CardGrid: the ONE responsive grid ---------- */
 .cardGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(var(--grid-min, 15rem), 1fr));
   gap: var(--space-sm);
   align-items: start;
+}
+
+/*
+ * Fixed-column mode, used by every overlay panel: three columns, the same shape as the team grid.
+ *
+ * `align-items: stretch` is the other half of it. With `start`, a uniform card height had to be
+ * declared and reserved for the corpus's worst-case text, which left ~3rem of dead space under
+ * every card whose text was shorter (the user's "too much wasted y space"). Stretching equalizes
+ * each ROW to its own tallest card instead, so nothing is ragged and nothing is reserved.
+ */
+.cardGridFixed {
+  grid-template-columns: repeat(var(--grid-columns, 3), minmax(0, 1fr));
+  align-items: stretch;
+}
+
+@media (max-width: 640px) {
+  .cardGridFixed {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- PickerCard: the ONE clickable result card ---------- */
+.pickerCard {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  /* Reserved at full width when unselected, so a card never changes size as its state changes. */
+  border: 2px solid transparent;
+  border-radius: var(--radius-md);
+  background: var(--surface-3);
+  color: inherit;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.pickerCard:hover,
+.pickerCard:focus-visible {
+  border-color: var(--text-strong);
+}
+
+.pickerCardSelected {
+  background: var(--surface-4);
+  border-color: var(--text-strong);
+}
+
+/* ---------- EditorPanel: the panel that opens its own overlay ----------
+ * Composed on top of `.surface` + `.padSm` rather than restating them: this is the same box as
+ * every other panel, pressable. It carries no growable content, so its height is constant for the
+ * session — the chips that used to live here moved the team grid every time one was added. */
+.editorPanel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2xs) var(--space-sm);
+  width: 100%;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.editorPanel:hover:not(:disabled),
+.editorPanel:focus-visible {
+  border-color: var(--text-strong);
+}
+
+.editorPanel:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+/* The same weight and size as a Disclosure's summary, so these panels read as peers of the
+   collapsible sections elsewhere on the page rather than as a different kind of box. */
+.editorPanelTitle {
+  font-size: var(--font-2xl);
+  font-weight: 700;
+}
+
+.editorPanelHint {
+  font-size: var(--font-sm);
+  color: var(--text-muted);
+}
+
+/*
+ * Its OWN line, right-aligned — not "the rest of the title line if it happens to fit".
+ *
+ * `margin-left: auto` alone made the two panels disagree at the pair's width: "Modifiers none
+ * active Edit modifiers…" fitted on one line and "Trinkets none selected Choose trinkets…" did
+ * not, so one panel was one line and its twin was two. Same structure at every width now.
+ */
+.editorPanelCue {
+  flex: 1 0 100%;
+  text-align: right;
+  font-size: var(--font-sm);
+  color: var(--text-accent);
+  white-space: nowrap;
 }
 
 /* ---------- Picker chrome: filter bar, result count, rarity section ---------- */

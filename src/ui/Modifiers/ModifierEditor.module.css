@@ -1,25 +1,23 @@
 /*
- * Modifiers (FR-039). A collapsed-by-default disclosure with one cell per placed creature, laid
- * out in the same 2x3 shape as the team grid.
+ * Modifiers (FR-039). An `EditorPanel` summary on the page, and the editor itself in an overlay
+ * whose cells are laid out in the same three columns as the team grid.
  *
- * Rebuilt 2026-10-07 on the primitives layer. The panel chrome is now `Disclosure`, each cell's
- * body is a `Surface`, each cell's header is the `CreatureTile` the team grid and the picker use,
- * and each modifier is a `Chip` — so the rules that are left are only the 2x3 arrangement and the
- * cell's own small parts. The nine raw hex literals that used to live here are gone; tokens.css
- * states plainly that a literal in a module stylesheet is a defect, and this file was the last
- * place still carrying them.
- *
- * There is no width rule any more either. The panel used to set `max-width: var(--team-column-width)`
- * to stay in step with the team grid; it now SITS in that column, so the width is the column's and
- * cannot disagree with it.
+ * Rebuilt 2026-10-07 on the primitives layer: the panel is `EditorPanel`, the overlay is `Modal`,
+ * the grid is `CardGrid`, each cell's body is a `Surface`, each cell's header is the same
+ * `CreatureTile` the team grid and the picker use, and each modifier is a `Chip`. The nine raw hex
+ * literals that used to live here are gone; tokens.css states plainly that a literal in a module
+ * stylesheet is a defect, and this file was the last place still carrying them.
  */
 
 .intro,
-.note,
-.empty {
+.note {
   font-size: var(--font-sm);
   color: var(--text-muted);
   line-height: 1.4;
+}
+
+.intro {
+  margin: 0;
 }
 
 .note {
@@ -29,26 +27,20 @@
 }
 
 /*
- * 2026-10-06 round 10 (FR-079 / WI-004): laid out as the SAME 2x3 arrangement as the team grid, so
- * a modifier cell sits where its creature sits. Previously an auto-fit flow whose order had no
- * relationship to the board, which made the user map positions mentally on every edit.
+ * The panel's per-creature chip summary is gone (2026-10-07). It changed the panel's height as
+ * modifiers were added and removed, which moved the team grid directly below it while the user was
+ * working in it. The panel shows a count; the overlay is where modifiers are read, added and
+ * removed, and it can grow without displacing anything.
  */
-.rows {
-  list-style: none;
-  padding: 0;
-  margin: var(--space-sm) 0;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  /* Matches the team grid's gap so the two 2x3 layouts line up column for column. */
-  gap: var(--grid-gap);
-  align-items: stretch;
-}
 
-/* Empty slots are rendered too, so the 2x3 shape is preserved and positions stay aligned. */
+/* --- the overlay's cells --- */
+
+/* Empty slots are rendered too, so the 2x3 shape is preserved and positions stay aligned with the
+   board. */
 .emptyCell {
   border: 1px dashed var(--line-subtle);
   border-radius: var(--radius-md);
-  min-height: 3rem;
+  min-height: 4rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -56,14 +48,7 @@
   color: var(--text-muted);
 }
 
-/* The `<li>` carries no styling of its own: the Surface inside it is the card. */
 .cell {
-  display: flex;
-  min-width: 0;
-}
-
-.cellBody {
-  flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -71,9 +56,8 @@
 }
 
 .cellTile {
-  /* Shorter than the picker's card: this tile identifies the creature, and the controls below it
-     are what the cell is for. Computed from the same token the sprite is sized by, so the tile can
-     never be shorter than its own art. */
+  /* Computed from the same token the sprite is sized by, so the tile can never be shorter than its
+     own art. */
   height: calc(var(--sprite-modifier) + 2rem);
   flex: none;
 }
@@ -91,6 +75,8 @@
   font-weight: 700;
 }
 
+/* --- modifier chips, in the overlay's cells --- */
+
 .chips {
   list-style: none;
   padding: 0;
@@ -98,6 +84,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2xs);
+  min-width: 0;
 }
 
 .chipItem {
@@ -106,8 +93,8 @@
 }
 
 /*
- * A modifier chip's label is as long as its stat's name — "Cooldown Speed +0.25" — and a cell is a
- * third of the team column, so these WRAP, unlike the fixed-width type chips `Chip` is otherwise
+ * A modifier chip's label is as long as its stat's name — "Cooldown Speed +0.25" — and it has to
+ * fit a third of the overlay, so these WRAP, unlike the fixed-width type chips `Chip` is otherwise
  * tuned for (`white-space: nowrap`).
  *
  * Without this the chip ran past the cell's edge and its remove button went with it, where the
@@ -120,23 +107,27 @@
   max-width: 100%;
 }
 
+/* --- the add control --- */
+
 .addControls {
   display: flex;
   gap: var(--space-2xs);
   align-items: center;
   flex-wrap: wrap;
+  /* Pushed to the bottom of the cell, so the Add buttons line up across a row even when one
+     creature carries more chips than its neighbours. */
+  margin-top: auto;
 }
 
-/* A cell is a third of the team column, so the stat select takes the full row and the amount and
-   Add button share the next one. Without `min-width: 0` the select's longest option label
-   ("Cooldown (seconds)") would set the grid track and push all three columns wider. */
+/* `min-width: 0` matters: without it the select's longest option label ("Cooldown (seconds)") sets
+   the grid track and pushes all three columns wider than the overlay. */
 .addControls select {
-  flex: 1 1 100%;
+  flex: 1 1 8rem;
   min-width: 0;
 }
 
 .amount {
-  flex: 1 1 3rem;
+  flex: 1 1 3.5rem;
   min-width: 0;
 }
 

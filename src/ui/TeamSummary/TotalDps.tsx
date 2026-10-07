@@ -52,7 +52,7 @@ export function TotalDps({ config, result }: TotalDpsProps) {
   // WINDOW AVERAGE under a label reading "at t = Ns". That is the reported "DPS is high at t=0":
   // it was not a reading at all.
   //
-  // Indexing cannot desynchronise from the grid, whatever the grid becomes.
+  // Indexing cannot desynchronize from the grid, whatever the grid becomes.
   const scrubPoint = series[scrubIndex] ?? null;
   const scrubbedOrZero = scrubPoint?.dps ?? 0;
 

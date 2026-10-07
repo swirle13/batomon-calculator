@@ -616,7 +616,7 @@ is the finding worth stating plainly: **adopting shared components bought consis
 correctness.** `CreatureTile` applied its flex-column class to `TypeSplit`'s host element while the
 children rendered inside `TypeSplit`'s inner wrapper, so the layout class governed nothing — and
 every call site inherited that one defect identically. `CooldownBlock` had no intrinsic size and so
-rendered at two different heights purely from its parents' layouts. FR-059 is the generalised rule
+rendered at two different heights purely from its parents' layouts. FR-059 is the generalized rule
 these produce.
 
 **FR-014 is narrowed for the second time, explicitly.** Round 7 removed the corpus/patch prose from
@@ -628,7 +628,7 @@ at the top of a view**, not to the version being recorded at all. If a future ro
 footer too, FR-014 should be **retired outright with a stated rationale** rather than quietly unmet.
 
 **A round 7 decision is reversed, not forgotten.** Round 7 deliberately left `fixedHeight` off the
-Corpus Browser's cards, reasoning that its grid already equalises row heights and that freezing 149
+Corpus Browser's cards, reasoning that its grid already equalizes row heights and that freezing 149
 cards would waste vertical space (research.md I3). WI-013 asks for the opposite. The user's
 preference governs; the earlier rationale is recorded as superseded.
 
@@ -688,7 +688,7 @@ stopped at FR-084 while every prior round added FRs.
 - **FR-089**: A trainer card MUST exist, with an affected-creatures button shown ONLY for trainers
   that designate an enumerable set (Painter, Smuggler) and not for rule-based type grants (Chef).
 - **FR-090**: The painted/smuggled sets MUST be user-selected and persisted in the team
-  configuration; the app MUST NOT generate or randomise them.
+  configuration; the app MUST NOT generate or randomize them.
 - **FR-091** **AMENDED 2026-10-07**: ~~Smuggled creatures MUST become selectable in the creature
   pool where they otherwise would not be.~~
   Region MUST NOT exclude any creature from the picker. The original wording presumed the pool was
@@ -828,3 +828,37 @@ Two defects were found by screenshotting the result rather than by reading it:
    already has"**. `engine/modifiers.ts` retired that rule when FR-078 was amended, so the panel was
    stating the opposite of what the engine would do with their input. Corrected, with cooldown speed
    named as the one genuine exception.
+
+### FR-032 / FR-039 / FR-052 AMENDED (2026-10-07, later) — the panel is the control, and a trinket can be held more than once
+
+Three user-reported corrections to the same day's earlier work.
+
+**1. The editor panels are themselves the control.** Trinkets and Modifiers were each a panel
+containing a full-width `<button>` whose only job was to open that panel's own overlay — a control
+inside a control, where the outer box looked pressable and was not. `EditorPanel` is now a
+`<button>` composed from the same `Surface` classes as every other panel, with `aria-haspopup`, one
+tab stop, and the action named in its own accessible name.
+
+**2. Neither panel may hold anything that can grow.** FR-052's requirement is restated: the
+selected-trinket list and the per-creature modifier chips are **removed from the page entirely**,
+not made collapsible. Chips changed each panel's height as items were added and removed, so the
+team grid directly below moved while the user was working in it. Each panel now shows a count and
+holds a constant shape for the whole session; both are 73px at the pair's width whether nothing or
+everything is selected. The state lives in the overlay, which is also where it is edited and the
+only place with room for it.
+
+**3. A trinket may be held in several copies, and selecting is not a toggle.** `addTrinketId`
+returned the configuration unchanged when the id was already present, which modelled a rule the game
+does not have: a shop can offer the same trinket again, and two Hero's Swords are two lots of +12
+Damage. Consequences:
+
+- Clicking a card in the browse list **always adds a copy**; the card shows `×N` when copies are
+  held. The `aria-pressed` tick is gone, because it promised a toggle.
+- A selected trinket **stays in the browse list**. Removing it — which is what filtering the chosen
+  ones out amounts to — made a second copy unreachable.
+- The overlay gained a **Selected** section above the browse list, built from the same card, where a
+  click removes **one** copy. `removeTrinketId` removes one occurrence; a `filter` by id would drop
+  them all, which is now a different act.
+- `simulate()` already summed per entry, so two copies correctly count twice. Only the generated
+  modifier id needed the copy index — it collided between copies before. `optimize()`'s
+  unmodelled-trinket caveat list is de-duplicated, being a list of things to say once each.

@@ -124,7 +124,9 @@ export function analyzePositionalCoverage(config: TeamConfiguration, corpus: Cor
     if (positional.some(isResolvableTag)) actionable.push(creature.name);
   }
 
-  const unmodelledTrinkets = config.trinketIds
+  // Distinct ids: a trinket may be held in several copies (2026-10-07), and this is a list of
+  // caveats to state once each, not a count of them.
+  const unmodelledTrinkets = [...new Set(config.trinketIds)]
     .map((id) => corpus.trinkets.find((t) => t.id === id))
     .filter((t): t is NonNullable<typeof t> => t !== undefined)
     .filter((t) => POSITIONAL_TRINKET_PATTERN.test(t.effectText) && (t.abilityTags?.length ?? 0) === 0)

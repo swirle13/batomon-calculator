@@ -3,18 +3,18 @@ import { corpus } from "../../data/corpus";
 import { useTeamConfig } from "../../context/TeamConfigContext";
 import { RARITY_COLORS, RARITIES_ASC } from "../../data/statColors";
 import type { Rarity, TrinketRecord } from "../../data/types";
-import { Sprite } from "../shared/Sprite";
 import {
   Chip,
   ClearFiltersButton,
-  Disclosure,
+  EditorPanel,
   EmptyNote,
   FilterBar,
   Modal,
+  OVERLAY_COLUMNS,
+  PickerCard,
   PickerSection,
   ResultCount,
   SpriteTile,
-  Surface,
 } from "../primitives";
 import styles from "./TrinketPicker.module.css";
 
@@ -52,6 +52,38 @@ import styles from "./TrinketPicker.module.css";
  *
  * The 6 engine-wired trinkets stay visually distinguished from the 87 reference-only ones — that
  * distinction is honest and already established (round 5), so it is preserved rather than dropped.
+ *
+ * ## Second pass, same day
+ *
+ * The first pass still built the result card by hand — a local `.card` rule that was the creature
+ * picker's `.card` with a different background, which is the duplication this was supposed to be
+ * removing. It is now `PickerCard` + `SpriteTile`, with only the effect-text caption local to
+ * trinkets.
+ *
+ * The grid is **three fixed columns**, matching the team grid and the other overlays, instead of
+ * auto-fit: auto-fit gave two 400px columns on a narrower window, so the cards were enormous and
+ * mostly empty. Their declared height is gone with it — rows equalize to their own tallest card
+ * now, which removes the ~3rem of reserved dead space under every short description.
+ *
+ * The panel is an `EditorPanel`, the same one Modifiers uses, so the two sit side by side above the
+ * grid as a matched pair.
+ *
+ * ## Third pass: everything about a selection lives in the overlay (2026-10-07)
+ *
+ * The panel used to list each selected trinket as a chip, so it grew and shrank as trinkets were
+ * added and removed and the team grid below it moved every time. The panel now shows only a count,
+ * and the overlay gained a **Selected** section above the browse list — so the state and the thing
+ * that changes it are in the same place, which is also the only place with room for it.
+ *
+ * Two behavioural consequences, both the user's:
+ *
+ * - **A selected trinket is NOT removed from the browse list, and selecting is not a toggle.** The
+ *   same trinket can be acquired more than once — a shop can offer it again — so clicking a browse
+ *   card always ADDS a copy, and the card shows `×N` when copies are already held. Previously the
+ *   card was `aria-pressed` and a second click took the first copy away, which made two Hero's
+ *   Swords unrepresentable.
+ * - **Removing happens in the Selected section**, one copy per click, because that is now the only
+ *   control that means "take one away".
  */
 export function TrinketPicker() {
   const { config, addTrinketId, removeTrinketId } = useTeamConfig();
@@ -60,15 +92,28 @@ export function TrinketPicker() {
   const [rarityFilter, setRarityFilter] = useState<Rarity | "">("");
   const inputRef = useRef<HTMLInputElement>(null);
 
-  /** The selected trinkets, in the picker's own order (rarity, then name) rather than click order
-   * — FR-067: a list's display order must not depend on how its items got there. */
+  /**
+   * The DISTINCT selected trinkets with how many copies are held, in the picker's own order
+   * (rarity, then name) rather than click order — FR-067: a list's display order must not depend on
+   * how its items got there.
+   *
+   * Grouped rather than one entry per copy: three Hero's Swords are one trinket you have three of,
+   * and three identical cards would be three things to read and no clearer about the count.
+   */
+  /** How many copies of each trinket are held. Also drives the `×N` badge on a browse card. */
+  const copiesOf = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const id of config.trinketIds) counts.set(id, (counts.get(id) ?? 0) + 1);
+    return counts;
+  }, [config.trinketIds]);
+
   const selected = useMemo(
     () =>
-      config.trinketIds
-        .map((id) => corpus.trinkets.find((t) => t.id === id))
-        .filter((t): t is TrinketRecord => t !== undefined)
-        .sort(byRarityThenName),
-    [config.trinketIds],
+      [...copiesOf]
+        .map(([id, count]) => ({ trinket: corpus.trinkets.find((t) => t.id === id), count }))
+        .filter((held): held is Held => held.trinket !== undefined)
+        .sort((a, b) => byRarityThenName(a.trinket, b.trinket)),
+    [copiesOf],
   );
 
   useEffect(() => {
@@ -109,42 +154,15 @@ export function TrinketPicker() {
   const filtersActive = query !== "" || rarityFilter !== "";
 
   return (
-    <Surface pad="sm" className={styles.panel}>
-      <div className={styles.panelHeader}>
-        <span className={styles.panelTitle}>Trinkets</span>
-        <span className={styles.panelHint}>
-          {selected.length === 0 ? "none selected" : `${selected.length} selected`}
-        </span>
-        <button type="button" onClick={() => setIsOpen(true)}>
-          Choose trinkets…
-        </button>
-      </div>
-
-      {/* FR-052 (item 16): collapsed by default. Each selected trinket used to add a full row
-          above the team grid, so with 9 selected the grid was pushed off-screen. Defaulting to
-          OPEN would still displace it on the first add, which is the actual complaint. */}
-      {selected.length > 0 && (
-        <Disclosure label="Active trinkets" hint={`(${selected.length})`}>
-          <ul className={styles.selectedList}>
-            {selected.map((trinket) => (
-              <li key={trinket.id} className={styles.selectedItem}>
-                {/* The name chip carries its own remove control, so that control sits at a constant
-                    position no matter how long the effect text beside it runs (FR-052). */}
-                <Chip
-                  color={trinket.rarity ? RARITY_COLORS[trinket.rarity] : undefined}
-                  onRemove={() => removeTrinketId(trinket.id)}
-                  removeLabel={`Remove ${trinket.name}`}
-                >
-                  <Sprite spriteFile={trinket.spriteFile} kind="trinket" size={20} alt="" />
-                  {trinket.name}
-                </Chip>
-                <span className={styles.selectedEffect}>{trinket.effectText}</span>
-                {affectsDps(trinket) && <AffectsDpsMark />}
-              </li>
-            ))}
-          </ul>
-        </Disclosure>
-      )}
+    <>
+      {/* FR-052's original concern — that selected trinkets displace the team grid — is answered
+          structurally now rather than by collapsing a list: nothing here grows. */}
+      <EditorPanel
+        title="Trinkets"
+        hint={config.trinketIds.length === 0 ? "none selected" : `${config.trinketIds.length} selected`}
+        action="Choose trinkets…"
+        onOpen={() => setIsOpen(true)}
+      />
 
       <Modal
         isOpen={isOpen}
@@ -190,6 +208,28 @@ export function TrinketPicker() {
           </FilterBar>
         }
       >
+        {/*
+          The selected trinkets, in the overlay rather than on the panel (2026-10-07). This is the
+          section the user asked for: the state and the control that changes it in one place, and a
+          place with room for the state to grow.
+
+          It is deliberately the SAME card as the browse list below. The only differences are what
+          a click means — remove one copy here, add one there — and the mark that says so.
+        */}
+        {selected.length > 0 && (
+          <PickerSection heading="Selected" count={config.trinketIds.length} columns={OVERLAY_COLUMNS}>
+            {selected.map(({ trinket, count }) => (
+              <TrinketCard
+                key={trinket.id}
+                trinket={trinket}
+                count={count}
+                action="remove"
+                onClick={() => removeTrinketId(trinket.id)}
+              />
+            ))}
+          </PickerSection>
+        )}
+
         {sections.length === 0 && <EmptyNote>No trinkets match this search.</EmptyNote>}
 
         {sections.map((section) => (
@@ -198,44 +238,81 @@ export function TrinketPicker() {
             heading={section.rarity ?? "Unranked"}
             color={section.rarity ? RARITY_COLORS[section.rarity] : undefined}
             count={section.trinkets.length}
-            cardMinWidth="var(--trinket-card-min-width)"
+            columns={OVERLAY_COLUMNS}
           >
-            {section.trinkets.map((trinket) => {
-              const isSelected = config.trinketIds.includes(trinket.id);
-              return (
-                <button
-                  key={trinket.id}
-                  type="button"
-                  className={`${styles.card} ${isSelected ? styles.cardSelected : ""}`}
-                  aria-pressed={isSelected}
-                  onClick={() => (isSelected ? removeTrinketId(trinket.id) : addTrinketId(trinket.id))}
-                >
-                  <SpriteTile
-                    name={trinket.name}
-                    // One band, the rarity's own colour — the same tile the Batomon picker paints
-                    // with a creature's types.
-                    colors={trinket.rarity ? [RARITY_COLORS[trinket.rarity]] : []}
-                    spriteFile={trinket.spriteFile}
-                    spriteKind="trinket"
-                    className={styles.cardTile}
-                    overlay={
-                      isSelected ? (
-                        <span className={styles.selectedMark} aria-hidden="true">
-                          ✓
-                        </span>
-                      ) : undefined
-                    }
-                  />
-                  {/* The whole reason this isn't a dropdown: the effect is what you choose on. */}
-                  <div className={styles.cardEffect}>{trinket.effectText}</div>
-                  {affectsDps(trinket) && <AffectsDpsMark />}
-                </button>
-              );
-            })}
+            {/* Every trinket stays listed however many copies are held: a shop can offer the same
+                one again, so removing it from this list would make a second copy unreachable. */}
+            {section.trinkets.map((trinket) => (
+              <TrinketCard
+                key={trinket.id}
+                trinket={trinket}
+                count={copiesOf.get(trinket.id) ?? 0}
+                action="add"
+                onClick={() => addTrinketId(trinket.id)}
+              />
+            ))}
           </PickerSection>
         ))}
       </Modal>
-    </Surface>
+    </>
+  );
+}
+
+interface Held {
+  trinket: TrinketRecord;
+  count: number;
+}
+
+interface TrinketCardProps extends Held {
+  /** What clicking this card does. Drives the mark, the accessible name, and nothing else. */
+  action: "add" | "remove";
+  onClick: () => void;
+}
+
+/**
+ * One trinket as a result card: the rarity-coloured tile the Batomon picker paints with types, the
+ * effect text that is the whole reason this is not a dropdown, and a `×N` badge when copies are
+ * held.
+ *
+ * ONE component for both of the overlay's sections. They were briefly separate and that is how the
+ * browse card ended up `aria-pressed` — selection state on a card that no longer toggles.
+ */
+function TrinketCard({ trinket, count, action, onClick }: TrinketCardProps) {
+  const label =
+    action === "add"
+      ? `Add ${trinket.name}${count > 0 ? `, ${count} already selected` : ""}`
+      : `Remove one ${trinket.name}${count > 1 ? ` of ${count}` : ""}`;
+
+  return (
+    <PickerCard onClick={onClick} aria-label={label}>
+      <SpriteTile
+        name={trinket.name}
+        // One band, the rarity's own colour — the same tile the Batomon picker paints with a
+        // creature's types.
+        colors={trinket.rarity ? [RARITY_COLORS[trinket.rarity]] : []}
+        spriteFile={trinket.spriteFile}
+        spriteKind="trinket"
+        className={styles.cardTile}
+        overlay={
+          <>
+            {count > 0 && (
+              <span className={styles.countBadge} aria-hidden="true">
+                ×{count}
+              </span>
+            )}
+            {action === "remove" && (
+              <span className={styles.removeMark} aria-hidden="true">
+                −
+              </span>
+            )}
+          </>
+        }
+      />
+      <div className={styles.cardCaption}>
+        <span className={styles.cardEffect}>{trinket.effectText}</span>
+        {affectsDps(trinket) && <AffectsDpsMark />}
+      </div>
+    </PickerCard>
   );
 }
 
@@ -244,7 +321,7 @@ function affectsDps(trinket: TrinketRecord): boolean {
   return trinket.effectTags !== undefined && trinket.effectTags.length > 0;
 }
 
-/** The one "this trinket reaches the simulation" marker — on the card and on the selected row. */
+/** The one "this trinket reaches the simulation" marker. */
 function AffectsDpsMark() {
   return (
     <Chip className={styles.affectsDps} title="This trinket's effect is reflected in the DPS table">
