@@ -271,6 +271,23 @@ export type AbilityTag =
       trigger: AbilityTrigger;
       /** Applied once per press, as placement modifiers. */
       effects: { stat: ModifierStat; amount: number }[];
+      /**
+       * 2026-10-07 (user-reported). WHO receives `effects`. Absent means the creature itself, which
+       * is the case for seven of the nine species carrying this tag.
+       *
+       * The other two grant to allies — Brawlmantis's "This and Common allies gain +10 Damage
+       * permanently", Kickrane's "This and all your allies" — and the tag previously could not say
+       * so, so every press banked the bonus on the presser alone and the allies named in the
+       * ability text were silently left out.
+       */
+      target?: TargetSelector;
+      /**
+       * Whether the presser is also a recipient. Needed because the ally selectors exclude the
+       * source (`effects.ts`'s rule that "ally" means someone else), while these abilities read
+       * "**This** and ... allies" — the presser is named separately from the selector. Defaults to
+       * false, matching `statFromCount`'s `includeSelf`; irrelevant when `target` is self.
+       */
+      includeSelf?: boolean;
     }
   /**
    * 2026-10-06 (T241 / FR-095). "When allies inflict <status>, this gains +N <stat> permanently" —

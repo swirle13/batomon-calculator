@@ -17,6 +17,10 @@
 .effects { display: flex; gap: var(--space-xs); font-size: var(--font-xs); font-weight: 600; }
 .effect { white-space: nowrap; }
 
+/* How many monsters a press lands on, for the ally-wide triggers. Muted and unstat-coloured: it
+   qualifies the amounts beside it rather than being another one of them. */
+.scope { white-space: nowrap; color: var(--text-muted); font-weight: 500; }
+
 /* Quieter than the trigger buttons above it: undoing is the rarer act, and `ghost` already means
    "no chrome until you reach for it". */
 .reset {

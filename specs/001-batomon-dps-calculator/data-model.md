@@ -1025,7 +1025,13 @@ Recording them anyway lets the UI offer a one-press button, instead of the user 
 ### The trigger is the unit, not the creature
 
 ```ts
-{ kind: "manualTrigger"; trigger: AbilityTrigger; effects: { stat: ModifierStat; amount: number }[] }
+{
+  kind: "manualTrigger";
+  trigger: AbilityTrigger;
+  effects: { stat: ModifierStat; amount: number }[];
+  target?: TargetSelector;   // absent = this creature
+  includeSelf?: boolean;     // default false
+}
 ```
 
 `TRIGGER_DEFINITIONS` in `src/data/triggers.ts` holds one entry per `AbilityTrigger` — its action
@@ -1055,6 +1061,39 @@ give one chip at double the amount rather than two chips.
 these as unmodelled, or the counter would claim abilities the engine does not compute. The audit
 script reports them in their own category rather than as "inert", which previously meant "read by
 nothing" and would have mislabelled nine working creatures.
+
+### `target`/`includeSelf` (2026-10-07, user-reported) — a press is not always about the presser
+
+The tag shipped with **no notion of a recipient**, so a press wrote to the pressing creature's slot
+by construction. Seven of the nine species are self-grants and were correct. The other two are not:
+
+| Creature | Ability text | Target |
+|---|---|---|
+| Brawlmantis | "This and **Common allies** gain +10 Damage permanently" | `{ kind: "allAllies", rarityFilter: "Common" }` |
+| Kickrane | "This and **all your allies** gain +20 Damage permanently" | `{ kind: "allAllies" }` |
+
+Pressing Brawlmantis's "Win a round" raised Brawlmantis 50 → 60 and left the two Common allies on
+the same board untouched. The effects were right; the recipients were missing.
+
+Three decisions behind the shape:
+
+- **`TargetSelector`, not a bespoke field.** `recipientsOfPress` (`src/engine/manualTriggers.ts`)
+  resolves it through `selectTargets`, so "Common ally" means here exactly what it means to the
+  effect resolver — board geometry, rarity/type/level filters, and painted creatures all included.
+  It lives in the engine because nothing in `src/data` imports the engine.
+- **`includeSelf` is separate from the selector.** The ally selectors deliberately exclude the
+  source (`effects.ts`'s rule that "ally" means someone else), while these abilities name the
+  presser separately: "**This** and Common allies". Recipients are de-duplicated by slot, so a self
+  selector plus `includeSelf` cannot bank twice on one creature.
+- **"Reset banked" clears every recipient**, not just the open card. Clearing only the presser would
+  leave allies carrying a bonus with no control that could undo it.
+
+Because a press can now change up to six cards at once, the button states its reach ("to 3
+monsters") when it covers more than the presser, and is disabled when it covers nobody.
+
+**Still untagged:** Ninflora's "This and your Grass allies gain +10% Cooldown Speed permanently"
+(On Victory, all four levels) has `abilityTags: []` and so offers no button at all. Same ability
+shape, a different gap — it needs a tag, not a target.
 
 ## Affected-species sets: a cap, and where it lives (2026-10-07, WI-002)
 

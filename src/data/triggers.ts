@@ -1,4 +1,10 @@
-import type { AbilityTrigger, CreatureRecord, ModifierStat, StatModifier } from "./types";
+import type {
+  AbilityTrigger,
+  CreatureRecord,
+  ModifierStat,
+  StatModifier,
+  TargetSelector,
+} from "./types";
 
 /**
  * The trigger registry: one entry per `AbilityTrigger`, describing how that trigger behaves and
@@ -88,11 +94,14 @@ export const TRIGGER_DEFINITIONS: Readonly<Record<AbilityTrigger, TriggerDefinit
   },
 };
 
-/** One press-able trigger on a creature: what it is called, and what one press banks. */
+/** One press-able trigger on a creature: what it is called, what one press banks, and on whom. */
 export interface ManualTrigger {
   readonly trigger: AbilityTrigger;
   readonly definition: TriggerDefinition;
   readonly effects: readonly { stat: ModifierStat; amount: number }[];
+  /** Resolved, never absent — the tag's `target` defaulted to self. See `recipientsOfPress`. */
+  readonly target: TargetSelector;
+  readonly includeSelf: boolean;
 }
 
 /**
@@ -108,6 +117,10 @@ export function manualTriggersFor(creature: CreatureRecord): ManualTrigger[] {
       trigger: tag.trigger,
       definition: TRIGGER_DEFINITIONS[tag.trigger],
       effects: tag.effects,
+      // Defaulted here rather than at each read, so no caller can forget and silently bank an
+      // ally-wide bonus on the presser alone — the bug these two fields exist to fix.
+      target: tag.target ?? { kind: "self" },
+      includeSelf: tag.includeSelf ?? false,
     }));
 }
 
