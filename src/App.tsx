@@ -41,15 +41,6 @@ function CalculatorView() {
 
   return (
     <div>
-      <h2>Build your team</h2>
-      {/* FR-015 (2026-10-05 round 2): Trainer choice is presented first, above the grid, since
-          it's the first decision made in the team-building flow. */}
-      <p>
-        <TrainerPicker />
-      </p>
-      <p>
-        <TrinketPicker />
-      </p>
       {/*
         Two columns. The left one holds the grid and everything that edits the team; the right is
         the creature detail panel.
@@ -59,7 +50,7 @@ function CalculatorView() {
         they belong with the team rather than below the whole page. Share in particular was
         full-width before, which stretched a base64 code across the viewport.
       */}
-      <div
+      <div aria-label="Team Builder"
         style={{
           display: "flex",
           // Same token `--builder-row-width` budgets for, so the row's own gap cannot drift from
@@ -69,7 +60,7 @@ function CalculatorView() {
           alignItems: "flex-start",
         }}
       >
-        <div
+        <div aria-label="Team Grid"
           style={{
             // Sized from the same token as the grid and the Modifiers panel it contains. A 20rem
             // basis let this column settle NARROWER than the grid inside it, and since the grid
@@ -79,26 +70,33 @@ function CalculatorView() {
             minWidth: 0,
             display: "flex",
             flexDirection: "column",
-            gap: "0.75rem",
+            gap: "var(--space-md)",
             alignItems: "stretch",
           }}
         >
+          <TrainerPicker />
+          <TrinketPicker />
           <GridPicker onHighlightSlot={setHighlightedSlot} />
-          {/* FR-066 / WI-011: Modifiers sits with the grid it modifies. */}
           <ModifierEditor />
-          <ShareBuild />
         </div>
-        <div style={{ flex: "0 0 var(--detail-panel-width)", textAlign: "left" }}>
+        <div
+          style={{
+            flex: "0 0 var(--detail-panel-width)",
+            textAlign: "left",
+            // Same stacking as the team column opposite: this was a plain block, so ShareBuild sat
+            // flush against the creature card below it with no separation at all.
+            display: "flex",
+            flexDirection: "column",
+            gap: "var(--space-md)",
+          }}
+        >
+          <ShareBuild />
           <PlacedCreatureDetails result={result} highlightedSlot={highlightedSlot} />
         </div>
       </div>
       <PlacementAdvisor />
       <TotalDps config={config} result={result} />
       <TeamSummary config={config} result={result} />
-      {/* FR-037: the simulation window governs the chart's time axis, not the per-second summary
-          values, so it sits immediately above the chart and below the tables. Order matters here —
-          leaving ModifierEditor between this control and the chart would satisfy "below the tables"
-          while breaking "just above the chart" (research.md H7/tasks.md T130). */}
       <p>
         <label>
           Simulation window (seconds):{" "}

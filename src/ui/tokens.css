@@ -117,6 +117,12 @@
   --sprite-card: 56px;
   --sprite-row: 24px;
   /*
+   * The Modifiers cell's tile. A cell is a third of the team column and carries a stat select, an
+   * amount field and an Add button below the tile, so the picker's 96px does not fit. 48px is 1x
+   * the source art and therefore still crisp under `image-rendering: pixelated`.
+   */
+  --sprite-modifier: 48px;
+  /*
    * Kept equal to --sprite-grid: the picker and the team grid get compared side by side, so a
    * difference between them reads as a bug (WI-001).
    *
@@ -140,6 +146,27 @@
    */
   --picker-card-min-width: 10rem;
   --picker-card-aspect: 1.2;
+
+  /*
+   * The trinket card is the same tile over a WIDER card, because it carries one thing a creature
+   * card does not: the effect text, which is the entire basis for choosing one trinket over
+   * another (FR-032). 15rem is what the corpus's longest effect text — 110 characters, measured —
+   * needs to wrap in five lines at --font-sm.
+   */
+  --trinket-card-min-width: 15rem;
+  /* The sprite plus its padding and the name band below it. Derived from the sprite token so the
+     640px breakpoint carries through without a second number to remember. */
+  --trinket-tile-height: calc(var(--sprite-picker) + 2.5rem);
+  /*
+   * The tile, plus the effect text, the affects-DPS marker, the gaps and the padding.
+   *
+   * 6.5rem is MEASURED, not estimated: every one of the 93 cards was rendered at exactly
+   * --trinket-card-min-width (the narrowest column `auto-fill` can produce, and therefore the most
+   * lines any text wraps to) with its height released. The worst case is Boxing Glove and Warhorn
+   * at 5.55rem — four lines of text plus the marker — so this leaves a line of headroom for a
+   * wordier trinket in a future patch.
+   */
+  --trinket-card-height: calc(var(--trinket-tile-height) + 6.5rem);
 
   /* FR-062 (WI-007): the selected-creature column is a FIXED width. A content-derived width
      (previously `flex: 1 1 16rem`) visibly resized the column on every hover. */

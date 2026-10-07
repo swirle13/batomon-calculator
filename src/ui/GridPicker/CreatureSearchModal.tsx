@@ -3,7 +3,16 @@ import type { CreatureType, GridSlot, Rarity } from "../../data/types";
 import { distinctCreatures } from "../../data/corpus";
 import { RARITIES_ASC, RARITY_COLORS } from "../../data/statColors";
 import { slotKey } from "../../engine/grid";
-import { CardGrid, CreatureTile, Modal } from "../primitives";
+import {
+  CardGrid,
+  ClearFiltersButton,
+  CreatureTile,
+  EmptyNote,
+  FilterBar,
+  Modal,
+  PickerSection,
+  ResultCount,
+} from "../primitives";
 import styles from "./CreatureSearchModal.module.css";
 import { creatureHasType, isOutOfRegion } from "../../data/typing";
 import type { TeamConfiguration } from "../../data/types";
@@ -97,7 +106,7 @@ export function CreatureSearchModal({ slot, onClose, onSelect, config}: Creature
       ariaLabel={slot ? `Choose a Batomon for ${slot.row} row, slot ${slot.col + 1}` : "Choose a Batomon"}
       width="880px"
       toolbar={
-        <div className={styles.filters}>
+        <FilterBar>
           <input
             ref={inputRef}
             type="text"
@@ -115,7 +124,6 @@ export function CreatureSearchModal({ slot, onClose, onSelect, config}: Creature
               onClose();
             }}
             aria-label="Search by name"
-            className={styles.search}
           />
           <select
             value={rarityFilter}
@@ -142,9 +150,7 @@ export function CreatureSearchModal({ slot, onClose, onSelect, config}: Creature
             ))}
           </select>
           {(rarityFilter !== "" || typeFilter !== "" || query !== "") && (
-            <button
-              type="button"
-              className={styles.clear}
+            <ClearFiltersButton
               title="Clear the search and both filters"
               onClick={() => {
                 setQuery("");
@@ -152,14 +158,10 @@ export function CreatureSearchModal({ slot, onClose, onSelect, config}: Creature
                 setTypeFilter("");
                 inputRef.current?.focus();
               }}
-            >
-              Clear
-            </button>
+            />
           )}
-          <span className={styles.count}>
-            {results.length} of {distinctCreatures.length}
-          </span>
-        </div>
+          <ResultCount shown={results.length} total={distinctCreatures.length} />
+        </FilterBar>
       }
     >
       <CardGrid minWidth="var(--picker-card-min-width)">
@@ -175,41 +177,41 @@ export function CreatureSearchModal({ slot, onClose, onSelect, config}: Creature
         </button>
       </CardGrid>
 
-      {sections.length === 0 && <p className={styles.empty}>No Batomon match this search.</p>}
+      {sections.length === 0 && <EmptyNote>No Batomon match this search.</EmptyNote>}
 
       {sections.map((section) => (
-        <section key={section.rarity} className={styles.raritySection}>
-          <h4 className={styles.rarityHeading} style={{ color: RARITY_COLORS[section.rarity] }}>
-            {section.rarity}
-            <span className={styles.rarityCount}>({section.creatures.length})</span>
-          </h4>
-          <CardGrid minWidth="var(--picker-card-min-width)">
-            {section.creatures.map((creature) => (
-              <button
-                key={creature.id}
-                type="button"
-                className={styles.card}
-                onClick={() => {
-                  onSelect(creature.id);
-                  onClose();
-                }}
-              >
-                <CreatureTile
-                  name={creature.name}
-                  types={creature.types}
-                  spriteFile={creature.spriteFile}
-                  className={`${styles.cardTile} ${isOutOfRegion(creature.id, config) ? styles.outOfRegion : ""}`}
-                />
-                {/* Marked, not hidden: an event can legitimately put this on your team. */}
-                {isOutOfRegion(creature.id, config) && (
-                  <span className={styles.outOfRegionTag} title="Not from your selected region — reachable via events, gifts or Smuggler">
-                    other region
-                  </span>
-                )}
-              </button>
-            ))}
-          </CardGrid>
-        </section>
+        <PickerSection
+          key={section.rarity}
+          heading={section.rarity}
+          color={RARITY_COLORS[section.rarity]}
+          count={section.creatures.length}
+          cardMinWidth="var(--picker-card-min-width)"
+        >
+          {section.creatures.map((creature) => (
+            <button
+              key={creature.id}
+              type="button"
+              className={styles.card}
+              onClick={() => {
+                onSelect(creature.id);
+                onClose();
+              }}
+            >
+              <CreatureTile
+                name={creature.name}
+                types={creature.types}
+                spriteFile={creature.spriteFile}
+                className={`${styles.cardTile} ${isOutOfRegion(creature.id, config) ? styles.outOfRegion : ""}`}
+              />
+              {/* Marked, not hidden: an event can legitimately put this on your team. */}
+              {isOutOfRegion(creature.id, config) && (
+                <span className={styles.outOfRegionTag} title="Not from your selected region — reachable via events, gifts or Smuggler">
+                  other region
+                </span>
+              )}
+            </button>
+          ))}
+        </PickerSection>
       ))}
     </Modal>
   );

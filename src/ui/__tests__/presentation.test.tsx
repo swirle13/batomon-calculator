@@ -16,6 +16,7 @@ import { buildStatLines, perCastOutputOf } from "../shared/BatomonCard/BatomonCa
 import { GridPicker } from "../GridPicker/GridPicker";
 import { simulate } from "../../engine/simulate";
 import { corpus } from "../../data/corpus";
+import { RARITIES_ASC } from "../../data/statColors";
 import type { TeamConfiguration } from "../../data/types";
 
 /**
@@ -65,6 +66,49 @@ describe("TrinketPicker (FR-032, item 4)", () => {
     fireEvent.click(screen.getByRole("button", { name: /choose trinkets/i }));
     // 6 of 93 are engine-wired; that honest distinction predates this round and must survive it.
     expect(screen.getAllByText(/affects DPS/i).length).toBeGreaterThan(0);
+  });
+});
+
+/**
+ * 2026-10-07: the trinket list was one flat alphabetical run of 93 cards that ignored rarity
+ * entirely, while the Batomon picker beside it had been grouped into rarity sections since round 7.
+ * Both assertions below are the user's ask stated directly, so neither can regress silently.
+ */
+describe("TrinketPicker ordering (FR-032/FR-067, 2026-10-07)", () => {
+  function openPicker() {
+    render(
+      <TeamConfigProvider initialConfig={CONFIG}>
+        <TrinketPicker />
+      </TeamConfigProvider>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: /choose trinkets/i }));
+    return screen.getByRole("dialog", { name: /choose trinkets/i });
+  }
+
+  it("groups results into rarity sections running Common to Mythical", () => {
+    const dialog = openPicker();
+    const headings = Array.from(dialog.querySelectorAll("h4")).map((h) =>
+      // The heading carries its match count in a nested span; the rarity is the first word.
+      (h.textContent ?? "").replace(/\s*\(\d+\)\s*$/, ""),
+    );
+    expect(headings).toEqual(["Common", "Uncommon", "Rare", "SuperRare", "Legendary", "Mythical"]);
+  });
+
+  it("sorts alphabetically inside each rarity section", () => {
+    const dialog = openPicker();
+    // Every card renders exactly one sprite, alt-labelled with the trinket's name, so the images in
+    // document order ARE the rendered order. All 93 trinkets have a sprite (checked below, so this
+    // test fails loudly rather than quietly comparing a short list if that ever stops being true).
+    expect(corpus.trinkets.every((t) => t.spriteFile !== undefined)).toBe(true);
+    const rendered = Array.from(dialog.querySelectorAll("img")).map((img) => img.getAttribute("alt"));
+
+    const expected = RARITIES_ASC.flatMap((rarity) =>
+      corpus.trinkets
+        .filter((t) => t.rarity === rarity)
+        .map((t) => t.name)
+        .sort((a, b) => a.localeCompare(b)),
+    );
+    expect(rendered).toEqual(expected);
   });
 });
 

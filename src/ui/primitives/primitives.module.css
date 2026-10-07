@@ -105,6 +105,74 @@
   align-items: start;
 }
 
+/* ---------- Picker chrome: filter bar, result count, rarity section ---------- */
+.filterBar {
+  display: flex;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* The search field takes the slack, so the selects and the count keep their natural size. Styled
+   here rather than at each call site, which is what let the two pickers drift to 12rem and 14rem. */
+.filterBar input[type="text"] {
+  flex: 1 1 12rem;
+}
+
+.resultCount {
+  font-size: var(--font-sm);
+  color: var(--text-muted);
+}
+
+.clearFilters {
+  font-size: var(--font-xs);
+  padding: 0.2rem 0.5rem;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-sm);
+  background: var(--surface-1);
+  color: var(--text-body);
+  cursor: pointer;
+}
+
+.clearFilters:hover {
+  border-color: var(--line-strong);
+  color: var(--text-strong);
+}
+
+/* One section per rarity: rarity is conveyed by STRUCTURE rather than as a label on every card
+   (FR-048). This shows more than the per-card text did — how many of each rarity match the current
+   filter — while taking text off the card. */
+.pickerSection {
+  margin-bottom: var(--space-md);
+}
+
+.pickerSectionHeading {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2xs);
+  /* Left-justified, as the user asked. */
+  text-align: left;
+  font-size: var(--font-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding-bottom: var(--space-3xs);
+  margin-bottom: var(--space-2xs);
+  border-bottom: 1px solid var(--line-subtle);
+}
+
+.pickerSectionCount {
+  font-weight: 400;
+  color: var(--text-muted);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.emptyNote {
+  color: var(--text-muted);
+  font-size: var(--font-md);
+}
+
 /* ---------- Modal ---------- */
 .overlay {
   position: fixed;
@@ -205,8 +273,10 @@
   line-height: 1.25;
 }
 
-/* ---------- CreatureTile: sprite on a type background, with a name band ---------- */
-.creatureTile {
+/* ---------- SpriteTile: sprite on a colour-banded background, with a name band ----------
+ * Was `.creatureTile`, renamed 2026-10-07 when the trinket picker started using the same tile over
+ * a rarity colour. The rules were never creature-specific; only the name was. */
+.spriteTile {
   display: flex;
   flex-direction: column;
   border-radius: var(--radius-md);
@@ -214,7 +284,7 @@
   border: 1px solid var(--line);
 }
 
-.creatureTileArt {
+.spriteTileArt {
   flex: 1;
   display: flex;
   align-items: center;
@@ -222,7 +292,7 @@
   min-height: 0;
 }
 
-.creatureTileName {
+.spriteTileName {
   background: rgba(0, 0, 0, 0.45);
   color: #fff;
   font-weight: 700;

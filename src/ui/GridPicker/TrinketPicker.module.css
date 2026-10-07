@@ -1,17 +1,39 @@
-/* Trinket picker (2026-10-06 round 6, FR-032). Mirrors the creature picker's card-grid idiom. */
+/*
+ * Trinket picker (FR-032). Rebuilt 2026-10-07: the modal overlay, panel, header, filter row, grid
+ * and result count all moved to `primitives.module.css`, where the Batomon picker already had
+ * them. What is left is only what is specific to a trinket — the panel in the team column, the
+ * selected list, and the card's effect-text block.
+ */
 
-.wrap {
+/* --- the panel in the team column --- */
+
+.panel {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  align-items: center;
+  gap: var(--space-xs);
 }
 
-.summaryRow {
+.panelHeader {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: var(--space-sm);
 }
+
+/* Matches a Disclosure's summary, so this panel reads as a peer of Modifiers and Share rather than
+   a differently-styled box that happens to sit beside them. */
+.panelTitle {
+  font-size: var(--font-2xl);
+  font-weight: 700;
+}
+
+.panelHint {
+  font-size: var(--font-sm);
+  color: var(--text-muted);
+  /* Pushes the button to the panel's trailing edge, where every other panel's action sits. */
+  margin-right: auto;
+}
+
+/* --- the selected list --- */
 
 .selectedList {
   list-style: none;
@@ -19,17 +41,15 @@
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
-  max-width: 44rem;
-  width: 100%;
+  gap: var(--space-2xs);
 }
 
 .selectedItem {
+  /* name chip | effect | affects-DPS marker, every column TOP-aligned so the chip's remove control
+     sits at a constant vertical position no matter how long the description is (FR-052). Centring
+     made it drift down on wordy trinkets, so the click target moved row to row. */
   display: grid;
-  /* FR-052 (item 17): name | effect | remove, with every column TOP-aligned so the remove control
-     sits at a constant vertical position no matter how long the description is. Centring made it
-     drift down on wordy trinkets, so the click target moved row to row. */
-  grid-template-columns: auto 1fr auto auto;
+  grid-template-columns: auto 1fr auto;
   align-items: start;
   gap: var(--space-xs);
   font-size: var(--font-md);
@@ -37,136 +57,84 @@
   padding: var(--space-3xs) 0;
 }
 
-.selectedName {
-  font-weight: 700;
-  white-space: nowrap;
-}
-
 .selectedEffect {
-  color: #9ca3af;
-  flex: 1;
+  color: var(--text-muted);
   min-width: 0;
+  /* Published effect text embeds its trigger line and a newline ("On Victory\nYour team gains..."),
+     as the game shows it. */
+  white-space: pre-line;
 }
 
-.affectsDps {
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: #e0a93c;
-  white-space: nowrap;
-}
-
-/* --- modal --- */
-.overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.65);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.panel {
-  background: #1f2028;
-  border: 1px solid #444857;
-  border-radius: 8px;
-  padding: 1rem;
-  width: min(900px, 94vw);
-  max-height: 85vh;
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-}
-
-.panelHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.panelTitle {
-  margin: 0;
-}
-
-.filters {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-.search {
-  flex: 1 1 14rem;
-}
-
-.count {
-  font-size: 0.8rem;
-  color: #9ca3af;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
-  gap: 0.5rem;
-  overflow-y: auto;
-  padding-right: 0.25rem;
-  align-items: start;
-}
+/* --- the result card --- */
 
 .card {
   display: flex;
   flex-direction: column;
   gap: var(--space-2xs);
-  padding: var(--space-sm);
-  border: 2px solid var(--line);
+  padding: var(--space-2xs);
+  /* The border is the selection affordance, so it is reserved at full width when unselected
+     (FR-051: a card must not change size as its state changes). */
+  border: 2px solid transparent;
   border-radius: var(--radius-md);
   background: var(--surface-3);
   color: inherit;
   text-align: left;
   cursor: pointer;
   font: inherit;
-  /* FR-051 (item 13): one uniform height across the grid, sized to the corpus's longest
-     effectText (110 chars, measured) wrapped at the grid's 15rem minimum column width, so no row
-     is ragged and no text overruns. */
-  height: 9.5rem;
+  /* One uniform height across the grid (FR-051), sized in tokens from the tile plus the corpus's
+     longest effect text (110 chars, measured) wrapped at the grid's minimum column width. */
+  height: var(--trinket-card-height);
   overflow: hidden;
 }
 
-.card:hover {
-  background: #2e313e;
+.card:hover,
+.card:focus-visible {
+  border-color: var(--text-strong);
 }
 
-/* Multi-select, so selection state has to be visible on the card itself -- this modal stays open
+/* Multi-select, so selection state has to be visible on the card itself — this modal stays open
    across choices rather than closing on the first one. */
 .cardSelected {
-  background: #343a4d;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+  background: var(--surface-4);
+  border-color: var(--text-strong);
 }
 
-.cardHeader {
+.cardTile {
+  /* Fixed, so the effect text below it starts at the same line on every card. */
+  height: var(--trinket-tile-height);
+  flex: none;
+  border-radius: var(--radius-sm);
+}
+
+/* The tick sits over the art rather than in the name band, which the name needs all of. */
+.selectedMark {
+  position: absolute;
+  top: var(--space-2xs);
+  right: var(--space-2xs);
+  width: 1.25rem;
+  height: 1.25rem;
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-}
-
-.cardName {
+  justify-content: center;
+  border-radius: var(--radius-pill);
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: var(--font-sm);
   font-weight: 700;
-  font-size: 0.9rem;
-}
-
-.cardRarity {
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
 }
 
 .cardEffect {
-  font-size: 0.8rem;
+  font-size: var(--font-sm);
   line-height: 1.3;
-  color: #d7d9e3;
-  /* Several trinkets' effectText embeds a trigger line then a newline ("On Victory\nYour team
-     gains..."), as published. Preserve it so the trigger reads on its own line the way the game
-     shows it, instead of being collapsed into one run-on sentence. */
+  color: var(--text-body);
   white-space: pre-line;
+}
+
+/* --- shared between the card and the selected row --- */
+
+.affectsDps {
+  color: var(--text-accent);
+  font-size: var(--font-2xs);
+  /* The 6 engine-wired trinkets out of 93: a marker, not a heading. */
+  align-self: flex-start;
 }

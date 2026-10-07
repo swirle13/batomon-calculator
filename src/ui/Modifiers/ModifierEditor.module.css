@@ -1,46 +1,30 @@
 /*
- * 2026-10-06 round 6 (FR-039): Modifiers is a collapsed-by-default disclosure with one row per
- * placed creature. It used to be a permanently-expanded section with a global scope dropdown.
+ * Modifiers (FR-039). A collapsed-by-default disclosure with one cell per placed creature, laid
+ * out in the same 2x3 shape as the team grid.
+ *
+ * Rebuilt 2026-10-07 on the primitives layer. The panel chrome is now `Disclosure`, each cell's
+ * body is a `Surface`, each cell's header is the `CreatureTile` the team grid and the picker use,
+ * and each modifier is a `Chip` — so the rules that are left are only the 2x3 arrangement and the
+ * cell's own small parts. The nine raw hex literals that used to live here are gone; tokens.css
+ * states plainly that a literal in a module stylesheet is a defect, and this file was the last
+ * place still carrying them.
+ *
+ * There is no width rule any more either. The panel used to set `max-width: var(--team-column-width)`
+ * to stay in step with the team grid; it now SITS in that column, so the width is the column's and
+ * cannot disagree with it.
  */
-
-.section {
-  /*
-   * The SAME width as the team grid, because `.rows` below is the same 2x3 arrangement and a
-   * modifier cell is meant to sit where its creature sits. At 44rem this panel was 172px wider than
-   * the grid, so expanding it visibly stretched the layout and knocked the two grids out of
-   * alignment — the one thing the shared 2x3 shape exists to provide.
-   */
-  max-width: var(--team-column-width);
-  margin: 1rem auto;
-  text-align: left;
-  border: 1px solid #2c2f3b;
-  border-radius: 6px;
-  padding: 0.5rem 0.75rem;
-}
-
-.summary {
-  cursor: pointer;
-  font-size: 1.05rem;
-  font-weight: 700;
-}
-
-.summaryHint {
-  font-size: 0.8rem;
-  font-weight: 400;
-  color: #9ca3af;
-}
 
 .intro,
 .note,
 .empty {
-  font-size: 0.8rem;
-  color: #9ca3af;
+  font-size: var(--font-sm);
+  color: var(--text-muted);
   line-height: 1.4;
 }
 
 .note {
-  border-top: 1px solid #2c2f3b;
-  padding-top: 0.5rem;
+  border-top: 1px solid var(--line-subtle);
+  padding-top: var(--space-sm);
   margin-bottom: 0;
 }
 
@@ -72,23 +56,39 @@
   color: var(--text-muted);
 }
 
-.row {
-  border: 1px solid #2c2f3b;
-  border-radius: 6px;
-  padding: 0.4rem 0.5rem;
+/* The `<li>` carries no styling of its own: the Surface inside it is the card. */
+.cell {
+  display: flex;
+  min-width: 0;
+}
+
+.cellBody {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: var(--space-2xs);
 }
 
-.rowHeader {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
+.cellTile {
+  /* Shorter than the picker's card: this tile identifies the creature, and the controls below it
+     are what the cell is for. Computed from the same token the sprite is sized by, so the tile can
+     never be shorter than its own art. */
+  height: calc(var(--sprite-modifier) + 2rem);
+  flex: none;
 }
 
-.level {
-  color: #9ca3af;
+/* Over the tile's art rather than beside the name, which needs the whole band. */
+.levelBadge {
+  position: absolute;
+  top: var(--space-3xs);
+  left: var(--space-3xs);
+  padding: 0 var(--space-2xs);
+  border-radius: var(--radius-sm);
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: var(--font-2xs);
+  font-weight: 700;
 }
 
 .chips {
@@ -97,42 +97,47 @@
   margin: 0;
   display: flex;
   flex-wrap: wrap;
-  gap: 0.3rem;
+  gap: var(--space-2xs);
 }
 
-.chip {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.1rem 0.2rem 0.1rem 0.45rem;
-  border-radius: 999px;
-  background: #343a4d;
-  font-size: 0.78rem;
+.chipItem {
+  min-width: 0;
+  max-width: 100%;
 }
 
-.chip button {
-  padding: 0 0.25rem;
-  border: none;
-  background: transparent;
-  color: #d7d9e3;
-  cursor: pointer;
-  font-size: 0.9rem;
-  line-height: 1;
-}
-
-.chip button:hover {
-  color: #ff8a80;
+/*
+ * A modifier chip's label is as long as its stat's name — "Cooldown Speed +0.25" — and a cell is a
+ * third of the team column, so these WRAP, unlike the fixed-width type chips `Chip` is otherwise
+ * tuned for (`white-space: nowrap`).
+ *
+ * Without this the chip ran past the cell's edge and its remove button went with it, where the
+ * Surface's `overflow: hidden` clipped it: a cooldown-speed modifier could be added and then not
+ * removed. Scoped to this surface rather than loosened in the primitive, because a column of type
+ * chips does need to stay on one line.
+ */
+.modifierChip {
+  white-space: normal;
+  max-width: 100%;
 }
 
 .addControls {
   display: flex;
-  gap: 0.35rem;
+  gap: var(--space-2xs);
   align-items: center;
   flex-wrap: wrap;
 }
 
+/* A cell is a third of the team column, so the stat select takes the full row and the amount and
+   Add button share the next one. Without `min-width: 0` the select's longest option label
+   ("Cooldown (seconds)") would set the grid track and push all three columns wider. */
+.addControls select {
+  flex: 1 1 100%;
+  min-width: 0;
+}
+
 .amount {
-  width: 5rem;
+  flex: 1 1 3rem;
+  min-width: 0;
 }
 
 /* T211 (FR-078): a modifier that cannot apply says so at entry time. Warning-toned rather than

@@ -2,7 +2,7 @@ import { useEffect, useRef, type KeyboardEvent, type ReactNode } from "react";
 import type { CreatureType } from "../../data/types";
 import { STAT_COLORS, type StatColorKey } from "../../data/statColors";
 import { typeColor } from "../../data/typeColors";
-import { Sprite } from "../shared/Sprite";
+import { Sprite, type SpriteKind } from "../shared/Sprite";
 import styles from "./primitives.module.css";
 
 /**
@@ -152,6 +152,75 @@ export function CardGrid({
   );
 }
 
+/* ------------------------------- Picker chrome ------------------------------- */
+
+/**
+ * The parts a picker modal is made of, shared by the creature picker and the trinket picker
+ * (2026-10-07). Both had their own copy of each rule, in two CSS files, differing only by
+ * accident — a `--space-sm` gap in one and `0.5rem` in the other, a 12rem search basis against
+ * 14rem. Principle VII: a pattern on two surfaces is one component.
+ */
+
+/** The row of search/filter controls above a picker's results. Sizes any text input it contains. */
+export function FilterBar({ children }: { children: ReactNode }) {
+  return <div className={styles.filterBar}>{children}</div>;
+}
+
+/** "41 of 93" — how much the current filters are hiding. */
+export function ResultCount({ shown, total }: { shown: number; total: number }) {
+  return (
+    <span className={styles.resultCount}>
+      {shown} of {total}
+    </span>
+  );
+}
+
+/**
+ * Resets a picker's search and filters. Call sites render it only when something is actually set,
+ * so it is never a dead control.
+ */
+export function ClearFiltersButton({ onClick, title }: { onClick: () => void; title: string }) {
+  return (
+    <button type="button" className={styles.clearFilters} title={title} onClick={onClick}>
+      Clear
+    </button>
+  );
+}
+
+/**
+ * One rarity section of a picker's results: a left-justified heading in the rarity's own colour,
+ * its match count, and a card grid beneath it (FR-048). Sections with no matches are omitted by
+ * the caller rather than rendering an empty heading that implies a filter failure.
+ */
+export function PickerSection({
+  heading,
+  color,
+  count,
+  cardMinWidth,
+  children,
+}: {
+  heading: string;
+  color?: string;
+  count: number;
+  cardMinWidth: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className={styles.pickerSection}>
+      <h4 className={styles.pickerSectionHeading} style={color ? { color } : undefined}>
+        {heading}
+        <span className={styles.pickerSectionCount}>({count})</span>
+      </h4>
+      <CardGrid minWidth={cardMinWidth}>{children}</CardGrid>
+    </section>
+  );
+}
+
+/** "Nothing matches this search" — the one muted note for an empty result set. */
+export function EmptyNote({ children }: { children: ReactNode }) {
+  return <p className={styles.emptyNote}>{children}</p>;
+}
+
 /* ---------------------------------- Modal ------------------------------------ */
 
 interface ModalProps {
@@ -261,27 +330,95 @@ export function Disclosure({ label, hint, defaultOpen = false, children }: Discl
   );
 }
 
-/* --------------------------------- TypeSplit --------------------------------- */
+/* -------------------------------- ColorSplit --------------------------------- */
+
+/** The neutral background for a record with no colour of its own (an unknown type, no rarity). */
+const COLOR_SPLIT_FALLBACK = "#444857";
 
 /**
- * A creature's type background as two explicitly-sized halves.
+ * A background of N explicitly-sized, equal vertical bands.
  *
  * Replaces `typeBackground()`'s `linear-gradient(..., A 50%, B 50%, ...)`, which banded the far
  * colour along the element's edge: CSS positions a background against the padding box but paints it
  * across the border box, so a transparent border let the gradient repeat outward on every side
- * (research.md I8). Halves cannot produce that artifact at any size.
+ * (research.md I8). Bands cannot produce that artifact at any size.
  */
-export function TypeSplit({ types, children, className = "" }: { types: CreatureType[]; children?: ReactNode; className?: string }) {
-  const halves = types.length === 0 ? ["#444857"] : types.length === 1 ? [typeColor(types[0]!)] : types.map(typeColor);
+function ColorSplit({ colors, children, className = "" }: { colors: string[]; children?: ReactNode; className?: string }) {
+  const bands = colors.length === 0 ? [COLOR_SPLIT_FALLBACK] : colors;
   return (
     <div className={`${styles.typeSplitHost} ${className}`}>
       <div className={styles.typeSplit} aria-hidden="true">
-        {halves.map((color, i) => (
+        {bands.map((color, i) => (
           <div key={`${color}-${i}`} className={styles.typeSplitHalf} style={{ background: color }} />
         ))}
       </div>
       {children ? <div className={styles.typeSplitContent}>{children}</div> : null}
     </div>
+  );
+}
+
+/* --------------------------------- TypeSplit --------------------------------- */
+
+/** A creature's type background: one band per type. */
+export function TypeSplit({ types, children, className = "" }: { types: CreatureType[]; children?: ReactNode; className?: string }) {
+  return (
+    <ColorSplit colors={types.map(typeColor)} className={className}>
+      {children}
+    </ColorSplit>
+  );
+}
+
+/* -------------------------------- SpriteTile --------------------------------- */
+
+interface SpriteTileProps {
+  name: string;
+  /**
+   * The tile's background, as equal vertical bands — a creature's types, or a trinket's single
+   * rarity colour. Empty renders the neutral fallback rather than nothing.
+   */
+  colors: string[];
+  spriteFile: string | undefined;
+  spriteKind: SpriteKind;
+  /**
+   * The design token governing the sprite's size, e.g. `--sprite-modifier`. A TOKEN rather than a
+   * number so the size stays in CSS: a px value read into JS is frozen at render time, which is
+   * how a 64px sprite survived a token change to 96 (see Sprite.tsx). It also lets the tile's own
+   * height be computed from the same token instead of a second literal that can drift.
+   */
+  spriteSizeVar?: string;
+  /** Rendered over the art area (level badge, clear button, selected mark, stat badges). */
+  overlay?: ReactNode;
+  showName?: boolean;
+  className?: string;
+}
+
+/**
+ * The one "sprite on a colour-banded background, with a name band" unit — the user's "mon's colour
+ * subframe". Used by the team grid's slot, the creature picker's result card, the trinket picker's
+ * result card, and each Modifiers cell's header.
+ *
+ * Generalised from `CreatureTile` on 2026-10-07: the trinket picker needed the same tile over a
+ * rarity colour instead of a type colour, and a second copy differing only in where the background
+ * colour came from is exactly what Constitution Principle VII forbids.
+ */
+export function SpriteTile({
+  name,
+  colors,
+  spriteFile,
+  spriteKind,
+  spriteSizeVar = "--sprite-picker",
+  overlay,
+  showName = true,
+  className = "",
+}: SpriteTileProps) {
+  return (
+    <ColorSplit colors={colors} className={`${styles.spriteTile} ${className}`}>
+      <div className={styles.spriteTileArt}>
+        <Sprite spriteFile={spriteFile} kind={spriteKind} sizeVar={spriteSizeVar} alt={name} />
+      </div>
+      {showName && <div className={styles.spriteTileName}>{name}</div>}
+      {overlay}
+    </ColorSplit>
   );
 }
 
@@ -291,39 +428,24 @@ interface CreatureTileProps {
   name: string;
   types: CreatureType[];
   spriteFile: string | undefined;
-  spriteSize?: number;
-  /** Rendered over the art area (level badge, clear button, stat badges). */
+  spriteSizeVar?: string;
   overlay?: ReactNode;
   showName?: boolean;
   className?: string;
 }
 
-/**
- * The one "sprite on a type background, with a name band" unit — the user's "mon's color subframe".
- * Used by the team grid's slot, the creature picker's result card, and the detail card's identity
- * band, which each assembled it separately before.
- */
-export function CreatureTile({
-  name,
-  types,
-  spriteFile,
-  spriteSize,
-  overlay,
-  showName = true,
-  className = "",
-}: CreatureTileProps) {
+/** A `SpriteTile` whose bands are the creature's types. */
+export function CreatureTile({ name, types, spriteFile, spriteSizeVar, overlay, showName = true, className = "" }: CreatureTileProps) {
   return (
-    <TypeSplit types={types} className={`${styles.creatureTile} ${className}`}>
-      <div className={styles.creatureTileArt}>
-        <Sprite
-          spriteFile={spriteFile}
-          kind="monster"
-          {...(spriteSize ? { size: spriteSize } : { sizeVar: "--sprite-picker" })}
-          alt={name}
-        />
-      </div>
-      {showName && <div className={styles.creatureTileName}>{name}</div>}
-      {overlay}
-    </TypeSplit>
+    <SpriteTile
+      name={name}
+      colors={types.map(typeColor)}
+      spriteFile={spriteFile}
+      spriteKind="monster"
+      spriteSizeVar={spriteSizeVar}
+      overlay={overlay}
+      showName={showName}
+      className={className}
+    />
   );
 }

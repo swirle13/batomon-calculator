@@ -764,3 +764,67 @@ Also: rarity sections now run **Common → Mythical** rather than Mythical-first
 creatures picked least at the top and pushed Commons below the fold. Alphabetical within each tier
 is unchanged. And **Enter selects when exactly one creature matches** — only one, because choosing
 "the first of several" would decide for the user.
+
+
+### FR-032 AMENDED (2026-10-07) — the trinket picker is the Batomon picker, not a lookalike
+
+> **FR-032** (round 6): trinket selection "MUST use the same searchable, card-based picker
+> interaction as creature selection (FR-018)".
+
+Satisfied in interaction and not in implementation, which turned out to be the same defect wearing
+a different hat. `TrinketPicker` hand-rolled its own modal overlay, panel, header, filter row, grid
+and result count — 170 lines of CSS that duplicated `primitives.module.css` with different numbers
+— while its own header comment claimed it "mirrors the creature picker's card-grid idiom". The two
+surfaces then drifted exactly as Principle VII predicts, and the trinket side read as a different
+application: a bordered box with a 32px sprite beside small-caps rarity text, against the Batomon
+picker's shop-style tile.
+
+Amended to require **shared components, not merely a shared interaction**:
+
+- **Rarity is structure here too.** Results MUST be grouped into rarity sections running
+  **Common → Mythical**, alphabetical within each, exactly as FR-048 requires of creatures. They
+  were one flat alphabetical list of 93 cards that ignored rarity entirely, so the 8 Mythicals were
+  scattered through it with nothing but a colour to distinguish them.
+- **The card is the shop-card tile** (`SpriteTile`): the sprite on a field of the rarity's own
+  colour with the name in a band across the bottom, then the effect text. The effect text stays —
+  it is the entire basis for choosing one trinket over another, which is why this was never a
+  dropdown.
+- **The chrome is shared.** `Modal`, `FilterBar`, `PickerSection`, `ResultCount`,
+  `ClearFiltersButton` and `EmptyNote` are one implementation used by both pickers.
+- **The rarity filter persists between opens and the query does not**, with a `Clear` button — the
+  same split FR-018 settled on, for the same reason.
+
+The one deliberate difference remains: trinkets are **multi-select**, so this modal stays open as
+you pick and each card carries its own selected state, where the creature modal closes on the
+single choice it exists to make.
+
+Also amended: the **selection panel** in the team column. It was a bare `Trinkets: [button]` row
+with centred text and no panel chrome; it is now a `Surface` with the same heading treatment as
+Modifiers and Share, and each selected trinket is a rarity-coloured `Chip` that carries its own
+remove control. FR-052's requirement is unchanged and now structural rather than CSS: the remove
+control sits inside the chip, so it cannot drift down the row as the description beside it gets
+longer.
+
+### FR-039 AMENDED (2026-10-07) — Modifiers composes from the primitives layer
+
+> **FR-039** (round 6): modifier editing "MUST be a collapsed-by-default disclosure, MUST scope each
+> modifier to a specific placed creature... and MUST keep unit/format explanations as supporting
+> text".
+
+All three behaviours are unchanged. What changes is that the panel no longer builds them itself: it
+was the last surface still hand-rolling its own `<details>`, its own card border, its own chip and
+its own nine raw hex literals, in a stylesheet whose own header says a literal is a defect.
+
+Each placed creature's cell now opens with the **same `CreatureTile`** the Batomon picker and the
+team grid use — same type-split background, same name band, same level badge — so a creature looks
+the same in all three places, and a modifier is the shared `Chip`.
+
+Two defects were found by screenshotting the result rather than by reading it:
+
+1. A **"Cooldown Speed +0.25" chip overflowed its cell and took its remove button with it**, where
+   the `Surface`'s `overflow: hidden` clipped it — so that modifier could be added and then not
+   removed. Modifier chips now wrap; type chips, which need to stay on one line, are untouched.
+2. The panel's supporting text still told users a modifier **"can only scale an effect the creature
+   already has"**. `engine/modifiers.ts` retired that rule when FR-078 was amended, so the panel was
+   stating the opposite of what the engine would do with their input. Corrected, with cooldown speed
+   named as the one genuine exception.

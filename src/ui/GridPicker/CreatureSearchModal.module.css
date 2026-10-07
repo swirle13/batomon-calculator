@@ -1,48 +1,12 @@
 /*
- * Creature picker (2026-10-06 round 7, FR-048/FR-049). Replaces 14 inline style blocks.
- * Layout follows the in-game shop card the user supplied as reference.
+ * Creature picker (2026-10-06 round 7, FR-048/FR-049). Layout follows the in-game shop card the
+ * user supplied as reference.
+ *
+ * Trimmed 2026-10-07: the filter row, the result count, the Clear button, the rarity-section
+ * heading and the empty-result note are now `FilterBar`, `ResultCount`, `ClearFiltersButton`,
+ * `PickerSection` and `EmptyNote` in the primitives layer, because the trinket picker needs all
+ * five and had grown its own slightly-different copy of each.
  */
-
-.filters {
-  display: flex;
-  gap: var(--space-sm);
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-.search { flex: 1 1 12rem; }
-
-.count {
-  font-size: var(--font-sm);
-  color: var(--text-muted);
-}
-
-/* One section per rarity: the rarity is conveyed by STRUCTURE here rather than as a label on every
-   card (FR-048). This shows more than the per-card text did — you can see how many of each rarity
-   match the current filter — while taking text off the card. */
-.raritySection { margin-bottom: var(--space-md); }
-
-.rarityHeading {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-2xs);
-  /* Left-justified, as the user asked. */
-  text-align: left;
-  font-size: var(--font-xs);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  padding-bottom: var(--space-3xs);
-  margin-bottom: var(--space-2xs);
-  border-bottom: 1px solid var(--line-subtle);
-}
-
-.rarityCount {
-  font-weight: 400;
-  color: var(--text-muted);
-  letter-spacing: 0;
-  text-transform: none;
-}
 
 /*
  * Card proportions are MEASURED from the in-game shop card, not guessed: those are ~175 x 145 px,
@@ -85,11 +49,6 @@
   font: inherit;
 }
 
-.empty {
-  color: var(--text-muted);
-  font-size: var(--font-md);
-}
-
 /*
  * Out-of-region creatures are MARKED, not hidden (2026-10-07).
  *
@@ -106,19 +65,3 @@
   color: var(--text-muted);
   text-align: center;
 }
-
-/*
- * Clear button (2026-10-07). The rarity and type filters persist between opens, which saves
- * re-selecting "Common" for every slot — this is the escape hatch for when the remembered filter
- * is the wrong one. Shown only when something is actually set, so it is never a dead control.
- */
-.clear {
-  font-size: var(--font-xs);
-  padding: 0.2rem 0.5rem;
-  border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-sm);
-  background: var(--surface-sunken);
-  color: var(--text-secondary);
-  cursor: pointer;
-}
-.clear:hover { border-color: var(--line-strong); color: var(--text-primary); }

@@ -1,11 +1,16 @@
 /* Share a build. Lives in the fixed-width detail column, so nothing stretches across the page. */
 
-/* The `.heading` rule is gone: the Disclosure's own summary is the heading now. */
 .wrap {
   display: flex;
   flex-direction: column;
   gap: var(--space-xs);
-  padding-top: var(--space-xs);
+}
+
+/* Matches a Disclosure's summary, so this static panel reads as a peer of Modifiers and Active
+   trinkets rather than a differently-styled box that happens to sit near them. */
+.heading {
+  font-size: var(--font-2xl);
+  font-weight: 700;
 }
 .actions { display: flex; gap: var(--space-xs); }
 .actions button { flex: 1; }

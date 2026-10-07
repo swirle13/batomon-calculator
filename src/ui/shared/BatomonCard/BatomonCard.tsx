@@ -226,8 +226,6 @@ export function BatomonCard({ creature, children, levelLabel, fixedHeight, meta,
         <StatLines lines={statLines} />
       </div>
 
-      {/* A placeholder reads as if the creature has an ability called "No ability text shown",
-          so it renders nothing at all rather than the stand-in string. */}
       {hasAbilityText(creature.abilityText) ? (
         <div className={styles.ability}>
           {creature.abilityTrigger ? <div className={styles.abilityTrigger}>{creature.abilityTrigger}</div> : null}
@@ -237,8 +235,8 @@ export function BatomonCard({ creature, children, levelLabel, fixedHeight, meta,
 
       {children ? <div className={styles.extra}>{children}</div> : null}
 
-      {/* The meta band, previously commented out, now carries the level/shiny bubbles (WI-R11-001). */}
-      {meta ? <div className={styles.meta}>{meta}</div> : null}
+      {/* {meta ? <div className={styles.meta}>{meta}</div> : null} */}
+      <div className={styles.meta}>{meta}</div>
     </article>
   );
 }

@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import type { ModifierStat, GridSlot, TeamPlacement } from "../../data/types";
 import { resolveCreatureVariant } from "../../data/corpus";
 import { useTeamConfig } from "../../context/TeamConfigContext";
-import { Sprite } from "../shared/Sprite";
+import { Chip, CreatureTile, Disclosure, Surface } from "../primitives";
 import { slotKey } from "../../engine/grid";
 import styles from "./ModifierEditor.module.css";
 
@@ -43,21 +43,19 @@ function statLabel(stat: ModifierStat): string {
  *    something the user picks from a dropdown and has to keep re-binding as the roster shifts
  *    around it (the user's "new mons will be added before/after a mon that affects the whole team"
  *    point).
+ *
+ * 2026-10-07: rebuilt on the primitives layer. This was the last surface still hand-rolling its
+ * own `<details>`, its own card border, its own chip and its own hex colours — nine raw literals
+ * in a stylesheet whose header file says a literal is a defect. Each placed creature's cell now
+ * opens with the SAME `CreatureTile` the Batomon picker and the team grid use, so a creature looks
+ * the same in all three places, and the chips are the shared `Chip` (Principle VII, FR-058).
  */
 export function ModifierEditor() {
   const { config, addPlacementModifier, removePlacementModifier } = useTeamConfig();
+  const activeCount = countModifiers(config.placements);
 
   return (
-    <details className={styles.section}>
-      <summary className={styles.summary}>
-        Modifiers
-        <span className={styles.summaryHint}>
-          {countModifiers(config.placements) > 0
-            ? ` — ${countModifiers(config.placements)} active`
-            : ""}
-        </span>
-      </summary>
-
+    <Disclosure label="Modifiers" hint={activeCount > 0 ? `— ${activeCount} active` : undefined}>
       <p className={styles.intro}>
         Carry-over bonuses from previous rounds — the engine simulates one battle at a time, not a
         whole match. For example, a creature's "On Victory" ability that granted it +10 Damage
@@ -96,14 +94,20 @@ export function ModifierEditor() {
               }),
             )}
           </ul>
+          {/* The last sentence was stale (2026-10-07): it still told users a modifier "can only
+              scale an effect the creature already has", which `engine/modifiers.ts` stopped being
+              true of when FR-078 was amended. The panel was telling them the opposite of what the
+              engine would do with their input. */}
           <p className={styles.note}>
             Cooldown Speed is a decimal, not a percentage: enter <code>0.2</code> for +20%. Damage
-            and status amounts are flat additions. A modifier can only scale an effect the creature
-            already has — it never creates a new attack on a creature with no published damage.
+            and status amounts are flat additions, and they may <em>create</em> an effect the
+            creature does not publish — +4 Burn on a creature that applies none gives it Burn, the
+            way a trinket or an ally's ability would. Cooldown speed is the one exception: it needs
+            an existing cast cycle to speed up.
           </p>
         </>
       )}
-    </details>
+    </Disclosure>
   );
 }
 
@@ -162,73 +166,81 @@ function PlacementModifierRow({ placement, onAdd, onRemove }: PlacementModifierR
   }
 
   return (
-    <li className={styles.row}>
-      <div className={styles.rowHeader}>
-        <Sprite spriteFile={creature?.spriteFile} kind="monster" size={24} alt={name} />
-        <strong>{name}</strong>
-        <small className={styles.level}>Lv.{placement.level}</small>
-      </div>
-
-      {(placement.modifiers ?? []).length > 0 && (
-        <ul className={styles.chips}>
-          {(placement.modifiers ?? []).map((modifier) => (
-            <li key={modifier.id} className={styles.chip}>
-              <span>
-                {statLabel(modifier.stat)} {modifier.amount > 0 ? `+${modifier.amount}` : modifier.amount}
-              </span>
-              <button
-                type="button"
-                onClick={() => onRemove(modifier.id)}
-                aria-label={`Remove ${statLabel(modifier.stat)} modifier from ${name}`}
-              >
-                ×
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      <div className={styles.addControls}>
-        <select
-          value={stat}
-          onChange={(e) => setStat(e.target.value as ModifierStat)}
-          aria-label={`Stat to modify for ${name}`}
-        >
-          {STAT_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-        <input
-          ref={amountRef}
-          type="number"
-          step="any"
-          value={amount}
-          placeholder="0"
-          onChange={(e) => setAmount(e.target.value)}
-          // Enter submits. This sits inside a form-less layout, so there is no implicit submit to
-          // rely on and the key has to be handled explicitly.
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              handleAdd();
-            }
-          }}
-          aria-label={`Amount to add for ${name}`}
-          className={styles.amount}
+    <li className={styles.cell}>
+      <Surface tone="flat" pad="sm" className={styles.cellBody}>
+        {/* The same tile as the team grid and the picker, so this cell is recognisably the creature
+            sitting in that slot rather than a name in a different-looking box. */}
+        <CreatureTile
+          name={name}
+          types={creature?.types ?? []}
+          spriteFile={creature?.spriteFile}
+          // A cell is a third of the team column, so it has no room for the picker's 96px. The
+          // token is shared with `.cellTile`'s height, so the tile cannot be shorter than the
+          // sprite it holds.
+          spriteSizeVar="--sprite-modifier"
+          className={styles.cellTile}
+          overlay={<span className={styles.levelBadge}>Lv.{placement.level}</span>}
         />
-        <button type="button" onClick={handleAdd} aria-label={`Add modifier to ${name}`}>
-          Add
-        </button>
-      </div>
 
-      {/* T211/FR-078: stated before the user commits, not discovered afterwards in an unchanged number. */}
-      {inertReason && (
-        <p className={styles.inertWarning} role="status">
-          {inertReason} This modifier will be recorded but will not change any output.
-        </p>
-      )}
+        {(placement.modifiers ?? []).length > 0 && (
+          <ul className={styles.chips}>
+            {(placement.modifiers ?? []).map((modifier) => (
+              <li key={modifier.id} className={styles.chipItem}>
+                <Chip
+                  className={styles.modifierChip}
+                  onRemove={() => onRemove(modifier.id)}
+                  removeLabel={`Remove ${statLabel(modifier.stat)} modifier from ${name}`}
+                >
+                  {statLabel(modifier.stat)} {modifier.amount > 0 ? `+${modifier.amount}` : modifier.amount}
+                </Chip>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <div className={styles.addControls}>
+          <select
+            value={stat}
+            onChange={(e) => setStat(e.target.value as ModifierStat)}
+            aria-label={`Stat to modify for ${name}`}
+          >
+            {STAT_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          <input
+            ref={amountRef}
+            type="number"
+            step="any"
+            value={amount}
+            placeholder="0"
+            onChange={(e) => setAmount(e.target.value)}
+            // Enter submits. This sits inside a form-less layout, so there is no implicit submit to
+            // rely on and the key has to be handled explicitly.
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                handleAdd();
+              }
+            }}
+            aria-label={`Amount to add for ${name}`}
+            className={styles.amount}
+          />
+          <button type="button" onClick={handleAdd} aria-label={`Add modifier to ${name}`}>
+            Add
+          </button>
+        </div>
+
+        {/* T211/FR-078: stated before the user commits, not discovered afterwards in an unchanged
+            number. */}
+        {inertReason && (
+          <p className={styles.inertWarning} role="status">
+            {inertReason} This modifier will be recorded but will not change any output.
+          </p>
+        )}
+      </Surface>
     </li>
   );
 }

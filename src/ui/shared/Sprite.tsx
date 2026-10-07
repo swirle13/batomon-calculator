@@ -11,11 +11,15 @@
  * 2. **The absent case.** A record with no `spriteFile` renders *nothing* — not a broken `<img>`,
  *    and not a placeholder box that would shift the layout relative to records that do have one.
  */
+/** The subdirectories that exist under `public/sprites/`. Exported so components that merely pass
+ * a kind through (`SpriteTile`) cannot drift from the set this component can resolve. */
+export type SpriteKind = "monster" | "trinket" | "trainer";
+
 interface SpriteProps {
   /** The record's `spriteFile`. Renders nothing when absent. */
   spriteFile: string | undefined;
   /** Selects the subdirectory under `public/sprites/`. */
-  kind: "monster" | "trinket" | "trainer";
+  kind: SpriteKind;
   /**
    * Rendered size in px for SQUARE sprites. Ignored when `width`/`height` are given.
    *
