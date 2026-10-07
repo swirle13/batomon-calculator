@@ -40,6 +40,7 @@ export function DpsRateChart({ result }: DpsRateChartProps) {
         xLabel="seconds (0.5s increments)"
         yLabel="damage per second"
         xMax={windowSeconds}
+        xTickInterval={1}
         ariaLabel="Line chart of instantaneous damage per second over the simulated time window, sampled every 0.5 seconds"
         formatValue={formatRate}
       />

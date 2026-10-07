@@ -31,7 +31,12 @@
   mask-repeat: no-repeat;
 
   mix-blend-mode: screen;
-  opacity: 0.45;
+  /*
+   * 0.6, measured rather than chosen. Sampling the game's own effect frame-by-frame
+   * (ffmpeg at 6fps, HLS over body pixels) gives a mean saturation of 0.62 on the creature; at
+   * 0.45 ours read noticeably washed out beside it.
+   */
+  opacity: 0.6;
 
   /*
    * REPEATING gradient, and the animation travels exactly ONE period.
@@ -57,7 +62,13 @@
     #f783ac 96px,
     #ff6b6b 112px
   );
-  animation: paintedDrift 3s linear infinite;
+  /*
+   * 3.3s, measured from the recording. Unwrapping the hue at four independent body pixels across
+   * 49 frames gives 3.02 / 3.20 / 3.46 / 3.53 s per full spectrum cycle — mean ~3.3s. Each pixel
+   * sweeps the WHOLE spectrum smoothly with no discontinuity, which is what the repeating gradient
+   * below reproduces and what the old single-ramp gradient could not.
+   */
+  animation: paintedDrift 3.3s linear infinite;
 }
 
 /*

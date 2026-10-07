@@ -8,7 +8,12 @@ import { slotsEqual } from "../engine/grid";
  * this scale (Constitution Principle VI).
  */
 
-const DEFAULT_WINDOW_SECONDS = 20;
+/**
+ * 15s, not 20 (2026-10-06). Sudden death begins at 15s, so a fight that reaches it is already being
+ * decided by something this engine does not model — and most fights end before then. A default that
+ * runs past the point the rules change flatters slow-ramping teams against fast ones.
+ */
+const DEFAULT_WINDOW_SECONDS = 15;
 
 function emptyConfig(): TeamConfiguration {
   return {

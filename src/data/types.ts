@@ -573,6 +573,12 @@ export interface SimulationResult {
    * the same `timeline` as `cumulativeSeries`, so integrating this reproduces that.
    */
   dpsRateSeries: { tSeconds: number; dps: number }[];
+  /**
+   * LIVE stack counts on the shared target over time — what is on the enemy right now, not what
+   * has been dealt. Poison and Shock only accumulate; Burn climbs as it is applied and decays by
+   * one layer per 0.5s tick, so this is the only view that shows a Burn team's stacks burning off.
+   */
+  statusStackSeries: { tSeconds: number; Burn: number; Poison: number; Shock: number }[];
   perStatusAppliedPerSecond: Record<StatusEffectType, number>;
   /**
    * The instantaneous damage rate as the window closes (`live layers / tickInterval`). The
@@ -628,6 +634,8 @@ export interface SimulationResult {
   cumulativeSeries: {
     tSeconds: number;
     totalDamage: number;
+    /** Direct-hit damage only. Was previously visible only folded into `totalDamage`. */
+    directDamage: number;
     byStatus: Record<StatusEffectType, number>;
   }[];
 }

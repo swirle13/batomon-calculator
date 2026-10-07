@@ -334,6 +334,26 @@ export function simulate(
   const shockLayersBySource = new Map<string, number>();
   const facilitatedDamage = new Map<string, number>();
   const activeStatuses: ActiveStatus[] = [];
+
+  /**
+   * Snapshots of the LIVE stack counts on the shared target, for the status-stacks chart.
+   *
+   * Sampled from `activeStatuses` as the simulation runs rather than reconstructed afterwards from
+   * the timeline. Reconstruction would have to re-implement "Burn sheds 1 layer per tick, Poison
+   * sheds none" a second time, and the copy would silently diverge the moment the decay rule
+   * changed. Here there is one rule, in `applyStatusTick`, and this just reads the result.
+   */
+  const stackSamples: { t: number; Burn: number; Poison: number; Shock: number }[] = [];
+  function snapshotStacks(t: number) {
+    let burn = 0;
+    let poison = 0;
+    for (const s of activeStatuses) {
+      if (s.type === "Burn") burn += s.layers;
+      else if (s.type === "Poison") poison += s.layers;
+    }
+    stackSamples.push({ t, Burn: burn, Poison: poison, Shock: shockLayers });
+  }
+  snapshotStacks(0);
   const perCreatureDamage = new Map<string, number>();
   const perStatusDamage: Record<StatusEffectType, number> = { Burn: 0, Poison: 0, Shock: 0, Shield: 0 };
 
@@ -375,6 +395,8 @@ export function simulate(
           sourceKey: instance.sourceKey,
         };
       }
+      // Stacks just changed (Burn shed a layer, or an instance expired), so record the new state.
+      snapshotStacks(earliestTime);
     }
   }
 
@@ -716,6 +738,9 @@ export function simulate(
       }
     }
 
+    // Applications for this instant are in; record the resulting stack counts.
+    snapshotStacks(tSeconds);
+
     // --- T241/FR-095: reactive "permanently" gains from ally status inflictions ---
     //
     // Thorntail's "When allies inflict Poison, this gains +24 Damage permanently". Accumulated into
@@ -756,6 +781,7 @@ export function simulate(
   }
 
   runTicksUpTo(windowSeconds);
+  snapshotStacks(windowSeconds);
   timeline.sort((a, b) => a.tSeconds - b.tSeconds || stableSlotIndex(a.sourceSlot) - stableSlotIndex(b.sourceSlot));
 
   // --- Phase C: derived summary + cumulative series ---
@@ -840,6 +866,7 @@ export function simulate(
   if (sampleTimes[sampleTimes.length - 1] !== windowSeconds) sampleTimes.push(windowSeconds);
   const cumulativeSeries = sampleTimes.map((t) => {
     let totalDamage = 0;
+    let directDamage = 0;
     const byStatus: Record<StatusEffectType, number> = { Burn: 0, Poison: 0, Shock: 0, Shield: 0 };
     for (const event of timeline) {
       if (event.tSeconds > t) continue;
@@ -854,9 +881,14 @@ export function simulate(
       totalDamage += event.damage;
       if (event.damageType === "Burn" || event.damageType === "Poison" || event.damageType === "Shock") {
         byStatus[event.damageType] += event.damage;
+      } else {
+        // Direct hits, tracked as their own series. They were previously only visible inside
+        // `totalDamage`, so a mixed team's direct contribution could not be read off the chart at
+        // all — the Total line moved and you could not tell which source moved it.
+        directDamage += event.damage;
       }
     }
-    return { tSeconds: t, totalDamage, byStatus };
+    return { tSeconds: t, totalDamage, directDamage, byStatus };
   });
 
   // --- FR-068 (2026-10-06 round 8): instantaneous DPS over time ------------------------------
@@ -885,6 +917,22 @@ export function simulate(
   }
   // `dps` is a RATE: damage in a half-second bucket is twice that per second. The 1s version could
   // treat bucket damage as the rate directly; at 0.5s it must be scaled, or every value halves.
+  /**
+   * Live stack counts on the shared target, on the same 0.5s grid as the other two charts.
+   *
+   * Step lookup, not interpolation: a stack count is a discrete quantity that changes at an
+   * instant and holds until the next change, so the value at time t is the last snapshot at or
+   * before t. Interpolating would draw fractional stacks that never exist.
+   */
+  const statusStackSeries = sampleTimes.map((t) => {
+    let latest = stackSamples[0]!;
+    for (const s of stackSamples) {
+      if (s.t <= t + 1e-9) latest = s;
+      else break;
+    }
+    return { tSeconds: t, Burn: latest.Burn, Poison: latest.Poison, Shock: latest.Shock };
+  });
+
   const dpsRateSeries = [
     // t=0 is a real sample: at the instant the battle starts nothing has cast, so the
     // instantaneous rate is zero. Including it makes t=0 reachable on the scrubber — the moment a
@@ -900,6 +948,7 @@ export function simulate(
   return {
     timeline,
     dpsRateSeries,
+    statusStackSeries,
     perCreatureDps,
     perCreatureFacilitatedDps,
     perCreatureEffectiveStats,

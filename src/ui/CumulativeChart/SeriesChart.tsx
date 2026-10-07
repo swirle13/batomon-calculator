@@ -114,7 +114,14 @@ export function SeriesChart({
             label={{ value: yLabel, angle: -90, position: "insideLeft", offset: -40, fill: AXIS }}
           />
           <Tooltip
-            contentStyle={{ background: "#24262e", border: `1px solid ${GRID}`, color: "#e8eaed" }}
+            // 50% transparent so the lines behind the card stay readable while hovering — the card
+            // is large enough to cover the part of the chart you are reading.
+            contentStyle={{
+              background: "rgba(36, 38, 46, 0.5)",
+              backdropFilter: "blur(2px)",
+              border: `1px solid ${GRID}`,
+              color: "#e8eaed",
+            }}
             formatter={(value, name) => [formatValue(Number(value)), String(name)]}
             // Deliberately NO `labelFormatter`: the per-point time is removed from the hover card
             // (FR-106). The chart states its 0.5s increment once, in the axis label.

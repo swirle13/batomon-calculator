@@ -11,6 +11,7 @@ import { PlacementAdvisor } from "./ui/TeamSummary/PlacementAdvisor";
 import { ShareBuild } from "./ui/TeamSummary/ShareBuild";
 import { CumulativeChart } from "./ui/CumulativeChart/CumulativeChart";
 import { DpsRateChart } from "./ui/CumulativeChart/DpsRateChart";
+import { StatusStackChart } from "./ui/CumulativeChart/StatusStackChart";
 import { CorpusBrowser } from "./ui/CorpusBrowser/CorpusBrowser";
 import { corpus } from "./data/corpus";
 import { simulate } from "./engine/simulate";
@@ -99,6 +100,7 @@ function CalculatorView() {
       </p>
       <CumulativeChart result={result} />
       <DpsRateChart result={result} />
+      <StatusStackChart result={result} />
     </div>
   );
 }
