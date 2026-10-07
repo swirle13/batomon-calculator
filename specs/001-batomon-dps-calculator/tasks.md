@@ -1898,10 +1898,10 @@ rounding artifact. **~22 of the 135 are not battle calculations at all** (10 sho
 
 ### Implementation — bounded bugs
 
-- [ ] T209 **[WI-001]** Fix `SlotBadges` in `src/ui/GridPicker/GridPicker.tsx` to render a **Heal**
+- [x] T209 **[WI-001]** Fix `SlotBadges` in `src/ui/GridPicker/GridPicker.tsx` to render a **Heal**
       chip (FR-077). `healAmount` is not part of `appliesStatus`, so the component never considered
       it. A `"heal"` stat colour already exists.
-- [ ] T209b **[WI-002]** Fix the slot's creature lookup to honour the placement's level.
+- [x] T209b **[WI-002]** Fix the slot's creature lookup to honour the placement's level.
       **CORRECTED DIAGNOSIS — the first draft of this task was wrong and would have concluded
       nothing was broken.** It said to check whether Puffloon's level-2 record carries
       `baseMulticast: 2`; it does. The real defect is `GridPicker.tsx:272` calling
@@ -1910,7 +1910,7 @@ rounding artifact. **~22 of the 135 are not battle calculations at all** (10 sho
       **Scope is far wider than the reported symptom**: every chip on every levelled creature has
       been showing level-1 stats. The user reported Multicast because it was the one visibly absent;
       the rest looked plausible. Add a test pinning a levelled creature's chips to that level.
-- [ ] T210 **[WI-003]** Make the chips show base stats **plus the user's manual modifiers**, while
+- [x] T210 **[WI-003]** Make the chips show base stats **plus the user's manual modifiers**, while
       still excluding engine-resolved ability effects (FR-077). **This deliberately revises round
       9b**, which set chips to pure base at the user's request. The distinction they drew was
       between the creature's printed card and what the battle computes; a modifier they typed
@@ -1920,12 +1920,12 @@ rounding artifact. **~22 of the 135 are not battle calculations at all** (10 sho
       Puffloon legitimately does nothing — `baseDamage` is `null` and the documented rule is that a
       modifier only scales an effect that already exists. Surface that at entry time instead of
       accepting the number and discarding it.
-- [ ] T212 **[WI-004]** Lay the Modifiers section out as the same 2x3 slot arrangement as the team
+- [x] T212 **[WI-004]** Lay the Modifiers section out as the same 2x3 slot arrangement as the team
       grid (FR-079), including empty cells, so position maps one-to-one.
-- [ ] T216 **[WI-008]** Stop the rotated Y-axis label colliding with long tick values in both charts
+- [x] T216 **[WI-008]** Stop the rotated Y-axis label colliding with long tick values in both charts
       (FR-082) — increase the left margin with the value magnitude, or move the label. Verify at
       5-digit values, which is where the user hit it.
-- [ ] T217 **[WI-009]** Fix the slider's t=0 reading (FR-083). The 2366.45-vs-0 gap is **not a
+- [x] T217 **[WI-009]** Fix the slider's t=0 reading (FR-083). The 2366.45-vs-0 gap is **not a
       calculation disagreement**: the slider's default shows the whole-window *average* while its
       position reads as t=0. Relabel/renumber so an aggregate is never presented as a point value.
 

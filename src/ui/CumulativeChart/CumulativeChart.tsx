@@ -36,8 +36,11 @@ export function CumulativeChart({ result }: CumulativeChartProps) {
       >
         <ResponsiveContainer>
           {/* FR-054 (item 19): `left` was 0, so the rotated Y label had no room and was clipped to
-                "cumulative valu"; `bottom` is raised so the centred X label clears the tick labels. */}
-          <LineChart data={data} margin={{ top: 8, right: 24, bottom: 24, left: 16 }}>
+                "cumulative valu"; `bottom` is raised so the centred X label clears the tick labels.
+                2026-10-06 (FR-082 / WI-008): `left` went 16 -> 56. Sixteen fit 2-3 digit ticks but
+                not the 5-digit totals a stacking-status team reaches, where the rotated label
+                collided with them; the label is now offset clear of the tick column. */}
+          <LineChart data={data} margin={{ top: 8, right: 24, bottom: 24, left: 56 }}>
             {/* Recharts' defaults assume a light background; this app is dark-mode-aware
                 (src/index.css prefers-color-scheme: dark), so axis/grid/legend/tooltip colors
                 are set explicitly rather than left to default near-black-on-black. */}
@@ -68,6 +71,7 @@ export function CumulativeChart({ result }: CumulativeChartProps) {
                 value: "cumulative value",
                 angle: -90,
                 position: "insideLeft",
+                offset: -40,
                 fill: "#9ca3af",
                 style: { textAnchor: "middle" },
               }}

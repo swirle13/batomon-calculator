@@ -70,15 +70,31 @@ export function ModifierEditor() {
         </p>
       ) : (
         <>
+          {/* FR-079 (WI-004): the same 2x3 shape as the team grid, including empty cells, so each
+              modifier cell sits where its creature sits on the board. */}
           <ul className={styles.rows}>
-            {config.placements.map((placement) => (
-              <PlacementModifierRow
-                key={slotKey(placement.slot)}
-                placement={placement}
-                onAdd={(stat, amount) => addPlacementModifier(placement.slot, { stat, amount })}
-                onRemove={(id) => removePlacementModifier(placement.slot, id)}
-              />
-            ))}
+            {(["back", "front"] as const).flatMap((row) =>
+              ([0, 1, 2] as const).map((col) => {
+                const placement = config.placements.find(
+                  (p) => p.slot.row === row && p.slot.col === col,
+                );
+                if (!placement) {
+                  return (
+                    <li key={`${row}-${col}`} className={styles.emptyCell} aria-hidden="true">
+                      —
+                    </li>
+                  );
+                }
+                return (
+                  <PlacementModifierRow
+                    key={slotKey(placement.slot)}
+                    placement={placement}
+                    onAdd={(stat, amount) => addPlacementModifier(placement.slot, { stat, amount })}
+                    onRemove={(id) => removePlacementModifier(placement.slot, id)}
+                  />
+                );
+              }),
+            )}
           </ul>
           <p className={styles.note}>
             Cooldown Speed is a decimal, not a percentage: enter <code>0.2</code> for +20%. Damage

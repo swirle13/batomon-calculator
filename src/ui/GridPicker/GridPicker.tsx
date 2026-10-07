@@ -12,10 +12,13 @@ import type {
   CreatureRecord,
   CreatureType,
   GridCol,
+  ModifierStat,
+  StatModifier,
+  StatusEffectType,
   GridRow,
   GridSlot,
 } from "../../data/types";
-import { corpus, getCreatureById } from "../../data/corpus";
+import { corpus, getCreatureByIdAndLevel } from "../../data/corpus";
 import { useTeamConfig } from "../../context/TeamConfigContext";
 import { resolveLevelUp } from "../../engine/evolution";
 import { typeBackground } from "../../data/typeColors";
@@ -84,6 +87,8 @@ function StatBadge({ statKey, value, label }: { statKey: StatColorKey; value: nu
 
 interface SlotBadgesProps {
   creature: CreatureRecord;
+  /** The user's own manual modifiers for this slot (FR-077). */
+  modifiers: StatModifier[] | undefined;
 }
 
 /**
@@ -99,10 +104,29 @@ interface SlotBadgesProps {
  * the tile and the live value on the inspect sheet, so that split is now mirrored here — the chip
  * is base, and "Effective this battle" on the detail card is where resolved values live.
  */
-function SlotBadges({ creature }: SlotBadgesProps) {
-  const damage = creature.baseDamage;
-  const appliesStatus = creature.appliesStatus ?? [];
-  const multicast = creature.baseMulticast;
+function SlotBadges({ creature, modifiers }: SlotBadgesProps) {
+  // 2026-10-06 round 10 (T210 / FR-077): base stats PLUS the user's own manual modifiers, still
+  // excluding engine-resolved ability effects.
+  //
+  // This revises round 9b, which set chips to pure base at the user's request. The distinction they
+  // drew was between the creature's printed card and what the battle computes — and a modifier the
+  // user typed in themselves is neither. It is their own input, and they reasonably expect to see
+  // it reflected. Resolved ability effects stay out; those belong in "Effective this battle".
+  const sum = (stat: ModifierStat) =>
+    (modifiers ?? []).filter((m) => m.stat === stat).reduce((total, m) => total + m.amount, 0);
+
+  const damage = creature.baseDamage === null ? null : creature.baseDamage + sum("damageFlatAdd");
+  const statusAdd: Record<StatusEffectType, number> = {
+    Burn: sum("burnAmountAdd"),
+    Poison: sum("poisonAmountAdd"),
+    Shock: sum("shockAmountAdd"),
+    Shield: sum("shieldAmountAdd"),
+  };
+  const appliesStatus = (creature.appliesStatus ?? []).map((s) => ({
+    ...s,
+    amount: s.amount + (statusAdd[s.type] ?? 0),
+  }));
+  const multicast = creature.baseMulticast + sum("multicastAdd");
 
   return (
     <div className={styles.badges}>
@@ -117,6 +141,10 @@ function SlotBadges({ creature }: SlotBadgesProps) {
           label={status.type}
         />
       ))}
+      {/* T209 (WI-001): Heal lives in `healAmount`, not `appliesStatus`, so it was never shown. */}
+      {creature.healAmount != null && creature.healAmount > 0 && (
+        <StatBadge statKey="heal" value={creature.healAmount} label="Heal" />
+      )}
       {multicast > 1 && <StatBadge statKey="multicast" value={multicast} label="Multicast" />}
     </div>
   );
@@ -126,6 +154,7 @@ interface DraggableCardProps {
   slot: GridSlot;
   creature: CreatureRecord;
   level: number;
+  modifiers: StatModifier[] | undefined;
   onHighlight: () => void;
   /** FR-023 (round 4): the card itself is the click target that opens CreatureSearchModal — no
    * separate "Change…" button. Coexists with dragging on the same element: @dnd-kit/core's pointer
@@ -136,7 +165,7 @@ interface DraggableCardProps {
   onClear: () => void;
 }
 
-function DraggableCard({ slot, creature, level, onHighlight, onOpenSearch, onClear }: DraggableCardProps) {
+function DraggableCard({ slot, creature, level, modifiers, onHighlight, onOpenSearch, onClear }: DraggableCardProps) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: slotKey(slot),
     data: { slot },
@@ -199,7 +228,7 @@ function DraggableCard({ slot, creature, level, onHighlight, onOpenSearch, onCle
         <Sprite spriteFile={creature.spriteFile} kind="monster" size={spriteGridSize()} alt={creature.name} />
       </div>
       <div className={styles.name}>{creature.name}</div>
-      <SlotBadges creature={creature} />
+      <SlotBadges creature={creature} modifiers={modifiers} />
     </div>
   );
 }
@@ -269,7 +298,14 @@ export function GridPicker({ onHighlightSlot }: GridPickerProps) {
               {COLS.map((col) => {
                 const slot: GridSlot = { row, col };
                 const placement = config.placements.find((p) => p.slot.row === row && p.slot.col === col);
-                const creature = placement ? getCreatureById(placement.creatureId) : null;
+                // 2026-10-06 round 10 (T209b / WI-002): resolve by (id, LEVEL). This used
+                // `getCreatureById`, which returns the first matching record — always level 1 — so
+                // every chip on every levelled creature silently showed level-1 stats. The user
+                // reported the missing Multicast chip because it was the one visibly absent; the
+                // rest looked plausible at any level, which is why it went unnoticed.
+                const creature = placement
+                  ? getCreatureByIdAndLevel(placement.creatureId, placement.level)
+                  : null;
                 // FR-022 (data-model.md's "Evolution-aware leveling"): never offer a level the
                 // corpus has no backing record for -- checked via the exact same resolver that
                 // performs the swap (resolveLevelUp), so a level only appears here if selecting
@@ -287,6 +323,7 @@ export function GridPicker({ onHighlightSlot }: GridPickerProps) {
                           slot={slot}
                           creature={creature}
                           level={placement.level}
+                          modifiers={placement.modifiers}
                           onHighlight={() => onHighlightSlot(slot)}
                           onOpenSearch={() => setSearchModalSlot(slot)}
                           onClear={() => setPlacement(slot, null)}

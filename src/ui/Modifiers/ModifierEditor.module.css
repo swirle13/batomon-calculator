@@ -38,16 +38,31 @@
   margin-bottom: 0;
 }
 
+/*
+ * 2026-10-06 round 10 (FR-079 / WI-004): laid out as the SAME 2x3 arrangement as the team grid, so
+ * a modifier cell sits where its creature sits. Previously an auto-fit flow whose order had no
+ * relationship to the board, which made the user map positions mentally on every edit.
+ */
 .rows {
   list-style: none;
   padding: 0;
   margin: var(--space-sm) 0;
-  /* FR-045 (item 5): several per row at desktop width, reflowing to fewer when narrow, instead of
-     one full-width row per creature wasting most of the line. */
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: var(--space-xs);
-  align-items: start;
+  align-items: stretch;
+}
+
+/* Empty slots are rendered too, so the 2x3 shape is preserved and positions stay aligned. */
+.emptyCell {
+  border: 1px dashed var(--line-subtle);
+  border-radius: var(--radius-md);
+  min-height: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-xs);
+  color: var(--text-muted);
 }
 
 .row {

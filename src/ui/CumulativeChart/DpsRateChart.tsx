@@ -37,7 +37,7 @@ export function DpsRateChart({ result }: DpsRateChartProps) {
         style={{ width: "100%", height: 260 }}
       >
         <ResponsiveContainer>
-          <LineChart data={data} margin={{ top: 8, right: 24, bottom: 24, left: 16 }}>
+          <LineChart data={data} margin={{ top: 8, right: 24, bottom: 24, left: 56 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#444857" />
             <XAxis
               dataKey="t"
@@ -55,6 +55,7 @@ export function DpsRateChart({ result }: DpsRateChartProps) {
                 value: "damage per second",
                 angle: -90,
                 position: "insideLeft",
+                offset: -40,
                 fill: "#9ca3af",
                 style: { textAnchor: "middle" },
               }}

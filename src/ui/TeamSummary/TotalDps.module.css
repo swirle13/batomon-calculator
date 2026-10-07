@@ -47,6 +47,12 @@
   margin-top: var(--space-sm);
 }
 
+.scrubIdle input[type="range"] {
+  /* FR-083 (WI-009): at rest the thumb's position is not a claim about the displayed figure, so the
+     control is dimmed to say so rather than looking like a live reading of t = 0. */
+  opacity: 0.45;
+}
+
 .scrubLabel {
   display: flex;
   align-items: center;

@@ -51,7 +51,9 @@ export function TotalDps({ config, result }: TotalDpsProps) {
       <div className={styles.headline}>
         <div className={styles.value}>{formatRate(shown)}</div>
         <div className={styles.label}>
-          {scrubT === null ? "total damage per second (window average)" : `total damage per second at t = ${scrubT}s`}
+          {scrubT === null
+            ? "total damage per second — average over the whole window, not a reading at any one moment"
+            : `total damage per second at t = ${scrubT}s`}
         </div>
       </div>
 
@@ -66,8 +68,17 @@ export function TotalDps({ config, result }: TotalDpsProps) {
         )}
       </div>
 
+      {/*
+        2026-10-06 round 10 (FR-083 / WI-009). Two bugs here, one reported and one found alongside.
+        Reported: at rest the thumb sat hard left while the figure read the window average, so the
+        control asserted "t = 0" about a number that was not a reading at any time.
+        Found: `v === 0 ? null : v` hijacked 0 to mean "no scrub", which made **t = 0 unreachable** —
+        the one moment the user is most likely to check, since it is where every cooldown starts.
+        Now 0 is an ordinary time, "whole window" is its own state reached by the button, and at rest
+        the slider is visibly inert so its thumb position makes no claim.
+      */}
       {series.length > 0 && (
-        <div className={styles.scrubRow}>
+        <div className={`${styles.scrubRow} ${scrubT === null ? styles.scrubIdle : ""}`}>
           <label className={styles.scrubLabel}>
             Time{" "}
             <input
@@ -76,10 +87,7 @@ export function TotalDps({ config, result }: TotalDpsProps) {
               max={series.length}
               step={1}
               value={scrubT ?? 0}
-              onChange={(e) => {
-                const v = Number(e.target.value);
-                setScrubT(v === 0 ? null : v);
-              }}
+              onChange={(e) => setScrubT(Number(e.target.value))}
               aria-label="Scrub battle time to see damage per second at that moment"
             />
           </label>
