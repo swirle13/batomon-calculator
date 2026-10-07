@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { CreatureSearchModal } from "../GridPicker/CreatureSearchModal";
-import { RARITIES_ASC } from "../../data/statColors";
+import { RARITIES_ASC, rarityLabel } from "../../data/statColors";
 
 const SLOT = { row: "back", col: 0 } as const;
 
@@ -15,8 +15,11 @@ describe("creature picker ordering (2026-10-07)", () => {
     // below the fold.
     const { container } = openPicker();
     const headings = Array.from(container.querySelectorAll("h3, h4")).map((h) => h.textContent?.trim());
-    const rarityHeadings = headings.filter((h) => RARITIES_ASC.some((r) => h?.startsWith(r)));
-    expect(rarityHeadings.length).toBeGreaterThan(1);
+    // Matched on LABELS, not stored keys. Keyed on `r` this filter silently dropped the Super Rare
+    // section the moment its label gained a space, and the test kept passing while checking less.
+    const labels = RARITIES_ASC.map(rarityLabel);
+    const rarityHeadings = headings.filter((h) => labels.some((l) => h?.startsWith(l)));
+    expect(rarityHeadings.length).toBe(RARITIES_ASC.length);
     expect(rarityHeadings[0]).toMatch(/^Common/);
     expect(rarityHeadings[rarityHeadings.length - 1]).not.toMatch(/^Common/);
   });

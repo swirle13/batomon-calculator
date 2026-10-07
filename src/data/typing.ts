@@ -1,4 +1,5 @@
 import { CREATURE_REGIONS } from "./regions";
+import { isWildcardType } from "./vocabularies";
 import type { CreatureRecord, CreatureType, RegionId, TeamConfiguration } from "./types";
 
 /**
@@ -26,7 +27,10 @@ export function creatureHasType(
   type: CreatureType,
   config?: Pick<TeamConfiguration, "paintedCreatureIds">,
 ): boolean {
-  if (creature.types.includes("All")) return true;
+  // 2026-10-07 (round 7 WI-003): reads the registry's `kind` rather than comparing the literal
+  // `"All"`. One predicate, because comparing the wildcard as if it were an element is exactly what
+  // caused this function's Omnichrome bug in the first place.
+  if (creature.types.some(isWildcardType)) return true;
   if (config?.paintedCreatureIds?.includes(creature.id)) return true;
   return creature.types.includes(type);
 }

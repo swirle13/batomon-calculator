@@ -99,7 +99,9 @@ describe("TrinketPicker ordering (FR-032/FR-067, 2026-10-07)", () => {
       // The heading carries its match count in a nested span; the rarity is the first word.
       (h.textContent ?? "").replace(/\s*\(\d+\)\s*$/, ""),
     );
-    expect(headings).toEqual(["Common", "Uncommon", "Rare", "SuperRare", "Legendary", "Mythical"]);
+    // "Super Rare" with a space: the registry's `label`, which is the published spelling and the
+    // only string the UI may render. The stored key is still `SuperRare` (round 7, FR-112).
+    expect(headings).toEqual(["Common", "Uncommon", "Rare", "Super Rare", "Legendary", "Mythical"]);
   });
 
   it("sorts alphabetically inside each rarity section", () => {

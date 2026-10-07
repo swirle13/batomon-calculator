@@ -52,14 +52,14 @@ describe("AffectedCreaturePicker (WI-001) — the trinket picker's shape, not a 
       .filter((h) => h.tagName === "H4")
       .map((h) => (h.textContent ?? "").replace(/\s*\(.*\)\s*$/, ""));
     // Selected first, then the rarity tiers Common -> Mythical, the same order as the other pickers.
-    expect(headings).toEqual(["Selected", "Common", "Uncommon", "Rare", "SuperRare", "Legendary", "Mythical"]);
+    expect(headings).toEqual(["Selected", "Common", "Uncommon", "Rare", "Super Rare", "Legendary", "Mythical"]);
   });
 
   it("keeps the rarity-shape row, with all five tiers (WI-002 validation finding)", () => {
     // `PAINTER_RARITY_SHAPE` was keyed "Super Rare" while the corpus spells it "SuperRare", so the
     // Super Rare chip was filtered out and the guidance added up to 7 of 9 rather than 9.
     const dialog = openPainted();
-    const chips = ["Common 0/2", "Uncommon 0/2", "Rare 0/2", "SuperRare 0/2", "Legendary 0/1"];
+    const chips = ["Common 0/2", "Uncommon 0/2", "Rare 0/2", "Super Rare 0/2", "Legendary 0/1"];
     for (const chip of chips) expect(within(dialog).getByText(chip)).toBeTruthy();
   });
 

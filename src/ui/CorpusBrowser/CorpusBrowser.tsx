@@ -1,18 +1,25 @@
 import { useMemo, useState } from "react";
 import { filterCreatures, searchCreatures } from "../../data/corpus";
 import type { CreatureType, Rarity } from "../../data/types";
-import { RARITIES_ASC } from "../../data/statColors";
+import { RARITIES_ASC, rarityLabel } from "../../data/statColors";
+import { FILTERABLE_CREATURE_TYPES } from "../../data/vocabularies";
 import { BatomonCard } from "../shared/BatomonCard/BatomonCard";
 import { Field, Select, TextField } from "../primitives";
 import styles from "./CorpusBrowser.module.css";
 
-/* FR-067 (WI-016): sorted at the point of display. This was a hard-coded, non-alphabetical array --
-   a list in the very view the user screenshotted, while the picker's equivalent list WAS sorted, so
-   the app contradicted itself. The ask covers lists "anywhere in this site", not just creature lists. */
-const TYPES: CreatureType[] = [
-  "Fire", "Water", "Electric", "Toxic", "Flying", "Rock", "Grass", "Bug",
-  "Steel", "Dragon", "Ghost", "Fighting", "Curio", "NULL", "All",
-].sort() as CreatureType[];
+/*
+ * FR-067 (WI-016): sorted at the point of display. This was a hard-coded, non-alphabetical array --
+ * a list in the very view the user screenshotted, while the picker's equivalent list WAS sorted, so
+ * the app contradicted itself. The ask covers lists "anywhere in this site", not just creature lists.
+ *
+ * 2026-10-07 (round 7 WI-003): the hand-written member list is gone, derived from the
+ * `CREATURE_TYPE` registry instead. It had restated all fifteen members, so a new type would have
+ * been filterable in the pickers and invisible here. `FILTERABLE_CREATURE_TYPES` also withholds the
+ * `"All"` wildcard, which this list used to offer as though it were an element -- selecting it
+ * filtered to the single species that carries it rather than matching everything, which is the
+ * opposite of what it means.
+ */
+const TYPES: CreatureType[] = [...FILTERABLE_CREATURE_TYPES].sort((a, b) => a.localeCompare(b));
 
 /**
  * User Story 3: search/filter the corpus (FR-013).
@@ -69,7 +76,7 @@ export function CorpusBrowser() {
             <option value="">(any)</option>
             {RARITIES_ASC.map((r) => (
               <option key={r} value={r}>
-                {r}
+                {rarityLabel(r)}
               </option>
             ))}
           </Select>

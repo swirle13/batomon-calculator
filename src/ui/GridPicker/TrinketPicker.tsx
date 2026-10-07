@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { corpus } from "../../data/corpus";
 import { useTeamConfig } from "../../context/TeamConfigContext";
-import { RARITY_COLORS, RARITIES_ASC } from "../../data/statColors";
+import { RARITY_COLORS, RARITIES_ASC, rarityLabel } from "../../data/statColors";
 import type { Rarity, TrinketRecord } from "../../data/types";
 import {
   ClearFiltersButton,
@@ -201,7 +201,7 @@ export function TrinketPicker() {
               <option value="">All rarities</option>
               {RARITIES_ASC.map((r) => (
                 <option key={r} value={r}>
-                  {r}
+                  {rarityLabel(r)}
                 </option>
               ))}
             </Select>
@@ -246,7 +246,7 @@ export function TrinketPicker() {
         {sections.map((section) => (
           <PickerSection
             key={section.rarity ?? "unranked"}
-            heading={section.rarity ?? "Unranked"}
+            heading={section.rarity ? rarityLabel(section.rarity) : "Unranked"}
             color={section.rarity ? RARITY_COLORS[section.rarity] : undefined}
             count={section.trinkets.length}
             columns={OVERLAY_COLUMNS}

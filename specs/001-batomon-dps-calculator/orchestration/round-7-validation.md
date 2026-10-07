@@ -186,3 +186,41 @@ materially smaller, is a scope decision belonging to the user. Escalated rather 
 
 Note the artifacts are now **internally consistent and every figure in them is measured**, so a
 decision to proceed is a decision about breadth, not about correctness.
+
+## Scope decision (user, 2026-10-07, after pass 3)
+
+Pass 3's FAIL was escalated as a scope question. The user chose **both ambitious options**, which
+closes WI-002's gap by widening the work rather than by accepting the slice:
+
+1. **WI-002 — derive ALL 17 mechanism families**, and treat the hand-written `abilityTags` array "as
+   something to delete entirely".
+2. **WI-004 — do the full `publishedCast` restructure in this round**, not deferred.
+
+### What this changes, stated honestly before building
+
+**"Delete `abilityTags` entirely" is the direction; the reachable destination is "an enumerated
+exception list".** Some published abilities cannot be derived from their text by any rule, and this is
+measured rather than asserted (R4): `"Gain 2400% of the stats of the enemy monster with the highest
+stats"` (Omnichrome) multiplies off an enemy; `"for each Trinket that you own"` (Mallogre) and
+`"for each life lost this run"` (Sproach) need inputs **this model does not have**; `"+240 Sell Value
+permanently"` (Gildshell) names a stat that is not a `ModifierStat`; `"transform them into random
+monsters of their rarity"` (Aerophim) has a clause no tag expresses.
+
+So the target is restated: `abilityTags` goes from **the primary mechanism, hand-maintained across 149
+species**, to **a small, enumerated, individually-justified override list**. The round reports the exact
+size of that list, and every remaining entry must have a one-line reason. That is the honest reading of
+"delete it entirely" and it is a far stronger outcome than the one-family slice pass 3 failed.
+
+**WI-004 now carries the blast radius the deferral existed to avoid**: `ModifiableBase`,
+`PerCastOutput`, `SimulationResult.perCreatureEffectiveStats`, `BatomonCard`'s output band, ~15 engine
+fixtures, and 596 records. T282's invariant test becomes a *migration* check rather than a guard on a
+deferral.
+
+**Supersedes**: plan.md decision 9 (the deferral), R3's "(b) is proposed but DEFERRED", data-model.md's
+"PROPOSED, DEFERRED" block, T284's deferral-reporting task, and the contract amendment's "no engine
+entry point changes shape this round". All are re-recorded as superseded in place rather than deleted,
+so the reasoning for the original deferral stays readable next to the decision that overrode it.
+
+No fourth validation pass is run: three is the orchestration limit, and the user's choice resolves the
+one item that failed. The artifacts were internally consistent and fully measured at the end of pass 3,
+so this is a decision about breadth taken on correct information.

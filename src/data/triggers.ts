@@ -5,6 +5,8 @@ import type {
   StatModifier,
   TargetSelector,
 } from "./types";
+import { ABILITY_TRIGGER } from "./vocabularies";
+import { keysInOrder } from "./vocabulary";
 
 /**
  * The trigger registry: one entry per `AbilityTrigger`, describing how that trigger behaves and
@@ -38,61 +40,18 @@ export interface TriggerDefinition {
   readonly enginePropagated: boolean;
 }
 
-export const TRIGGER_DEFINITIONS: Readonly<Record<AbilityTrigger, TriggerDefinition>> = {
-  Ongoing: {
-    actionLabel: "Ongoing",
-    description: "Always active; the engine applies it for the whole battle.",
-    enginePropagated: true,
-  },
-  "On Cast": {
-    actionLabel: "Cast",
-    description: "Fires every time this creature casts; the engine schedules those casts.",
-    enginePropagated: true,
-  },
-  "On Battle Start": {
-    actionLabel: "Start the battle",
-    description: "Fires once as the battle begins.",
-    // The resolver handles battle-start grants it has tags for, but several creatures' battle-start
-    // text is unmodelled (Mallogre's "for each Trinket that you own" has no trinket-count input).
-    // Those carry a manualTrigger tag explicitly; this flag governs only the default.
-    enginePropagated: true,
-  },
-  "On Bought": {
-    actionLabel: "Buy a monster",
-    description: "Fires when you buy a monster in the shop — outside the battle this simulates.",
-    enginePropagated: false,
-  },
-  "On Victory": {
-    actionLabel: "Win a round",
-    description: "Fires after you win a round, so the bonus carries into later battles.",
-    enginePropagated: false,
-  },
-  "On Knocked Out": {
-    actionLabel: "Get knocked out",
-    description: "Fires when THIS creature is knocked out. The engine models no deaths.",
-    enginePropagated: false,
-  },
-  "On Knockout": {
-    actionLabel: "Knock out a monster",
-    description: "Fires when ANY monster is knocked out. The engine models no deaths.",
-    enginePropagated: false,
-  },
-  "On Trinket Gained": {
-    actionLabel: "Gain a trinket",
-    description: "Fires when you gain a trinket — outside the battle this simulates.",
-    enginePropagated: false,
-  },
-  "On Item Used": {
-    actionLabel: "Use an item",
-    description: "Fires when you use an item — outside the battle this simulates.",
-    enginePropagated: false,
-  },
-  "On Battle Lost": {
-    actionLabel: "Lose a round",
-    description: "Fires after you lose a round.",
-    enginePropagated: false,
-  },
-};
+/**
+ * The trigger registry IS the definition table now (2026-10-07, round 7 WI-001).
+ *
+ * This used to be a second `Record<AbilityTrigger, ...>` declared beside the union — exactly the
+ * "per-member data in a parallel structure" problem the round removes. The fields moved into
+ * `ABILITY_TRIGGER` in `vocabularies.ts`; this alias keeps every call site working.
+ */
+export const TRIGGER_DEFINITIONS: Readonly<Record<AbilityTrigger, TriggerDefinition>> =
+  ABILITY_TRIGGER;
+
+/** Every trigger, in canonical order. Derived, so a new union member cannot be missed. */
+export const ABILITY_TRIGGERS: AbilityTrigger[] = keysInOrder(ABILITY_TRIGGER);
 
 /** One press-able trigger on a creature: what it is called, what one press banks, and on whom. */
 export interface ManualTrigger {

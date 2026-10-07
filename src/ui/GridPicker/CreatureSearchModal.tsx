@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { CreatureType, GridSlot, Rarity } from "../../data/types";
 import { distinctCreatures } from "../../data/corpus";
-import { RARITIES_ASC, RARITY_COLORS } from "../../data/statColors";
+import { RARITIES_ASC, RARITY_COLORS, rarityLabel } from "../../data/statColors";
 import { slotKey } from "../../engine/grid";
 import {
   CardGrid,
@@ -136,7 +136,7 @@ export function CreatureSearchModal({ slot, onClose, onSelect, config}: Creature
             <option value="">All rarities</option>
             {RARITIES_ASC.map((r) => (
               <option key={r} value={r}>
-                {r}
+                {rarityLabel(r)}
               </option>
             ))}
           </Select>
@@ -185,7 +185,7 @@ export function CreatureSearchModal({ slot, onClose, onSelect, config}: Creature
       {sections.map((section) => (
         <PickerSection
           key={section.rarity}
-          heading={section.rarity}
+          heading={rarityLabel(section.rarity)}
           color={RARITY_COLORS[section.rarity]}
           count={section.creatures.length}
           cardMinWidth="var(--picker-card-min-width)"

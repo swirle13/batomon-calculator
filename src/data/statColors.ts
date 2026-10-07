@@ -1,4 +1,6 @@
 import type { Rarity, StatusEffectType } from "./types";
+import { RARITY } from "./vocabularies";
+import { keysInOrder } from "./vocabulary";
 import { STATUS_COLOR_KEY } from "./format";
 
 /**
@@ -38,26 +40,29 @@ export const STAT_COLORS: Record<StatColorKey, string> = {
 };
 
 /**
- * Note the deliberate spelling bridge: this corpus's `Rarity` union uses `"SuperRare"` while the
- * published data uses `"Super Rare"`. Mapped explicitly here rather than deriving one spelling
- * from the other, so a future rename can't silently produce a missing color.
+ * Rarity ordering and colours, both now DERIVED from the `RARITY` registry (2026-10-07, round 7).
+ *
+ * These three were parallel structures keyed by the same union — an ordering array, its reverse,
+ * and a colour record — which is three chances to add a tier to one and forget the others. Round 6's
+ * validation found exactly that: `PAINTER_RARITY_SHAPE` keyed `"Super Rare"` against a corpus
+ * spelling of `"SuperRare"`, so the Super Rare chip silently vanished and the guidance row summed to
+ * 7 of 9 instead of 9. The names and every call site are unchanged; only the declaration moved.
+ *
+ * The "deliberate spelling bridge" comment that used to sit here is gone because it is now a
+ * mechanism: `RARITY.SuperRare.label` is `"Super Rare"`, and `labelOf` is the only way the UI gets a
+ * rarity's display text.
  */
-/**
- * The single rarity ordering (2026-10-06 round 7, tasks.md T172). Previously declared as a local
- * `RARITIES` array in three separate files -- `CreatureSearchModal`, `CorpusBrowser`, and
- * `TrinketPicker` -- with inconsistent ordering between them (two descending, one ascending).
- */
-export const RARITIES_DESC: Rarity[] = ["Mythical", "Legendary", "SuperRare", "Rare", "Uncommon", "Common"];
-export const RARITIES_ASC: Rarity[] = [...RARITIES_DESC].reverse();
+export const RARITIES_ASC: Rarity[] = keysInOrder(RARITY);
+export const RARITIES_DESC: Rarity[] = [...RARITIES_ASC].reverse();
 
-export const RARITY_COLORS: Record<Rarity, string> = {
-  Common: "#70707a",
-  Uncommon: "#4ab500",
-  Rare: "#0084bd",
-  SuperRare: "#a040a0",
-  Legendary: "#d47c00",
-  Mythical: "#dc2844",
-};
+export const RARITY_COLORS: Record<Rarity, string> = Object.fromEntries(
+  RARITIES_ASC.map((r) => [r, RARITY[r].color]),
+) as Record<Rarity, string>;
+
+/** A rarity's display text. The stored key (`"SuperRare"`) must never reach the screen. */
+export function rarityLabel(rarity: Rarity): string {
+  return RARITY[rarity].label;
+}
 
 /**
  * Maps a `StatusEffectType` onto its stat color. Delegates to the single `STATUS_COLOR_KEY` map in

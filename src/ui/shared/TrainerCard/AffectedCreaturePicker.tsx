@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { distinctCreatures } from "../../../data/corpus";
 import { isInOppositeRegion } from "../../../data/typing";
 import { useTeamConfig } from "../../../context/TeamConfigContext";
-import { RARITIES_ASC, RARITIES_DESC, RARITY_COLORS } from "../../../data/statColors";
+import { RARITIES_ASC, RARITIES_DESC, RARITY_COLORS, rarityLabel } from "../../../data/statColors";
 import type { CreatureRecord, Rarity } from "../../../data/types";
 import {
   CreatureTile,
@@ -167,9 +167,9 @@ export function AffectedCreaturePicker({ kind, onClose }: AffectedCreaturePicker
                   <span
                     key={r}
                     className={`${styles.shapeChip} ${have === want ? styles.shapeMet : ""}`}
-                    title={`Typically ${want} ${r}; this is guidance, not a rule`}
+                    title={`Typically ${want} ${rarityLabel(r)}; this is guidance, not a rule`}
                   >
-                    {r} {have}/{want}
+                    {rarityLabel(r)} {have}/{want}
                   </span>
                 );
               })}
@@ -240,7 +240,7 @@ export function AffectedCreaturePicker({ kind, onClose }: AffectedCreaturePicker
       {sections.map((section) => (
         <PickerSection
           key={section.rarity}
-          heading={section.rarity}
+          heading={rarityLabel(section.rarity)}
           color={RARITY_COLORS[section.rarity]}
           count={section.creatures.length}
           columns={OVERLAY_COLUMNS}

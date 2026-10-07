@@ -11,6 +11,7 @@ import type {
 import { aboveSlot, behindSlot, isAdjacent, slotKey, slotsEqual } from "./grid";
 import { applyShinyOverlay } from "../data/corpus";
 import { creatureHasType } from "../data/typing";
+import { isWildcardType } from "../data/vocabularies";
 import { hasAbilityText } from "../data/display";
 import { addFlat, addPostMultiplier, applyMultiplier, readRounded, statValue, type StatValue } from "./statValue";
 import { TYPE_COLORS } from "../data/typeColors";
@@ -436,7 +437,7 @@ export function resolveEffects(config: TeamConfiguration, corpus: Corpus): Resol
           // combination the community guides call out as the archetype.
           const types = new Set<string>();
           for (const m of base) {
-            if (m.creature.types.includes("All") || config.paintedCreatureIds?.includes(m.creature.id)) {
+            if (m.creature.types.some(isWildcardType) || config.paintedCreatureIds?.includes(m.creature.id)) {
               for (const t of Object.keys(TYPE_COLORS)) types.add(t);
             } else {
               for (const t of m.creature.types) types.add(t);

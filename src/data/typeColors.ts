@@ -1,4 +1,6 @@
 import type { CreatureType } from "./types";
+import { CREATURE_TYPE } from "./vocabularies";
+import { keysInOrder } from "./vocabulary";
 
 /**
  * Canonical `CreatureType` -> color mapping (2026-10-05 round 3, data-model.md's "Canonical
@@ -15,25 +17,14 @@ import type { CreatureType } from "./types";
  * `prefers-color-scheme: dark`), not lifted from any external source — there is no official
  * palette to cite here, so these are an original design choice, not a corpus fact.
  */
-export const TYPE_COLORS: Record<CreatureType, string> = {
-  Fire: "#e05a2b",
-  Water: "#2e86de",
-  Electric: "#d4b106",
-  Toxic: "#8e44ad",
-  Flying: "#70a1d7",
-  Rock: "#8d6e63",
-  Grass: "#4caf50",
-  Bug: "#8bc34a",
-  Steel: "#90a4ae",
-  Dragon: "#5c6bc0",
-  Ghost: "#512da8",
-  Fighting: "#c0392b",
-  Curio: "#26a69a",
-  NULL: "#37474f",
-  // "All" (e.g. Omnichrome) has no single real-world analog; a distinct accent color flags it
-  // as the special case it is, rather than reusing another type's color.
-  All: "#d81b60",
-};
+/**
+ * DERIVED from the `CREATURE_TYPE` registry (2026-10-07, round 7), which is now the single place a
+ * type's colour, label, order and `kind` are declared together. The name and every call site are
+ * unchanged; a new type can no longer be added to the union without a colour.
+ */
+export const TYPE_COLORS: Record<CreatureType, string> = Object.fromEntries(
+  keysInOrder(CREATURE_TYPE).map((t) => [t, CREATURE_TYPE[t].color]),
+) as Record<CreatureType, string>;
 
 export function typeColor(type: CreatureType): string {
   return TYPE_COLORS[type];

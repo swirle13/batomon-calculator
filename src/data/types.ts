@@ -10,46 +10,52 @@
 // Shared primitive types
 // ---------------------------------------------------------------------------
 
-export type Rarity =
-  | "Common"
-  | "Uncommon"
-  | "Rare"
-  | "SuperRare"
-  | "Legendary"
-  | "Mythical";
+/**
+ * The closed vocabularies are now DERIVED from the registries in `./vocabularies.ts` (2026-10-07,
+ * round 7) rather than hand-written here beside the three separate structures that carried their
+ * labels, ordering and colours.
+ *
+ * The unions themselves are unchanged — same members, same stored keys, every existing
+ * `import type { Rarity } from "./types"` keeps working. What changed is that there is now exactly
+ * one declaration per vocabulary, so a member cannot be added with a colour and without an order,
+ * and `"SuperRare"` has a `label` of `"Super Rare"` instead of doubling as its own display text.
+ * See `vocabulary.ts` for why a const-object registry rather than TypeScript's `enum`.
+ */
+import type {
+  Rarity,
+  CreatureType,
+  DamageChannel,
+  StatusEffectType,
+  AbilityTrigger,
+} from "./vocabularies";
+
+export type { Rarity, CreatureType, DamageChannel, StatusEffectType, AbilityTrigger };
 
 /**
- * research.md B7: "Fighting" is retained with a confidence flag rather than omitted or
- * silently trusted — it appears in ability text in creator footage per one source, but is
- * explicitly flagged there as unconfirmed by official publication.
+ * Deprecated alias kept for one round so the `DamageType` -> `DamageChannel` rename lands without
+ * touching every engine call site in the same commit. `DamageChannel` is the name that says what it
+ * is: the channel a HIT lands on, which is a different concept from the kind of cast a creature
+ * publishes (research.md R3).
  *
- * "Curio" and "NULL" added 2026-10-05 during the full-corpus widening pass (tasks.md T043):
- * both appear as literal Type-column values for multiple creatures across two independent
- * sources — https://batomonshowdown.wiki/batomon/ (Goldora: Curio) and
- * https://batomon.net/batomon/ (Dollhime/Furnadon/Gachapod/Mallogre/Nekoffin/Pawsperity/
- * Rubbin/Shrinell/Vipair: Curio; MissingN./NULL-00/NULL-7F/NULL-FF: NULL) — so they are
- * treated as real closed-vocabulary members, not typos, per Constitution Principle II.
+ * @deprecated Use `DamageChannel`.
  */
-export type CreatureType =
-  | "Fire"
-  | "Water"
-  | "Electric"
-  | "Toxic"
-  | "Flying"
-  | "Rock"
-  | "Grass"
-  | "Bug"
-  | "Steel"
-  | "Dragon"
-  | "Ghost"
-  | "Fighting"
-  | "Curio"
-  | "NULL"
-  | "All";
+export type DamageType = DamageChannel;
 
-export type DamageType = "Direct" | "Burn" | "Poison" | "Shock" | "SuddenDeath";
-
-export type StatusEffectType = "Burn" | "Poison" | "Shock" | "Shield";
+/*
+ * `CreatureType`'s provenance notes, which the registry's members now carry a `kind` for:
+ *
+ * research.md B7: "Fighting" is retained with a confidence flag rather than omitted or silently
+ * trusted — it appears in ability text in creator footage per one source, but is explicitly flagged
+ * there as unconfirmed by official publication.
+ *
+ * "Curio" and "NULL" added 2026-10-05 during the full-corpus widening pass (tasks.md T043): both
+ * appear as literal Type-column values for multiple creatures across two independent sources —
+ * https://batomonshowdown.wiki/batomon/ (Goldora: Curio) and https://batomon.net/batomon/
+ * (Dollhime/Furnadon/Gachapod/Mallogre/Nekoffin/Pawsperity/Rubbin/Shrinell/Vipair: Curio;
+ * MissingN./NULL-00/NULL-7F/NULL-FF: NULL) — so they are real closed-vocabulary members, not typos,
+ * per Constitution Principle II. They are marked `placeholder` rather than `element` and remain
+ * filterable; only the `wildcard` ("All") is withheld from filter lists.
+ */
 
 export interface SourceRef {
   url: string;
@@ -91,26 +97,18 @@ export interface Provenance {
 export type RegionId = "pantra" | "jinto" | (string & {});
 
 /** T250/FR-100. The closed set of ability triggers (research.md N2). */
-export type AbilityTrigger =
-  | "Ongoing"
-  | "On Cast"
-  | "On Battle Start"
-  | "On Bought"
-  | "On Victory"
-  | "On Knocked Out"
-  | "On Trinket Gained"
-  | "On Battle Lost"
-  /**
-   * 2026-10-07. Two values batodex's own `trigger` field leaves null, so they had to be read from
-   * the ability text instead. Both describe real, repeatable triggers — Craghorn's "when you use an
-   * item" and Cawnushi's "on knockout of any monster" — and their absence is why those creatures
-   * had no trigger at all.
-   *
-   * `On Knocked Out` (existing) is about THIS creature dying; `On Knockout` is about any monster
-   * dying. Different events, easily conflated, so both are spelled out.
-   */
-  | "On Item Used"
-  | "On Knockout";
+/*
+ * `AbilityTrigger` now derives from the `ABILITY_TRIGGER` registry, which also absorbed
+ * `TRIGGER_DEFINITIONS`' action labels, descriptions and `enginePropagated` flags — those were a
+ * second map keyed by this union, i.e. the duplication round 7 removes.
+ *
+ * Two of its members, `On Item Used` and `On Knockout`, are values batodex's own `trigger` field
+ * leaves null and had to be read from ability text instead. Both describe real, repeatable triggers
+ * — Craghorn's "when you use an item" and Cawnushi's "on knockout of any monster" — and their
+ * absence is why those creatures had no trigger at all. `On Knocked Out` is about THIS creature
+ * dying; `On Knockout` is about any monster dying. Different events, easily conflated, so both are
+ * spelled out.
+ */
 
 export type EventLabel = "OnCast" | "OnBattleStart" | "OnVictory" | "OnKnockout";
 

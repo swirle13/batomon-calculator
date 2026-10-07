@@ -27,6 +27,7 @@ import { CreatureSprite } from "../shared/CreatureSprite";
 import { perCastOutputOf } from "../shared/BatomonCard/BatomonCard";
 import { CreatureSearchModal } from "./CreatureSearchModal";
 import styles from "./GridPicker.module.css";
+import { isWildcardType } from "../../data/vocabularies";
 
 /**
  * 2x3 slot assignment UI (FR-005). Back row first (research.md B5 — A-row/back, B-row/front),
@@ -313,7 +314,7 @@ export function GridPicker({ onHighlightSlot }: GridPickerProps) {
                           creature={creature}
                           level={placement.level}
                           modifiers={placement.modifiers}
-                          painted={creature.types.includes("All") || isPainted(creature.id, config)}
+                          painted={creature.types.some(isWildcardType) || isPainted(creature.id, config)}
                           onHighlight={() => onHighlightSlot(slot)}
                           onOpenSearch={() => setSearchModalSlot(slot)}
                           onClear={() => setPlacement(slot, null)}

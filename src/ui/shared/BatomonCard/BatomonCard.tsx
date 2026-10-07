@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import type { CreatureRecord } from "../../../data/types";
-import { RARITY_COLORS, STAT_COLORS, type StatColorKey } from "../../../data/statColors";
+import { RARITY_COLORS, STAT_COLORS, rarityLabel, type StatColorKey } from "../../../data/statColors";
 import { STATUS_COLOR_KEY } from "../../../data/format";
 import { displayField, hasAbilityText, isUnconfirmed } from "../../../data/display";
 import type { ModifierStat, PerCastOutput, StatModifier, StatusEffectType } from "../../../data/types";
@@ -9,6 +9,7 @@ import { applyModifiers } from "../../../engine/modifiers";
 import { AllTypeTag, TypeTag } from "../TypeTag";
 import { CreatureSprite } from "../CreatureSprite";
 import styles from "./BatomonCard.module.css";
+import { isWildcardType } from "../../../data/vocabularies";
 
 /**
  * The one creature card, shared by the Corpus Browser and the Calculator's selected-creature panel
@@ -187,7 +188,7 @@ export function BatomonCard({ creature, children, levelLabel, fixedHeight, meta,
   // Browser, which renders creatures outside any team and has no `TeamConfigProvider`; reading
   // context inside the card coupled a pure presentation component to run state and broke every
   // browser test. Callers that know about a run pass it; callers that do not, do not.
-  const isAllType = creature.types.includes("All") || painted === true;
+  const isAllType = creature.types.some(isWildcardType) || painted === true;
   const rarityColor = RARITY_COLORS[creature.rarity];
   const cooldownUnconfirmed = isUnconfirmed(creature, "baseCooldownSeconds");
   const statLines = buildStatLines(perCastOutputOf(creature, modifiers));
@@ -202,7 +203,7 @@ export function BatomonCard({ creature, children, levelLabel, fixedHeight, meta,
           {creature.name}
           {levelLabel ? <small style={{ opacity: 0.7, fontWeight: 400 }}> {levelLabel}</small> : null}
         </h3>
-        <span className={styles.rarity}>{displayField(creature, "rarity", creature.rarity)}</span>
+        <span className={styles.rarity}>{displayField(creature, "rarity", rarityLabel(creature.rarity))}</span>
       </header>
 
       <div className={styles.identity}>

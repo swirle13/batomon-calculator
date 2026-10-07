@@ -2908,3 +2908,45 @@ T296 were tightened rather than added; see `round-7-validation.md` pass 1 for wh
 3. **R7.1** — `purpleegg` L1-L4 ship unresolved template placeholders in cited ability text
    ("Hatches a level 2 **{monster_name}** in **{amount}** day(s)"). Found while measuring, not asked
    for, not fixed.
+
+### Scope expansion (user decision, 2026-10-07, after validation pass 3)
+
+The user chose to widen rather than accept pass 3's slice. **T284 and T297 are superseded**; the
+following replace them. Reasoning in `orchestration/round-7-validation.md` "Scope decision".
+
+- [ ] T300 **[WI-004]** **Do the `publishedCast` restructure now** — the thing T284 recorded as
+      deferred. Replace `CreatureRecord`'s `baseDamage: number | null` + `damageType: DamageType | null`
+      pair with one optional field, so the illegal state stops being representable:
+      ```ts
+      publishedCast?: { damage: number; channel: DamageChannel };
+      ```
+      Reaches `ModifiableBase` (`src/engine/modifiers.ts`), `PerCastOutput`,
+      `SimulationResult.perCreatureEffectiveStats`, `BatomonCard`'s output band, ~15 engine test
+      fixtures, and all 596 records. **Migrate the records with a script, not by hand**, and keep
+      T282's correlation test running until the moment the two fields no longer exist — it becomes the
+      migration's own check that no record changed meaning. The 596/596 correlation is what makes the
+      migration mechanical: every record either has both fields or neither.
+      Keep the engine's ability to CREATE a cast (T232 — Bonshell deals 80 from cast 2 with no published
+      damage), which now reads as "`publishedCast` absent, resolved cast present" rather than two
+      nullables that must be updated together.
+- [ ] T301 [US1] **[WI-002]** **Extend the rule table to every mechanism family in research.md L1**, not
+      one plus a census pick. Work family by family, largest first by R4's `new` column, and after each
+      family run the full suite plus T289's coverage assertion — a family that is inside
+      `RESOLVED_TAG_KINDS` will legitimately move the coverage figure (FR-114) and one that is not must
+      leave it alone. Commit per family so a bad rule is revertable in isolation.
+- [ ] T302 [US1] **[WI-002]** Reduce `abilityTags` to an **enumerated exception list** and report its
+      exact size. The user's ask is to delete the hand-written array "entirely"; the honest destination
+      is that nothing remains in it except entries that **cannot** be derived, each carrying a one-line
+      reason. The measured irreducible cases are already known (R4): Omnichrome's enemy-stat multiplier,
+      Mallogre's trinket count and Sproach's lives-lost count (**inputs this model does not have**),
+      Gildshell's `Sell Value` (**not a `ModifierStat`**), Aerophim's transform clause, plus the
+      long-known Petrirex, Fumungus and Link Cable cases.
+      Add a test that **fails if a hand-authored tag is derivable** — i.e. if the derivation would have
+      produced it anyway — so the exception list cannot quietly regrow into the hand-maintained array
+      this item exists to remove. That test is the real deliverable of WI-002: it makes the property
+      permanent rather than true once.
+- [ ] T303 **[WI-002, WI-004]** Final reconciliation: re-run the R4 census and report the **after**
+      numbers against the 424/596 baseline, plus the exception-list size from T302 and the
+      `publishedCast` migration result from T300. If any family was attempted and abandoned, name it and
+      say why — "all 17 families" is the instruction, and a family quietly skipped is worse than one
+      reported as too hard.
