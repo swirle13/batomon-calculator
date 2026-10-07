@@ -1,8 +1,22 @@
+/*
+ * 2026-10-06 round 9 (FR-071 / WI-001): an EXPLICIT width, not a cap.
+ *
+ * Round 8's T183 removed each slot's `<details>` fallback containing a `<select>` of every creature
+ * name -- which was the widest content in each column and the only thing giving this grid its
+ * intrinsic width. `.grid` has no `width` or `flex-grow`, and `max-width` is only a ceiling, so
+ * every column collapsed to the next-widest content and the 64px sprites were clipped by their
+ * `overflow: hidden` slot cards. The sprites never shrank; their containers did.
+ *
+ * (The first diagnosis blamed flex shrinkage from the rigid detail panel. That was wrong: the
+ * container is `flex-wrap: wrap`, so a rigid sibling wraps rather than squeezing, and `Sprite`
+ * emits fixed width/height with `flex-shrink: 0`, so it cannot scale with its container.)
+ */
 .grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 0.5rem;
-  max-width: 30rem;
+  width: 30rem;
+  flex-shrink: 0;
 }
 
 /* 2026-10-06 round 6 (FR-034): the `.rowLabel` rule is gone along with the BACK ROW / FRONT ROW
@@ -13,12 +27,6 @@
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-}
-
-.slot select {
-  width: 100%;
-  padding: 0.3rem;
-  font-size: 0.85rem;
 }
 
 .dropZone {

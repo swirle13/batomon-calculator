@@ -1724,7 +1724,7 @@ at t = 3, 3, 6, 6, 8, 9, 9, 12, 12.
 
 ### Foundational
 
-- [ ] T197 **[WI-001]** Restore the team grid's width (FR-071). **CORRECTED root cause** — the first
+- [x] T197 **[WI-001]** Restore the team grid's width (FR-071). **CORRECTED root cause** — the first
       draft blamed flex shrinkage from round 8's rigid sibling, and validation disproved it: the
       container is `flexWrap: "wrap"` (a rigid sibling wraps, it doesn't squeeze), `Sprite` emits
       fixed `width`/`height` with `flexShrink: 0` and no `max-width` (so a narrow pane **clips** it,
@@ -1828,7 +1828,7 @@ at t = 3, 3, 6, 6, 8, 9, 9, 12, 12.
 
 ### Implementation — UI
 
-- [ ] T204 **[WI-002, WI-006]** Add a total row to the per-creature table **and** a prominent
+- [x] T204 **[WI-002, WI-006]** Add a total row to the per-creature table **and** a prominent
       headline total-DPS figure (FR-072) in `src/ui/TeamSummary/TeamSummary.tsx`. **Confirm the
       user's parenthetical in the UI copy**: `perCreatureDps` really is direct damage only, which is
       why their all-status team read `0.00` everywhere while dealing 136.6/s. Facilitated total
@@ -1837,11 +1837,11 @@ at t = 3, 3, 6, 6, 8, 9, 9, 12, 12.
       **Do NOT sum the `perStatusPerSecond` record to build the headline**: `perStatusPerSecond.Shield`
       is Shield *granted*, never damage, and never enters `facilitatedDamage`, so that route inflates
       any Shield team. Sum direct + facilitated.
-- [ ] T205 **[WI-007]** Add a time scrubber (FR-076) that updates the headline figure to the selected
+- [x] T205 **[WI-007]** Add a time scrubber (FR-076) that updates the headline figure to the selected
       moment's value, read from the existing `dpsRateSeries` so it agrees with the DPS-over-time
       chart **by construction** rather than via a second computation. Default to the whole-window
       average and make clear which is being shown.
-- [ ] T206 **[WI-008, FR-075]** Surface the coverage limit where the DPS number is shown: how many
+- [x] T206 **[WI-008, FR-075]** Surface the coverage limit where the DPS number is shown: how many
       placed creatures have abilities the engine can act on. A DPS figure reads as authoritative in a
       way an empty suggestion list does not, so this matters more here than it did for FR-069. Also
       record WI-008's answer in `research.md` K2 (drafted) and verify it still holds after T202

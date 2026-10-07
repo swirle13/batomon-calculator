@@ -1,0 +1,68 @@
+/* Headline total-DPS figure + time scrubber (round 9, FR-072/FR-076). */
+
+.wrap {
+  max-width: 48rem;
+  margin: var(--space-lg) auto var(--space-sm);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface-2);
+  padding: var(--space-md);
+}
+
+.headline {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.value {
+  font-size: 2.6rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--text-strong);
+  font-variant-numeric: tabular-nums;
+}
+
+.label {
+  font-size: var(--font-md);
+  color: var(--text-muted);
+}
+
+.breakdown {
+  text-align: center;
+  font-size: var(--font-sm);
+  color: var(--text-muted);
+  margin-top: var(--space-2xs);
+}
+
+.note { color: var(--text-warn); }
+
+.scrubRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  margin-top: var(--space-sm);
+}
+
+.scrubLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  font-size: var(--font-sm);
+  color: var(--text-muted);
+}
+
+.scrubLabel input { width: 18rem; }
+
+.coverage {
+  text-align: center;
+  font-size: var(--font-xs);
+  color: var(--text-warn);
+  border-top: 1px solid var(--line-subtle);
+  padding-top: var(--space-xs);
+  margin: var(--space-sm) 0 0;
+  line-height: 1.4;
+}

@@ -4,6 +4,7 @@ import { GridPicker } from "./ui/GridPicker/GridPicker";
 import { TrainerPicker } from "./ui/GridPicker/TrainerPicker";
 import { TrinketPicker } from "./ui/GridPicker/TrinketPicker";
 import { TeamSummary } from "./ui/TeamSummary/TeamSummary";
+import { TotalDps } from "./ui/TeamSummary/TotalDps";
 import { PlacedCreatureDetails } from "./ui/TeamSummary/PlacedCreatureDetails";
 import { ModifierEditor } from "./ui/Modifiers/ModifierEditor";
 import { PlacementAdvisor } from "./ui/TeamSummary/PlacementAdvisor";
@@ -57,6 +58,7 @@ function CalculatorView() {
       {/* 2026-10-06 round 8 (FR-066 / WI-011): Modifiers sits between the grid and the summary. */}
       <ModifierEditor />
       <PlacementAdvisor />
+      <TotalDps config={config} result={result} />
       <TeamSummary config={config} result={result} />
       {/* FR-037: the simulation window governs the chart's time axis, not the per-second summary
           values, so it sits immediately above the chart and below the tables. Order matters here —

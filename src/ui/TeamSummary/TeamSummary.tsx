@@ -73,6 +73,20 @@ export function TeamSummary({ config, result }: TeamSummaryProps) {
                 </td>
               </tr>
             ))}
+            {/* FR-072 (WI-002): a combined total. Direct + facilitated partition all damage with no
+                overlap, so summing them is safe -- unlike summing `perStatusPerSecond`, whose Shield
+                entry is granted-not-damage. */}
+            {dpsRows.length > 0 && (
+              <tr className={styles.totalRow}>
+                <th scope="row">Total</th>
+                <th className={styles.numeric}>
+                  {dpsRows.reduce((sum, r) => sum + r.dps, 0).toFixed(2)}
+                </th>
+                <th className={styles.numeric}>
+                  {dpsRows.reduce((sum, r) => sum + r.facilitatedDps, 0).toFixed(2)}
+                </th>
+              </tr>
+            )}
           </tbody>
         </table>
 

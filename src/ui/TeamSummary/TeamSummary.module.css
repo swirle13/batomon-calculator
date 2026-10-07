@@ -45,6 +45,11 @@
   font-variant-numeric: tabular-nums;
 }
 
+.totalRow th {
+  border-top: 2px solid var(--line-strong);
+  font-weight: 700;
+}
+
 .note {
   max-width: 48rem;
   margin: var(--space-sm) auto 0;

@@ -1521,6 +1521,58 @@ effects exist solely as prose in `abilityText`.
   headline number at time *t* is that series' value, so it agrees with the DPS-over-time chart by
   construction rather than by a second computation.
 
+### K6. Official Steam patch notes located — and the corpus is now a full version behind
+
+The user pointed at the official Steam announcements. `WebFetch` returned only the page title (the
+body is JS-loaded — the same limitation round 5 hit, research.md G1), but Steam's **news API**
+returns the full body as JSON:
+
+```text
+https://api.steampowered.com/ISteamNews/GetNewsForApp/v2/?appid=4557380&count=8&maxlength=20000
+```
+
+This is a far better corpus source than the fan dex and should be the primary one going forward.
+
+**Finding 1 — the tie-break question has partial evidence, and it does not settle our case.**
+Patch 1.1.0 contains an explicit simultaneity rule:
+
+> "Ties now resolve in the order the casts were queued, which is your side first."
+
+That governs **which side** acts when both have a monster due on the same instant. Our engine models
+one team against an idealised target, so side-priority never applies, and nothing in any of the eight
+published patches states whether a Charge applied *at* instant *T* counts toward a trigger *at* *T*.
+**Per the user's instruction — "whichever matches the real game if you can find evidence; otherwise
+FR-040 consistency" — the evidence does not reach this case, so T200b pins t=10**, consistent with
+round 6's pre-timestamp snapshot rule. Recorded as "searched, not found" rather than "no rule exists".
+
+**Finding 2 — "Charge" is a first-class game stat**, confirming WI-009 is a real mechanic and not
+prose: patch 1.1.0 lists "Clawnetic — **Charge**: 1/2/3 seconds → 1 second at every level".
+
+**Finding 3 — the game itself shipped our WI-003 bug.** Patch 1.2.0: *"Fixed the monster inspect
+sheet opened during a battle showing pre-battle numbers instead of the live numbers."* That is
+precisely the defect the user reported in our "Effective this battle" band — independent
+corroboration that resolved-not-base values are the correct behaviour.
+
+**Finding 4 — and the one with the widest consequence: our corpus is stale.** It is pinned to
+**Balance 24 / 1.2.0**; **patch 1.3.0 shipped 2026-10-06** with 15 balance changes to creatures we
+carry:
+
+```text
+Opalion   cd 9 -> 6, Rock allies triggered 2 -> 1   Petrirex  cd 7 -> 5.5
+Steamscuttle cd 3 -> 3.5                            Kappow    cost 30 -> 25, cd 4.5 -> 5.5
+Aviarab   cost 20 -> 25                             Dollhime  dmg/trinket 40/80/120 -> 50/100/150
+Mallogre  cd 9 -> 8                                 Danuki    cost 50 -> 45
+Sarudo    cost 35 -> 25                             Guardiant dmg/Bug 7/14/21 -> 8/16/24
+Noxnimbus cd 4 -> 3                                 Lignite   burn mult x15/30/45 -> x20/40/60, cd 4 -> 5
+Stalagrove cd 5.5 -> 4.5                            Aegistruct cd 7 -> 6
+Geminiss  cd 12 -> 10
+```
+
+Every DPS number this tool reports for those creatures is now computed from superseded values. This
+is **not** in round 9's ledger — the user did not ask for it — so it is recorded here as a finding
+for the next round rather than silently folded into this one, along with the recommendation to make
+the Steam news API the corpus's primary source.
+
 ## C. Resolved Technical Context (feeds plan.md)
 
 | Field | Resolution |

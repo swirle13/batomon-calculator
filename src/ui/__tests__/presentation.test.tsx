@@ -5,6 +5,7 @@ import { CreatureSearchModal } from "../GridPicker/CreatureSearchModal";
 import { TeamSummary } from "../TeamSummary/TeamSummary";
 import { CorpusBrowser } from "../CorpusBrowser/CorpusBrowser";
 import App from "../../App";
+import { TotalDps } from "../TeamSummary/TotalDps";
 import { TeamConfigProvider } from "../../context/TeamConfigContext";
 import { PlacedCreatureDetails } from "../TeamSummary/PlacedCreatureDetails";
 import { GridPicker } from "../GridPicker/GridPicker";
@@ -195,5 +196,47 @@ describe("round 7 presentation fixes", () => {
     expect(screen.getAllByText(/Dmg\/s \(end\)/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Applied\/s/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Growth\/s/).length).toBeGreaterThan(0);
+  });
+});
+
+/**
+ * Round 9 (FR-071/FR-072/FR-076): the headline total, the table total row, and the grid width fix.
+ */
+describe("round 9: total DPS and grid sizing", () => {
+  /** The user's own team: four Poison creatures, zero direct damage. */
+  const poisonTeam: TeamConfiguration = {
+    placements: [
+      { slot: { row: "front", col: 1 }, creatureId: "miasmaw", level: 1 },
+      { slot: { row: "front", col: 2 }, creatureId: "cobrex", level: 1 },
+      { slot: { row: "back", col: 0 }, creatureId: "drumire", level: 1 },
+      { slot: { row: "back", col: 1 }, creatureId: "fumungus", level: 1 },
+    ],
+    trainerId: null,
+    trinketIds: [],
+    itemIds: [],
+    simulationWindowSeconds: 20,
+    teamModifiers: [],
+  };
+
+  it("shows a non-zero headline total for a team whose every DPS row reads 0.00 (FR-072)", () => {
+    const result = simulate(poisonTeam, corpus);
+    // The defect this fixes: perCreatureDps counts DIRECT damage only, so this team reads 0.00
+    // everywhere while dealing ~136.6/s.
+    expect(Object.keys(result.perCreatureDps).length).toBe(0);
+    render(<TotalDps config={poisonTeam} result={result} />);
+    expect(screen.getByText("136.60")).toBeTruthy();
+  });
+
+  it("states the engine's coverage ceiling right where the number is (FR-075)", () => {
+    const result = simulate(poisonTeam, corpus);
+    render(<TotalDps config={poisonTeam} result={result} />);
+    // A DPS figure reads as authoritative, so the limit must sit beside it rather than elsewhere.
+    expect(screen.getByText(/engine can act on|engine acts on/)).toBeTruthy();
+  });
+
+  it("adds a total row to the per-creature table (FR-072 / WI-002)", () => {
+    const result = simulate(poisonTeam, corpus);
+    render(<TeamSummary config={poisonTeam} result={result} />);
+    expect(screen.getByRole("rowheader", { name: "Total" })).toBeTruthy();
   });
 });
