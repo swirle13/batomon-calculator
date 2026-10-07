@@ -862,3 +862,22 @@ Damage. Consequences:
 - `simulate()` already summed per entry, so two copies correctly count twice. Only the generated
   modifier id needed the copy index — it collided between copies before. `optimize()`'s
   unmodelled-trinket caveat list is de-duplicated, being a list of things to say once each.
+
+### The trinket "★ affects DPS" marker is RETIRED (2026-10-07, user-reported)
+
+> Rounds 5–7 marked the 6 trinkets with populated `effectTags` as "★ affects DPS" and defended it
+> three times as an honest distinction between engine-wired and reference-only trinkets.
+
+It was not honest, because of what it **said**. "Affects DPS" is a claim about the game, and the
+game disagrees: **Speed Whistle's +12% Cooldown Speed plainly affects DPS** and carried no marker,
+so the badge quietly told users that trinket does nothing to their output. The same holds for every
+cooldown, multicast or conditional-damage trinket the corpus has not tagged.
+
+What the badge really tracked is "this one is wired into our engine" — a fact about the tool's
+coverage, not about the board, and not something a per-card badge can state without misleading.
+The honest fix is to model the missing effects (`cooldownSpeedAdd` is already a supported
+`effectTags` stat, so Speed Whistle is wireable); the dishonest half-measure was the badge.
+
+`effectTags` and the engine path that reads them are untouched — this removes a UI claim, not a
+capability. `TotalDps`'s existing "N abilities not yet modelled" line remains the place coverage is
+stated, because it is a statement about the whole board rather than a label on one card.

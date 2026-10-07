@@ -4,7 +4,6 @@ import { useTeamConfig } from "../../context/TeamConfigContext";
 import { RARITY_COLORS, RARITIES_ASC } from "../../data/statColors";
 import type { Rarity, TrinketRecord } from "../../data/types";
 import {
-  Chip,
   ClearFiltersButton,
   EditorPanel,
   EmptyNote,
@@ -50,8 +49,18 @@ import styles from "./TrinketPicker.module.css";
  * picker: this modal stays open as you pick (the card shows its own selected state) whereas the
  * creature modal closes on the single choice it exists to make.
  *
- * The 6 engine-wired trinkets stay visually distinguished from the 87 reference-only ones — that
- * distinction is honest and already established (round 5), so it is preserved rather than dropped.
+ * ## The "★ affects DPS" marker is gone (2026-10-07, user-reported)
+ *
+ * It marked the 6 trinkets with populated `effectTags` — the ones the engine simulates — and was
+ * defended across three rounds as an honest distinction. It was not honest, because of what it
+ * SAID: "affects DPS" is a claim about the game, and the game disagrees. Speed Whistle's +12%
+ * Cooldown Speed plainly affects DPS and carried no marker, so the badge quietly told users that
+ * trinket does nothing to their output.
+ *
+ * The information it was really carrying is "this one is wired into our engine", which is a fact
+ * about the tool's coverage rather than about the board, and the user is right that a per-card
+ * badge is the wrong place for it. The honest fix is to model the missing effects; the dishonest
+ * half-measure was the badge.
  *
  * ## Second pass, same day
  *
@@ -308,25 +317,8 @@ function TrinketCard({ trinket, count, action, onClick }: TrinketCardProps) {
           </>
         }
       />
-      <div className={styles.cardCaption}>
-        <span className={styles.cardEffect}>{trinket.effectText}</span>
-        {affectsDps(trinket) && <AffectsDpsMark />}
-      </div>
+      <p className={styles.cardEffect}>{trinket.effectText}</p>
     </PickerCard>
-  );
-}
-
-/** 6 of 93 trinkets have effects the engine actually simulates. */
-function affectsDps(trinket: TrinketRecord): boolean {
-  return trinket.effectTags !== undefined && trinket.effectTags.length > 0;
-}
-
-/** The one "this trinket reaches the simulation" marker. */
-function AffectsDpsMark() {
-  return (
-    <Chip className={styles.affectsDps} title="This trinket's effect is reflected in the DPS table">
-      ★ affects DPS
-    </Chip>
   );
 }
 

@@ -57,15 +57,23 @@ describe("TrinketPicker (FR-032, item 4)", () => {
     expect(screen.getByText(/Your team gains \+5 Damage permanently/)).toBeTruthy();
   });
 
-  it("marks the trinkets whose effects actually reach the simulation", () => {
+  /**
+   * The inverse of the assertion that stood here for three rounds, which required the 6
+   * engine-wired trinkets to carry a "★ affects DPS" badge and called the distinction honest.
+   *
+   * It was not, because of what the badge SAID. "Affects DPS" is a claim about the game, and the
+   * game disagrees: Speed Whistle's +12% Cooldown Speed plainly affects DPS and had no badge, so
+   * the marker told users that trinket does nothing to their output. What it really tracked was
+   * our own engine coverage, which is not a per-card fact (user-reported, 2026-10-07).
+   */
+  it("claims no per-trinket DPS relevance it cannot stand behind", () => {
     render(
       <TeamConfigProvider initialConfig={CONFIG}>
         <TrinketPicker />
       </TeamConfigProvider>,
     );
     fireEvent.click(screen.getByRole("button", { name: /choose trinkets/i }));
-    // 6 of 93 are engine-wired; that honest distinction predates this round and must survive it.
-    expect(screen.getAllByText(/affects DPS/i).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/affects DPS/i)).toBeNull();
   });
 });
 
