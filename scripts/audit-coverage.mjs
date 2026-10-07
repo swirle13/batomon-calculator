@@ -42,7 +42,22 @@ console.log(`  structurally excluded   : ${excluded.size}`);
 console.log(`  remaining unsupported   : ${battle.length - resolved.length - excluded.size}`);
 console.log(`\nresolved: ${resolved.map((c) => c.name).sort().join(", ")}`);
 
-const inert = tagged.filter((c) => !c.abilityTags.some(isResolvableTag));
+// A tag the ENGINE does not resolve is not automatically a problem. `manualTrigger` is
+// deliberately engine-unreachable — its trigger happens outside the battle (using an item, buying
+// a monster) — and is read by the UI to offer a one-press button. Lumping those in with genuinely
+// inert tags would report 9 creatures as broken when they are working as designed.
+const manual = tagged.filter((c) => c.abilityTags.some((t) => t.kind === "manualTrigger"));
+const inert = tagged.filter(
+  (c) => !c.abilityTags.some(isResolvableTag) && !c.abilityTags.some((t) => t.kind === "manualTrigger"),
+);
+
+if (manual.length) {
+  console.log(
+    `\nMANUAL TRIGGERS (engine cannot fire these; the UI offers a button): ${manual.map((c) => c.name).join(", ")}`,
+  );
+}
 if (inert.length) {
-  console.log(`\nINERT TAGS (recorded but read by no engine code): ${inert.map((c) => c.name).join(", ")}`);
+  console.log(`\nINERT TAGS (recorded but read by NOTHING): ${inert.map((c) => c.name).join(", ")}`);
+} else {
+  console.log(`\nINERT TAGS: none — every recorded tag is read by the engine or the UI.`);
 }

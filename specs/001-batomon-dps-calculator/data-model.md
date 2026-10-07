@@ -1000,3 +1000,47 @@ the team. `canonicalise()` sorts placements by slot, sorts every id list, normal
 Import **replaces** rather than merges: merging has no correct answer for a slot occupied in both
 teams, and guessing would quietly corrupt the imported build. It throws rather than loading a
 partial team — a build that silently drops a creature is worse than one that refuses to load.
+
+## Manual triggers (2026-10-07) — abilities the battle engine cannot fire
+
+Sixteen creatures have a repeatable permanent stat gain whose trigger happens **outside the battle
+being simulated**: using an item (Craghorn), buying a monster (Guardiant), gaining a trinket
+(Dollhime), winning a round (Brawlmantis). Real abilities with real numbers, and nothing for the
+resolver to hook.
+
+Recording them anyway lets the UI offer a one-press button, instead of the user hand-typing
+"+20 Damage, +20 Shield" into the modifier editor on every item use.
+
+### The trigger is the unit, not the creature
+
+```ts
+{ kind: "manualTrigger"; trigger: AbilityTrigger; effects: { stat: ModifierStat; amount: number }[] }
+```
+
+`TRIGGER_DEFINITIONS` in `src/data/triggers.ts` holds one entry per `AbilityTrigger` — its action
+label, its description, and **`enginePropagated`**: whether the simulation already applies it.
+Adding a creature is a data change with no code; adding a trigger is one entry.
+
+`AbilityTrigger` gained two values batodex leaves null, read from ability text instead:
+**`On Item Used`** (Craghorn) and **`On Knockout`** — distinct from the existing `On Knocked Out`,
+which is about *this* creature dying rather than any monster.
+
+### The double-count hazard, and the two guards against it
+
+If the engine already applies an effect, a button would let the user bank it again and double it.
+Two tests keep the mechanisms disjoint:
+
+- no creature has both a `manualTrigger` and an engine-resolved tag;
+- no `manualTrigger` names a trigger whose `enginePropagated` is true.
+
+### Why presses write placement modifiers
+
+A banked trigger is indistinguishable from a modifier typed by hand — both are "this creature
+carries a bonus the engine cannot derive". One representation means one display path, and the build
+code already round-trips it. `addPlacementModifier` accumulates same-stat entries, so two presses
+give one chip at double the amount rather than two chips.
+
+`manualTrigger` is deliberately **absent from `RESOLVED_TAG_KINDS`**: coverage must keep counting
+these as unmodelled, or the counter would claim abilities the engine does not compute. The audit
+script reports them in their own category rather than as "inert", which previously meant "read by
+nothing" and would have mislabelled nine working creatures.

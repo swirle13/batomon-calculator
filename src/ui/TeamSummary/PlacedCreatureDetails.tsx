@@ -1,5 +1,6 @@
 import { resolveCreatureVariant } from "../../data/corpus";
 import { VariantToggles } from "../shared/VariantToggles/VariantToggles";
+import { TriggerButtons } from "./TriggerButtons";
 import { isPainted } from "../../data/typing";
 import { useTeamConfig } from "../../context/TeamConfigContext";
 import type { GridSlot, SimulationResult } from "../../data/types";
@@ -92,7 +93,13 @@ export function PlacedCreatureDetails({ result, highlightedSlot }: PlacedCreatur
       fixedHeight="panel"
       painted={isPainted(creature.id, config)}
       modifiers={placement.modifiers}
-      meta={<VariantToggles placement={placement} />}
+      meta={
+        <>
+          <VariantToggles placement={placement} />
+          {/* Renders nothing unless this creature has a manualTrigger tag. */}
+          <TriggerButtons creature={creature} placement={placement} />
+        </>
+      }
     >
       {effective && differs ? (
         <div title="Reflects any active modifiers and selected Trinkets">

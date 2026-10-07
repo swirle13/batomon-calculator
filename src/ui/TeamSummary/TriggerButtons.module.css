@@ -1,0 +1,37 @@
+/*
+ * One-press trigger buttons on the creature card (2026-10-07).
+ *
+ * Sits in the card's meta band, below the stats they modify, so the effect of a press is visible
+ * in the same glance as the press.
+ */
+
+.wrap { display: flex; flex-direction: column; gap: var(--space-2xs); width: 100%; }
+.row { display: flex; align-items: center; gap: var(--space-xs); }
+
+.button {
+  flex-shrink: 0;
+  font-size: var(--font-xs);
+  padding: 0.2rem 0.5rem;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-sm);
+  background: var(--surface-sunken);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+.button:hover { border-color: var(--line-strong); }
+.button:focus-visible { outline: 2px solid var(--focus-ring, #8ab4f8); outline-offset: 1px; }
+
+/* The preview is coloured per stat, matching the badges, so a press has a predictable result. */
+.effects { display: flex; gap: var(--space-xs); font-size: var(--font-xs); font-weight: 600; }
+.effect { white-space: nowrap; }
+
+.reset {
+  align-self: flex-start;
+  font-size: 0.65rem;
+  padding: 0.1rem 0.4rem;
+  background: none;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.reset:hover { border-color: var(--line-subtle); color: var(--text-secondary); }

@@ -99,7 +99,18 @@ export type AbilityTrigger =
   | "On Victory"
   | "On Knocked Out"
   | "On Trinket Gained"
-  | "On Battle Lost";
+  | "On Battle Lost"
+  /**
+   * 2026-10-07. Two values batodex's own `trigger` field leaves null, so they had to be read from
+   * the ability text instead. Both describe real, repeatable triggers — Craghorn's "when you use an
+   * item" and Cawnushi's "on knockout of any monster" — and their absence is why those creatures
+   * had no trigger at all.
+   *
+   * `On Knocked Out` (existing) is about THIS creature dying; `On Knockout` is about any monster
+   * dying. Different events, easily conflated, so both are spelled out.
+   */
+  | "On Item Used"
+  | "On Knockout";
 
 export type EventLabel = "OnCast" | "OnBattleStart" | "OnVictory" | "OnKnockout";
 
@@ -243,6 +254,24 @@ export type AbilityTag =
    * afterwards.
    */
   | { kind: "triggerOnAllyTrigger"; target: TargetSelector }
+  /**
+   * 2026-10-07. A repeatable permanent stat gain whose trigger the BATTLE ENGINE cannot fire —
+   * buying a monster, using an item, winning a round, gaining a trinket.
+   *
+   * These are real abilities with real numbers, but they fire on run events outside the battle this
+   * engine simulates, so there is nothing for the resolver to hook. Recording them as data anyway
+   * lets the UI offer a one-click way to bank each occurrence, instead of the user hand-typing
+   * "+20 Damage, +20 Shield" into the modifier editor every time they use an item.
+   *
+   * Deliberately NOT in `RESOLVED_TAG_KINDS`: the engine must keep treating these as unmodelled, or
+   * the coverage counter would claim abilities it does not compute.
+   */
+  | {
+      kind: "manualTrigger";
+      trigger: AbilityTrigger;
+      /** Applied once per press, as placement modifiers. */
+      effects: { stat: ModifierStat; amount: number }[];
+    }
   /**
    * 2026-10-06 (T241 / FR-095). "When allies inflict <status>, this gains +N <stat> permanently" —
    * Thorntail.
