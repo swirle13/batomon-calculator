@@ -101,8 +101,12 @@ export function buildStatLines(input: PerCastOutput): StatLine[] {
   // 149 species still have `baseDamage: null`, so this is the common path, not an edge case
   // (research.md H9).
   if (input.damage !== null && !input.damageUnconfirmed) {
-    const verb = input.damageType === "Direct" ? "Deal" : "Deal";
-    lines.push({ key: "damage", label: `${verb} ${input.damage} damage` });
+    // 2026-10-07 (round 7 WI-004): this read `input.damageType === "Direct" ? "Deal" : "Deal"` --
+    // a branch whose two arms were the same string, so the field was consulted for a decision that
+    // could not have an outcome. It is the clearest evidence that `damageType` on a record carries
+    // no information: measured over all 596 records it is `null` exactly when `baseDamage` is null,
+    // with zero exceptions either way (research.md R3).
+    lines.push({ key: "damage", label: `Deal ${input.damage} damage` });
   }
   for (const status of input.appliesStatus) {
     lines.push({ key: STATUS_COLOR_KEY[status.type], label: `${status.type} ${status.amount}` });

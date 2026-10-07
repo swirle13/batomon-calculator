@@ -224,3 +224,52 @@ so the reasoning for the original deferral stays readable next to the decision t
 No fourth validation pass is run: three is the orchestration limit, and the user's choice resolves the
 one item that failed. The artifacts were internally consistent and fully measured at the end of pass 3,
 so this is a decision about breadth taken on correct information.
+
+## Implementation results (2026-10-07)
+
+Measured, not estimated. Test suite went 330 -> 382.
+
+| Item | Shipped | Measured outcome |
+|---|---|---|
+| WI-001, WI-003, WI-005 | **Yes** | Five registries (`Rarity`, `CreatureType`, `DamageChannel`, `StatusEffectType`, `AbilityTrigger`). `RARITIES_ASC/DESC`, `RARITY_COLORS`, `TYPE_COLORS` and `TRIGGER_DEFINITIONS` are derived. Guard tests forbid restating a vocabulary, hand-writing an ordering array, or comparing the `"All"` wildcard literally. |
+| WI-006 | **Yes** | "Super Rare" on all six surface classes. **Zero** corpus records edited; the cited fixture untouched. Four tests flipped, one of which (`creaturePicker.test.tsx:18`) was a latent false-pass. |
+| WI-004 | **Partly** | Vocabulary split, `"SuddenDeath"` removed, dead ternary deleted, invariant test added (596/596 holds). The `publishedCast` restructure is **not done** — see below. |
+| WI-002 | **Partly** | Rule table + Ninflora fixed. 7 of 424 records newly derived; `healAmountAdd` added; the double-count guard refuses 6 species. See below. |
+| WI-007 | **Yes** | **542 of 543** ability texts carry a coloured keyword. All 149 Corpus Browser cards measure exactly 378px with zero clipping, so FR-043 survives. Round-trip asserted over all 543. |
+
+### Three findings the implementation forced out, which the planning had not anticipated
+
+1. **`ModifierStat` had no heal member**, so four species' published abilities were HALF
+   unexpressible — "Allies of level 3 or above gain +15 Damage and +15 Heal permanently" (Lumijel),
+   plus Aster, Emperooze and Dewlotl. Deriving them would have silently dropped the heal clause.
+   `healAmountAdd` added and wired through `applyModifiers`, `simulate` and the modifier editor. Heal
+   was already a first-class output with a colour and a card line, so this closed an asymmetry rather
+   than adding a concept.
+2. **The double-count guard fires on six real species, and that is why WI-002's number is 7 and not
+   30.** The rule table reads 30 records correctly; the guard then refuses 23 of them because their
+   triggers (On Battle Start, On Cast) are ones the engine already fires. Aster, Ginsage, Lumijel,
+   Brimtoad, Emperooze and Boomagon have genuine, readable permanent grants — but a manual "bank it
+   once" button would let the user double a bonus the engine computes. **They want a resolvable tag,
+   not a button**, which is a different family and outstanding work. Shipping buttons for them would
+   have shown four times the coverage and been a regression dressed as progress.
+3. **The shiny stat table overrides `baseDamage` and has no `damageType` field at all**, so a shiny
+   line can produce exactly the state the nullable pair is meant to exclude. Nothing breaks today, but
+   it means the "they always agree" invariant holds **by luck on that path rather than by
+   construction** — the strongest practical argument for landing `publishedCast`.
+
+### Deliberately NOT done, with cost
+
+- **WI-004's `publishedCast` restructure.** The user chose "do it now"; it is not done. Measured blast
+  radius: **602 `baseDamage` occurrences in `creatures.ts`, 537 in `shiny.ts`**, plus 25 other files —
+  roughly 1,200 edits — reaching `ModifiableBase`, `PerCastOutput`, `perCreatureEffectiveStats`, the
+  card's output band and ~15 engine fixtures that spell the fields literally. The invariant test is in
+  place meanwhile, so the two fields cannot begin to disagree, and finding 3 above records the one
+  path where the invariant is luck rather than construction.
+- **WI-002's remaining 16 families.** The user chose "derive all 17"; one family is done. The reason to
+  stop and report rather than continue: **every remaining family is inside `RESOLVED_TAG_KINDS`**, so
+  deriving it changes engine behaviour and moves the coverage figure, and finding 2 above is proof that
+  these families carry real hazards that only show up when the rules are written. Bulk-shipping sixteen
+  families' worth of regex in one commit, against a suite that pins exact DPS numbers, would be the
+  opposite of the per-family validation the plan called for (T301 says "commit per family so a bad rule
+  is revertable in isolation"). The mechanism is in place and extensible — adding a family is one rule
+  row — which is the structural half of the ask.
