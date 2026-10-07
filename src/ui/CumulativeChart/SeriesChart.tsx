@@ -59,6 +59,10 @@ export interface SeriesChartProps {
   ariaLabel: string;
   /** Formats values in the tooltip and on the y axis, so both charts read alike. */
   formatValue?: (value: number) => string;
+  /**
+   * Total height including the legend row and both axis labels — not the plot area alone. 284
+   * keeps the plot itself at the ~260 it had before the legend moved to the top.
+   */
   height?: number;
 }
 
@@ -83,7 +87,7 @@ export function SeriesChart({
   yTickInterval,
   ariaLabel,
   formatValue = (v) => v.toFixed(2),
-  height = 260,
+  height = 284,
 }: SeriesChartProps) {
   const data = xValues.map((x, i) => {
     const row: Record<string, number> = { x };
@@ -94,9 +98,12 @@ export function SeriesChart({
   return (
     <div role="img" aria-label={ariaLabel} style={{ width: "100%", height }}>
       <ResponsiveContainer>
-        {/* `left` is 56 because 5-digit totals overflowed a narrower gutter and collided with the
-            rotated axis label. */}
-        <LineChart data={data} margin={{ top: 8, right: 24, bottom: 24, left: 56 }}>
+        {/*
+          Margins carry the axis labels, so each one is sized for what sits in it:
+          `left` holds up-to-5-digit ticks AND the rotated y label beside them; `bottom` holds the
+          x label alone, now that the legend has moved to the top (see <Legend/>).
+        */}
+        <LineChart data={data} margin={{ top: 8, right: 24, bottom: 28, left: 64 }}>
           <CartesianGrid strokeDasharray="3 3" stroke={GRID} />
           <XAxis
             dataKey="x"
@@ -104,14 +111,32 @@ export function SeriesChart({
             domain={[0, xMax ?? "dataMax"]}
             ticks={ticksFor(xMax, xTickInterval)}
             stroke={AXIS}
-            label={{ value: xLabel, position: "insideBottom", offset: -12, fill: AXIS }}
+            // `offset: -20` sits it below the tick row, in the bottom margin. It previously
+            // overlapped the legend, which was also bottom-aligned — two things competing for one
+            // strip. The legend moved rather than the label, since the label belongs to the axis.
+            label={{ value: xLabel, position: "insideBottom", offset: -20, fill: AXIS }}
           />
           <YAxis
             domain={[0, yMax ?? "auto"]}
             ticks={ticksFor(yMax, yTickInterval)}
             stroke={AXIS}
             tickFormatter={formatValue}
-            label={{ value: yLabel, angle: -90, position: "insideLeft", offset: -40, fill: AXIS }}
+            /*
+              `textAnchor: middle` is the fix for the clipped y label, and it is not obvious:
+              a rotated SVG label anchors at its START by default, so "cumulative damage" was being
+              drawn from the vertical midpoint downward and ran off the bottom of the plot. Centring
+              the anchor makes `position: insideLeft` actually centre it on the axis.
+
+              `offset` is dropped: with the anchor centred it is no longer compensating for the
+              mis-anchoring, and a negative offset now just pushes the label out of the margin.
+            */
+            label={{
+              value: yLabel,
+              angle: -90,
+              position: "insideLeft",
+              fill: AXIS,
+              style: { textAnchor: "middle" },
+            }}
           />
           <Tooltip
             // 50% transparent so the lines behind the card stay readable while hovering — the card
@@ -127,7 +152,12 @@ export function SeriesChart({
             // (FR-106). The chart states its 0.5s increment once, in the axis label.
             labelFormatter={() => ""}
           />
-          <Legend wrapperStyle={{ color: AXIS }} />
+          {/*
+            Top-aligned. At the bottom it shared a strip with the x-axis label and the two
+            overlapped; moving the legend is the right half of that fix because the label belongs to
+            the axis and cannot move far from it.
+          */}
+          <Legend verticalAlign="top" height={24} wrapperStyle={{ color: AXIS, lineHeight: "24px" }} />
           {series.map((s) => (
             <Line
               key={s.name}
