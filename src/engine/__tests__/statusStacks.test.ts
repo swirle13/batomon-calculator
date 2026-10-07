@@ -93,3 +93,73 @@ describe("Burn tick damage — the full sequence, confirmed against gameplay 202
     expect(r.cumulativeSeries.find((p) => p.tSeconds === 4.5)!.byStatus.Burn).toBe(0);
   });
 });
+
+describe("statuses tick as ONE pool on the target, not per application", () => {
+  it("Venopuff's second cast grows the SAME pool — 20 cumulative by t=7.5, not 16", () => {
+    // Observed step-by-step against a real turn-1 run. Venopuff (3.5s cooldown, Poison 4) first
+    // applies at t=3.5, so the cadence is 4.5, 5.5, 6.5, 7.5... Its second cast at t=7.0 takes the
+    // pool to 8, and the very next tick at 7.5 deals 8 — cumulative 20.
+    //
+    // Per-application timers gave 16 here and then wrongly ticked AGAIN at 8.0, because the second
+    // cast had started its own clock.
+    const r = simulate(solo("venopuff", 10), corpus);
+    const cumulative = r.cumulativeSeries
+      .filter((p) => p.tSeconds >= 6.5 && p.tSeconds <= 9)
+      .map((p) => `${p.tSeconds}:${p.byStatus.Poison}`);
+    expect(cumulative).toEqual(["6.5:12", "7:12", "7.5:20", "8:20", "8.5:28", "9:28"]);
+  });
+
+  it("there is exactly one Poison cadence, on whole seconds from first application", () => {
+    const ticks = simulate(solo("venopuff", 10), corpus)
+      .timeline.filter((e) => e.kind === "statusTick" && e.damageType === "Poison")
+      .map((e) => e.tSeconds);
+    // 1s apart throughout. Two interleaved clocks showed up as 7.5 AND 8.0, 8.5 AND 9.0.
+    expect(ticks).toEqual([4.5, 5.5, 6.5, 7.5, 8.5, 9.5]);
+    for (let i = 1; i < ticks.length; i++) {
+      expect(ticks[i]! - ticks[i - 1]!).toBeCloseTo(1, 5);
+    }
+  });
+
+  it("a later application adds to the stack WITHOUT resetting the cadence", () => {
+    // The opposite failure mode to the one fixed: if a new cast restarted the timer, a fast
+    // applier could postpone its own damage indefinitely.
+    const ticks = simulate(solo("venopuff", 10), corpus)
+      .timeline.filter((e) => e.kind === "statusTick" && e.damageType === "Poison")
+      .map((e) => e.tSeconds);
+    expect(ticks[0]).toBe(4.5); // 1s after the first application at 3.5
+    expect(ticks).toContain(7.5); // unmoved by the second cast at 7.0
+  });
+
+  it("Burn pools too, and still sheds exactly one layer per tick", () => {
+    // Pooling must not change Burn's decay: the pool is one stack, so it loses one layer per tick
+    // no matter how many casts contributed to it.
+    const r = simulate(solo("magmite", 12), corpus);
+    const burnTicks = r.timeline
+      .filter((e) => e.kind === "statusTick" && e.damageType === "Burn")
+      .map((e) => e.damage);
+    expect(burnTicks.slice(0, 4)).toEqual([4, 3, 2, 1]);
+  });
+
+  it("splits a shared pool's damage across contributors in proportion", () => {
+    // Two Poison appliers feeding one pool: neither may be credited with the whole tick, and the
+    // parts must sum to it (FR-056).
+    const team: TeamConfiguration = {
+      placements: [
+        { slot: { row: "back", col: 0 }, creatureId: "venopuff", level: 1 },
+        { slot: { row: "back", col: 1 }, creatureId: "miasmaw", level: 1 },
+      ],
+      trainerId: null,
+      trinketIds: [],
+      itemIds: [],
+      simulationWindowSeconds: 15,
+      teamModifiers: [],
+    };
+    const r = simulate(team, corpus);
+    const facilitated = Object.values(r.perCreatureFacilitatedDps);
+    expect(facilitated.length).toBe(2);
+    for (const v of facilitated) expect(v).toBeGreaterThan(0);
+    const poisonDealt = r.cumulativeSeries[r.cumulativeSeries.length - 1]!.byStatus.Poison;
+    const attributed = facilitated.reduce((a, b) => a + b, 0) * team.simulationWindowSeconds;
+    expect(attributed).toBeCloseTo(poisonDealt, 4);
+  });
+});

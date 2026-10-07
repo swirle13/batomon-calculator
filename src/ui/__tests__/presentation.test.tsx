@@ -273,7 +273,11 @@ describe("round 9: total DPS and grid sizing", () => {
     // Damage equal to 200% of the Poison stacks on the enemy" -- was previously unmodelled, leaving
     // it dealing nothing. The capture identified it as the team's LARGEST damage term, so a 36%
     // rise is the expected direction and rough magnitude, not a surprise.
-    expect(screen.getByText("1658.90")).toBeTruthy();
+    //
+    // 2026-10-06 (status pooling): 1658.90 -> 1774.40. Poison used to tick once per APPLICATION, on
+    // separate clocks; it now ticks once for the whole stack on one cadence, which is both fewer
+    // ticks and a larger amount each. For this Poison-heavy board the larger amount dominates.
+    expect(screen.getByText("1774.40")).toBeTruthy();
   });
 
   it("states the engine's coverage ceiling right where the number is (FR-075)", () => {

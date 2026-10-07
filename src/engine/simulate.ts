@@ -12,7 +12,7 @@ import type {
 } from "../data/types";
 import { effectiveCooldown } from "./cooldown";
 import { applyStatusTick, applyShockProc } from "./status";
-import { isAdjacent, slotKey, slotsEqual, stableSlotIndex } from "./grid";
+import { STABLE_SLOT_ORDER, isAdjacent, slotKey, slotsEqual, stableSlotIndex } from "./grid";
 import { resolveEffects, selectTargets } from "./effects";
 import { creatureHasType } from "../data/typing";
 import { InvalidTeamConfigurationError } from "./errors";
@@ -158,13 +158,36 @@ interface Cast {
   };
 }
 
-interface ActiveStatus extends Omit<StatusEffectInstance, "type"> {
-  // Only Burn/Poison instances are ever ticked here — Shock is reactive (status.ts) and
-  // Shield is absorption-only; neither is ever pushed into `activeStatuses`.
-  type: "Burn" | "Poison";
-  nextTickAt: number;
-  /** `${creatureId}@${slotKey}` of whoever applied this — for facilitated attribution (FR-056). */
-  sourceKey: string;
+/**
+ * One POOL of a ticking status on the shared target — not one entry per application.
+ *
+ * ## Why a pool, and why this was wrong before
+ *
+ * Each application used to become its own instance with its own tick clock. Two Poison casts then
+ * produced two independent cadences, so a single Venopuff (3.5s cooldown, Poison 4) ticked at
+ * 4.5, 5.5, 6.5, 7.5 **and** 8.0, 8.5, 9.0 — the second cast's clock interleaving with the first.
+ *
+ * The game keeps ONE counter on the enemy, ticking on ONE cadence, for a damage amount equal to the
+ * whole stack. Observed: Venopuff's second cast at t=7.0 brings the pool to 8, and the very next
+ * tick at 7.5 deals 8 — cumulative 20, where the per-instance model gave 16 and then wrongly ticked
+ * again at 8.0. This matches research.md B2's wording, which says tick damage is "current Poison
+ * layer count" (singular, the target's) rather than any one application's.
+ *
+ * ## Attribution
+ *
+ * With one pool fed by several creatures, a tick's damage belongs to them in proportion to what
+ * each contributed — exactly how `shockLayersBySource` already splits a Shock proc. `bySource`
+ * carries that split, as floats, because Burn's decay removes a fractional share from each
+ * contributor rather than a whole layer from one of them.
+ */
+interface StatusPool {
+  layers: number;
+  /** `null` when the pool is empty: the cadence stops, and a later application restarts it. */
+  nextTickAt: number | null;
+  /** `${creatureId}@${slotKey}` -> layers contributed, for facilitated attribution (FR-056). */
+  bySource: Map<string, number>;
+  /** The slot credited in timeline events — the largest contributor. */
+  sourceSlot: GridSlot;
 }
 
 export function simulate(
@@ -333,7 +356,10 @@ export function simulate(
   // proportionally across them rather than attributed to nobody / the attacker it hit through.
   const shockLayersBySource = new Map<string, number>();
   const facilitatedDamage = new Map<string, number>();
-  const activeStatuses: ActiveStatus[] = [];
+  const pools: Record<"Burn" | "Poison", StatusPool> = {
+    Burn: { layers: 0, nextTickAt: null, bySource: new Map(), sourceSlot: STABLE_SLOT_ORDER[0]! },
+    Poison: { layers: 0, nextTickAt: null, bySource: new Map(), sourceSlot: STABLE_SLOT_ORDER[0]! },
+  };
 
   /**
    * Snapshots of the LIVE stack counts on the shared target, for the status-stacks chart.
@@ -345,57 +371,85 @@ export function simulate(
    */
   const stackSamples: { t: number; Burn: number; Poison: number; Shock: number }[] = [];
   function snapshotStacks(t: number) {
-    let burn = 0;
-    let poison = 0;
-    for (const s of activeStatuses) {
-      if (s.type === "Burn") burn += s.layers;
-      else if (s.type === "Poison") poison += s.layers;
-    }
-    stackSamples.push({ t, Burn: burn, Poison: poison, Shock: shockLayers });
+    stackSamples.push({
+      t,
+      Burn: Math.round(pools.Burn.layers),
+      Poison: Math.round(pools.Poison.layers),
+      Shock: shockLayers,
+    });
   }
   snapshotStacks(0);
   const perCreatureDamage = new Map<string, number>();
   const perStatusDamage: Record<StatusEffectType, number> = { Burn: 0, Poison: 0, Shock: 0, Shield: 0 };
 
   function runTicksUpTo(limit: number) {
-    // Repeatedly find the earliest pending tick <= limit and process it, so multiple ticks
-    // between two casts (or before the window end) are each handled in order.
+    // Repeatedly process the earliest pending POOL tick <= limit, so multiple ticks between two
+    // casts (or before the window end) are each handled in order.
     while (true) {
-      let earliestIndex = -1;
+      let next: "Burn" | "Poison" | null = null;
       let earliestTime = Infinity;
-      for (let i = 0; i < activeStatuses.length; i++) {
-        if (activeStatuses[i]!.nextTickAt <= limit && activeStatuses[i]!.nextTickAt < earliestTime) {
-          earliestTime = activeStatuses[i]!.nextTickAt;
-          earliestIndex = i;
+      for (const type of ["Burn", "Poison"] as const) {
+        const at = pools[type].nextTickAt;
+        if (at !== null && at <= limit && at < earliestTime) {
+          earliestTime = at;
+          next = type;
         }
       }
-      if (earliestIndex === -1) break;
-      const instance = activeStatuses[earliestIndex]!;
-      const { damage, nextInstance } = applyStatusTick(instance, instance.type === "Burn" ? BURN_TICK_SECONDS : POISON_TICK_SECONDS);
+      if (next === null) break;
+
+      const pool = pools[next];
+      const interval = next === "Burn" ? BURN_TICK_SECONDS : POISON_TICK_SECONDS;
+
+      // Through `applyStatusTick`, so "damage equals the current layer count, and Burn then sheds
+      // one" stays defined in exactly one place. The pool is handed to it as a single instance,
+      // which is precisely what the pool represents: one stack on one target. Re-implementing the
+      // rule here would have left two copies free to drift.
+      const { damage, nextInstance } = applyStatusTick(
+        {
+          type: next,
+          layers: Math.round(pool.layers),
+          sourceSlot: pool.sourceSlot,
+          targetSlot: placeholderTargetSlot(pool.sourceSlot),
+          appliedAtSeconds: earliestTime,
+        },
+        interval,
+      );
+
       timeline.push({
         tSeconds: earliestTime,
         kind: "statusTick",
-        sourceSlot: instance.sourceSlot,
+        sourceSlot: pool.sourceSlot,
         damage,
-        damageType: instance.type,
+        damageType: next,
       });
-      perStatusDamage[instance.type] += damage;
-      // FR-056: this tick exists because `instance.sourceKey` applied the status, so the damage is
-      // that creature's facilitated output -- the same map Shock procs already feed. Kept SEPARATE
-      // from own-DPS: a DOT applier's contribution is not direct damage, and merging them would
-      // make a DOT team's DPS column incomparable with a direct-damage team's.
-      facilitatedDamage.set(instance.sourceKey, (facilitatedDamage.get(instance.sourceKey) ?? 0) + damage);
-      if (nextInstance === null) {
-        activeStatuses.splice(earliestIndex, 1);
-      } else {
-        activeStatuses[earliestIndex] = {
-          ...nextInstance,
-          type: instance.type,
-          nextTickAt: roundTime(earliestTime + (instance.type === "Burn" ? BURN_TICK_SECONDS : POISON_TICK_SECONDS)),
-          sourceKey: instance.sourceKey,
-        };
+      perStatusDamage[next] += damage;
+
+      // FR-056: split across contributors in proportion to what each put into the pool — the same
+      // rule `shockLayersBySource` already uses for a Shock proc. Kept SEPARATE from own-DPS: a DOT
+      // applier's contribution is not direct damage, and merging them would make a DOT team's DPS
+      // column incomparable with a direct-damage team's.
+      if (pool.layers > 0) {
+        for (const [key, contributed] of pool.bySource) {
+          const share = (damage * contributed) / pool.layers;
+          if (share !== 0) facilitatedDamage.set(key, (facilitatedDamage.get(key) ?? 0) + share);
+        }
       }
-      // Stacks just changed (Burn shed a layer, or an instance expired), so record the new state.
+
+      // `applyStatusTick` decides what survives: Burn sheds one layer, Poison keeps all of them.
+      const before = pool.layers;
+      pool.layers = nextInstance === null ? 0 : nextInstance.layers;
+      if (pool.layers === 0) {
+        pool.bySource.clear();
+      } else if (pool.layers !== before && before > 0) {
+        // The shed layer comes proportionally from every contributor rather than from one of them,
+        // so attribution shares stay stable as the pool drains — there is no basis for deciding
+        // whose layer burned off first.
+        const scale = pool.layers / before;
+        for (const [key, contributed] of pool.bySource) pool.bySource.set(key, contributed * scale);
+      }
+
+      pool.nextTickAt = pool.layers > 0 ? roundTime(earliestTime + interval) : null;
+      // Stacks just changed (Burn shed a layer, or the pool emptied), so record the new state.
       snapshotStacks(earliestTime);
     }
   }
@@ -625,15 +679,23 @@ export function simulate(
           const amount = applied.amount + (applied.type === "Burn" ? modifiers.burnAmountAdd : modifiers.poisonAmountAdd);
           const interval = applied.type === "Burn" ? BURN_TICK_SECONDS : POISON_TICK_SECONDS;
           if (applied.type === "Poison") poisonLayers += amount;
-          activeStatuses.push({
-            type: applied.type,
-            layers: amount,
-            sourceSlot,
-            targetSlot: placeholderTargetSlot(sourceSlot),
-            appliedAtSeconds: tSeconds,
-            nextTickAt: roundTime(tSeconds + interval),
-            sourceKey,
-          });
+
+          // Into the shared pool, NOT a new instance with its own clock. The cadence starts when
+          // the pool goes from empty to non-empty and then runs uninterrupted; a later application
+          // adds to the stack without resetting or forking the timer, which is what produced two
+          // interleaved Poison cadences before.
+          const pool = pools[applied.type];
+          if (pool.layers === 0) pool.nextTickAt = roundTime(tSeconds + interval);
+          pool.layers += amount;
+          pool.bySource.set(sourceKey, (pool.bySource.get(sourceKey) ?? 0) + amount);
+          // Timeline events credit the largest contributor, so a mixed pool reads as belonging to
+          // whoever is actually driving it.
+          let topKey = "";
+          let topAmount = -1;
+          for (const [k, v] of pool.bySource) {
+            if (v > topAmount) { topAmount = v; topKey = k; }
+          }
+          if (topKey === sourceKey) pool.sourceSlot = sourceSlot;
           timeline.push({ tSeconds, kind: "ongoingChange", sourceSlot, statusDelta: { type: applied.type, slot: placeholderTargetSlot(sourceSlot), layerDelta: amount } });
           appliedThisInstant.push({ sourceKey, type: applied.type, amount });
         } else if (applied.type === "Shield") {
@@ -818,12 +880,8 @@ export function simulate(
 
   // The instantaneous damage rate as the window closes. For a non-decaying DOT this is
   // `live layers / tickInterval`; Burn's live layers are whatever has not yet decayed away.
-  let livePoisonLayers = 0;
-  let liveBurnLayers = 0;
-  for (const instance of activeStatuses) {
-    if (instance.type === "Poison") livePoisonLayers += instance.layers;
-    else liveBurnLayers += instance.layers;
-  }
+  const livePoisonLayers = Math.round(pools.Poison.layers);
+  const liveBurnLayers = Math.round(pools.Burn.layers);
   const perStatusFinalDamageRate: Record<StatusEffectType, number> = {
     Burn: liveBurnLayers / BURN_TICK_SECONDS,
     Poison: livePoisonLayers / POISON_TICK_SECONDS,

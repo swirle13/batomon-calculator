@@ -68,6 +68,24 @@ must reproduce, each grounded in a cited source rather than assumed.
 >   does. A cast that *applies* new Shock does not boost that same cast's own direct-damage hit
 >   (status application happens after damage resolution).
 
+> **Ticking statuses are ONE POOL on the target, not one instance per application
+> (2026-10-06).** Found by stepping through a recorded turn-1 run against the engine.
+>
+> Each application used to carry its own tick clock, so a single Venopuff (3.5s cooldown, Poison 4)
+> produced two interleaved cadences — ticks at 4.5, 5.5, 6.5, 7.5 **and** 8.0, 8.5, 9.0. In the
+> game its second cast at t=7.0 instead grows the existing stack to 8, and the very next tick at
+> 7.5 deals 8: cumulative **20**, where the per-instance model gave 16 and then wrongly ticked again
+> at 8.0.
+>
+> This is what B2 above already said — tick damage is the *"current Poison layer count"*, singular,
+> meaning the target's stack rather than any one application's. The engine simply did not implement
+> it that way. A later application **adds to the stack without resetting the cadence**; the cadence
+> starts when the pool goes from empty to non-empty and stops when it empties.
+>
+> Consequence for attribution (FR-056): one pool fed by several creatures splits each tick's damage
+> in proportion to what each contributed, exactly as Shock procs already do. Burn's shed layer is
+> taken proportionally from every contributor, since nothing decides whose layer burned off first.
+
 > **Burn's per-tick damage was queried and is CONFIRMED (2026-10-06).** An alternative model was
 > proposed from a control test — one tick deals 1 damage and consumes 1 stack, so N burn deals N
 > total — and then withdrawn after watching the damage numbers in-game: *"the tick does the damage
