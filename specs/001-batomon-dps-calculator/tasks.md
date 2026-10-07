@@ -1718,8 +1718,9 @@ already implied; and the optimiser ships stating what it cannot yet see.
 **Answers recorded for the question asked** (research.md K2, so it is not lost in chat):
 **Cobrex has a 15 s cooldown and applies Poison 300, so its *first cast lands at t=15*.** Poison never
 decays, so the rate steps from **84/s at t=15 to 400/s at t=16** and stays there. Not an artifact —
-one creature's opening cast. And with WI-009 modelled it would fire around **t=4** instead, because
-11 allied Poison applications land before t=15.
+one creature's opening cast. And with WI-009 modelled it would fire around **t=9-10** instead (see
+T200b's tie-break note), because **9** allied Poison applications land strictly before t=15 —
+at t = 3, 3, 6, 6, 8, 9, 9, 12, 12.
 
 ### Foundational
 
@@ -1733,8 +1734,12 @@ one creature's opening cast. And with WI-009 modelled it would fire around **t=4
       `.grid` (`repeat(3, 1fr)`, content-derived basis) its intrinsic width. Fix by setting an
       explicit `width`/`min-width` on `.grid` in `GridPicker.module.css`. **A flex keyword in
       `App.tsx` would change nothing**, because it leaves the content-derived basis intact.
-      Record the restored width as an explicit number so "verify, don't eyeball" has something to
-      verify against.
+      **Use a concrete number**: `.grid` already caps at `max-width: 30rem`, and before T183 the
+      per-slot `<select>` of creature names (longest: "Quillustrous") drove each column to roughly
+      that cap. Set `width: 30rem` so the former cap becomes the actual width, and reconcile or
+      remove the now-redundant `max-width`. Also delete the orphaned `.slot select` rule left behind
+      by T183. Assert the rendered sprite is 64px in a component test, so "verify, don't eyeball"
+      has something concrete to check.
 
 ### Tests first (Constitution Principle III, NON-NEGOTIABLE)
 
@@ -1765,11 +1770,45 @@ one creature's opening cast. And with WI-009 modelled it would fire around **t=4
       by an ally cast; damage scaled from a status on the target). **Order of resolution must be
       explicit and documented** — Miasmaw reads allies' Poison *totals*, so it must resolve after
       base stats are known but before cooldown-dependent effects, and the file must say so rather
-      than leaving it to call order. Satisfies T199.
+      than leaving it to call order.
+      **Scope limit: only ONE of the four families is a static pre-battle pass.** Miasmaw's
+      battle-start grant is; Cobrex's charge, Drumire's per-cast Cooldown-Speed grant, and Fumungus's
+      damage-from-enemy-Poison are all time-dependent, and Phase A precomputes every cast at a fixed
+      `n * cooldown` (`simulate.ts:269-272`). This task delivers the static pass only; T200b carries
+      the rest.
+      **Three ambiguities, decided here in writing rather than guessed at implementation time**:
+      1. *"total Poison of your allies"* means the sum of allies' per-application
+         `appliesStatus.amount` (6 + 20 + 300), **not** accumulated stacks — the user's own
+         arithmetic (336) settles it.
+      2. *"ally"* **excludes self**, matching the existing resolver's self-skip
+         (`simulate.ts:107`). This also keeps the lone-Drumire assertions in `simulate.test.ts`
+         (40 stacks / 320 damage / 16.00/s) valid.
+      3. *Fumungus* is `baseDamage: null, damageType: null`, and `isDirectHit` requires both, while
+         no modelled target carries Poison stacks (`simulate.ts:36-47`). **Decision: leave Fumungus
+         unmodelled this round and say so in the UI coverage count** — inventing a target model is a
+         larger change than this round's scope, and silently granting it damage would fabricate output.
+      Satisfies T199.
+- [ ] T200b **[WI-004, WI-009]** Convert Phase A's fixed `n * cooldown` cast precomputation
+      (`simulate.ts:269-272`) into an **event-driven scheduler**, so a cooldown can change during the
+      battle. Without it, Cobrex's charge and Drumire's cumulative Cooldown-Speed grant cannot be
+      modelled at all — T200's static pass reaches only Miasmaw's family.
+      **State the intra-timestamp tie-break explicitly.** At t=9 Cobrex's progress is 14 *before* that
+      timestamp's two Poison applications and 16 *after*, so whether it fires at t=9 or t=10 is
+      decided entirely by ordering within the timestamp. Round 6 already set the precedent that
+      simultaneous events resolve against a **pre-timestamp snapshot** (research.md H8 / FR-040); a
+      charge mechanic must either follow that rule — in which case Cobrex fires at **t=10** — or
+      document why it deviates. **Pin whichever is chosen in T199's test and keep T207 consistent**;
+      do not leave it to call order, which is the precision failure that produced the original t=4.
+      **This is the largest structural engine change since the original build**; the suite pins exact
+      numbers against the current scheduler, so re-derive each and explain it in its test comment
+      rather than re-baselining. (depends on T200)
 - [ ] T201 **[WI-004, WI-009]** Populate `abilityTags` for the creatures this round exercises
       (Miasmaw, Cobrex, Drumire, Fumungus at minimum) so the resolver has structured input. **State
-      the ceiling honestly in the file header**: only **6 of 149** level-1 creatures have any
-      `abilityTags`, so the engine does not retroactively make 143 creatures' prose abilities work.
+      the ceiling honestly in the file header, as a figure that stays true after this task runs**:
+      **6 of 149** level-1 creatures had any `abilityTags` before this round and **10 of 149** will
+      after it, so the engine does not retroactively make the other 139 creatures' prose abilities
+      work. **Compute the number at test time rather than hard-coding a figure that goes stale** —
+      the first draft of this task mandated stating "6 of 149" inside the very task that makes it 10.
 - [ ] T202 **[WI-003]** Make `simulate()` consume `effects.ts`. **Reporting is not enough, and the
       first draft of this task permitted the entire round to land without a single DPS number
       changing**: `perCreatureEffectiveStats` is built in Phase A and read by nothing downstream,
@@ -1811,7 +1850,8 @@ one creature's opening cast. And with WI-009 modelled it would fire around **t=4
 ### Polish
 
 - [ ] T207 [P] Write quickstart Validation Scenarios 39–44 covering: grid sizing restored; combined
-      total + headline DPS; Miasmaw resolving to Poison 336; Cobrex firing near t=4; the scrubber
+      total + headline DPS; Miasmaw resolving to Poison 336; Cobrex firing at the time T200b's
+      tie-break rule fixes (t=9 or t=10, not t=4); the scrubber
       agreeing with the chart; and the coverage disclosure.
 - [ ] T208 Verify `npx tsc -b --noEmit`, full `npx vitest run`, and `npm run build`; report the test
       count, and **report honestly whether the DPS numbers changed** as a result of T202 — the user

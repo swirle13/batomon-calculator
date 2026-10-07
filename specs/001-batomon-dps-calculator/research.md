@@ -1468,7 +1468,7 @@ change DPS materially:
 | Creature | Ability text | Modelled? | Effect if modelled |
 |---|---|---|---|
 | Miasmaw | "Gain Poison … equal to 1x the total Poison of your allies" | **No** | Poison 10 → **336** |
-| Cobrex | "Whenever an ally inflicts Poison, Charge this by 1 second(s)" | **No** | First cast ~t=4 instead of t=15 |
+| Cobrex | "Whenever an ally inflicts Poison, Charge this by 1 second(s)" | **No** | First cast t=9-10 instead of t=15 |
 | Drumire | "When a Toxic ally casts, give it +5% Cooldown Speed for this battle" | **No** | Compounding team speed-up |
 | Fumungus | "Has additional Damage equal to 100% of the Poison stacks on the enemy" | **No** | Gains real *direct* damage |
 

@@ -635,8 +635,8 @@ in the separate "Facilitated DPS" column. Facilitated total exactly equals `perS
 direct + facilitated is a complete, non-double-counting partition; FR-072 requires that sum be shown.
 
 **Every creature on the user's board had an unmodelled ability.** Miasmaw's Poison should read 336,
-not 10. Cobrex charges 1 second per allied Poison application — with 11 such applications before
-t=15, it should fire around **t=4 rather than t=15**, which is also the answer to "why does DPS take
+not 10. Cobrex charges 1 second per allied Poison application — with **9** such applications strictly
+before t=15, it should fire around **t=9-10 rather than t=15**, which is also the answer to "why does DPS take
 off at 15 seconds" (Cobrex's single opening cast applying Poison 300, which never decays). Drumire's
 and Fumungus's abilities are likewise inert. FR-073/FR-074 add the resolution layer this needs.
 
