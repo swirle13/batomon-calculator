@@ -1795,8 +1795,14 @@ never followed up. Two independent sources agree with the user instead:
 - GamesFuze Season 1 guide: *"Painter's ability causes random species to be painted with every type
   during the run."*
 
-**Decision**: replace the ability text, keep the superseded text in a `supersededText` note so the
-correction is auditable rather than a silent overwrite.
+**Decision**: replace the ability text. The superseded text is recorded here:
+
+> "Your monsters gain +1 to all stats for each different type they have (dual-typed monsters get a
+> bigger bonus than single-typed ones)."
+
+*It was briefly carried on the record as `supersededText` and shown on the trainer card; both were
+removed 2026-10-06 — on the card it was clutter, and an unrendered field is unread data. This
+section is where the provenance belongs.*
 
 ### M2. WI-003 ANSWERED: which trainers designate a creature set
 
