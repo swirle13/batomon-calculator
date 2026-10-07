@@ -10,6 +10,7 @@ import type {
   TeamConfiguration,
   TimelineEvent,
 } from "../data/types";
+import { applyModifiers } from "./modifiers";
 import { effectiveCooldown } from "./cooldown";
 import { applyStatusTick, applyShockProc } from "./status";
 import { STABLE_SLOT_ORDER, isAdjacent, slotKey, slotsEqual, stableSlotIndex } from "./grid";
@@ -287,32 +288,22 @@ export function simulate(
       Shock: sumModifier("shockAmountAdd", teamModifiers, placementModifiers),
       Shield: sumModifier("shieldAmountAdd", teamModifiers, placementModifiers),
     };
-    const isDirectHitCapable = creature.damageType === "Direct" && member.resolved.baseDamage !== null;
-    const effectiveMulticast = Math.max(1, creature.baseMulticast + multicastAdd);
-
-    if (creature.baseCooldownSeconds === null) {
-      // Known limitation (data-model.md): a modifier can only scale an effect this creature
-      // already has, and there's no cast at all here to attach any modifier to — report raw,
-      // unmodified values rather than a modifier that silently never applies.
-      perCreatureEffectiveStats[key] = {
-        cooldownSeconds: null,
-        output: {
-          damage: member.resolved.baseDamage,
-          damageType: creature.damageType,
-          appliesStatus: member.resolved.appliesStatus,
-          heal: creature.healAmount ?? null,
-          multicast: creature.baseMulticast,
-          damageUnconfirmed: false,
-        },
-      };
-      continue;
-    }
-
     const cooldownSpeedTotal =
       resolveCooldownSpeedTotal(slot, creature, teamMembers, config) +
       sumModifier("cooldownSpeedAdd", teamModifiers, placementModifiers);
     const cooldownFlatAdd = sumModifier("cooldownFlatAddSeconds", teamModifiers, placementModifiers);
-    const cooldown = effectiveCooldown(creature.baseCooldownSeconds, cooldownSpeedTotal, cooldownFlatAdd);
+
+    /*
+     * A creature with no published cooldown has no cast cycle of its own, but a modifier may GIVE
+     * it one — the same "a modifier may create an effect" rule as damage and statuses
+     * (engine/modifiers.ts). It needs an EXPLICIT positive cooldown to do so: `effectiveCooldown`
+     * floors at 0.1s, so treating a null base as 0 unconditionally would turn every passive
+     * creature in the corpus into a ten-casts-per-second attacker.
+     */
+    const castsThisBattle = creature.baseCooldownSeconds !== null || cooldownFlatAdd > 0;
+    const cooldown = castsThisBattle
+      ? effectiveCooldown(creature.baseCooldownSeconds ?? 0, cooldownSpeedTotal, cooldownFlatAdd)
+      : null;
     const modifiers = {
       damageFlatAdd,
       burnAmountAdd: statusAmountAdd.Burn,
@@ -322,26 +313,32 @@ export function simulate(
       multicastAdd,
     };
 
-    perCreatureEffectiveStats[key] = {
-      cooldownSeconds: cooldown,
-      output: {
-        damage: isDirectHitCapable ? member.resolved.baseDamage! + damageFlatAdd : member.resolved.baseDamage,
+    /*
+     * Shared with the detail card (engine/modifiers.ts) so the two cannot disagree.
+     *
+     * This previously gated `damageFlatAdd` behind `creature.damageType === "Direct" &&
+     * baseDamage !== null`, which silently dropped a damage modifier on every damage-less creature
+     * AND on every Burn/Poison/Shock-type attacker.
+     */
+    const output = applyModifiers(
+      {
+        damage: member.resolved.baseDamage,
         damageType: creature.damageType,
-        appliesStatus: member.resolved.appliesStatus.map((s) => ({
-          type: s.type,
-          amount: s.amount + statusAmountAdd[s.type],
-        })),
+        appliesStatus: member.resolved.appliesStatus,
+        baseMulticast: creature.baseMulticast,
         // No modifier targets healing today, so this is the base value rather than an adjusted one.
         // It still belongs here: the band shows what this creature does THIS battle, and omitting a
         // stat because nothing currently modifies it is how 9 healers ended up reading "No published
         // per-cast output" beside a card showing their heal.
         heal: creature.healAmount ?? null,
-        multicast: effectiveMulticast,
-        // Effective values are computed, not transcribed, so they are never "unconfirmed" the way a
-        // sourced base stat can be.
-        damageUnconfirmed: false,
       },
-    };
+      { damageFlatAdd, multicastAdd, status: statusAmountAdd },
+    );
+    perCreatureEffectiveStats[key] = { cooldownSeconds: cooldown, output };
+
+    // Modifiers are reported above whether or not this creature casts; only the SCHEDULE depends on
+    // having a cooldown.
+    if (cooldown === null) continue;
 
     // 2026-10-06 round 9 (T200b): only the FIRST cast is scheduled here. Subsequent casts are
     // scheduled as each one fires, because a cooldown can now shorten mid-battle (Cobrex's
@@ -636,8 +633,6 @@ export function simulate(
       const { creature, sourceSlot, modifiers } = cast;
       const sourceKey = `${creature.id}@${slotKey(sourceSlot)}`;
       const effective = resolvedByKey.get(sourceKey);
-      // Modifiers can only scale an effect the creature already has (data-model.md's "Known
-      // limitation") — a damageFlatAdd never fabricates an attack on a creature with no damage.
       // T224: base/resolved damage PLUS whatever this creature has accumulated so far this battle.
       const accrued = runtimeBuffs.get(sourceKey);
       const resolvedBase = effective?.baseDamage ?? creature.baseDamage;
@@ -645,10 +640,11 @@ export function simulate(
       // `baseDamage: null` yet deals 80 damage from its second cast, so `null + buff` must resolve
       // to the buff rather than staying null.
       //
-      // This does NOT relax data-model's "modifiers can only scale an effect the creature already
-      // has" — that rule is about USER modifiers and still holds for them. `accrued` comes only
-      // from `buffOnCast` ability tags; `modifiers.damageFlatAdd` is applied separately below and
-      // is still unable to fabricate an attack.
+      // FR-078 (amended 2026-10-07) extends the same rule to USER modifiers, which is why
+      // `modifiers.damageFlatAdd` joins `extra` below instead of being added after the fact. It
+      // used to be excluded from this decision, so a damage modifier on a creature with no
+      // published damage left `resolvedDamage` null, failed the `isDirectHit` test, and emitted
+      // nothing at all — the user's input silently vanished.
       const accruedDamage = accrued?.damage ?? 0;
       // T244/FR-098: damage scaled off the SHARED TARGET's accumulated status, recomputed every
       // cast. Fumungus's "additional Damage equal to 200% of the Poison stacks on the enemy" was
@@ -660,16 +656,18 @@ export function simulate(
         const stacks = rule.status === "Poison" ? poisonLayers : rule.status === "Shock" ? shockLayers : 0;
         targetScaled += stacks * rule.multiplier;
       }
-      const extra = accruedDamage + Math.round(targetScaled);
+      const extra = accruedDamage + Math.round(targetScaled) + modifiers.damageFlatAdd;
       const resolvedDamage =
-        resolvedBase === null ? (extra > 0 ? extra : null) : resolvedBase + extra;
+        resolvedBase === null ? (extra !== 0 ? extra : null) : resolvedBase + extra;
       // A creature with no published damageType that has ACCRUED damage hits directly: Bonshell's
       // damageType is null because its base card has no attack, but the ability grants one.
       const isDirectHit =
         resolvedDamage !== null && (creature.damageType === "Direct" || creature.damageType === null);
 
       if (isDirectHit) {
-        const effectiveDamage = resolvedDamage! + modifiers.damageFlatAdd;
+        // `damageFlatAdd` is already inside `resolvedDamage` via `extra`; adding it here too would
+        // double-count it.
+        const effectiveDamage = resolvedDamage!;
         const shockInstance: StatusEffectInstance | null =
           snapshotShockLayers > 0
             ? { type: "Shock", layers: snapshotShockLayers, sourceSlot, targetSlot: placeholderTargetSlot(sourceSlot), appliedAtSeconds: tSeconds }

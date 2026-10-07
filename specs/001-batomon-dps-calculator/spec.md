@@ -376,8 +376,13 @@ correct and show their data source citation(s).
 - **FR-077**: A grid slot's stat chips MUST show the creature's base stats **plus the user's own
   manual modifiers**, and MUST NOT include effects the engine resolved from abilities. Every stat the
   creature has — including Heal and Multicast — MUST be represented.
-- **FR-078**: When a user enters a modifier that cannot apply (because the creature has no such
-  effect to scale), the system MUST say so rather than accepting the input and silently ignoring it.
+- **FR-078** (amended 2026-10-07): A user modifier MUST be able to **create** an effect, not only
+  scale one — `+40 Damage` on a creature with no published damage MUST produce a real attack, and a
+  status-amount modifier MUST apply a status the creature does not already inflict. This replaces
+  the original requirement, which had the system warn that such a modifier "cannot apply"; that
+  premise was wrong, since trinkets and ally abilities grant exactly these effects in the game.
+  Where a modifier genuinely has nothing to act on — a cooldown-SPEED modifier on a creature with no
+  cast cycle — the system MUST still say so rather than silently ignoring the input.
 - **FR-079**: Modifier editing MUST be laid out as the same 2x3 arrangement as the team grid, with
   each cell corresponding to that slot.
 - **FR-080**: Abilities that modify another creature when it acts (cooldown-speed grants on cast,

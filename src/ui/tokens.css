@@ -79,6 +79,17 @@
   --grid-card-chrome: 4.75rem;
   /* The square a team-grid card wants to be: big enough to hold the sprite AND the rows under it. */
   --grid-slot-size: calc(var(--sprite-grid) + var(--grid-card-chrome));
+  --grid-gap: 0.5rem;
+  /*
+   * The width of the whole left-hand team column: three slots and the two gaps between them.
+   *
+   * The team grid, the Modifiers panel and the layout column all take their width from this. They
+   * used to each carry their own number — the grid 30rem, Modifiers 44rem, the column a 20rem flex
+   * basis — so the Modifiers panel was 172px WIDER than the grid it mirrors and stretched the whole
+   * layout open whenever it was expanded, while the column was too narrow to hold the grid at all
+   * and spilled it over the detail panel.
+   */
+  --team-column-width: calc(3 * var(--grid-slot-size) + 2 * var(--grid-gap));
   /* In-game type chips are a fixed width regardless of label length, so a row of them lines up.
      Ours were padding-sized, so "All" was narrow and "Electric" wide and nothing aligned. */
   --type-chip-width: 7rem;

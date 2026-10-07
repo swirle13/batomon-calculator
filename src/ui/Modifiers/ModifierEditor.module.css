@@ -4,7 +4,13 @@
  */
 
 .section {
-  max-width: 44rem;
+  /*
+   * The SAME width as the team grid, because `.rows` below is the same 2x3 arrangement and a
+   * modifier cell is meant to sit where its creature sits. At 44rem this panel was 172px wider than
+   * the grid, so expanding it visibly stretched the layout and knocked the two grids out of
+   * alignment — the one thing the shared 2x3 shape exists to provide.
+   */
+  max-width: var(--team-column-width);
   margin: 1rem auto;
   text-align: left;
   border: 1px solid #2c2f3b;
@@ -49,7 +55,8 @@
   margin: var(--space-sm) 0;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-xs);
+  /* Matches the team grid's gap so the two 2x3 layouts line up column for column. */
+  gap: var(--grid-gap);
   align-items: stretch;
 }
 

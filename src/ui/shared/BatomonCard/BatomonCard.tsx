@@ -5,6 +5,7 @@ import { STATUS_COLOR_KEY } from "../../../data/format";
 import { displayField, hasAbilityText, isUnconfirmed } from "../../../data/display";
 import type { ModifierStat, PerCastOutput, StatModifier, StatusEffectType } from "../../../data/types";
 import { formatCooldown } from "../../../data/format";
+import { applyModifiers } from "../../../engine/modifiers";
 import { AllTypeTag, TypeTag } from "../TypeTag";
 import { CreatureSprite } from "../CreatureSprite";
 import styles from "./BatomonCard.module.css";
@@ -71,19 +72,20 @@ export function perCastOutputOf(
     Shield: sum("shieldAmountAdd"),
   };
 
-  return {
-    // A modifier can only scale an effect the creature already has: `null` damage stays `null`
-    // rather than a modifier conjuring an attack (data-model.md's "Known limitation").
-    damage: creature.baseDamage === null ? null : creature.baseDamage + sum("damageFlatAdd"),
-    damageType: creature.damageType,
-    appliesStatus: (creature.appliesStatus ?? []).map((s) => ({
-      ...s,
-      amount: s.amount + (statusAdd[s.type] ?? 0),
-    })),
-    heal: creature.healAmount ?? null,
-    multicast: creature.baseMulticast + sum("multicastAdd"),
-    damageUnconfirmed: isUnconfirmed(creature, "baseDamage"),
-  };
+  // Shared with the engine so the card and the simulation cannot disagree about what a modifier
+  // does. This is also where "a modifier may CREATE an effect" lives -- see engine/modifiers.ts.
+  const output = applyModifiers(
+    {
+      damage: creature.baseDamage,
+      damageType: creature.damageType,
+      appliesStatus: creature.appliesStatus ?? [],
+      baseMulticast: creature.baseMulticast,
+      heal: creature.healAmount ?? null,
+    },
+    { damageFlatAdd: sum("damageFlatAdd"), multicastAdd: sum("multicastAdd"), status: statusAdd },
+  );
+
+  return { ...output, damageUnconfirmed: isUnconfirmed(creature, "baseDamage") };
 }
 
 export function buildStatLines(input: PerCastOutput): StatLine[] {

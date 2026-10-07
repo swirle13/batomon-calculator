@@ -12,7 +12,6 @@
  * emits fixed width/height with `flex-shrink: 0`, so it cannot scale with its container.)
  */
 .grid {
-  --grid-gap: 0.5rem;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: var(--grid-gap);
@@ -21,7 +20,7 @@
    * enough for the sprite the cards actually contain. The old flat 30rem produced 154.67px columns
    * against ~155px of content, which is why the sprite sat on top of the name.
    */
-  width: calc(3 * var(--grid-slot-size) + 2 * var(--grid-gap));
+  width: var(--team-column-width);
   max-width: 100%;
   flex-shrink: 0;
 }

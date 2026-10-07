@@ -216,11 +216,18 @@ interface StatModifier {
 // TeamPlacement gains:     modifiers?: StatModifier[]       (applies to this placement only)
 ```
 
-**Known limitation**: a modifier can only scale an effect a creature *already has*. A
-`damageFlatAdd` on a creature with `baseDamage === null` (no ordinary direct-damage cast) has
-no attack event to attach to and is therefore a no-op; same for status-amount modifiers on a
-creature that doesn't already apply that status. This is intentional — modifiers do not
-fabricate new attacks/status grants that aren't in the cited corpus data.
+**Known limitation** (~~a modifier can only scale an effect a creature *already has*~~ —
+**RETRACTED 2026-10-07**): this said a `damageFlatAdd` on a creature with `baseDamage === null` had
+no attack to attach to and was therefore a no-op, and the same for a status the creature does not
+already apply. It was wrong about the game. Trinkets and ally abilities routinely give a creature
+damage or a status it did not previously have, so a user recording that board was entering a real
+configuration and watching it silently vanish.
+
+A modifier may now **create** an effect. `null` continues to mean "nothing here" — it is reported
+only when there is neither a base value nor a modifier — so the 62 species with `baseDamage: null`
+still render no damage line until something gives them one. See `src/engine/modifiers.ts`, which
+is the single implementation the card and the engine now share; the rule had been written out four
+separate times and each copy discarded the input slightly differently.
 
 ### 2026-10-05 — "Facilitated damage" per creature (user-requested)
 
@@ -811,10 +818,14 @@ No new entity. `buffOnCast` (round 11) already expresses this and its FR-040 sna
 produces the user's sequences. The change is a **constraint removal**:
 
 > **Superseded**: "modifiers can only scale an effect the creature already has."
-> That rule holds for USER-entered `StatModifier`s and still does. It must NOT apply to ability
-> grants: Bonshell has `baseDamage: null` and demonstrably deals 80 damage from its second cast
-> (research.md M5). An ability grant may bring a damage effect into existence; a user modifier may
-> not.
+> That rule must NOT apply to ability grants: Bonshell has `baseDamage: null` and demonstrably deals
+> 80 damage from its second cast (research.md M5). An ability grant may bring a damage effect into
+> existence.
+>
+> **Amended 2026-10-07**: this entry originally added "a user modifier may not", preserving the rule
+> for user input. That distinction is now gone — user modifiers create effects on the same terms as
+> ability grants. Keeping the two paths apart is what let the engine apply a grant and drop a
+> modifier for the same creature in the same battle.
 
 ## Round 5 (2026-10-06): evaluable stats, phased resolution, trigger enum, shiny abilities
 

@@ -129,27 +129,22 @@ function PlacementModifierRow({ placement, onAdd, onRemove }: PlacementModifierR
   const amountRef = useRef<HTMLInputElement>(null);
 
   /**
-   * T211 (FR-078): say so when a modifier would do nothing, AT ENTRY TIME.
+   * FR-078 (amended 2026-10-07): a modifier may CREATE an effect, so almost nothing is inert.
    *
-   * A modifier can only scale an effect the creature already has, so `+50 damage` on a creature
-   * with `baseDamage: null` is silently discarded. Accepting the number and showing no change is
-   * the worst outcome — the user reasonably concludes the calculator is wrong rather than that the
-   * input was meaningless.
+   * This used to warn that `+50 damage` on a creature with `baseDamage: null` had "nothing to
+   * scale", and the same for a status the creature did not already apply. Both the warning and the
+   * clamping behind it were wrong: trinkets and ally abilities routinely give a creature damage or
+   * a status it did not have, and that is exactly the board a user is trying to record. See
+   * engine/modifiers.ts.
    *
-   * Note this rule is about USER modifiers only. An ABILITY grant may create an effect from nothing
-   * (FR-093, Bonshell), which is why this check lives here and not in the engine's buff path.
+   * The one genuine case left is a creature with no published cooldown. It has no cast cycle, so a
+   * RELATIVE change to that cycle has nothing to act on — but an absolute `+N seconds` now gives it
+   * one, so only the speed modifier is called out.
    */
   const inertReason = ((): string | null => {
     if (!creature) return null;
-    const noStatus = (t: string) => !(creature.appliesStatus ?? []).some((s) => s.type === t);
-    if (stat === "damageFlatAdd" && creature.baseDamage === null)
-      return `${name} has no published damage, so a damage modifier has nothing to scale.`;
-    if (stat === "burnAmountAdd" && noStatus("Burn")) return `${name} does not apply Burn.`;
-    if (stat === "poisonAmountAdd" && noStatus("Poison")) return `${name} does not apply Poison.`;
-    if (stat === "shockAmountAdd" && noStatus("Shock")) return `${name} does not apply Shock.`;
-    if (stat === "shieldAmountAdd" && noStatus("Shield")) return `${name} does not apply Shield.`;
-    if (stat === "cooldownFlatAddSeconds" && creature.baseCooldownSeconds === null)
-      return `${name} has no published cooldown.`;
+    if (stat === "cooldownSpeedAdd" && creature.baseCooldownSeconds === null)
+      return `${name} has no published cooldown, so a cooldown-speed modifier has no cast cycle to speed up. Add a cooldown in seconds to give it one.`;
     return null;
   })();
 

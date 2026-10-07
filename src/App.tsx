@@ -62,7 +62,11 @@ function CalculatorView() {
       <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap", alignItems: "flex-start" }}>
         <div
           style={{
-            flex: "1 1 20rem",
+            // Sized from the same token as the grid and the Modifiers panel it contains. A 20rem
+            // basis let this column settle NARROWER than the grid inside it, and since the grid
+            // sets an explicit width it overflowed onto the detail panel rather than being clipped.
+            flex: "1 1 var(--team-column-width)",
+            maxWidth: "var(--team-column-width)",
             minWidth: 0,
             display: "flex",
             flexDirection: "column",

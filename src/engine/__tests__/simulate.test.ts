@@ -262,17 +262,28 @@ describe("simulate", () => {
     expect(Object.keys(result.perCreatureDps)).toHaveLength(0);
   });
 
-  it("a damage modifier on a creature with no base direct-damage cast is a documented no-op", () => {
+  /**
+   * REVERSED 2026-10-07 (FR-078 amended). This previously asserted the no-op was correct:
+   * `expect(Object.keys(result.perCreatureDps)).toHaveLength(0)` for the same inputs.
+   *
+   * That encoded "a modifier can only scale an effect the creature already has", which does not
+   * hold in the game — trinkets and ally abilities give creatures damage they did not have, and
+   * Venopuff carrying a damage trinket is an ordinary board. The engine now treats a user modifier
+   * the same way it already treated an ability grant. See engine/modifiers.ts.
+   */
+  it("a damage modifier gives a cast to a creature with no published damage", () => {
     const config: TeamConfiguration = {
       placements: [{ slot: { row: "front", col: 0 }, creatureId: "venopuff", level: 1 }],
       trainerId: null,
       trinketIds: [],
       itemIds: [],
       simulationWindowSeconds: 10,
-      teamModifiers: [{ id: "m1", label: "Should not create an attack", stat: "damageFlatAdd", amount: 99 }],
+      teamModifiers: [{ id: "m1", label: "Damage trinket", stat: "damageFlatAdd", amount: 99 }],
     };
     const result = simulate(config, corpus);
-    expect(Object.keys(result.perCreatureDps)).toHaveLength(0);
+    // Venopuff casts every 3.5s, so a 10s window holds two casts — 3.5 and 7.0, with the third at
+    // 10.5 falling outside — at 99 damage each.
+    expect(Object.values(result.perCreatureDps)[0]).toBeCloseTo((99 * 2) / 10, 5);
   });
 
   it("status-amount modifiers increase the applied layer count for a creature that already applies that status", () => {
