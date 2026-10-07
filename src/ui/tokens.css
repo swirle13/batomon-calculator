@@ -67,6 +67,18 @@
    * Only 48 / 96 / 144 / 192 keep `image-rendering: pixelated` crisp.
    */
   --sprite-grid: 96px;
+  /*
+   * Everything in a team-grid card that is NOT the sprite: the padding, the "Lv. N" row, the name
+   * row and the stat badges, plus the gaps between them. ~65px of content, rounded up to 76 so a
+   * name that wraps to a second line still has somewhere to go.
+   *
+   * It exists so --grid-slot-size can be derived rather than guessed. The card was previously a
+   * flat 30rem/3 = 154.67px square while its contents needed ~155px, so the sprite overlapped the
+   * name by a hair — a hand-tuned width and a hand-tuned sprite size that happened to collide.
+   */
+  --grid-card-chrome: 4.75rem;
+  /* The square a team-grid card wants to be: big enough to hold the sprite AND the rows under it. */
+  --grid-slot-size: calc(var(--sprite-grid) + var(--grid-card-chrome));
   /* In-game type chips are a fixed width regardless of label length, so a row of them lines up.
      Ours were padding-sized, so "All" was narrow and "Electric" wide and nothing aligned. */
   --type-chip-width: 7rem;

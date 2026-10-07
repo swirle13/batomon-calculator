@@ -12,10 +12,17 @@
  * emits fixed width/height with `flex-shrink: 0`, so it cannot scale with its container.)
  */
 .grid {
+  --grid-gap: 0.5rem;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 0.5rem;
-  width: 30rem;
+  gap: var(--grid-gap);
+  /*
+   * Derived from the slot size rather than set to a round number, so the columns are always wide
+   * enough for the sprite the cards actually contain. The old flat 30rem produced 154.67px columns
+   * against ~155px of content, which is why the sprite sat on top of the name.
+   */
+  width: calc(3 * var(--grid-slot-size) + 2 * var(--grid-gap));
+  max-width: 100%;
   flex-shrink: 0;
 }
 
@@ -47,7 +54,13 @@
 .card,
 .emptyCard {
   position: relative;
+  /*
+   * Square is the TARGET shape, but the sprite is the hard constraint. If the column is ever
+   * narrower than the contents need — a short viewport, a zoomed page — min-height wins and the
+   * card goes slightly tall rather than overlapping its own name.
+   */
   aspect-ratio: 1;
+  min-height: var(--grid-slot-size);
   border-radius: 6px;
   display: flex;
   flex-direction: column;
@@ -56,6 +69,8 @@
 
 .card {
   color: #fff;
+  /* Keeps the sprite from touching the name even when the card is at its minimum size. */
+  gap: 0.15rem;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
   cursor: grab;
   user-select: none;
@@ -102,7 +117,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 0;
+  /*
+   * Reserves the sprite's full height. `min-height: 0` let this flex item shrink BELOW the fixed
+   * 96px sprite inside it, and the sprite then overflowed onto the name rather than the layout
+   * reporting that it had run out of room.
+   */
+  min-height: var(--sprite-grid);
 }
 
 /* --- FR-035: floating, colour-coded stat badges along the bottom of the pane --- */
