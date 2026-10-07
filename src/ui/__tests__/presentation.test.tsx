@@ -232,9 +232,14 @@ describe("round 9: total DPS and grid sizing", () => {
     // COMPOUNDS -- every Toxic ally cast adds another +5% for the rest of the battle -- so the
     // team's real output rises. The compounding is what the ability says ("for this battle",
     // granted per cast); it converges because the simulation window bounds it. The effect grows
-    // superlinearly with the window -- this 20s team reads 1217.80, the same team at 30s reads
-    // 2105.20 -- because each extra cast earned by the speed-up earns further speed-up.
-    expect(screen.getByText("1217.80")).toBeTruthy();
+    // superlinearly with the window, because each extra cast earned by the speed-up earns further
+    // speed-up.
+    //
+    // 2026-10-06 (T244): 1217.80 -> 1658.90. Fumungus is on this board and its ability -- "additional
+    // Damage equal to 200% of the Poison stacks on the enemy" -- was previously unmodelled, leaving
+    // it dealing nothing. The capture identified it as the team's LARGEST damage term, so a 36%
+    // rise is the expected direction and rough magnitude, not a surprise.
+    expect(screen.getByText("1658.90")).toBeTruthy();
   });
 
   it("states the engine's coverage ceiling right where the number is (FR-075)", () => {
