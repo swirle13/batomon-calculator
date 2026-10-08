@@ -1,6 +1,6 @@
 import { useTeamConfig } from "../../context/teamConfig";
 import { resolveCreatureVariant } from "../../data/corpus";
-import { manualTriggersFor, modifiersForPress } from "../../data/triggers";
+import { manualTriggersFor, modifiersForPress, type ManualTrigger } from "../../data/triggers";
 import { STAT_COLORS } from "../../data/statColors";
 import type { CreatureRecord, GridSlot, TeamPlacement } from "../../data/types";
 import { slotKey } from "../../engine/grid";
@@ -35,6 +35,15 @@ import { ModifierStat, StatColorKey } from "../../data/enums";
  * writes a modifier per recipient. Before that existed, a press banked the bonus on the presser
  * alone, which is the whole reason the recipient count is now shown next to the button — a press
  * with a board-wide effect should say so before it is pressed.
+ *
+ * ## Why a stepper rather than a button plus a reset
+ *
+ * Undoing used to be a single "Reset banked" ghost button that appeared under the whole group once
+ * anything was banked and cleared all of it. That read as a second, unrelated control — it was
+ * visible on Craghorn and absent on Brawlmantis purely because one had presses banked — and it was
+ * the wrong grain: having pressed four times, the way back to three was to clear to zero and press
+ * three times. Each trigger now carries its own `− n +`, so the count is always on screen, the
+ * control never appears or disappears, and one press back is one press back.
  */
 interface TriggerButtonsProps {
   creature: CreatureRecord;
@@ -86,8 +95,35 @@ interface BoardMember {
   placement: TeamPlacement;
 }
 
+/**
+ * How many presses of this trigger the recipients are currently carrying.
+ *
+ * Read back out of the modifiers a press writes, because that is the only record of one — banking
+ * into the same representation the user types into is what makes the amounts display and round-trip
+ * for free, and the cost is that nothing is labelled "banked". So the count is whatever number of
+ * presses *every* effect on *every* recipient can account for: it never offers to take back more
+ * than a press put there, and a hand-typed modifier on a recipient can only make it read high,
+ * never make a decrement go below what was banked.
+ *
+ * The epsilon is for `cooldownSpeedAdd`, which is stored as a fraction — three presses of Ninflora's
+ * +10% accumulate to 0.30000000000000004 or 0.29999999999999993 depending on the order, and a bare
+ * `Math.floor` turns the second one into two presses.
+ */
+function bankedPresses(trigger: ManualTrigger, recipients: readonly BoardMember[]): number {
+  if (recipients.length === 0) return 0;
+  let presses = Infinity;
+  for (const recipient of recipients) {
+    const modifiers = recipient.placement.modifiers ?? [];
+    for (const effect of trigger.effects) {
+      const carried = modifiers.find((m) => m.stat === effect.stat)?.amount ?? 0;
+      presses = Math.min(presses, Math.floor(carried / effect.amount + 1e-9));
+    }
+  }
+  return Math.max(0, presses);
+}
+
 export function TriggerButtons({ creature, placement }: TriggerButtonsProps) {
-  const { config, addPlacementModifier, removePlacementModifier } = useTeamConfig();
+  const { config, addPlacementModifier } = useTeamConfig();
   const triggers = manualTriggersFor(creature);
   if (triggers.length === 0) return null;
 
@@ -112,70 +148,73 @@ export function TriggerButtons({ creature, placement }: TriggerButtonsProps) {
     recipients: recipientsOfPress(trigger, source, board, config),
   }));
 
-  /*
-   * Only the stats these buttons could have produced, and only on the slots they could have written
-   * to — so "Reset" cannot discard a modifier the user typed on an unrelated creature. It still
-   * cannot tell a banked +10 Damage from a hand-typed one on a creature it does target, which is
-   * the accepted cost of banking into the same representation.
+  /**
+   * One step in either direction, written to every recipient of that trigger.
+   *
+   * A decrement is the same write with the amounts negated, because `addPlacementModifier`
+   * accumulates onto the matching stat and drops the entry when it reaches zero — so stepping back
+   * down to nothing leaves no "+0" chip behind, and there is no second code path that has to agree
+   * with the first about which slots a press touched.
    */
-  const bankedStats = new Set(triggers.flatMap((t) => t.effects.map((e) => e.stat)));
-  const banked = [...new Map(recipientsByTrigger.flatMap(({ recipients }) => recipients.map((r) => [r.key, r]))).values()]
-    .flatMap((r) =>
-      (r.placement.modifiers ?? [])
-        .filter((m) => bankedStats.has(m.stat))
-        .map((m) => ({ slot: r.slot, id: m.id })),
-    );
+  function step(trigger: ManualTrigger, recipients: readonly BoardMember[], direction: 1 | -1) {
+    for (const recipient of recipients) {
+      for (const modifier of modifiersForPress(trigger)) {
+        addPlacementModifier(recipient.slot, { ...modifier, amount: modifier.amount * direction });
+      }
+    }
+  }
 
   return (
     <div className={styles.wrap}>
-      {recipientsByTrigger.map(({ trigger, recipients }) => (
-        <div key={trigger.trigger} className={styles.row}>
-          <Button
-            size="sm"
-            className={styles.button}
-            disabled={recipients.length === 0}
-            title={`${trigger.definition.description} Each press banks it once.`}
-            onClick={() => {
-              for (const recipient of recipients) {
-                for (const modifier of modifiersForPress(trigger)) {
-                  addPlacementModifier(recipient.slot, modifier);
-                }
-              }
-            }}
-          >
-            + {trigger.definition.actionLabel}
-          </Button>
-          <span className={styles.effects}>
-            {trigger.effects.map((e) => (
-              <span
-                key={e.stat}
-                className={styles.effect}
-                style={{ color: STAT_COLORS[STAT_KEY[e.stat] ?? "damage"] }}
+      {recipientsByTrigger.map(({ trigger, recipients }) => {
+        const presses = bankedPresses(trigger, recipients);
+        const label = trigger.definition.actionLabel;
+        return (
+          <div key={trigger.trigger} className={styles.row}>
+            <div className={styles.stepper} role="group" aria-label={label}>
+              <Button
+                size="sm"
+                className={styles.step}
+                disabled={presses === 0}
+                aria-label={`Unbank: ${label}`}
+                title={`Takes back one ${label.toLowerCase()}.`}
+                onClick={() => step(trigger, recipients, -1)}
               >
-                {formatAmount(e.stat, e.amount)} {STAT_LABEL[e.stat] ?? e.stat}
+                −
+              </Button>
+              <span className={styles.count} aria-live="polite">
+                {presses}
               </span>
-            ))}
-            {/* Only said when it is news: a self-only trigger would be stating the obvious. */}
-            {recipients.length > 1 && (
-              <span className={styles.scope}>to {recipients.length} monsters</span>
-            )}
-          </span>
-        </div>
-      ))}
-
-      {banked.length > 0 && (
-        <Button
-          variant="ghost"
-          size="sm"
-          className={styles.reset}
-          title="Clears only the bonuses these buttons added, not modifiers you entered yourself."
-          onClick={() => {
-            for (const m of banked) removePlacementModifier(m.slot, m.id);
-          }}
-        >
-          Reset banked
-        </Button>
-      )}
+              <Button
+                size="sm"
+                className={styles.step}
+                disabled={recipients.length === 0}
+                aria-label={`Bank: ${label}`}
+                title={`${trigger.definition.description} Each press banks it once.`}
+                onClick={() => step(trigger, recipients, 1)}
+              >
+                +
+              </Button>
+            </div>
+            <span className={styles.label}>{label}</span>
+            <span className={styles.effects}>
+              {trigger.effects.map((e) => (
+                <span
+                  key={e.stat}
+                  className={styles.effect}
+                  style={{ color: STAT_COLORS[STAT_KEY[e.stat] ?? "damage"] }}
+                >
+                  {formatAmount(e.stat, e.amount)} {STAT_LABEL[e.stat] ?? e.stat}
+                </span>
+              ))}
+              {/* Only said when it is news: a self-only trigger would be stating the obvious. */}
+              {recipients.length > 1 && (
+                <span className={styles.scope}>to {recipients.length} monsters</span>
+              )}
+            </span>
+          </div>
+        );
+      })}
     </div>
   );
 }

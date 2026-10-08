@@ -13,13 +13,47 @@
 .row {
 	display: flex;
 	align-items: center;
+	flex-wrap: wrap;
 	gap: var(--space-xs);
 }
-/* `Button size="sm"` carries the look, including the focus ring this file used to reach for with
+/* The `− n +` cluster. Spaced tight enough to read as one control rather than three things that
+   happen to be adjacent, which is the whole reason the count sits between the two buttons. */
+.stepper {
+	display: flex;
+	align-items: center;
+	gap: var(--space-3xs);
+	flex-shrink: 0;
+}
+/* Square and pill-shaped, because the glyph is one character: a button padded for a word leaves a
+   `+` floating in the middle of a box three times its width. `Button size="sm"` still carries the
+   colours and the focus ring, including the ring this file used to reach for with
    `var(--focus-ring, #8ab4f8)` — a blue from no palette here, reached because the token did not
    exist until the controls layer defined it. */
-.button {
-	flex-shrink: 0;
+.step {
+	width: var(--control-height-sm);
+	min-width: var(--control-height-sm);
+	padding: 0;
+	border-radius: var(--radius-pill);
+	font-size: var(--font-md);
+	line-height: 1;
+}
+/* Tabular-width so the row does not shift sideways between 9 and 10 presses. Zero is muted: it is
+   the resting state, and a bright 0 reads as a value someone set. */
+.count {
+	min-width: 1.1rem;
+	font-size: var(--font-sm);
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	text-align: center;
+	color: var(--text-strong);
+}
+/* The action the presses stand for ("Use an item"), now that the buttons are glyphs and cannot
+   say it themselves. */
+.label {
+	font-size: var(--font-xs);
+	font-weight: 600;
+	color: var(--text-body);
+	white-space: nowrap;
 }
 /* The preview is coloured per stat, matching the badges, so a press has a predictable result. */
 .effects {
@@ -37,11 +71,4 @@
 	white-space: nowrap;
 	color: var(--text-muted);
 	font-weight: 500;
-}
-/* Quieter than the trigger buttons above it: undoing is the rarer act, and `ghost` already means
-   "no chrome until you reach for it". */
-.reset {
-	align-self: flex-start;
-	color: var(--text-muted);
-	font-size: var(--font-2xs);
 }

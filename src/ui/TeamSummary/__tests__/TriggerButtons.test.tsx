@@ -75,10 +75,20 @@ function banked(creatureId: Species): string {
   return screen.getByTestId(`banked-${creatureId}`).textContent ?? "";
 }
 
+/** The `+` of a trigger's stepper. Named by the action so a creature with two triggers is unambiguous. */
+function plus(action: RegExp): HTMLElement {
+  return screen.getByRole("button", { name: new RegExp(`^Bank: ${action.source}`, "i") });
+}
+
+/** The `−` of the same stepper. */
+function minus(action: RegExp): HTMLElement {
+  return screen.getByRole("button", { name: new RegExp(`^Unbank: ${action.source}`, "i") });
+}
+
 describe("TriggerButtons — who a press lands on", () => {
   it("banks Brawlmantis's +10 on it AND on both Common allies", () => {
     renderBoard("brawlmantis");
-    fireEvent.click(screen.getByRole("button", { name: /win a round/i }));
+    fireEvent.click(plus(/win a round/));
 
     expect(banked(Species.Brawlmantis)).toBe("10");
     expect(banked(Species.Pebbler)).toBe("10");
@@ -87,7 +97,7 @@ describe("TriggerButtons — who a press lands on", () => {
 
   it("leaves the non-Common allies alone, because the ability names Commons", () => {
     renderBoard("brawlmantis");
-    fireEvent.click(screen.getByRole("button", { name: /win a round/i }));
+    fireEvent.click(plus(/win a round/));
 
     // Pyronade and Craghorn are Uncommon, Shikitsune is Rare. A fix that simply wrote to every
     // placement would pass the test above and fail this one.
@@ -96,7 +106,7 @@ describe("TriggerButtons — who a press lands on", () => {
 
   it("accumulates per press rather than appending a chip each time", () => {
     renderBoard("brawlmantis");
-    const press = screen.getByRole("button", { name: /win a round/i });
+    const press = plus(/win a round/);
     fireEvent.click(press);
     fireEvent.click(press);
     fireEvent.click(press);
@@ -116,7 +126,7 @@ describe("TriggerButtons — who a press lands on", () => {
     renderBoard("brawlmantis", lone);
     expect(screen.queryByText(/to \d+ monsters/)).toBeNull();
 
-    fireEvent.click(screen.getByRole("button", { name: /win a round/i }));
+    fireEvent.click(plus(/win a round/));
     expect(banked(Species.Brawlmantis)).toBe("10");
   });
 
@@ -124,25 +134,49 @@ describe("TriggerButtons — who a press lands on", () => {
     // Craghorn's "When you use an item, this gains +20 Damage and Shield" carries no target, so the
     // default must stay self. Seven of the nine species with buttons rely on that default.
     renderBoard("craghorn");
-    fireEvent.click(screen.getByRole("button", { name: /use an item/i }));
+    fireEvent.click(plus(/use an item/));
 
     expect(banked(Species.Craghorn)).toBe("20");
     for (const id of [Species.Brawlmantis, Species.Pebbler, Species.Venopuff]) expect(banked(id)).toBe("");
   });
 });
 
-describe("TriggerButtons — undoing a press", () => {
-  it("resets the allies it banked onto, not just the creature whose card is open", () => {
+describe("TriggerButtons — stepping back down", () => {
+  it("takes the bonus off every ally it was banked onto, not just the card that is open", () => {
     renderBoard("brawlmantis");
-    fireEvent.click(screen.getByRole("button", { name: /win a round/i }));
-    fireEvent.click(screen.getByRole("button", { name: /reset banked/i }));
+    fireEvent.click(plus(/win a round/));
+    fireEvent.click(minus(/win a round/));
 
-    // Clearing only the presser would leave the allies carrying a bonus with no control to undo it.
+    // Undoing only the presser would leave the allies carrying a bonus with no control to remove it.
     for (const id of [Species.Brawlmantis, Species.Pebbler, Species.Venopuff]) expect(banked(id)).toBe("");
   });
 
-  it("offers no reset until something has been banked", () => {
+  it("removes one press at a time rather than clearing the lot", () => {
     renderBoard("brawlmantis");
-    expect(screen.queryByRole("button", { name: /reset banked/i })).toBeNull();
+    const press = plus(/win a round/);
+    fireEvent.click(press);
+    fireEvent.click(press);
+    fireEvent.click(press);
+    fireEvent.click(minus(/win a round/));
+
+    expect(banked(Species.Brawlmantis)).toBe("20");
+    expect(banked(Species.Venopuff)).toBe("20");
+  });
+
+  it("cannot go below nothing banked", () => {
+    renderBoard("brawlmantis");
+    expect(minus(/win a round/)).toHaveProperty("disabled", true);
+
+    fireEvent.click(plus(/win a round/));
+    expect(minus(/win a round/)).toHaveProperty("disabled", false);
+  });
+
+  it("shows the press count on the trigger itself, at rest and after pressing", () => {
+    // Craghorn's is self-only, so the one count on screen is unambiguous.
+    renderBoard("craghorn");
+    expect(screen.getByText("0")).toBeTruthy();
+
+    fireEvent.click(plus(/use an item/));
+    expect(screen.getByText("1")).toBeTruthy();
   });
 });
