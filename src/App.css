@@ -24,6 +24,17 @@ main {
   margin: 0 auto;
 }
 
+/*
+ * Half the padding on a phone (2026-10-08). 1rem a side is 32px of a 360px screen, and the team
+ * board is the one row here that cannot compress — those 32px are a meaningful part of what lets
+ * three desktop-sized sprites fit across it.
+ */
+@media (max-width: 640px) {
+  main {
+    padding: 0.5rem;
+  }
+}
+
 table {
   border-collapse: collapse;
   margin-bottom: 1rem;

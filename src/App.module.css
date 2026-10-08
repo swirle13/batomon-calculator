@@ -67,6 +67,19 @@
   gap: var(--space-md);
 }
 
+/*
+ * Full width under the board on a phone (2026-10-08). 22rem is 352px, wider than a 360px screen's
+ * content box, and the column neither grows nor shrinks — so it overflowed `main` and took the page
+ * sideways with it, which scrolls the board too. The fixed width exists to stop the column resizing
+ * on hover (FR-062); at one column per row there is nothing for it to resize against.
+ */
+@media (max-width: 640px) {
+  .detailColumn {
+    flex-basis: 100%;
+    min-width: 0;
+  }
+}
+
 /* Centred, like every other full-width row in this view. The label and its field are one unit, so
    the Field itself is inline-flex and this just places it. */
 .windowControl {

@@ -105,6 +105,31 @@
   opacity: 0.5;
 }
 
+/*
+ * Phones: the pane keeps the desktop's 96px sprite and gives up its square instead (2026-10-08).
+ *
+ * `--grid-slot-size` is the pane's WIDTH here — the sprite plus the card's padding, which is all a
+ * third of a 360px screen has room for — so the header row and the chip band have to be added to
+ * its height explicitly rather than fitting inside a square. An explicit height also wins over
+ * `aspect-ratio`, which is stated for the desktop in the shared rule above.
+ */
+@media (max-width: 640px) {
+  .card,
+  .emptyCard {
+    aspect-ratio: auto;
+    height: calc(var(--grid-slot-size) + var(--grid-card-chrome));
+  }
+
+  /*
+   * The name gets the room the symmetric padding was spending on empty space. At this width the
+   * pane is 96px across inside its padding, so 1.25rem on both sides left under 60px for a name and
+   * a level; the clear button only ever needed clearing on the right.
+   */
+  .header {
+    padding-inline: var(--space-3xs) 1.25rem;
+  }
+}
+
 /* Empty slots are square too -- square filled cards beside non-square placeholders would make the
    grid look broken in exactly the way FR-035 is meant to fix. */
 .emptyCard {

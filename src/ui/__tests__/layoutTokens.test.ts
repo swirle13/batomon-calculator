@@ -220,6 +220,46 @@ describe("stat chips hold one width and one row height", () => {
 });
 
 /**
+ * A phone shows the creature at the size a desktop does (2026-10-08).
+ *
+ * The breakpoint used to drop `--sprite-grid` to 48px — 1x the source art, a quarter of the area —
+ * so that the pane could stay square. Reported as "the mons are very undersized". There is no
+ * middle size to compromise on: `image-rendering: pixelated` is only crisp at integer multiples of
+ * the 48x48 source, so either the pane's shape gives or the art does.
+ */
+describe("the mobile breakpoint shrinks the pane, not the sprite", () => {
+  const grid = read("ui/GridPicker/GridPicker.module.css");
+  const mobileRoot = /@media \(max-width: 640px\) \{ :root \{([^}]*)\}/.exec(tokens.replace(/\s+/g, " "))?.[1] ?? "";
+
+  it("leaves both sprite sizes at the desktop value", () => {
+    expect(mobileRoot).not.toMatch(/--sprite-grid:/);
+    expect(mobileRoot).not.toMatch(/--sprite-picker:/);
+  });
+
+  it("makes the slot size a WIDTH there: the sprite plus the card's padding", () => {
+    // Three of these plus two gaps is what has to fit a 360px screen, and it is the whole reason
+    // the sprite can stay at 96px.
+    expect(mobileRoot).toMatch(/--grid-slot-size: calc\(var\(--sprite-grid\) \+ 2 \* var\(--grid-card-padding\)\)/);
+  });
+
+  it("adds the pane's chrome to its height, since the square is gone", () => {
+    // Without this the pane would be 96px tall and clip everything that is not the sprite — the
+    // rows no longer have a square to sit inside.
+    expect(grid.replace(/\s+/g, " ")).toMatch(
+      /height: calc\(var\(--grid-slot-size\) \+ var\(--grid-card-chrome\)\)/,
+    );
+  });
+
+  it("stops the detail column from taking the page sideways", () => {
+    // 22rem is 352px against a 360px screen, and the column neither grows nor shrinks — so it
+    // overflowed `main` and scrolled the board along with it.
+    expect(read("App.module.css").replace(/\s+/g, " ")).toMatch(
+      /@media \(max-width: 640px\) \{ \.detailColumn \{ flex-basis: 100%/,
+    );
+  });
+});
+
+/**
  * FR-043: a panel reserves space for the corpus's worst case rather than resizing as its contents
  * change. The trainer card is the newest instance and the one with a measured number behind it.
  */

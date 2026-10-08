@@ -242,8 +242,7 @@
 
   /*
    * The trinket card's art area: the sprite plus its padding and the name band below it. Derived
-   * from the sprite token so the 640px breakpoint carries through without a second number to
-   * remember.
+   * from the sprite token rather than measured, so it cannot be left behind when the sprite moves.
    *
    * The card's own height is deliberately NOT a token. It was one — measured against the corpus's
    * longest effect text — and the measurement was sound, but reserving the worst case on all 93
@@ -257,18 +256,39 @@
   --detail-panel-width: 22rem;
 }
 
-/* On narrow viewports the square slot card can't hold a 64px sprite plus the level label, name,
-   and stat badges without clipping (it is `overflow: hidden`), so the sprite scales down. */
+/*
+ * Phones (2026-10-08). The art is the SAME SIZE as on a desktop; the pane around it is what gives.
+ *
+ * It used to be the other way round: the sprite dropped to 48px — 1x the source art, a third of the
+ * area a desktop shows — to keep the pane square, so a phone got a thumbnail of a creature inside a
+ * card mostly made of padding. The square was never the point; seeing the creature is. And there is
+ * no middle setting to compromise on, because `image-rendering: pixelated` is only crisp at integer
+ * multiples of the 48x48 source: 48 or 96, nothing between.
+ *
+ * It fits, with the gap and the pane's own proportions paying for it. On the narrowest phone in
+ * common use (360px, 16px root): `main` gives up half its padding for 344px of content, and three
+ * 105.6px panes with 4px gaps come to 324.8px.
+ */
 @media (max-width: 640px) {
   :root {
-    --sprite-grid: 48px;
     /*
-     * The picker scales with it. Raising --sprite-picker to 112px without this would have made the
-     * picker WORSE on mobile than before: a 112px sprite in an 11rem card means roughly two columns
-     * on a phone, where 64px gave three or four. The two sizes and the card width move together.
+     * The pane is PORTRAIT here rather than square. 96px of art plus the card's padding is already
+     * most of a third of the screen, so its WIDTH is exactly that, and the rows of chrome are added
+     * to its height instead of being fitted inside a square (see `.card` in GridPicker.module.css).
      */
-    /* 48px = 1x the source art, so it stays crisp on phones too. */
-    --sprite-picker: 48px;
+    --grid-slot-size: calc(var(--sprite-grid) + 2 * var(--grid-card-padding));
+    /*
+     * ~8px of slack around the sprite rather than the desktop's ~36px. The desktop slack is
+     * breathing room in a pane with width to spare; here it would just make a tall pane taller.
+     */
+    --grid-card-chrome: 3rem;
+    /* 1rem between panes is 32px of a 360px screen — a tenth of the board, spent on nothing. */
+    --grid-gap: var(--space-2xs);
+    /*
+     * The picker's sprite stays at the desktop 96px too, but its card does NOT stay at the desktop
+     * 10rem: `auto-fill` would then fit a single column in a phone-width modal, where 7.5rem keeps
+     * the two columns a picker needs to be scannable. The card is wider than its minimum anyway.
+     */
     --picker-card-min-width: 7.5rem;
   }
 }
