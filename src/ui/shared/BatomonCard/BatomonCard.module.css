@@ -192,9 +192,21 @@
 }
 
 /* --- Band 4: ability trigger + description --- */
+/*
+ * CENTRED, both ways (2026-10-08). The band reserves the corpus's worst-case height — 5rem on the
+ * panel, 5.5rem in the browser — so a one-line ability used to sit against the top-left corner of a
+ * box three times its height, reading as a layout mistake rather than as reserved space. Centring
+ * puts the slack around the text instead of all beneath it, and the band is the one place on the
+ * card where that is true: every other row's height follows its content.
+ */
 .ability {
   padding: 0.5rem 0.6rem;
   border-top: 1px solid #2c2f3b;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 .abilityTrigger {
