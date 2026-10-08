@@ -131,17 +131,36 @@
   }
 
   /*
-   * The level drops BELOW the name when the two do not fit across a third of a phone, instead of
-   * the name ellipsising to "S…". Flex breaks a line before it shrinks an item, so a name that fits
-   * on its own gets the whole first line; a short one keeps the level beside it. Either way the
-   * height is reserved (--grid-card-chrome), so neighbouring panes stay level.
+   * Two tight lines: the name, then the level under it.
+   *
+   * The level drops below rather than beside the name because across a third of a phone the two do
+   * not fit, and the name losing its last five characters is a worse trade than the level losing a
+   * line it has room for. Flex breaks a line before it shrinks an item, so the name gets the whole
+   * first line to itself.
+   *
+   * TIGHT is the other half of it. At the inherited 145% leading and the desktop's name size, these
+   * two lines measured 42px — a quarter of the pane spent on two words, which is what was squeezing
+   * the sprite out of the middle. Both lines at the chip's size and 1.15 leading come to 26px, and
+   * at that size every name in the corpus fits (the longest is "Steamscuttle", at 12).
+   *
+   * `min-height` reserves BOTH lines whether or not the level wraps, so a short-named pane's sprite
+   * sits at the same height as its neighbour's rather than 13px lower.
    *
    * The padding is asymmetric because the clear button is: it sits in the top-RIGHT corner, and
    * clearing a corner that holds nothing was costing the name 20px it has no spare.
    */
   .header {
     flex-wrap: wrap;
+    column-gap: var(--space-2xs);
+    row-gap: 0;
+    min-height: calc(2 * 1.15 * var(--font-2xs));
     padding-inline: var(--space-3xs) 1.25rem;
+  }
+
+  .header .name,
+  .header .level {
+    font-size: var(--font-2xs);
+    line-height: 1.15;
   }
 }
 

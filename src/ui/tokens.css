@@ -300,9 +300,12 @@
      */
     --grid-slot-size: calc(var(--sprite-grid) + 2 * var(--grid-card-padding));
     /*
-     * Two header lines, not the desktop's one: at a third of a phone the level does not fit beside
-     * the name, so it wraps below it rather than ellipsising the name down to its first letter.
-     * Reserved whether or not it wraps, so panes in a row stay the same height.
+     * 60px: two tight header lines (26px — the level wraps below the name at this width), the gap
+     * under them, the chip band, and ~10px left over for the sprite to sit centred in.
+     *
+     * The desktop's 76px is mostly slack, which a pane with width to spare can afford; here every
+     * row of chrome comes out of the art. It was 60px against a 42px header too, and that header
+     * ate the slack and then some — the sprite was pushed down onto the chips and clipped.
      */
     --grid-card-chrome: 3.75rem;
     /*

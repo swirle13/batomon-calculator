@@ -257,6 +257,17 @@ describe("the mobile breakpoint shrinks the pane, not the sprite", () => {
     expect(mobileRoot).toMatch(/--grid-slot-size: calc\(var\(--sprite-grid\) \+ 2 \* var\(--grid-card-padding\)\)/);
   });
 
+  it("reserves both header lines, tightly, so every pane's sprite is at one height", () => {
+    // Two things at once. The lines are TIGHT because at the desktop's name size and the inherited
+    // 145% leading they measured 42px of a 166px pane, which pushed the sprite down onto the chips
+    // and out of the middle. And both are RESERVED because the level only wraps below the name when
+    // the name is long enough to need the line — otherwise a short-named pane's sprite sat 13px
+    // higher than its neighbour's.
+    const mobileGrid = grid.replace(/\s+/g, " ");
+    expect(mobileGrid).toMatch(/\.header \{[^}]*min-height: calc\(2 \* 1\.15 \* var\(--font-2xs\)\)/);
+    expect(mobileGrid).toMatch(/\.header \.name, \.header \.level \{ font-size: var\(--font-2xs\); line-height: 1\.15/);
+  });
+
   it("lets the board fill the screen instead of holding a column's width", () => {
     // `--team-column-width` is three FIXED slots wide and lands short of a phone, so the board sat
     // in a narrow column with the page's second column reserved, empty, beside it.
