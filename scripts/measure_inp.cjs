@@ -85,18 +85,26 @@ const OBSERVER = `
       i: i + 1,
       worst: worst ? worst.duration : 0,
       worstName: worst ? worst.name : "-",
+      // The three subparts DevTools shows, for the worst event of this gesture.
+      inputDelay: worst ? worst.processingStart - worst.start : 0,
+      processing: worst ? worst.processingEnd - worst.processingStart : 0,
+      presentation: worst ? worst.start + worst.duration - worst.processingEnd : 0,
       mouseupProc: mu.length ? Math.max(...mu.map((e) => e.processingEnd - e.processingStart)) : 0,
       longest: lts.length ? Math.max(...lts.map((t) => t.duration)) : 0,
     });
   }
 
   console.log(`\n===== PER-DRAG, IN ORDER — ${label} ${throttle > 1 ? `(${throttle}x throttle)` : "(no throttle)"} =====`);
-  console.log("drag |  worst event        | mouseup processing | longest task");
+  console.log("drag | worst event         | input delay | processing | presentation | longest task");
   for (const d of perDrag) {
     console.log(
-      `${String(d.i).padStart(4)} | ${d.worst.toFixed(0).padStart(5)}ms ${d.worstName.padEnd(11)} | ${d.mouseupProc.toFixed(0).padStart(13)}ms | ${d.longest.toFixed(0).padStart(9)}ms`,
+      `${String(d.i).padStart(4)} | ${d.worst.toFixed(0).padStart(5)}ms ${d.worstName.padEnd(12)} | ${d.inputDelay.toFixed(0).padStart(8)}ms | ${d.processing.toFixed(0).padStart(7)}ms | ${d.presentation.toFixed(0).padStart(9)}ms | ${d.longest.toFixed(0).padStart(9)}ms`,
     );
   }
+  const avg = (k) => perDrag.reduce((s, d) => s + d[k], 0) / perDrag.length;
+  console.log(
+    `MEAN | ${avg("worst").toFixed(0).padStart(5)}ms              | ${avg("inputDelay").toFixed(0).padStart(8)}ms | ${avg("processing").toFixed(0).padStart(7)}ms | ${avg("presentation").toFixed(0).padStart(9)}ms |`,
+  );
 
   const events = allEvents;
   const longtasks = allLongtasks;

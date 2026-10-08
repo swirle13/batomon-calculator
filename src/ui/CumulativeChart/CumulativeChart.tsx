@@ -12,11 +12,16 @@ interface CumulativeChartProps {
  * (data-model.md's single-source-of-truth rule; Constitution Development Workflow).
  */
 import { SeriesChart } from "./SeriesChart";
+import { sameSeries } from "./sameSeries";
 /*
  * `memo` is load-bearing, not a reflex. `CalculatorView` holds the hovered-slot state that drives
  * the detail panel, so every pointer move across the grid re-renders the whole view — and a
  * Recharts tree is one of the most expensive things in it to rebuild. `result` is unchanged by a
  * hover, so this bails out instead.
+ *
+ * Compared BY VALUE (2026-10-08), not by `result` identity: a drag that swaps two Batomon produces
+ * a new result object holding an identical damage curve, and this chart was rebuilding every path
+ * in it to draw the same line. See `sameSeries` — including its rule about reading a second field.
  */
 export const CumulativeChart = memo(function CumulativeChart({ result }: CumulativeChartProps) {
   const series = result.cumulativeSeries;
@@ -71,4 +76,4 @@ export const CumulativeChart = memo(function CumulativeChart({ result }: Cumulat
       />
     </section>
   );
-});
+}, (prev, next) => sameSeries(prev.result.cumulativeSeries, next.result.cumulativeSeries));

@@ -22,7 +22,8 @@ interface DpsRateChartProps {
  * Axis/colour treatment is shared with `CumulativeChart` rather than restyled (Principle VII).
  */
 import { SeriesChart } from "./SeriesChart";
-/** Memoized for the same reason as `CumulativeChart` — see the note there. */
+import { sameSeries } from "./sameSeries";
+/** Memoized, and compared by value, for the same reasons as `CumulativeChart` — see the notes there. */
 export const DpsRateChart = memo(function DpsRateChart({ result }: DpsRateChartProps) {
   const xValues = result.dpsRateSeries.map((p) => p.tSeconds);
   const windowSeconds = xValues.length > 0 ? xValues[xValues.length - 1]! : 0;
@@ -48,4 +49,4 @@ export const DpsRateChart = memo(function DpsRateChart({ result }: DpsRateChartP
       />
     </section>
   );
-});
+}, (prev, next) => sameSeries(prev.result.dpsRateSeries, next.result.dpsRateSeries));

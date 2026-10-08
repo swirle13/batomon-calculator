@@ -2,6 +2,7 @@ import { memo, useState } from "react";
 import type { SimulationResult } from "../../data/types";
 import { STAT_COLORS } from "../../data/statColors";
 import { SeriesChart } from "./SeriesChart";
+import { sameSeries } from "./sameSeries";
 import { Button } from "../primitives";
 
 interface StatusStackChartProps {
@@ -26,7 +27,7 @@ interface StatusStackChartProps {
  * Shield is deliberately absent — it is absorption on your own side, not a stack pool on the enemy,
  * so it has no meaning on this axis.
  */
-/** Memoized for the same reason as `CumulativeChart` — see the note there. */
+/** Memoized, and compared by value, for the same reasons as `CumulativeChart` — see the notes there. */
 export const StatusStackChart = memo(function StatusStackChart({ result }: StatusStackChartProps) {
   const [open, setOpen] = useState(false);
 
@@ -79,4 +80,4 @@ export const StatusStackChart = memo(function StatusStackChart({ result }: Statu
         ))}
     </section>
   );
-});
+}, (prev, next) => sameSeries(prev.result.statusStackSeries, next.result.statusStackSeries));
