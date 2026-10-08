@@ -133,6 +133,76 @@ describe("the overlays keep the board's three-column shape", () => {
 });
 
 /**
+ * The stat chips along the bottom of a team-grid pane (2026-10-08).
+ *
+ * Reported as "these need a consistent width": Plunderbird's 1 / 25 / 2 were padding-sized, so no
+ * two chips in the board lined up. Every assertion here is on an authored relationship between two
+ * files, which is what jsdom cannot see — it does no layout, so a rendered DOM would report a chip
+ * of width 0 either way.
+ */
+describe("stat chips hold one width and one row height", () => {
+  const primitives = read("ui/primitives/primitives.module.css");
+  const grid = read("ui/GridPicker/GridPicker.module.css");
+
+  it("gives the chip a fixed width, not a minimum", () => {
+    // `min-width: 1.4rem` was the bug: it set a floor and then let the content widen the chip past
+    // it, which is the one thing a column of aligned pills must not do.
+    const badge = /\.statBadge \{([^}]*)\}/.exec(primitives.replace(/\s+/g, " "))?.[1] ?? "";
+    expect(badge).toMatch(/width: var\(--stat-chip-width\)/);
+    expect(badge).not.toMatch(/min-width:/);
+    // Both are load-bearing for "three characters": proportional digits are narrower for 1 than for
+    // 0, and the inherited 145% line-height would untie the height from --stat-chip-height.
+    expect(badge).toMatch(/font-variant-numeric: tabular-nums/);
+    expect(badge).toMatch(/line-height: 1\.3/);
+  });
+
+  it("sizes the chip for three characters at the chip's own font size", () => {
+    // `ch` resolves against the font of whichever element reads the token, so a container that
+    // budgets four chips has to carry the chip's font size or its sum comes out wrong.
+    expect(tokens).toMatch(/--stat-chip-width: calc\(3ch \+ 2 \* var\(--space-2xs\)\)/);
+    expect(grid.replace(/\s+/g, " ")).toMatch(/\.badges \{[^}]*font-size: var\(--font-2xs\)/);
+  });
+
+  it("caps a row at four chips by width, which is the only thing that caps it", () => {
+    // Five fixed-width chips fit a pane comfortably, so without this max-width they would sit in a
+    // single row of five and the board would go ragged again.
+    expect(tokens.replace(/\s+/g, " ")).toMatch(
+      /--stat-chip-row-width: calc\( var\(--stat-chips-per-row\) \* var\(--stat-chip-width\) \+ \(var\(--stat-chips-per-row\) - 1\) \* var\(--stat-chip-gap\) \)/,
+    );
+    const badges = /\.badges \{([^}]*)\}/.exec(grid.replace(/\s+/g, " "))?.[1] ?? "";
+    expect(badges).toMatch(/max-width: var\(--stat-chip-row-width\)/);
+    // The overflow row goes ABOVE the row already there, centred like it.
+    expect(badges).toMatch(/flex-wrap: wrap-reverse/);
+    expect(badges).toMatch(/justify-content: center/);
+  });
+
+  it("reserves the chip band in the pane, since the chips are out of flow", () => {
+    // The pair that keeps a pane square however many chips it holds: the chips are positioned
+    // against its bottom edge, and the height they occupy is reserved as padding. Reserve without
+    // the positioning and a second row grows the pane; position without the reserve and the name
+    // sits underneath the chips.
+    const badges = /\.badges \{([^}]*)\}/.exec(grid.replace(/\s+/g, " "))?.[1] ?? "";
+    expect(badges).toMatch(/position: absolute/);
+    expect(grid.replace(/\s+/g, " ")).toMatch(
+      /\.card \{[^}]*padding-bottom: calc\(0\.3rem \+ var\(--stat-chip-height\)\)/,
+    );
+    // Derived from the chip's own box rather than measured, so the two cannot drift apart.
+    expect(tokens).toMatch(
+      /--stat-chip-height: calc\(var\(--font-2xs\) \* 1\.3 \+ 2 \* var\(--space-3xs\) \+ 2px\)/,
+    );
+  });
+
+  it("keeps the pane's name on one line, so every sprite lands at the same height", () => {
+    // Clamped to two lines before. The second line was reserved per-card rather than globally, so a
+    // long-named creature's sprite sat 16px lower than its neighbour's.
+    const name = /\.name \{([^}]*)\}/.exec(grid.replace(/\s+/g, " "))?.[1] ?? "";
+    expect(name).toMatch(/white-space: nowrap/);
+    expect(name).toMatch(/text-overflow: ellipsis/);
+    expect(name).not.toMatch(/line-clamp/);
+  });
+});
+
+/**
  * FR-043: a panel reserves space for the corpus's worst case rather than resizing as its contents
  * change. The trainer card is the newest instance and the one with a measured number behind it.
  */

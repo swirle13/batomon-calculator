@@ -2,9 +2,9 @@ import { describe, expect, it, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { GridPicker, POINTER_ACTIVATION_CONSTRAINT } from "../GridPicker";
 import { TeamConfigProvider } from "../../../context/TeamConfigContext";
-import type { TeamConfiguration } from "../../../data/types";
-import { GridRow } from "../../../data/enums";
-import { Species } from "../../../data/ids";
+import type { StatModifier, TeamConfiguration } from "../../../data/types";
+import { GridRow, ModifierStat } from "../../../data/enums";
+import { Species, syntheticSpecies } from "../../../data/ids";
 
 /**
  * FR-033/FR-034/FR-035 (2026-10-06 round 6). The clear-control tests are the substantive ones:
@@ -14,9 +14,12 @@ import { Species } from "../../../data/ids";
  */
 
 /** Renders GridPicker inside the provider with one creature already placed at front-0. */
-function renderWithPlacement() {
+function renderWithPlacement(
+  creatureId: Species = Species.Bumblebolt,
+  modifiers?: StatModifier[],
+) {
   const config: TeamConfiguration = {
-    placements: [{ slot: { row: GridRow.Front, col: 0 }, creatureId: Species.Bumblebolt, level: 1 }],
+    placements: [{ slot: { row: GridRow.Front, col: 0 }, creatureId, level: 1, modifiers }],
     trainerId: null,
     trinketIds: [],
     itemIds: [],
@@ -114,5 +117,48 @@ describe("GridPicker layout (FR-034/FR-035)", () => {
     expect(shockBadge.textContent).toContain("1");
     // The game distinguishes these by colour alone, so the published colour must actually be used.
     expect(damageBadge.getAttribute("style")).toContain("239, 66, 107");
+  });
+});
+
+/**
+ * 2026-10-08: the chips are a fixed three characters wide, so what a chip SAYS has to fit that.
+ * Plunderbird is the reported case — its 1 / 25 / 2 came out three different widths, and the 2 was
+ * a Multicast reading as a magnitude.
+ *
+ * The width itself is CSS and jsdom does no layout; it is pinned in layoutTokens.test.ts, against
+ * the authored declarations. What is assertable here is the LABEL, which is the half that decides
+ * whether three characters are enough.
+ */
+describe("stat chip labels (2026-10-08)", () => {
+  it("marks Multicast as a multiplier, matching the card's 'Multicast ×2' line", () => {
+    renderWithPlacement(Species.Plunderbird);
+    // A bare "2" beside Plunderbird's "25" heal read as a second magnitude.
+    expect(screen.getByTitle("Multicast: ×2").textContent).toBe("×2");
+  });
+
+  it("drives every chip off the same producer the card uses, modifiers included", () => {
+    renderWithPlacement(Species.Plunderbird, [
+      { id: syntheticSpecies("h"), stat: ModifierStat.HealAmountAdd, amount: 5 },
+    ]);
+    // Heal was read straight off `creature.healAmount` and so ignored Heal modifiers, while the
+    // damage chip beside it did honour them.
+    expect(screen.getByTitle("Heal: 30").textContent).toBe("30");
+    expect(screen.getByTitle("Damage: 1").textContent).toBe("1");
+  });
+
+  it("writes five-digit values in thousands, and keeps the exact figure in the title", () => {
+    renderWithPlacement(Species.Plunderbird, [
+      { id: syntheticSpecies("d"), stat: ModifierStat.DamageFlatAdd, amount: 12_344 },
+    ]);
+    // "12345" is five characters in a chip sized for three. The title is where the exact value
+    // stays reachable — rounding the label loses nothing.
+    expect(screen.getByTitle("Damage: 12345").textContent).toBe("12K");
+  });
+
+  it("shows four digits as they are: a fourth character fills the chip, which is the bound", () => {
+    renderWithPlacement(Species.Plunderbird, [
+      { id: syntheticSpecies("d"), stat: ModifierStat.DamageFlatAdd, amount: 9_998 },
+    ]);
+    expect(screen.getByTitle("Damage: 9999").textContent).toBe("9999");
   });
 });

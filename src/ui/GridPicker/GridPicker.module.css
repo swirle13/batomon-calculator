@@ -65,8 +65,9 @@
 
 /*
  * 2026-10-06 round 6 (FR-035): square panes, matching the in-game team panel. The square shape
- * also gives the stat badges a stable area to anchor to at the bottom -- which is why `.card` is
- * a positioned flex column with the badges pinned last rather than inline after the name.
+ * also gives the stat badges a stable area to anchor to at the bottom -- which is why `.card` is a
+ * POSITIONED flex column: the chips are placed against its bottom edge rather than flowing after
+ * the name, so however many of them there are, the pane stays the same square.
  */
 .card,
 .emptyCard {
@@ -92,6 +93,13 @@
   cursor: grab;
   user-select: none;
   padding: 0.3rem;
+  /*
+   * The chip band at the bottom of the pane (2026-10-08). `.badges` is out of flow now, so the room
+   * it occupies has to be reserved here or the name would sit underneath it. It reserves exactly
+   * what the chips took while they were a flow row, which is what keeps the sprite and the name in
+   * the places they were already in.
+   */
+  padding-bottom: calc(0.3rem + var(--stat-chip-height));
 }
 
 .cardDragging {
@@ -110,7 +118,7 @@
 }
 
 .level {
-  font-size: 0.7rem;
+  font-size: var(--font-2xs);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -119,14 +127,29 @@
 
 .name {
   font-weight: 700;
-  font-size: 0.8rem;
+  font-size: var(--font-sm);
   line-height: 1.15;
-  /* Long names must not push the sprite or badges out of a fixed-aspect pane. */
+  /*
+   * ONE line, ellipsised (2026-10-08) — it was clamped to two. Nothing in the corpus needs the
+   * second line (the longest name fits at this width), but reserving it meant the row under the
+   * sprite was 16px taller on some panes than others, so the sprite sat at a different height from
+   * one slot to the next. One line makes every pane's sprite land in the same place.
+   */
   overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/*
+ * A fifth chip wraps to a row above, which is the name's line: the pane reserves one chip row and
+ * has no spare height anywhere else, and both alternatives — growing the pane, or letting the row
+ * be clipped by `overflow: hidden` — are worse than losing a label. The name gives way rather than
+ * being half-covered, since the detail panel beside the board always shows it in full.
+ *
+ * `visibility`, not `display`, so the line keeps its height and the sprite above it does not move.
+ */
+.card:has(.badges > :nth-child(5)) .name {
+  visibility: hidden;
 }
 
 .spriteWrap {
@@ -142,27 +165,38 @@
   min-height: var(--sprite-grid);
 }
 
-/* --- FR-035: floating, colour-coded stat badges along the bottom of the pane --- */
+/*
+ * FR-035: floating, colour-coded stat chips along the bottom of the pane.
+ *
+ * OUT OF FLOW, pinned to the bottom edge (2026-10-08). The chips are fixed-width now
+ * (`--stat-chip-width`) and cap at four to a row, so a fifth has to go somewhere. `wrap-reverse`
+ * puts it on a row ABOVE; `position: absolute` is what keeps that second row from making the pane
+ * taller than the square it is supposed to be — a pane whose height depends on what is placed in
+ * it, or a chip row clipped by the pane's `overflow: hidden`, are both worse than a row painted
+ * over the name (see the `:has()` rule above, which gets the name out of its way).
+ *
+ * `max-width` is the whole mechanism behind "four to a row". Nothing else caps it: five chips fit
+ * the pane's width comfortably, so without this they would sit in a single row of five and no two
+ * slots in the board would line up. `margin-inline: auto` centres that capped box.
+ *
+ * The chip itself is the shared `StatBadge` primitive, styled in `primitives.module.css`. This
+ * file used to restate that pill's styling and the two then differed in padding and radius — the
+ * duplication Principle VII exists to prevent.
+ */
 .badges {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: var(--grid-card-padding);
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.15rem;
+  flex-wrap: wrap-reverse;
   justify-content: center;
-  margin-top: auto;
-}
-
-.badge {
-  min-width: 1.4rem;
-  padding: 0.05rem 0.3rem;
-  border-radius: 4px;
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-align: center;
-  color: #fff;
-  /* Matches the game's pill treatment: colour carries the meaning, so keep the value legible on
-     every one of the six published stat colours. */
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
-  border: 1px solid rgba(0, 0, 0, 0.35);
+  gap: var(--stat-chip-gap);
+  max-width: var(--stat-chip-row-width);
+  margin-inline: auto;
+  /* `--stat-chip-width` is stated in `ch`, which resolves against the font of whichever element
+     reads it — so the container that budgets four of them must carry the chip's font size. */
+  font-size: var(--font-2xs);
 }
 
 /* --- FR-033: per-slot clear control --- */

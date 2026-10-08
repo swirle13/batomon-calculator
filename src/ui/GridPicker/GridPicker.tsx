@@ -13,10 +13,10 @@ import { resolveCreatureVariant } from "../../data/corpus";
 import { isPainted } from "../../data/typing";
 import { useTeamConfig } from "../../context/TeamConfigContext";
 import { typeBackground } from "../../data/typeColors";
-import { STAT_COLORS } from "../../data/statColors";
 import { STATUS_COLOR_KEY } from "../../data/format";
 import { slotKey, slotsEqual } from "../../engine/grid";
 import { CreatureSprite } from "../shared/CreatureSprite";
+import { StatBadge } from "../primitives";
 import { perCastOutputOf } from "../shared/BatomonCard/BatomonCard";
 import { CreatureSearchModal } from "./CreatureSearchModal";
 import styles from "./GridPicker.module.css";
@@ -69,16 +69,6 @@ interface GridPickerProps {
    */
 }
 
-/** One colour-coded stat pill. Number-only, like the in-game pane — the colour carries the
- * meaning, so an accessible `title` names the stat for anyone who can't rely on hue. */
-function StatBadge({ statKey, value, label }: { statKey: StatColorKey; value: number; label: string }) {
-  return (
-    <span className={styles.badge} style={{ background: STAT_COLORS[statKey] }} title={`${label}: ${value}`}>
-      {value}
-    </span>
-  );
-}
-
 interface SlotBadgesProps {
   creature: CreatureRecord;
   /** The user's own manual modifiers for this slot (FR-077). */
@@ -97,12 +87,15 @@ interface SlotBadgesProps {
  * confusing chip: Miasmaw's tile read **336** while its card read **10**. The game shows base on
  * the tile and the live value on the inspect sheet, so that split is now mirrored here — the chip
  * is base, and "Effective this battle" on the detail card is where resolved values live.
+ *
+ * 2026-10-08: the chips are a fixed width and wrap four to a row, both decided in CSS — see
+ * `.badges` for why a row caps at four and why the extra row grows upward over the sprite.
  */
 function SlotBadges({ creature, modifiers }: SlotBadgesProps) {
   // Base stats PLUS the user's own manual modifiers (T210 / FR-077), through the SAME producer the
   // card uses. The arithmetic lived here and nowhere else, so the card showed unmodified stats
   // while these chips showed modified ones — the inconsistency this now removes.
-  const { damage, appliesStatus, multicast } = perCastOutputOf(creature, modifiers);
+  const { damage, appliesStatus, heal, multicast } = perCastOutputOf(creature, modifiers);
 
   return (
     <div className={styles.badges}>
@@ -117,11 +110,15 @@ function SlotBadges({ creature, modifiers }: SlotBadgesProps) {
           label={status.type}
         />
       ))}
-      {/* T209 (WI-001): Heal lives in `healAmount`, not `appliesStatus`, so it was never shown. */}
-      {creature.healAmount != null && creature.healAmount > 0 && (
-        <StatBadge statKey={StatColorKey.Heal} value={creature.healAmount} label="Heal" />
+      {/* T209 (WI-001): Heal lives in `healAmount`, not `appliesStatus`, so it was never shown.
+          Read off the same producer as everything else here, so a Heal modifier moves this chip —
+          `creature.healAmount` was the published figure and silently ignored them. */}
+      {heal != null && heal > 0 && <StatBadge statKey={StatColorKey.Heal} value={heal} label="Heal" />}
+      {/* `×2`, matching the card's "Multicast ×2" line. Multicast is a multiplier, and an
+          unmarked 2 beside a 25 read as a second magnitude. */}
+      {multicast > 1 && (
+        <StatBadge statKey={StatColorKey.Multicast} value={multicast} label="Multicast" prefix="×" />
       )}
-      {multicast > 1 && <StatBadge statKey={StatColorKey.Multicast} value={multicast} label="Multicast" />}
     </div>
   );
 }

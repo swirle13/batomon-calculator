@@ -72,13 +72,29 @@
 .chipRemove:hover { color: #ff8a80; }
 
 /* ---------- StatBadge: the ONE colour-coded stat pill ---------- */
+/*
+ * FIXED WIDTH, not `min-width` (2026-10-08). See `--stat-chip-width` for the sizing and why the
+ * font size has to be declared here rather than inherited: the width is stated in `ch`, so it is
+ * only three characters wide if the font it is measured against is the font that paints the digits.
+ *
+ * The inline padding is the same term the token adds, so the content box is exactly 3ch and a
+ * fourth character spends the padding instead of widening the chip.
+ */
 .statBadge {
-  min-width: 1.4rem;
+  width: var(--stat-chip-width);
   padding: var(--space-3xs) var(--space-2xs);
   border-radius: var(--radius-sm);
   font-size: var(--font-2xs);
   font-weight: 700;
+  /* Stated, not inherited: `--stat-chip-height` is derived from it, and the team grid reserves that
+     height for a row of chips that is painted out of flow. */
+  line-height: 1.3;
+  /* Proportional digits are narrower for `1` than for `0`, which would make a fixed-width chip
+     hold a different number of characters depending on which digits it held. */
+  font-variant-numeric: tabular-nums;
   text-align: center;
+  /* A fourth character reaches the chip's edge by design; it must not wrap or be clipped there. */
+  white-space: nowrap;
   color: #fff;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
   border: 1px solid rgba(0, 0, 0, 0.35);

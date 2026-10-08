@@ -1,6 +1,7 @@
 import { useEffect, useRef, type KeyboardEvent, type ReactNode } from "react";
 import type { CreatureType } from "../../data/types";
 import { STAT_COLORS, type StatColorKey } from "../../data/statColors";
+import { formatBadgeValue } from "../../data/format";
 import { typeColor } from "../../data/typeColors";
 import { Sprite, type SpriteKind } from "../shared/Sprite";
 import { Button } from "./controls";
@@ -106,13 +107,25 @@ interface StatBadgeProps {
   /** Human-readable stat name, used for the accessible title — the game distinguishes these by
    * colour alone, which is not sufficient on its own. */
   label: string;
+  /**
+   * A marker written before the number, used by Multicast for its `×`. Multicast is the one output
+   * stat that is a MULTIPLIER rather than a magnitude, and a bare `2` beside a `25` read as two of
+   * something; the card's stat line has always said "Multicast ×2", so the chip now agrees.
+   */
+  prefix?: string;
 }
 
 /** The one colour-coded numeric stat pill, matching the in-game team pane. */
-export function StatBadge({ statKey, value, label }: StatBadgeProps) {
+export function StatBadge({ statKey, value, label, prefix }: StatBadgeProps) {
   return (
-    <span className={styles.statBadge} style={{ background: STAT_COLORS[statKey] }} title={`${label}: ${value}`}>
-      {value}
+    <span
+      className={styles.statBadge}
+      style={{ background: STAT_COLORS[statKey] }}
+      // The EXACT value, even when the label is abbreviated to "123K" to fit the chip.
+      title={`${label}: ${prefix ?? ""}${value}`}
+    >
+      {prefix}
+      {formatBadgeValue(value)}
     </span>
   );
 }

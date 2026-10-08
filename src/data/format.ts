@@ -21,6 +21,21 @@ export function formatRate(value: number): string {
   return value.toFixed(2);
 }
 
+/**
+ * A number as it appears on a stat chip, which is a fixed three characters wide
+ * (`--stat-chip-width`).
+ *
+ * Under 10,000 the figure is shown exactly: a fourth digit still fits, filling the chip edge to
+ * edge, and that is the deliberate upper bound rather than an accident. From 10,000 up it is
+ * written in thousands — "10K", "123K" — which keeps every reachable value inside four characters
+ * (a chip would have to hold ten million before "K" ran out of room). The chip's `title` carries
+ * the exact figure either way, so nothing is lost by rounding the label.
+ */
+export function formatBadgeValue(value: number): string {
+  if (Math.abs(value) < 10_000) return String(value);
+  return `${Math.round(value / 1000)}K`;
+}
+
 /** A signed modifier amount, e.g. `+20` / `-5`. */
 export function formatSignedAmount(amount: number): string {
   return amount > 0 ? `+${amount}` : String(amount);
