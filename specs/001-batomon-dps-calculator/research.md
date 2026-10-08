@@ -219,6 +219,22 @@ observed so far has a single applier per status.
 > a separate four-slot bench that does not fight and does not count for any adjacency/above/behind
 > relationship until dragged onto A/B. "Adjacent" means sharing a side (same row, neighboring
 > column) — **not** diagonal. "Above"/"behind" are relative to a unit's row and facing direction.
+
+> [!IMPORTANT]
+> **CORRECTION, 2026-10-08 (user-reported).** The parenthetical above — "(same row, neighboring
+> column)" — is **wrong**, and it contradicts the clause it is glossing. The board is a grid, so
+> adjacency is the four **cardinal** directions: left, right, **above and below**. A1 and B1 share
+> a side exactly as A1 and A2 do. Diagonals remain excluded, so the rest of the sentence stands.
+>
+> This mattered: `isAdjacent` was written against the parenthetical rather than the clause, and
+> returned `false` for every cross-row pair. That halved the reach of **every** adjacency effect in
+> the corpus — Formiqueen's cooldown aura, Petrirex's and Rattleghast's knockouts, Noxnimbus's
+> Poison grant, and every `adjacent` `TargetSelector`. It survived 460 tests because none of them
+> paired two slots in different rows; `engine/__tests__/grid.test.ts` now asserts the full 6×6
+> matrix so a missing *direction* cannot hide again.
+>
+> The quoted block is left intact rather than edited, because it is a transcription and the
+> correction is to our reading of it, not to the source.
 > Both sides in a battle share one aggregate team HP pool each; a unit's own knockout stops it from
 > casting but does not end the battle by itself — the battle ends when a side's shared HP pool
 > reaches zero (or at Sudden Death, which starts at 30 seconds and deals ramping, repeating damage

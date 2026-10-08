@@ -9,8 +9,9 @@ import type { PlacementKey } from "../data/types";
  * Source (research.md B5): "Batomon Showdown Team Planner Guide"
  * https://batomonshowdowngame.wiki/tools/team-planner/ and "Batomon Showdown Combat Mechanics"
  * https://batomonshowdowngame.wiki/guides/combat/ — the battle board is two rows of three
- * (back row / front row), bench excluded entirely. "Adjacent" means sharing a side, never
- * diagonal.
+ * (back row / front row), bench excluded entirely. "Adjacent" means sharing a side — the four
+ * cardinal directions, including the slot above and below — never diagonal. See `isAdjacent`,
+ * which read this as same-row-only until 2026-10-08.
  */
 
 /** Stable iteration order used for tie-breaking simultaneous timeline events (contracts/engine-api.md). */
@@ -39,13 +40,28 @@ export function stableSlotIndex(slot: GridSlot): number {
   return index;
 }
 
-/** Adjacent = sharing a side (same row, neighboring column) — never diagonal (research.md B5). */
+/**
+ * Adjacent = sharing a side, in any of the four CARDINAL directions. Never diagonal.
+ *
+ * ## 2026-10-08: this used to mean "same row, neighbouring column", and that was wrong
+ *
+ * The board is a grid, so a slot's neighbours are left, right, **above and below** — back-1 and
+ * front-1 share a side exactly as back-1 and back-2 do. The old version returned `false` for every
+ * cross-row pair, which silently halved the reach of every adjacency effect in the game:
+ * Formiqueen's cooldown aura, Petrirex's and Rattleghast's knockouts, Noxnimbus's Poison grant,
+ * and every `adjacent` selector in `effects.ts`.
+ *
+ * It was not an oversight so much as a transcription that narrowed itself. research.md B5 reads
+ * "'Adjacent' means sharing a side (same row, neighboring column) — not diagonal", and the
+ * parenthetical contradicts the clause it is glossing. The implementation followed the
+ * parenthetical. Corrected on the user's report (they play the game); B5 is amended to match.
+ *
+ * Manhattan distance of exactly 1, which is the whole rule: orthogonal neighbours are at 1,
+ * diagonals at 2, and a slot is at 0 from itself.
+ */
 export function isAdjacent(a: GridSlot, b: GridSlot): boolean {
-  if (slotsEqual(a, b)) return false;
-  if (a.row === b.row) {
-    return Math.abs(a.col - b.col) === 1;
-  }
-  return false;
+  const rowDistance = a.row === b.row ? 0 : 1;
+  return rowDistance + Math.abs(a.col - b.col) === 1;
 }
 
 /** The slot directly "behind" `slot` — same column, the other row, oriented back-of-board. */

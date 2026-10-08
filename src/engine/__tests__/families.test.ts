@@ -32,9 +32,13 @@ const BACK2: GridSlot = { row: GridRow.Back, col: 2 };
 const FRONT0: GridSlot = { row: GridRow.Front, col: 0 };
 
 describe("selector-based effect families (T219)", () => {
-  it("adjacency is side-sharing only, so a gap in the row breaks the aura", () => {
+  it("adjacency is orthogonal only, so a gap in the row breaks the aura", () => {
     // Formiqueen's ongoing grant targets `adjacent`. back0 and back1 are adjacent; back0 and back2
     // are not, even though both are in the same row.
+    //
+    // 2026-10-08: this was named "side-sharing only" and read as same-row-only, which is the
+    // misreading `isAdjacent` was written from. The geometry itself lives in `grid.test.ts` now;
+    // what this one covers is that a selector respects it.
     const adjacent = resolveEffects(
       team([{ id: Species.Formiqueen, slot: BACK0 }, { id: Species.Bumblebolt, slot: BACK1 }]),
       corpus,

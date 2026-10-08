@@ -163,8 +163,8 @@ export function isResolvableTag(tag: { kind: string }): boolean {
  * self-buffs, and the two cooldown-speed grant shapes) into one code path. They were only ever
  * distinct families in the *ability text*; structurally they differ just by selector.
  *
- * Board geometry is `grid.ts`'s, so "adjacent" stays side-sharing and never diagonal (research.md
- * B5) in exactly one place.
+ * Board geometry is `grid.ts`'s, so "adjacent" means the four cardinal neighbours and never a
+ * diagonal (research.md B5, as corrected 2026-10-08) in exactly one place.
  */
 export function selectTargets<T extends { slot: GridSlot; key: string; creature: CreatureRecord }>(
   selector: TargetSelector,
