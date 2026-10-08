@@ -1079,3 +1079,30 @@ rg -n '@\$\{slotKey' src/ --glob '!**/grid.ts'
 ```
 
 Expected: no matches outside the single definition and explanatory comments.
+
+### Scenario 62 — the board can be rearranged with a finger (2026-10-08, FR-019)
+
+Reported: on a phone, creatures could not be dragged between slots at all. A single `PointerSensor`
+with a distance threshold cannot activate on touch — the browser claims the swipe as a page scroll
+and cancels the pointer before the 8px is travelled. Touch now activates on a long press instead
+(`dragActivation.ts`), and both inputs draw a card under the pointer while dragging.
+
+In a browser with device emulation on (any phone profile), on the calculator tab with two creatures
+placed in the back row:
+
+1. **Swipe up and down over the board.** Expected: the page scrolls normally. A board that swallows
+   vertical swipes is what `touch-action: none` would have produced, and is the regression to watch
+   for whenever this area is touched.
+2. **Tap a placed card.** Expected: the creature picker opens, with no perceptible delay.
+3. **Press a placed card, hold briefly, then drag it to an empty slot in the front row.** Expected:
+   a translucent, slightly enlarged copy of the card follows the finger; the slot it came from fades
+   to a near-empty outline; the board does NOT scroll while dragging; releasing moves the creature.
+   The front row is the case that matters — it sits in the bottom quarter of a phone's viewport,
+   where @dnd-kit's auto-scroll used to run the board out from under the finger so the drop landed
+   on nothing (hence `autoScroll={false}`).
+4. **Repeat on a desktop viewport with the mouse.** Expected: the same floating card, and a plain
+   click still opens the picker (Scenario 25's property, which the switch from `PointerSensor` to
+   `MouseSensor` must not break).
+
+Automated coverage stops at the activation constants (`GridPicker.test.tsx`), for the same reason
+Scenario 25's does: jsdom drives neither sensor.

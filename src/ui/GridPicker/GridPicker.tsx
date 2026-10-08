@@ -1,12 +1,15 @@
 import { Fragment, useState, type KeyboardEvent, type MouseEvent, type ReactNode } from "react";
 import {
   DndContext,
-  PointerSensor,
+  DragOverlay,
+  MouseSensor,
+  TouchSensor,
   useDraggable,
   useDroppable,
   useSensor,
   useSensors,
   type DragEndEvent,
+  type DragStartEvent,
 } from "@dnd-kit/core";
 import type { CreatureRecord, CreatureType, GridCol, StatModifier, GridSlot } from "../../data/types";
 import { resolveCreatureVariant } from "../../data/corpus";
@@ -19,7 +22,7 @@ import { CreatureSprite } from "../shared/CreatureSprite";
 import { StatBadge } from "../primitives";
 import { perCastOutputOf } from "../shared/BatomonCard/perCastOutput";
 import { CreatureSearchModal } from "./CreatureSearchModal";
-import { POINTER_ACTIVATION_CONSTRAINT } from "./dragActivation";
+import { POINTER_ACTIVATION_CONSTRAINT, TOUCH_ACTIVATION_CONSTRAINT } from "./dragActivation";
 import styles from "./GridPicker.module.css";
 import { isWildcardType } from "../../data/vocabularies";
 import { GridRow, StatColorKey } from "../../data/enums";
@@ -114,13 +117,49 @@ function SlotBadges({ creature, modifiers }: SlotBadgesProps) {
   );
 }
 
-interface DraggableCardProps {
-  slot: GridSlot;
+interface CardFaceProps {
   creature: CreatureRecord;
   level: number;
   modifiers: StatModifier[] | undefined;
   /** Painted by Painter, or natively `All`-typed — drives the rainbow treatment. */
   painted: boolean;
+}
+
+/**
+ * Everything a placed card LOOKS like, with none of what it does.
+ *
+ * Split out of `DraggableCard` (2026-10-08) because the floating card under the pointer during a
+ * drag is the same pane rendered a second time, inside `<DragOverlay>`. Rendering it from the same
+ * component is what keeps the two from drifting — a lifted card that is missing its chips, or sized
+ * differently from the one it came from, reads as a different creature.
+ */
+function CardFace({ creature, level, modifiers, painted }: CardFaceProps) {
+  return (
+    <>
+      {/* Name and level share the top row, so everything below the sprite is chips. See `.header`. */}
+      <div className={styles.header}>
+        <span className={styles.name}>{creature.name}</span>
+        <span className={styles.level}>Lv. {level}</span>
+      </div>
+      <div className={styles.spriteWrap}>
+        {/* Same component as the detail panel's, so a painted creature cannot be rainbow in one
+            place and plain in the other — which is precisely what happened before. */}
+        <CreatureSprite
+          spriteFile={creature.spriteFile}
+          // The token drives the size in CSS, so the 640px breakpoint applies on resize with no
+          // re-render — reading it into JS froze it at first render.
+          sizeVar="--sprite-grid"
+          alt={creature.name}
+          painted={painted}
+        />
+      </div>
+      <SlotBadges creature={creature} modifiers={modifiers} />
+    </>
+  );
+}
+
+interface DraggableCardProps extends CardFaceProps {
+  slot: GridSlot;
   onHighlight: () => void;
   /** FR-023 (round 4): the card itself is the click target that opens CreatureSearchModal — no
    * separate "Change…" button. Coexists with dragging on the same element: @dnd-kit/core's pointer
@@ -189,24 +228,26 @@ function DraggableCard({ slot, creature, level, modifiers, painted, onHighlight,
       >
         ×
       </button>
-      {/* Name and level share the top row, so everything below the sprite is chips. See `.header`. */}
-      <div className={styles.header}>
-        <span className={styles.name}>{creature.name}</span>
-        <span className={styles.level}>Lv. {level}</span>
-      </div>
-      <div className={styles.spriteWrap}>
-        {/* Same component as the detail panel's, so a painted creature cannot be rainbow in one
-            place and plain in the other — which is precisely what happened before. */}
-        <CreatureSprite
-          spriteFile={creature.spriteFile}
-          // The token drives the size in CSS, so the 640px breakpoint applies on resize with no
-          // re-render — reading it into JS froze it at first render.
-          sizeVar="--sprite-grid"
-          alt={creature.name}
-          painted={painted}
-        />
-      </div>
-      <SlotBadges creature={creature} modifiers={modifiers} />
+      <CardFace creature={creature} level={level} modifiers={modifiers} painted={painted} />
+    </div>
+  );
+}
+
+/**
+ * The card that follows the pointer (2026-10-08, FR-019). Without it, a drag showed only a faded
+ * source pane and a dashed outline on the target, so there was nothing in hand — on a phone, where
+ * the finger covers the pane it started from, the gesture gave no feedback at all.
+ *
+ * It carries no handlers and no clear button: it is a picture of the card, not the card.
+ */
+function DragGhost({ creature, level, modifiers, painted }: CardFaceProps) {
+  return (
+    <div
+      className={`${styles.card} ${styles.cardGhost}`}
+      style={{ background: typeBackground(creature.types) }}
+      aria-hidden
+    >
+      <CardFace creature={creature} level={level} modifiers={modifiers} painted={painted} />
     </div>
   );
 }
@@ -243,10 +284,19 @@ function DroppableZone({ slot, children }: { slot: GridSlot; children: ReactNode
 export function GridPicker({ onHighlightSlot }: GridPickerProps) {
   const { config, setPlacement, movePlacement } = useTeamConfig();
   const [searchModalSlot, setSearchModalSlot] = useState<GridSlot | null>(null);
+  /** The slot being dragged, so `<DragOverlay>` knows which card to draw under the pointer. */
+  const [draggingSlot, setDraggingSlot] = useState<GridSlot | null>(null);
 
   /**
-   * FR-047 (2026-10-06 round 7, research.md I7): WITHOUT an explicit activation constraint,
-   * @dnd-kit's default PointerSensor activates on `pointerdown` and installs a capture-phase
+   * ONE SENSOR PER INPUT, because mouse and touch need different activation rules (2026-10-08).
+   *
+   * This was a single PointerSensor with a distance threshold, which made the board undraggable on
+   * phones: the browser claims a touch-drag as a page scroll before the threshold is reached. See
+   * `dragActivation.ts` for why the mouse gets a distance and touch gets a delay — the two
+   * constraints are the substance of this, the sensors are just where they are installed.
+   *
+   * FR-047 (2026-10-06 round 7, research.md I7): the mouse constraint is not optional. WITHOUT an
+   * explicit one, the sensor activates on `pointerdown`/`mousedown` and installs a capture-phase
    * `click` stopPropagation listener -- so the card's own onClick never fires and a placed
    * creature could only be dragged, never clicked to reassign. Round 4's comment claiming the
    * sensor "only engages past a drag-distance threshold" was wrong: there is no default threshold,
@@ -258,32 +308,68 @@ export function GridPicker({ onHighlightSlot }: GridPickerProps) {
    * nothing while implying keyboard dragging worked. Keyboard users press Enter/Space to OPEN THE
    * PICKER, which is the accessible route to reassignment; keyboard drag is a known limitation.
    */
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: POINTER_ACTIVATION_CONSTRAINT }));
+  const sensors = useSensors(
+    useSensor(MouseSensor, { activationConstraint: POINTER_ACTIVATION_CONSTRAINT }),
+    useSensor(TouchSensor, { activationConstraint: TOUCH_ACTIVATION_CONSTRAINT }),
+  );
+
+  /** The placed creature in a slot, resolved at its own level — `null` for an empty slot. */
+  function cardAt(slot: GridSlot) {
+    const placement = config.placements.find((p) => slotsEqual(p.slot, slot));
+    if (!placement) return null;
+    // 2026-10-06 round 10 (T209b / WI-002): resolve by (id, LEVEL). This used `getCreatureById`,
+    // which returns the first matching record — always level 1 — so every chip on every levelled
+    // creature silently showed level-1 stats. The user reported the missing Multicast chip because
+    // it was the one visibly absent; the rest looked plausible at any level, which is why it went
+    // unnoticed.
+    const creature = resolveCreatureVariant(placement.creatureId, placement.level, placement.shiny);
+    if (!creature) return null;
+    return {
+      creature,
+      level: placement.level,
+      modifiers: placement.modifiers,
+      painted: creature.types.some(isWildcardType) || isPainted(creature.id, config),
+    };
+  }
+
+  function handleDragStart(event: DragStartEvent) {
+    setDraggingSlot((event.active.data.current?.slot as GridSlot | undefined) ?? null);
+  }
 
   function handleDragEnd(event: DragEndEvent) {
+    setDraggingSlot(null);
     const fromSlot = event.active.data.current?.slot as GridSlot | undefined;
     const toSlot = event.over?.data.current?.slot as GridSlot | undefined;
     if (!fromSlot || !toSlot || slotsEqual(fromSlot, toSlot)) return;
     movePlacement(fromSlot, toSlot);
   }
 
+  const draggingCard = draggingSlot ? cardAt(draggingSlot) : null;
+
   return (
     <>
-      <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+      <DndContext
+        sensors={sensors}
+        /*
+         * NO AUTO-SCROLL (2026-10-08). @dnd-kit scrolls the page whenever the pointer is within
+         * 25% of a viewport edge, which on a phone is where the FRONT ROW sits: a back-to-front
+         * drag — the most common move there is — put the finger in the bottom band and the board
+         * then scrolled away under it, so the drop landed below the grid and nothing moved.
+         *
+         * Nothing is lost by turning it off. The whole board is six panes that fit on any screen
+         * it renders on, so there is never a slot to scroll TO mid-drag.
+         */
+        autoScroll={false}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+        onDragCancel={() => setDraggingSlot(null)}
+      >
         <div className={styles.grid}>
           {ROWS.map((row) => (
             <Fragment key={row}>
               {COLS.map((col) => {
                 const slot: GridSlot = { row, col };
-                const placement = config.placements.find((p) => p.slot.row === row && p.slot.col === col);
-                // 2026-10-06 round 10 (T209b / WI-002): resolve by (id, LEVEL). This used
-                // `getCreatureById`, which returns the first matching record — always level 1 — so
-                // every chip on every levelled creature silently showed level-1 stats. The user
-                // reported the missing Multicast chip because it was the one visibly absent; the
-                // rest looked plausible at any level, which is why it went unnoticed.
-                const creature = placement
-                  ? resolveCreatureVariant(placement.creatureId, placement.level, placement.shiny)
-                  : null;
+                const card = cardAt(slot);
                 // FR-022 (data-model.md's "Evolution-aware leveling"): never offer a level the
                 // corpus has no backing record for -- checked via the exact same resolver that
                 // performs the swap (resolveLevelUp), so a level only appears here if selecting
@@ -293,13 +379,13 @@ export function GridPicker({ onHighlightSlot }: GridPickerProps) {
                 return (
                   <div key={`${row}-${col}`} className={styles.slot}>
                     <DroppableZone slot={slot}>
-                      {placement && creature ? (
+                      {card ? (
                         <DraggableCard
                           slot={slot}
-                          creature={creature}
-                          level={placement.level}
-                          modifiers={placement.modifiers}
-                          painted={creature.types.some(isWildcardType) || isPainted(creature.id, config)}
+                          creature={card.creature}
+                          level={card.level}
+                          modifiers={card.modifiers}
+                          painted={card.painted}
                           onHighlight={() => onHighlightSlot(slot)}
                           onOpenSearch={() => setSearchModalSlot(slot)}
                           onClear={() => setPlacement(slot, null)}
@@ -321,6 +407,16 @@ export function GridPicker({ onHighlightSlot }: GridPickerProps) {
             </Fragment>
           ))}
         </div>
+
+        {/* Sized by @dnd-kit to the pane it was lifted from, so the ghost matches the hole it
+            left — nothing here needs to know the slot's dimensions.
+
+            No drop animation: the default one flies the ghost back to the slot it STARTED in,
+            which is the one place the creature now isn't. The swap is instant, so the ghost
+            simply goes away and the two panes have already changed underneath it. */}
+        <DragOverlay dropAnimation={null}>
+          {draggingCard ? <DragGhost {...draggingCard} /> : null}
+        </DragOverlay>
       </DndContext>
 
       <CreatureSearchModal

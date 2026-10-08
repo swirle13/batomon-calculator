@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { GridPicker } from "../GridPicker";
-import { POINTER_ACTIVATION_CONSTRAINT } from "../dragActivation";
+import { POINTER_ACTIVATION_CONSTRAINT, TOUCH_ACTIVATION_CONSTRAINT } from "../dragActivation";
 import { TeamConfigProvider } from "../../../context/TeamConfigContext";
 import type { StatModifier, TeamConfiguration } from "../../../data/types";
 import { GridRow, ModifierStat } from "../../../data/enums";
@@ -89,6 +89,14 @@ describe("GridPicker click-to-open (FR-047, 2026-10-06 round 7)", () => {
     // subject to @dnd-kit's capture-phase suppression. A behavioural test here would be green in
     // both directions and prove nothing. Real behaviour: quickstart Scenario 25, in a browser.
     expect(POINTER_ACTIVATION_CONSTRAINT).toEqual({ distance: 8 });
+  });
+
+  it("activates a touch drag on a long press, not on distance (2026-10-08)", () => {
+    // Reported bug: cards could not be dragged at all on a phone. A distance threshold is
+    // unreachable by a finger, because the browser claims the swipe as a page scroll and cancels
+    // the pointer first; a delay separates drag from scroll by time instead. Structural for the
+    // same reason as the constraint above — jsdom drives neither sensor.
+    expect(TOUCH_ACTIVATION_CONSTRAINT).toEqual({ delay: 180, tolerance: 8 });
   });
 });
 

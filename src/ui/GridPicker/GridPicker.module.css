@@ -92,6 +92,17 @@
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
   cursor: grab;
   user-select: none;
+  /*
+   * `manipulation`, not `none` (2026-10-08). A touch drag here activates on a long press rather
+   * than on distance (see `dragActivation.ts`), so the page must stay scrollable while the finger
+   * is still deciding — `none` would make the board a dead zone that swallows every swipe over it.
+   * What this does drop is the double-tap-to-zoom gesture, and with it the ~300ms the browser
+   * spends waiting to see whether a tap is the first half of one, which is pure delay on the tap
+   * that opens the picker.
+   */
+  touch-action: manipulation;
+  /* iOS raises its own callout menu on a long press, which is now the drag gesture. */
+  -webkit-touch-callout: none;
   padding: 0.3rem;
   /*
    * The chip band at the bottom of the pane (2026-10-08). `.badges` is out of flow now, so the room
@@ -101,8 +112,39 @@
   padding-bottom: calc(0.3rem + var(--stat-chip-height));
 }
 
+/*
+ * The pane left behind while its card is in hand. Fainter than the 0.5 it was (2026-10-08): the
+ * card itself is now drawn under the pointer, so this is a HOLE rather than the thing being
+ * dragged, and at 0.5 the two read as two copies of equal weight.
+ */
 .cardDragging {
-  opacity: 0.5;
+  opacity: 0.25;
+}
+
+/*
+ * The card under the pointer, rendered into `<DragOverlay>`.
+ *
+ * Deliberately translucent: on a phone the finger sits on top of this, and an opaque pane would
+ * hide the slot being dragged over — the one thing the gesture needs to see. The lift (scale and
+ * shadow) is what separates it from the board underneath, since transparency alone would read as
+ * a rendering glitch rather than as something held above the page.
+ *
+ * `aspect-ratio` has to go: @dnd-kit sets an explicit width AND height on the overlay wrapper from
+ * the measured source pane, and a square ratio fighting that height is what made the ghost a
+ * different shape from the card it came from on phones, where the pane is taller than it is wide.
+ */
+.cardGhost {
+  aspect-ratio: auto;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  opacity: 0.85;
+  transform: scale(1.06);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+  cursor: grabbing;
+  /* Nothing is clickable in a picture of a card, and a hit-test on it would land on the ghost
+     instead of the slot underneath. */
+  pointer-events: none;
 }
 
 /* Empty slots are square too -- square filled cards beside non-square placeholders would make the
