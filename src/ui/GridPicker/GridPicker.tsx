@@ -198,7 +198,11 @@ function DraggableCard({ slot, creature, level, modifiers, painted, onHighlight,
       >
         ×
       </button>
-      <div className={styles.level}>Lv. {level}</div>
+      {/* Name and level share the top row, so everything below the sprite is chips. See `.header`. */}
+      <div className={styles.header}>
+        <span className={styles.name}>{creature.name}</span>
+        <span className={styles.level}>Lv. {level}</span>
+      </div>
       <div className={styles.spriteWrap}>
         {/* Same component as the detail panel's, so a painted creature cannot be rainbow in one
             place and plain in the other — which is precisely what happened before. */}
@@ -211,7 +215,6 @@ function DraggableCard({ slot, creature, level, modifiers, painted, onHighlight,
           painted={painted}
         />
       </div>
-      <div className={styles.name}>{creature.name}</div>
       <SlotBadges creature={creature} modifiers={modifiers} />
     </div>
   );

@@ -95,9 +95,8 @@
   padding: 0.3rem;
   /*
    * The chip band at the bottom of the pane (2026-10-08). `.badges` is out of flow now, so the room
-   * it occupies has to be reserved here or the name would sit underneath it. It reserves exactly
-   * what the chips took while they were a flow row, which is what keeps the sprite and the name in
-   * the places they were already in.
+   * it occupies has to be reserved here or the sprite would centre itself over the top of it. It is
+   * also half of what centres the sprite: this band below balances the header row above.
    */
   padding-bottom: calc(0.3rem + var(--stat-chip-height));
 }
@@ -117,12 +116,34 @@
   font-size: 0.85rem;
 }
 
+/*
+ * Name and level on ONE row at the top of the pane (2026-10-08).
+ *
+ * It puts the sprite in the middle of the pane rather than a third of the way up: the row above it
+ * is now ~26px of header and the band below it ~29px of chips, where before the whole of the name
+ * and the chips sat underneath and the sprite rode high to make room. Nothing else about the
+ * geometry changed — the sprite is still centred in whatever the header and the chip band leave.
+ *
+ * The inline padding clears the clear button in the top-right corner, and is symmetric so the row
+ * stays centred on the pane rather than reading as offset from the X.
+ */
+.header {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: var(--space-2xs);
+  padding-inline: 1.25rem;
+  min-width: 0;
+}
+
 .level {
   font-size: var(--font-2xs);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   opacity: 0.95;
+  /* The level is the short, fixed half of the row; the name is what gives way. */
+  flex-shrink: 0;
 }
 
 .name {
@@ -131,25 +152,14 @@
   line-height: 1.15;
   /*
    * ONE line, ellipsised (2026-10-08) — it was clamped to two. Nothing in the corpus needs the
-   * second line (the longest name fits at this width), but reserving it meant the row under the
-   * sprite was 16px taller on some panes than others, so the sprite sat at a different height from
-   * one slot to the next. One line makes every pane's sprite land in the same place.
+   * second line, but reserving it made the header 16px taller on some panes than others, so the
+   * sprite sat at a different height from one slot to the next. One line makes every pane's sprite
+   * land in the same place, which is the whole point of a fixed-size pane.
    */
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-/*
- * A fifth chip wraps to a row above, which is the name's line: the pane reserves one chip row and
- * has no spare height anywhere else, and both alternatives — growing the pane, or letting the row
- * be clipped by `overflow: hidden` — are worse than losing a label. The name gives way rather than
- * being half-covered, since the detail panel beside the board always shows it in full.
- *
- * `visibility`, not `display`, so the line keeps its height and the sprite above it does not move.
- */
-.card:has(.badges > :nth-child(5)) .name {
-  visibility: hidden;
 }
 
 .spriteWrap {
@@ -171,9 +181,9 @@
  * OUT OF FLOW, pinned to the bottom edge (2026-10-08). The chips are fixed-width now
  * (`--stat-chip-width`) and cap at four to a row, so a fifth has to go somewhere. `wrap-reverse`
  * puts it on a row ABOVE; `position: absolute` is what keeps that second row from making the pane
- * taller than the square it is supposed to be — a pane whose height depends on what is placed in
- * it, or a chip row clipped by the pane's `overflow: hidden`, are both worse than a row painted
- * over the name (see the `:has()` rule above, which gets the name out of its way).
+ * taller than the square it is supposed to be. It lands over the sprite's feet, which is the one
+ * thing in the pane that can afford to be partly covered — a pane whose height depends on what is
+ * placed in it, or a chip row clipped by the pane's `overflow: hidden`, are both worse.
  *
  * `max-width` is the whole mechanism behind "four to a row". Nothing else caps it: five chips fit
  * the pane's width comfortably, so without this they would sit in a single row of five and no two

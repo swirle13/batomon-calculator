@@ -115,14 +115,14 @@
    */
   --sprite-grid: 96px;
   /*
-   * The ROWS under and over the sprite — the "Lv. N" line, the name, the band reserved for the stat
-   * chips, and the gaps between them. ~65px of content at a 16px root, rounded up.
+   * Everything in a team-grid pane that is not the sprite: the name-and-level header row above it,
+   * the band reserved for the stat chips below it, and the gap between. ~65px at a 16px root.
    *
-   * 2026-10-08: the name is one line now rather than two, so this budget is no longer tight, and the
-   * NUMBER deliberately did not follow it down. It feeds --grid-slot-size, which feeds
-   * --team-column-width, --builder-row-width and the page width itself; tightening it would have
-   * shrunk the board and moved every panel derived from it to buy ~16px. The slack sits around the
-   * sprite, where it reads as breathing room rather than as a gap.
+   * 2026-10-08: the content this budget covers shrank — the name joined the level on one row, and
+   * one ellipsised line replaced a two-line clamp — and the NUMBER deliberately did not follow it
+   * down. It feeds --grid-slot-size, which feeds --team-column-width, --builder-row-width and the
+   * page width itself; tightening it would have shrunk the board and moved every panel derived from
+   * it to buy ~16px. The slack sits around the sprite, where it reads as breathing room.
    *
    * This EXCLUDES the card's own padding, which --grid-card-padding carries separately. The two
    * were conflated while cards were content-box and padding sat outside the declared size; once
