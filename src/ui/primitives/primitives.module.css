@@ -50,8 +50,8 @@
 }
 
 .chipSolid {
-  color: #fff;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  color: var(--text-on-art);
+  text-shadow: var(--shadow-on-art);
 }
 
 .chipNeutral {
@@ -69,7 +69,7 @@
   line-height: 1;
 }
 
-.chipRemove:hover { color: #ff8a80; }
+.chipRemove:hover { color: var(--text-danger); }
 
 /* ---------- StatBadge: the ONE colour-coded stat pill ---------- */
 /*
@@ -106,9 +106,9 @@
   font-variant-numeric: tabular-nums;
   /* A fourth character reaches the chip's padding by design; it must not wrap there. */
   white-space: nowrap;
-  color: #fff;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
-  border: 1px solid rgba(0, 0, 0, 0.35);
+  color: var(--text-on-art);
+  text-shadow: var(--shadow-on-art);
+  border: 1px solid var(--line-on-art);
 }
 
 /* ---------- SectionHeading ---------- */
@@ -293,7 +293,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: var(--z-modal);
 }
 
 .modalPanel {
@@ -405,14 +405,14 @@
 }
 
 .spriteTileName {
-  background: rgba(0, 0, 0, 0.45);
-  color: #fff;
+  background: var(--scrim-art);
+  color: var(--text-on-art);
   font-weight: 700;
   /* Up from --font-sm (2026-10-07), to match the larger sprite it labels. */
   font-size: var(--font-2xl);
   text-align: center;
   padding: var(--space-3xs) var(--space-2xs);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+  text-shadow: var(--shadow-on-art);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

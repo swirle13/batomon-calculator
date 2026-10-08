@@ -55,7 +55,12 @@ describe("layout width tokens", () => {
       /--grid-slot-size: calc\( var\(--sprite-grid\) \+ var\(--grid-card-chrome\) \+ 2 \* var\(--grid-card-padding\) \)/,
     );
     expect(tokens).toMatch(/--grid-card-padding:\s*0\.3rem/);
-    expect(read("ui/GridPicker/GridPicker.module.css")).toMatch(/\.card \{[^}]*padding: 0\.3rem/);
+    // The card READS the token rather than restating its value. It used to carry a literal 0.3rem
+    // kept in agreement by a comment, which is the arrangement every other drifted pair in this
+    // file started as.
+    expect(read("ui/GridPicker/GridPicker.module.css").replace(/\s+/g, " ")).toMatch(
+      /\.card \{[^}]*padding: var\(--grid-card-padding\)/,
+    );
   });
 
   it("box-sizing is border-box globally, so a width token is the width an element occupies", () => {
@@ -206,7 +211,7 @@ describe("stat chips hold one width and one row height", () => {
     // centres itself over the top of the chips.
     expect(badges).toMatch(/position: absolute/);
     expect(grid.replace(/\s+/g, " ")).toMatch(
-      /\.card \{[^}]*padding-bottom: calc\(0\.3rem \+ var\(--stat-chip-height\)\)/,
+      /\.card \{[^}]*padding-bottom: calc\(var\(--grid-card-padding\) \+ var\(--stat-chip-height\)\)/,
     );
     // Derived from the chip's own box rather than measured, so the two cannot drift apart.
     expect(tokens).toMatch(

@@ -36,8 +36,8 @@
 /* Exactly the art's footprint, so the card does not change size when a trainer is chosen. */
 .spritePlaceholder {
   flex: none;
-  width: 120px;
-  height: 80px;
+  width: var(--sprite-trainer-width);
+  height: var(--sprite-trainer-height);
   border: 1px dashed var(--line-subtle);
   border-radius: var(--radius-md);
 }
@@ -45,9 +45,9 @@
 .namePlaceholder { color: var(--text-muted); font-weight: 400; }
 .abilityPlaceholder { color: var(--text-muted); font-style: italic; }
 .unconfirmed {
-  font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.06em;
-  color: var(--text-warn); border: 1px solid currentColor; border-radius: 999px;
-  padding: 0 0.35rem;
+  font-size: var(--font-2xs); text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--text-warn); border: 1px solid currentColor; border-radius: var(--radius-pill);
+  padding: 0 var(--space-xs);
 }
 /*
  * The ability text and the affected-species button, spanning BOTH columns below them.
@@ -98,9 +98,9 @@
  */
 .pickerIntro { font-size: var(--font-sm); color: var(--text-secondary); margin: 0 0 var(--space-xs); }
 .pickerWarn { font-size: var(--font-sm); color: var(--text-warn); margin: 0 0 var(--space-xs); }
-.shapeRow { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-bottom: var(--space-xs); }
+.shapeRow { display: flex; flex-wrap: wrap; gap: var(--space-2xs); margin-bottom: var(--space-xs); }
 .shapeChip {
-  font-size: 0.65rem; padding: 0.15rem 0.4rem; border-radius: 999px;
+  font-size: var(--font-2xs); padding: var(--space-3xs) var(--space-xs); border-radius: var(--radius-pill);
   border: 1px dashed var(--line-subtle); color: var(--text-muted);
 }
 /* Met is a quiet confirmation, not a reward — the shape is guidance and may be ignored. */
@@ -131,14 +131,14 @@
   position: absolute;
   top: var(--space-2xs);
   right: var(--space-2xs);
-  min-width: 1.25rem;
-  height: 1.25rem;
+  min-width: var(--badge-size);
+  height: var(--badge-size);
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-pill);
-  background: rgba(176, 42, 55, 0.85);
-  color: #fff;
+  background: var(--badge-danger-bg);
+  color: var(--text-on-art);
   font-size: var(--font-sm);
   font-weight: 700;
 }

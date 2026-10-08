@@ -76,7 +76,7 @@
 	color: var(--rarity-color, var(--text-muted));
 	/* The rarity colours are mid-tone by design; a dark outline keeps them legible on the tinted
      header without lightening the published colour itself. */
-	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+	text-shadow: var(--shadow-on-art);
 	white-space: nowrap;
 }
 /* --- Band 2: sprite + stacked type badges --- */

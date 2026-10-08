@@ -4,7 +4,7 @@
  * title and nav already make obvious.
  */
 header {
-  padding: 1rem;
+  padding: var(--space-lg);
 }
 
 main {
@@ -49,13 +49,16 @@ main {
 
 table {
   border-collapse: collapse;
-  margin-bottom: 1rem;
+  margin-bottom: var(--space-lg);
   min-width: 20rem;
 }
 
 th,
 td {
-  border: 1px solid #ccc;
-  padding: 0.4rem 0.6rem;
+  /* `--line`, not the `#ccc` this carried until 2026-10-08: a light-theme grey that painted a
+     bright rule around every cell of a dark page. `TeamSummary` had already overridden it with the
+     token for its own two tables, so the app's styled tables and its unstyled ones disagreed. */
+  border: 1px solid var(--line);
+  padding: var(--space-2xs) var(--space-sm);
   text-align: left;
 }

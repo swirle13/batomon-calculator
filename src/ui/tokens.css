@@ -98,6 +98,33 @@
   --shiny-foil: linear-gradient(105deg, #f4d774 0%, #fff6d0 42%, #e8b647 60%, #f4d774 100%);
   --shiny-edge: #f4d774;
 
+  /* --- labels over artwork (2026-10-08) ------------------------------------------------------
+   * Type chips, stat badges, sprite-tile names and the grid's clear button all put text on top of
+   * pixel art or a published rarity colour, none of which this app chooses. White with a shadow is
+   * the only pairing that holds over all of them. Six files each had their own version, differing
+   * only in the shadow's alpha: 0.5, 0.6, 0.7 and 0.8 of the same black, which is four values
+   * expressing one intent.
+   */
+  --text-on-art: #fff;
+  --shadow-on-art: 0 1px 2px rgba(0, 0, 0, 0.7);
+  /* Darkens the art behind such a label enough for the shadow to do its job. Was 0.45 in three
+     files and 0.55 in two. */
+  --scrim-art: rgba(0, 0, 0, 0.5);
+  /* The hairline that separates a badge from the art under it, at any art colour. */
+  --line-on-art: rgba(0, 0, 0, 0.35);
+  /* The dragged card's ghost — the one elevation in the app, so it reads as "lifted off the board"
+     rather than as another panel. */
+  --shadow-lifted: 0 10px 24px rgba(0, 0, 0, 0.45);
+
+  /* --- destructive ---------------------------------------------------------------------------
+   * `--text-danger` is danger as a LABEL (a remove ✕, a Button variant="danger"); the two fills are
+   * danger as a SURFACE — the solid for a button that is about to destroy something, the
+   * translucent for a badge that has to sit over artwork.
+   */
+  --text-danger: #ff8a80;
+  --danger-fill: #c0392b;
+  --badge-danger-bg: rgba(176, 42, 55, 0.85);
+
   /*
    * The ONE focus treatment. TriggerButtons and VariantToggles each wrote
    * `var(--focus-ring, #8ab4f8)` — a blue from no palette in this project, reached because the
@@ -113,6 +140,9 @@
   --font-lg: 0.9rem;
   --font-xl: 1rem;
   --font-2xl: 1.05rem;
+  /* The DPS readout, and nothing else: the page's one figure that is read from across a desk. Off
+     the scale above on purpose — it is a display size, not the next step up from body text. */
+  --font-display: 2.6rem;
 
   /* --- sprite sizes (tasks.md T165 / FR-053) -----------------------------------------------
    * The source PNGs are 48x48. 64px is therefore a 1.333x NON-INTEGER upscale: with
@@ -142,8 +172,18 @@
    * went back to overlapping the name.
    */
   --grid-card-chrome: 4.75rem;
-  /* Must match `.card`'s padding in GridPicker.module.css. */
+  /* `.card` in GridPicker.module.css reads this directly; it used to restate the value and the two
+     were kept in agreement by a comment. */
   --grid-card-padding: 0.3rem;
+  /*
+   * The per-slot clear button, in its top-right corner. Two tokens rather than one because the
+   * name row has to clear the button to stay centred on the pane, and it did that with a hand-
+   * written `padding-inline: 1.25rem` — the sum of these two, recomputed by hand and with nothing
+   * tying it to the button it was measured against.
+   */
+  --slot-clear-size: 1.1rem;
+  --slot-clear-inset: var(--space-3xs);
+  --slot-clear-gutter: calc(var(--slot-clear-size) + var(--slot-clear-inset));
   /* The square a team-grid card wants to be: big enough to hold the sprite AND the rows under it. */
   --grid-slot-size: calc(
     var(--sprite-grid) + var(--grid-card-chrome) + 2 * var(--grid-card-padding)
@@ -243,6 +283,17 @@
      one of the published rarity colours. */
   --rarity-fallback: #70707a;
 
+  /* The count / remove marks that sit over a tile's art. One size, because the two of them appear
+     on the same card and a 1px difference between them reads as a misalignment. */
+  --badge-size: 1.25rem;
+  /*
+   * Trainer art is 120x80 landscape, unlike every square creature sprite. The placeholder that
+   * holds its footprint while no trainer is chosen must match it exactly or the card resizes on
+   * selection — `TrainerCard.tsx` passes the same numbers to `<Sprite>`.
+   */
+  --sprite-trainer-width: 120px;
+  --sprite-trainer-height: 80px;
+
   --sprite-card: 56px;
   --sprite-row: 24px;
   /*
@@ -307,6 +358,8 @@
    * Below the modal overlay's 1000, deliberately: the creature and trinket pickers are MODAL and
    * must cover the drawer, while the drawer only has to cover the page.
    */
+  /* The creature and trinket pickers. Above the drawer below, which only has to cover the page. */
+  --z-modal: 1000;
   --z-library-tab: 800;
   --z-library-scrim: 850;
   --z-library: 900;

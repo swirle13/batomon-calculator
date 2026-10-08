@@ -69,8 +69,8 @@
   left: var(--space-3xs);
   padding: 0 var(--space-2xs);
   border-radius: var(--radius-sm);
-  background: rgba(0, 0, 0, 0.55);
-  color: #fff;
+  background: var(--scrim-art);
+  color: var(--text-on-art);
   font-size: var(--font-2xs);
   font-weight: 700;
 }

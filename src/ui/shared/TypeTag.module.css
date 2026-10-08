@@ -12,12 +12,12 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.1rem 0.45rem;
-  border-radius: 999px;
+  padding: var(--space-3xs) var(--space-sm);
+  border-radius: var(--radius-pill);
   font-size: var(--font-xs);
   font-weight: 700;
   letter-spacing: 0.04em;
-  color: #14161c;
+  color: var(--text-on-fill);
   background: linear-gradient(
     95deg,
     #ff6b6b 0%, #ffa94d 18%, #ffd43b 34%, #69db7c 52%, #4dabf7 70%, #b197fc 86%, #ff6b6b 100%

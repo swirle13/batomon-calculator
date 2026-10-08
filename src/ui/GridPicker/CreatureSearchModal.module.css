@@ -51,7 +51,7 @@
 .outOfRegion { opacity: 0.72; }
 .outOfRegionTag {
   display: block;
-  font-size: 0.6rem;
+  font-size: var(--font-2xs);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--text-muted);

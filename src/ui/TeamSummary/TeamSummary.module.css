@@ -9,7 +9,7 @@
 .tables {
   display: flex;
   flex-wrap: wrap;
-  gap: 1.5rem;
+  gap: var(--space-xl);
   align-items: flex-start;
   justify-content: center;
 }
@@ -42,9 +42,9 @@
 }
 
 .tables caption {
-  font-size: 0.85rem;
-  color: #9ca3af;
-  padding-bottom: 0.25rem;
+  font-size: var(--font-md);
+  color: var(--text-muted);
+  padding-bottom: var(--space-2xs);
   white-space: nowrap;
 }
 

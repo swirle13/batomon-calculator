@@ -39,7 +39,7 @@
 .slot {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: var(--space-2xs);
 }
 
 /*
@@ -55,11 +55,11 @@
  * so the indicator costs nothing until it is shown.
  */
 .dropZone {
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 
 .dropZoneOver {
-  outline: 2px dashed #f5f5f5;
+  outline: 2px dashed var(--text-strong);
   outline-offset: 2px;
 }
 
@@ -79,17 +79,17 @@
    */
   aspect-ratio: 1;
   min-height: var(--grid-slot-size);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
 .card {
-  color: #fff;
+  color: var(--text-on-art);
   /* Keeps the sprite from touching the name even when the card is at its minimum size. */
-  gap: 0.15rem;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+  gap: var(--space-3xs);
+  text-shadow: var(--shadow-on-art);
   cursor: grab;
   user-select: none;
   /*
@@ -103,13 +103,13 @@
   touch-action: manipulation;
   /* iOS raises its own callout menu on a long press, which is now the drag gesture. */
   -webkit-touch-callout: none;
-  padding: 0.3rem;
+  padding: var(--grid-card-padding);
   /*
    * The chip band at the bottom of the pane (2026-10-08). `.badges` is out of flow now, so the room
    * it occupies has to be reserved here or the sprite would centre itself over the top of it. It is
    * also half of what centres the sprite: this band below balances the header row above.
    */
-  padding-bottom: calc(0.3rem + var(--stat-chip-height));
+  padding-bottom: calc(var(--grid-card-padding) + var(--stat-chip-height));
 }
 
 /*
@@ -140,7 +140,7 @@
   min-height: 0;
   opacity: 0.85;
   transform: scale(1.06);
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+  box-shadow: var(--shadow-lifted);
   cursor: grabbing;
   /* Nothing is clickable in a picture of a card, and a hit-test on it would land on the ghost
      instead of the slot underneath. */
@@ -150,12 +150,12 @@
 /* Empty slots are square too -- square filled cards beside non-square placeholders would make the
    grid look broken in exactly the way FR-035 is meant to fix. */
 .emptyCard {
-  border: 1px dashed #666;
-  color: #9ca3af;
+  border: 1px dashed var(--line-strong);
+  color: var(--text-muted);
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 0.85rem;
+  font-size: var(--font-md);
 }
 
 /*
@@ -174,7 +174,7 @@
   align-items: baseline;
   justify-content: center;
   gap: var(--space-2xs);
-  padding-inline: 1.25rem;
+  padding-inline: var(--slot-clear-gutter);
   min-width: 0;
 }
 
@@ -261,19 +261,19 @@
 /* --- FR-033: per-slot clear control --- */
 .clear {
   position: absolute;
-  top: 0.15rem;
-  right: 0.15rem;
-  width: 1.1rem;
-  height: 1.1rem;
+  top: var(--slot-clear-inset);
+  right: var(--slot-clear-inset);
+  width: var(--slot-clear-size);
+  height: var(--slot-clear-size);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0;
   border: none;
-  border-radius: 3px;
-  background: rgba(0, 0, 0, 0.45);
-  color: #fff;
-  font-size: 0.8rem;
+  border-radius: var(--radius-sm);
+  background: var(--scrim-art);
+  color: var(--text-on-art);
+  font-size: var(--font-sm);
   line-height: 1;
   cursor: pointer;
   z-index: 1;
@@ -281,12 +281,12 @@
 
 .clear:hover,
 .clear:focus-visible {
-  background: #c0392b;
+  background: var(--danger-fill);
 }
 
 .fallbackDetails summary {
-  font-size: 0.75rem;
-  color: #9ca3af;
+  font-size: var(--font-xs);
+  color: var(--text-muted);
   cursor: pointer;
 }
 /*
@@ -342,7 +342,7 @@
     column-gap: var(--space-2xs);
     row-gap: 0;
     min-height: var(--grid-card-header);
-    padding-inline: var(--space-3xs) 1.25rem;
+    padding-inline: var(--space-3xs) var(--slot-clear-gutter);
   }
 
   .header .name,

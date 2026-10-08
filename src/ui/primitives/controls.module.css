@@ -72,7 +72,7 @@
 .primary {
   border-color: var(--accent-fill);
   background: var(--accent-fill);
-  color: #fff;
+  color: var(--text-on-art);
 }
 .primary:hover:not(:disabled) {
   border-color: var(--accent-fill-hover);
@@ -98,10 +98,10 @@
 
 /* Destructive, by colour rather than by a second shape. */
 .danger {
-  color: #ff8a80;
+  color: var(--text-danger);
 }
 .danger:hover:not(:disabled) {
-  border-color: #ff8a80;
+  border-color: var(--text-danger);
 }
 
 /* Currently-chosen, in a group of mutually exclusive buttons (the view nav). NOT disabled: a
