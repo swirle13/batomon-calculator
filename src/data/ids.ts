@@ -292,12 +292,49 @@ export enum TrinketId {
   ZenithStone = "zenith_stone",
 }
 
-/**
- * The items. EMPTY: the corpus carries no item records yet (`src/data/items.ts` is `[]`), so this
- * is a declared-but-unpopulated vocabulary rather than an oversight. Regenerating after items are
- * added fills it.
- */
-export enum ItemId {}
+/** The 40 items. */
+export enum ItemId {
+  ApexBait = "apex_bait",
+  BasicBait = "basic_bait",
+  BasicCandy = "basic_candy",
+  BatteryPack = "battery_pack",
+  BlackFeather = "black_feather",
+  BlackSludge = "black_sludge",
+  BlueTicket = "blue_ticket",
+  Cake = "cake",
+  Coffee = "coffee",
+  Coupon = "coupon",
+  CrimsonGift = "crimson_gift",
+  CrimsonTicket = "crimson_ticket",
+  DowsingRod = "dowsing_rod",
+  FakeCoin = "fake_coin",
+  Feast = "feast",
+  FocusPill = "focus_pill",
+  GoldPowder = "gold_powder",
+  GoldenGift = "golden_gift",
+  GoldenTicket = "golden_ticket",
+  GrayChip = "gray_chip",
+  GrayTicket = "gray_ticket",
+  GreenStone = "green_stone",
+  GreenTicket = "green_ticket",
+  HotPepper = "hot_pepper",
+  Lootbox = "lootbox",
+  LuckyCoin = "lucky_coin",
+  MagicLasso = "magic_lasso",
+  MysticPearl = "mystic_pearl",
+  NanaBerry = "nana_berry",
+  PomBerry = "pom berry",
+  PurpleGift = "purple_gift",
+  PurpleTicket = "purple_ticket",
+  RareCandy = "rare_candy",
+  RecruitingFlyer = "recruiting_flyer",
+  RedCoin = "red_coin",
+  ShinyBerry = "shiny_berry",
+  ShinyPebble = "shiny_pebble",
+  ToteBag = "tote_bag",
+  UltraCandy = "ultra_candy",
+  Voucher = "voucher",
+}
 
 /**
  * A species id that is deliberately NOT in the corpus.

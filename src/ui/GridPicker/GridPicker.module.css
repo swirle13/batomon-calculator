@@ -146,21 +146,34 @@
    * `min-height` reserves BOTH lines whether or not the level wraps, so a short-named pane's sprite
    * sits at the same height as its neighbour's rather than 13px lower.
    *
-   * The padding is asymmetric because the clear button is: it sits in the top-RIGHT corner, and
-   * clearing a corner that holds nothing was costing the name 20px it has no spare.
+   * The padding is symmetric and tiny because the clear button is no longer in the way — see
+   * `.clear` below. Holding 20px clear of a corner the button has left is what was still clipping
+   * "Brawlmantis" to "Brawlman…" with a fifth of the row unused.
    */
   .header {
     flex-wrap: wrap;
     column-gap: var(--space-2xs);
     row-gap: 0;
-    min-height: calc(2 * 1.15 * var(--font-2xs));
-    padding-inline: var(--space-3xs) 1.25rem;
+    min-height: var(--grid-card-header);
+    padding-inline: var(--space-3xs);
   }
 
   .header .name,
   .header .level {
     font-size: var(--font-2xs);
     line-height: 1.15;
+  }
+
+  /*
+   * BELOW the header rather than in the corner above it, so the name has the pane's whole width.
+   *
+   * The two compete for the top-right corner and the pane is too narrow for both: the button is
+   * 20px of a ~103px row, and the longest name needs ~87px of it. Moving the button down puts it
+   * over the sprite's top-right corner — which is art, not information, and is where an in-game
+   * tile puts its controls anyway — and it stays the same size, so it is no harder to hit.
+   */
+  .clear {
+    top: calc(var(--grid-card-header) + var(--grid-card-padding));
   }
 }
 

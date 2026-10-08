@@ -309,6 +309,19 @@
      */
     --grid-card-chrome: 3.75rem;
     /*
+     * The two header lines, as a number both the header and the clear button can read. The button
+     * is positioned BELOW this on a phone — see `.clear` — which is what gives the name the pane's
+     * full width instead of 20px less of it.
+     */
+    --grid-card-header: calc(2 * 1.15 * var(--font-2xs));
+    /*
+     * THREE chips to a row here, not four. This is a measurement, not a preference: a third of a
+     * 360px screen is ~103px inside the card's padding, and four chips plus their gaps need ~130px.
+     * Stating it keeps the authored cap equal to what the pane can actually hold, so the rows break
+     * where the rule says rather than wherever they run out of room.
+     */
+    --stat-chips-per-row: 3;
+    /*
      * The picker's sprite stays at the desktop 96px too, but its card does NOT stay at the desktop
      * 10rem: `auto-fill` would then fit a single column in a phone-width modal, where 7.5rem keeps
      * the two columns a picker needs to be scannable. The card is wider than its minimum anyway.

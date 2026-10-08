@@ -25,7 +25,7 @@
  * Imported for this file's own type positions AND re-exported for consumers. Both are needed: a
  * bare `export … from` does not bring the names into local scope.
  */
-import { AbilityTrigger, ConfirmableField, CreatureType, DamageChannel, EventLabel, GridRow, ModifierStat, MultiplierScope, RegionId, StatusEffectType, TimelineEventKind } from "./enums";
+import { AbilityTrigger, ConfirmableField, CreatureType, DamageChannel, EventLabel, GridRow, ItemTargetKind, ModifierStat, MultiplierScope, RegionId, StatusEffectType, TimelineEventKind } from "./enums";
 import { ItemId, Species, TrainerId, TrinketId } from "./ids";
 import { Rarity } from "./enums";
 import { AbilityTagKind, StatChangeStat, TargetKind } from "./enums";
@@ -41,6 +41,7 @@ export {
   DamageChannel,
   EventLabel,
   GridRow,
+  ItemTargetKind,
   ModifierStat,
   MultiplierScope,
   Rarity,
