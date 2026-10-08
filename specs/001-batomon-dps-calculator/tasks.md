@@ -3044,20 +3044,27 @@ bonus appears as chips in the Modifiers overlay on exactly the monsters that rec
       relative to a source creature — an item has no source on the board and all three of its
       target kinds are absolute. Type filters route through `creatureHasType`, so a PAINTED species
       counts (FR-086)
-- [x] T308 Add `addItemId`/`removeItemId` to `TeamConfigContext` (duplicates allowed, removal takes
-      one copy — the trinket rule, for the same reason: the shop can stock an item twice) and an
-      `"item"` `SpriteKind`
+- [x] T308 Add an `"item"` `SpriteKind`. ~~Add `addItemId`/`removeItemId` to `TeamConfigContext`~~
+      — reverted by T312; there is no bag to add to
 - [x] T309 Build `src/ui/GridPicker/ItemPicker.tsx` on the shared primitives, as the fourth
-      instance of the overlay idiom rather than a fourth hand-rolled one (Principle VII). The bag
-      card is the one local piece: `PickerCard` is itself a `<button>` and a bag card carries its
-      own Use and Discard buttons, which cannot nest. The `Chosen` chooser **replaces the overlay's
-      body instead of opening a second modal** — two stacked dialogs mean two focus traps and two
-      Escape handlers over one decision
+      instance of the overlay idiom rather than a fourth hand-rolled one (Principle VII). The
+      `Chosen` chooser **replaces the overlay's body instead of opening a second modal** — two
+      stacked dialogs mean two focus traps and two Escape handlers over one decision
 - [x] T310 Widen `App.module.css`'s `.panelPair` to `.panelRow` and seat Items between Trinkets and
       Modifiers — it feeds Modifiers, so it reads left to right
 - [x] T311 Tests: `engine/__tests__/itemEffects.test.ts` (recipient rules, the unit traps, corpus
       integrity) and `ui/__tests__/itemPicker.test.tsx` (the wiring, asserted through the real
       Modifiers panel rather than against the context)
+
+- [x] T312 **Delete the bag** (2026-10-08, on first user contact). Picking an item now applies it;
+      the Use/Discard pair and the "your items" section are gone, and `TeamConfiguration.itemIds`
+      is left unwritten. See data-model.md for why a trinket wants a holding state and an item does
+      not. The panel's "2 applied" count is **derived** from modifiers labelled with an item name,
+      not stored, so deleting the chip under Modifiers decrements it
+- [x] T313 Render item **and trinket** effect text through the shared `AbilityText`, so "+5 Damage"
+      is the same pink on a card as on the creature whose ability says it. Both had been plain
+      `<p>{effectText}</p>` — one concept with two renderings, which is the duplication Principle
+      VII exists to prevent
 
 ### Two traps this phase was written to catch, both of which a type check would have missed
 

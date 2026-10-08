@@ -59,7 +59,12 @@ describe("TrinketPicker (FR-032, item 4)", () => {
     );
     // Matched on a distinctive fragment: several trinkets' effectText embeds a trigger line and a
     // newline ("On Victory\nYour team gains +5 Damage permanently."), which the DOM collapses.
-    expect(screen.getByText(/Your team gains \+5 Damage permanently/)).toBeTruthy();
+    //
+    // Read off `textContent` rather than with `getByText`, because since 2026-10-08 the effect
+    // text runs through `AbilityText` and "+5 Damage" is its own coloured <span> — so the phrase
+    // no longer lives in any single element, and an element-wise matcher would report the text
+    // missing when it is in fact on screen and better rendered than before.
+    expect(dialog.textContent).toMatch(/Your team gains \+5 Damage permanently/);
   });
 
   /**

@@ -1471,9 +1471,18 @@ because exactly one item (Focus Pill) has the condition, and a flag says what th
 
 ### Using an item produces `StatModifier`s — it is not a third effect system
 
-`TeamConfiguration.itemIds` is the **bag**: items held and not yet spent. Using one resolves its
-recipients, writes one `StatModifier` per recipient per stat via `addPlacementModifier`, and
-removes the copy from the bag.
+Picking an item in `ItemPicker` **uses** it: the pick resolves the item's recipients and writes one
+`StatModifier` per recipient per stat via `addPlacementModifier`. There is no intermediate step.
+
+There was one, for about a day. The first build gave items the trinket treatment — a bag you added
+to, which then offered Use and Discard — and the user's verdict on first contact was that the bag is
+pointless. They were right, and the reason generalises: a trinket is a thing you *have* for the
+whole battle, so holding it is the state worth modelling, whereas an item has exactly one
+interesting moment, the moment its bonus lands. An unused item changes nothing this tool computes,
+so a screen that carefully tracks unused items is tracking nothing.
+
+`TeamConfiguration.itemIds` therefore survives in the type and the share format but is never
+written. Dropping it would be a share-format version bump in exchange for nothing.
 
 This is the same destination a manual trigger banks into (`engine/manualTriggers.ts`) and the same
 one the user types into by hand. The three are not three mechanisms; they are three ways of saying

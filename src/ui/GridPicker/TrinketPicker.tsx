@@ -3,6 +3,7 @@ import { corpus } from "../../data/corpus";
 import { useTeamConfig } from "../../context/TeamConfigContext";
 import { RARITY_COLORS, RARITIES_ASC, rarityLabel } from "../../data/statColors";
 import type { Rarity, TrinketRecord } from "../../data/types";
+import { AbilityText } from "../shared/AbilityText";
 import {
   ClearFiltersButton,
   EditorPanel,
@@ -319,7 +320,11 @@ function TrinketCard({ trinket, count, action, onClick }: TrinketCardProps) {
           </>
         }
       />
-      <p className={styles.cardEffect}>{trinket.effectText}</p>
+      {/* The SAME renderer the Batomon card colours its ability text with, so "+12 Damage" reads
+          the same pink on a trinket as on the creature whose ability says it. This was raw text
+          until 2026-10-08, which meant the app had two renderings of one concept — the exact
+          duplication Principle VII exists to stop. */}
+      <AbilityText text={trinket.effectText} className={styles.cardEffect} />
     </PickerCard>
   );
 }

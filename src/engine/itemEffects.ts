@@ -102,17 +102,6 @@ export function modifiersForUse(item: ItemRecord): Omit<StatModifier, "id">[] {
   }));
 }
 
-/**
- * The items this engine can actually apply.
- *
- * Used to decide whether to offer a Use control at all. The alternative — a Use button on all 40
- * that silently does nothing for 29 of them — is the dishonest option the trinket picker's "affects
- * DPS" badge was removed for.
- */
-export function usableItems(items: readonly ItemRecord[]): ItemRecord[] {
-  return items.filter((item) => (item.effect?.stats.length ?? 0) > 0);
-}
-
 /** How many monsters the user must pick before a `Chosen` item can be used. 0 for every other kind. */
 export function requiredChoiceCount(effect: ItemEffect): number {
   return effect.target.kind === ItemTargetKind.Chosen ? effect.target.count : 0;

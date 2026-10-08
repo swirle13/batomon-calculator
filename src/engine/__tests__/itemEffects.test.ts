@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { itemRecipients, modifiersForUse, usableItems } from "../itemEffects";
+import { itemRecipients, modifiersForUse } from "../itemEffects";
 import { corpus, getItemById } from "../../data/corpus";
 import { slotKey } from "../grid";
 import type { CreatureRecord, GridSlot, ItemRecord, TeamPlacement } from "../../data/types";
@@ -133,14 +133,16 @@ describe("modifiersForUse", () => {
   });
 });
 
-describe("usableItems", () => {
-  it("offers only the items that have a modelled effect", () => {
-    const usable = usableItems(corpus.items);
-    expect(usable).toHaveLength(11);
-    // A reroll is a real item and an unusable one: offering a Use button for it would claim an
-    // effect the engine does not apply.
-    expect(usable.map((i) => i.id)).not.toContain(ItemId.FakeCoin);
-    expect(usable.map((i) => i.id)).toContain(ItemId.Feast);
+describe("which items this engine models", () => {
+  it("models 11 of the 40, and the picker is responsible for saying so", () => {
+    // The count is pinned so that hand-authoring an effect for a 12th item is a deliberate edit
+    // here rather than a silent change in what the calculator claims to simulate.
+    const modelled = corpus.items.filter((item) => (item.effect?.stats.length ?? 0) > 0);
+    expect(modelled).toHaveLength(11);
+    // A reroll is a real item and an unmodelled one: `ItemPicker` disables its card rather than
+    // offering a click that would appear to work and change nothing.
+    expect(modelled.map((i) => i.id)).not.toContain(ItemId.FakeCoin);
+    expect(modelled.map((i) => i.id)).toContain(ItemId.Feast);
   });
 });
 

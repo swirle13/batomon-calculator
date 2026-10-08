@@ -3,14 +3,10 @@ import { corpus, resolveCreatureVariant } from "../../data/corpus";
 import { useTeamConfig } from "../../context/TeamConfigContext";
 import { RARITY_COLORS, RARITIES_ASC, rarityLabel } from "../../data/statColors";
 import type { CreatureRecord, GridSlot, ItemRecord, Rarity, TeamConfiguration } from "../../data/types";
-import { ItemTargetKind, ModifierStat } from "../../data/enums";
+import { ItemTargetKind } from "../../data/enums";
 import { slotKey, STABLE_SLOT_ORDER } from "../../engine/grid";
-import {
-  itemRecipients,
-  modifiersForUse,
-  requiredChoiceCount,
-  type ItemBoardMember,
-} from "../../engine/itemEffects";
+import { itemRecipients, modifiersForUse, requiredChoiceCount, type ItemBoardMember } from "../../engine/itemEffects";
+import { AbilityText } from "../shared/AbilityText";
 import {
   Button,
   CardGrid,
@@ -26,42 +22,44 @@ import {
   ResultCount,
   Select,
   SpriteTile,
-  Surface,
   TextField,
 } from "../primitives";
 import styles from "./ItemPicker.module.css";
 
 /**
- * Item selection and USE (tasks.md T046, 2026-10-08).
+ * Using an item (tasks.md T046, 2026-10-08).
  *
- * ## Holding and using are two different acts
+ * ## Picking an item USES it — there is no bag
  *
- * `config.itemIds` is the bag: items you hold and have not spent. Using one applies its bonus and
- * takes it out of the bag, because that is what using a consumable does — and because the bonus
- * does not need the item to persist. It is written as `StatModifier`s on the monsters that
- * received it (`engine/itemEffects.ts`), which is the same representation a manual trigger banks
- * into and the same one the user types by hand in the Modifiers overlay.
+ * The first version of this screen had one: clicking a card put the item in a "your items" section,
+ * which then offered Use and Discard buttons. The user's verdict was that the bag is pointless, and
+ * they are right. An item in this calculator has exactly one interesting moment — the moment its
+ * bonus lands on your monsters — and modelling the seconds before that adds a step, a second
+ * section and two buttons to reach the only outcome anyone wants. Holding an unused item changes
+ * nothing this tool computes.
  *
- * That is the whole design: an item's lasting effect IS a modifier, so there is one place to see
- * it, one place to remove it, and the share link round-trips it with no extra work. The
- * alternative — a `usedItemIds` list that `simulate()` re-resolves every render — would have been
- * a second way to say the same thing, and the two would drift the way every other duplicated
- * resolution path in this project has.
+ * So a click applies the effect. `TeamConfiguration.itemIds` is left alone and unwritten: the
+ * record of "I used a Feast" is the `+5 Damage` modifier chip labelled **Feast** that the use
+ * created, which is removable, visible under Modifiers, and already in the share link. A parallel
+ * `itemIds` log would be a second record of the same fact, free to disagree with the chips — and
+ * the chips are the one that is actually load-bearing.
  *
- * ## Only 11 of the 40 items offer a Use button
+ * ## Where the bonus goes
  *
- * The rest are shop/economy mechanics and run-state changes with no battle-stat expression. They
- * are still listed, still cited, still browsable — they just have nothing for this engine to
- * apply, and a Use button that silently did nothing would be the dishonest option the trinket
- * picker's "★ affects DPS" badge was removed for.
+ * `addPlacementModifier`, the same call `TriggerButtons` banks a manual trigger with and the same
+ * one the user types into by hand. An item is spent in the shop between battles, so by the time the
+ * simulated battle starts all that remains of it is a permanent bonus on some monsters — which is
+ * what a `StatModifier` already is. See `engine/itemEffects.ts`.
+ *
+ * Because `addPlacementModifier` accumulates same-stat entries, using Feast twice gives one chip at
+ * +10 rather than two indistinguishable +5s. That is what using it twice should mean.
  *
  * ## The chooser replaces the body instead of opening a second modal
  *
  * Cake gives "2 random monsters" +5 Damage. The game rolls; the user picks, for the reason
- * `AffectedCreaturePicker` states — the player is reconciling a run that has already rolled, so a
- * second independent roll produces a board they cannot match against their screen. Picking happens
- * in this same overlay, as a step, because two stacked dialogs mean two focus traps and two Escape
- * handlers competing over one decision.
+ * `AffectedCreaturePicker` states — the player is reconciling a run that has *already* rolled, so a
+ * second independent roll produces a board they cannot match against their screen. Two stacked
+ * dialogs would mean two focus traps and two Escape handlers over one decision.
  */
 
 /**
@@ -82,8 +80,11 @@ interface BoardMember extends ItemBoardMember {
   creature: CreatureRecord;
 }
 
+/** Every item name, so a modifier can be recognised as one an item created. */
+const ITEM_NAMES: ReadonlySet<string> = new Set(corpus.items.map((i) => i.name));
+
 export function ItemPicker() {
-  const { config, addItemId, removeItemId, addPlacementModifier } = useTeamConfig();
+  const { config, addPlacementModifier } = useTeamConfig();
   const [isOpen, setIsOpen] = useState(false);
   const [step, setStep] = useState<Step>({ kind: "browse" });
   const [query, setQuery] = useState("");
@@ -100,21 +101,20 @@ export function ItemPicker() {
     [config.placements],
   );
 
-  /** How many copies of each item are in the bag. Also drives the `×N` badge on a browse card. */
-  const copiesOf = useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const id of config.itemIds) counts.set(id, (counts.get(id) ?? 0) + 1);
-    return counts;
-  }, [config.itemIds]);
-
-  const bag = useMemo(
-    () =>
-      [...copiesOf]
-        .map(([id, count]) => ({ item: corpus.items.find((i) => i.id === id), count }))
-        .filter((held): held is Held => held.item !== undefined)
-        .sort((a, b) => byRarityThenName(a.item, b.item)),
-    [copiesOf],
+  /**
+   * How many item-sourced bonuses are currently on the board — the panel's state, DERIVED from the
+   * modifiers rather than stored beside them.
+   *
+   * Derived is the point: remove a Feast chip under Modifiers and this count drops, because it was
+   * only ever reading the chips. A stored counter would have been the bag by another name, and
+   * would have gone stale the first time a chip was removed somewhere else.
+   */
+  const appliedCount = config.placements.reduce(
+    (sum, p) => sum + (p.modifiers ?? []).filter((m) => m.label !== undefined && ITEM_NAMES.has(m.label)).length,
+    0,
   );
+
+  const nothingPlaced = board.length === 0;
 
   useEffect(() => {
     if (!isOpen) return;
@@ -145,8 +145,8 @@ export function ItemPicker() {
       rarity: rarity as Rarity | null,
       items: results.filter((i) => i.rarity === rarity),
     })),
-    // All 40 publish a rarity today, so this renders nothing — but a future record without one
-    // must land somewhere rather than silently drop out of a rarity-sectioned list.
+    // All 40 publish a rarity today, so this renders nothing — but a future record without one must
+    // land somewhere rather than silently drop out of a rarity-sectioned list.
     { rarity: null, items: results.filter((i) => i.rarity === undefined) },
   ]
     .map((section) => ({ ...section, items: [...section.items].sort(byName) }))
@@ -154,41 +154,46 @@ export function ItemPicker() {
 
   const filtersActive = query !== "" || rarityFilter !== "";
 
-  /** Applies one use of `item` to `slots`, then spends the copy. */
-  function use(item: ItemRecord, slots: GridSlot[]) {
+  function apply(item: ItemRecord, slots: GridSlot[]) {
     for (const slot of slots) {
       for (const modifier of modifiersForUse(item)) addPlacementModifier(slot, modifier);
     }
-    // Using a consumable consumes it. The bonus survives as the modifier chips just written, so
-    // nothing is lost by the item leaving the bag — that is what "used" means.
-    removeItemId(item.id);
     setStep({ kind: "browse" });
   }
 
-  function startUse(item: ItemRecord) {
+  function pick(item: ItemRecord) {
     if (!item.effect) return;
     if (item.effect.target.kind === ItemTargetKind.Chosen) {
       setStep({ kind: "choosing", item, slots: [] });
       return;
     }
-    use(item, itemRecipients(item.effect, board, [], config));
+    apply(item, itemRecipients(item.effect, board, [], config));
   }
 
   return (
     <>
       <EditorPanel
         title="Items"
-        hint={config.itemIds.length === 0 ? "none held" : `${config.itemIds.length} held`}
-        action="Choose items…"
+        hint={
+          nothingPlaced
+            ? "place a Batomon first"
+            : appliedCount === 0
+              ? "none used"
+              : `${appliedCount} applied`
+        }
+        action="Use an item…"
         onOpen={() => setIsOpen(true)}
+        // Every item effect needs a recipient, so an overlay of 40 unusable cards would be a dead
+        // end. The reason is in the hint, as it is for Modifiers.
+        disabled={nothingPlaced}
       />
 
       <Modal
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
-        title={step.kind === "choosing" ? `Use ${step.item.name}` : "Choose items"}
-        // "Done", as in the trinket picker: this overlay is multi-edit and stays open while you
-        // work, so dismissing it ends a task rather than abandoning a choice.
+        title={step.kind === "choosing" ? `Use ${step.item.name}` : "Use an item"}
+        // "Done", as in the trinket picker: this overlay stays open while you work, so dismissing it
+        // ends a task rather than abandoning a choice.
         closeLabel="Done"
         width="880px"
         toolbar={
@@ -245,26 +250,10 @@ export function ItemPicker() {
               })
             }
             onCancel={() => setStep({ kind: "browse" })}
-            onConfirm={() => use(step.item, itemRecipients(step.item.effect!, board, step.slots, config))}
+            onConfirm={() => apply(step.item, itemRecipients(step.item.effect!, board, step.slots, config))}
           />
         ) : (
           <>
-            {bag.length > 0 && (
-              <PickerSection heading="Your items" count={config.itemIds.length} columns={OVERLAY_COLUMNS}>
-                {bag.map(({ item, count }) => (
-                  <BagCard
-                    key={item.id}
-                    item={item}
-                    count={count}
-                    board={board}
-                    config={config}
-                    onUse={() => startUse(item)}
-                    onRemove={() => removeItemId(item.id)}
-                  />
-                ))}
-              </PickerSection>
-            )}
-
             {sections.length === 0 && <EmptyNote>No items match this search.</EmptyNote>}
 
             {sections.map((section) => (
@@ -275,28 +264,18 @@ export function ItemPicker() {
                 count={section.items.length}
                 columns={OVERLAY_COLUMNS}
               >
-                {/* Every item stays listed however many copies are held: the shop can stock the
-                    same one again, so removing it here would make a second copy unreachable. */}
                 {section.items.map((item) => (
-                  <PickerCard
-                    key={item.id}
-                    onClick={() => addItemId(item.id)}
-                    aria-label={`Add ${item.name}${copiesOf.get(item.id) ? `, ${copiesOf.get(item.id)} already held` : ""}`}
-                  >
-                    <ItemTile item={item} count={copiesOf.get(item.id) ?? 0} />
-                    <p className={styles.cardEffect}>{item.effectText}</p>
-                  </PickerCard>
+                  <ItemCard key={item.id} item={item} board={board} config={config} onPick={() => pick(item)} />
                 ))}
               </PickerSection>
             ))}
 
             <p className={styles.note}>
-              Items you pick go into <strong>your items</strong> above. Using one applies its bonus
-              to the monsters that received it and spends the item — the bonus stays as a modifier
-              on each of those monsters, where you can see and remove it under{" "}
-              <strong>Modifiers</strong>. Items whose effect is a reroll, a shop change or a
-              level-up have no Use button: they are real, but this calculator simulates one battle
-              and they do not change a stat in it.
+              Picking an item <strong>uses</strong> it: its bonus lands on the monsters that received
+              it and stays there as a modifier, which you can see and remove under{" "}
+              <strong>Modifiers</strong>. Pick the same item twice to apply it twice. Items whose
+              effect is a reroll, a shop change or a level-up cannot be picked — they are real, but
+              this calculator simulates one battle and they change no stat in it.
             </p>
           </>
         )}
@@ -305,100 +284,56 @@ export function ItemPicker() {
   );
 }
 
-interface Held {
+interface ItemCardProps {
   item: ItemRecord;
-  count: number;
-}
-
-/** The item's art over its rarity colour, with a `×N` badge when copies are held. */
-function ItemTile({ item, count, removable = false }: { item: ItemRecord; count: number; removable?: boolean }) {
-  return (
-    <SpriteTile
-      name={item.name}
-      colors={item.rarity ? [RARITY_COLORS[item.rarity]] : []}
-      spriteFile={item.spriteFile}
-      spriteKind="item"
-      className={styles.cardTile}
-      overlay={
-        <>
-          {count > 1 && (
-            <span className={styles.countBadge} aria-hidden="true">
-              ×{count}
-            </span>
-          )}
-          {removable && (
-            <span className={styles.removeMark} aria-hidden="true">
-              −
-            </span>
-          )}
-        </>
-      }
-    />
-  );
-}
-
-interface BagCardProps extends Held {
   board: BoardMember[];
-  /** Carried through so a PAINTED species counts as the type a type-filtered item looks for. */
   config: Pick<TeamConfiguration, "paintedCreatureIds">;
-  onUse: () => void;
-  onRemove: () => void;
+  onPick: () => void;
 }
 
 /**
- * One held item, with the controls that spend or discard it.
+ * One item as a pickable card: its art over its rarity colour, its published text, and a line
+ * saying who a pick would reach.
  *
- * Not a `PickerCard`: that primitive IS the button, and this card holds two of its own. A button
- * inside a button is invalid HTML and the inner one is unreachable by keyboard.
+ * That last line is the honest part. "Give your Electric monsters +1 Shock" on a board with no
+ * Electric monster is a card that would do nothing, and a click that silently does nothing is
+ * indistinguishable from one that worked — so the card is disabled and says why, before the press
+ * rather than after it.
  */
-function BagCard({ item, count, board, config, onUse, onRemove }: BagCardProps) {
+function ItemCard({ item, board, config, onPick }: ItemCardProps) {
   const effect = item.effect;
-  const needsChoice = effect ? requiredChoiceCount(effect) > 0 : false;
-  // For a Chosen item the recipients are not known until the user picks, so the preview says what
-  // it CAN say: how many must be picked.
-  const recipients = effect && !needsChoice ? itemRecipients(effect, board, [], config) : [];
+  const choiceCount = effect ? requiredChoiceCount(effect) : 0;
+  const recipients = effect && choiceCount === 0 ? itemRecipients(effect, board, [], config) : [];
 
-  const blocked = ((): string | null => {
-    if (!effect) return null;
-    if (board.length === 0) return "Place a Batomon first.";
-    if (needsChoice) return null;
-    if (recipients.length === 0) return "No monster on your board matches this item.";
-    return null;
+  const status = ((): { text: string; usable: boolean } => {
+    if (!effect) return { text: "No stat this calculator simulates.", usable: false };
+    if (choiceCount > 0) return { text: `You choose ${choiceCount}.`, usable: true };
+    if (recipients.length === 0) return { text: "No monster on your board matches.", usable: false };
+    return { text: `Applies to ${recipients.length} ${recipients.length === 1 ? "monster" : "monsters"}.`, usable: true };
   })();
 
   return (
-    <Surface tone="flat" pad="sm" className={styles.bagCard}>
-      <ItemTile item={item} count={count} />
-
-      {effect ? (
-        <p className={`${styles.useSummary} ${blocked ? styles.blocked : ""}`}>
-          {blocked ?? `${grantSummary(item)} ${recipientSummary(effect, recipients.length)}`}
-        </p>
-      ) : (
-        <p className={styles.useSummary}>No effect this calculator can apply.</p>
-      )}
-
-      <div className={styles.bagControls}>
-        {effect && (
-          <Button
-            variant="primary"
-            size="sm"
-            disabled={blocked !== null}
-            onClick={onUse}
-            aria-label={`Use ${item.name}`}
-            title="Applies the bonus as a modifier on each monster that receives it, and spends the item."
-          >
-            {needsChoice ? "Use…" : "Use"}
-          </Button>
-        )}
-        <Button variant="ghost" size="sm" onClick={onRemove} aria-label={`Discard one ${item.name}`}>
-          Discard
-        </Button>
-      </div>
-    </Surface>
+    <PickerCard
+      onClick={onPick}
+      disabled={!status.usable}
+      aria-label={status.usable ? `Use ${item.name} — ${status.text}` : `${item.name} — ${status.text}`}
+    >
+      <SpriteTile
+        name={item.name}
+        // One band, the rarity's own colour — the same tile the trinket picker and the Batomon
+        // picker paint.
+        colors={item.rarity ? [RARITY_COLORS[item.rarity]] : []}
+        spriteFile={item.spriteFile}
+        spriteKind="item"
+        className={styles.cardTile}
+      />
+      {/* The SAME renderer the Batomon card uses, so "+5 Damage" is the same pink here as on the
+          creature whose ability says it (Principle VII). It was raw text until 2026-10-08. */}
+      <AbilityText text={item.effectText} className={styles.cardEffect} />
+      <p className={`${styles.cardStatus} ${status.usable ? "" : styles.blocked}`}>{status.text}</p>
+    </PickerCard>
   );
 }
-
 
 interface ChooseRecipientsProps {
   item: ItemRecord;
@@ -410,11 +345,11 @@ interface ChooseRecipientsProps {
 }
 
 /**
- * The "who gets it?" step for an item that names a COUNT rather than a rule.
+ * The "who got it?" step for an item that names a COUNT rather than a rule.
  *
  * Draws the board, including empty slots, so the choice is made against the shape the user is
- * looking at in-game rather than against a list — the same reason the Modifiers overlay renders
- * all six cells.
+ * looking at in-game rather than against a list — the same reason the Modifiers overlay renders all
+ * six cells.
  */
 function ChooseRecipients({ item, chosen, board, onToggle, onCancel, onConfirm }: ChooseRecipientsProps) {
   const required = item.effect ? requiredChoiceCount(item.effect) : 0;
@@ -423,9 +358,8 @@ function ChooseRecipients({ item, chosen, board, onToggle, onCancel, onConfirm }
 
   return (
     <>
-      <p className={styles.chooseIntro}>
-        {item.effectText}
-        <br />
+      <AbilityText text={item.effectText} className={styles.chooseIntro} />
+      <p className={styles.chooseCount}>
         Pick {required === 1 ? "the monster" : `the ${required} monsters`} that got it —{" "}
         <strong>
           {chosen.length} of {required}
@@ -493,47 +427,6 @@ function ChooseRecipients({ item, chosen, board, onToggle, onCancel, onConfirm }
  */
 const STEP_SLOTS: readonly GridSlot[] = STABLE_SLOT_ORDER;
 
-/** "+5 Damage", "+5% Cooldown Speed", "+5 Damage and +1 Multicast" — in the user's units. */
-function grantSummary(item: ItemRecord): string {
-  const parts = (item.effect?.stats ?? []).map((g) => `${formatAmount(g.stat, g.amount)} ${STAT_LABEL[g.stat] ?? g.stat}`);
-  return parts.join(" and ");
-}
-
-
-/** Who it lands on, said as a count where a count is what the user needs to know. */
-function recipientSummary(effect: NonNullable<ItemRecord["effect"]>, recipientCount: number): string {
-  if (effect.target.kind === ItemTargetKind.Chosen) {
-    return `to ${effect.target.count} ${effect.target.count === 1 ? "monster" : "monsters"} you pick.`;
-  }
-  return `to ${recipientCount} ${recipientCount === 1 ? "monster" : "monsters"}.`;
-}
-
-const STAT_LABEL: Partial<Record<ModifierStat, string>> = {
-  [ModifierStat.DamageFlatAdd]: "Damage",
-  [ModifierStat.BurnAmountAdd]: "Burn",
-  [ModifierStat.PoisonAmountAdd]: "Poison",
-  [ModifierStat.ShockAmountAdd]: "Shock",
-  [ModifierStat.ShieldAmountAdd]: "Shield",
-  [ModifierStat.MulticastAdd]: "Multicast",
-  [ModifierStat.HealAmountAdd]: "Heal",
-  [ModifierStat.CooldownSpeedAdd]: "Cooldown Speed",
-};
-
-/**
- * Cooldown Speed is STORED as a fraction and PUBLISHED as a percentage, so 0.05 reads "+5%" —
- * the same conversion `ModifierEditor`'s chips and `TriggerButtons` both make, and the same one
- * that would make a raw print read "+0.05 Cooldown Speed" against a card saying "+5%".
- */
-function formatAmount(stat: ModifierStat, amount: number): string {
-  if (stat !== ModifierStat.CooldownSpeedAdd) return `+${amount}`;
-  return `+${Math.round(amount * 1000) / 10}%`;
-}
-
 function byName(a: ItemRecord, b: ItemRecord): number {
   return a.name.localeCompare(b.name);
-}
-
-function byRarityThenName(a: ItemRecord, b: ItemRecord): number {
-  const rank = (i: ItemRecord) => (i.rarity ? RARITIES_ASC.indexOf(i.rarity) : RARITIES_ASC.length);
-  return rank(a) - rank(b) || byName(a, b);
 }
