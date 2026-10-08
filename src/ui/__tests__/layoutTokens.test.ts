@@ -269,15 +269,6 @@ describe("the mobile breakpoint shrinks the pane, not the sprite", () => {
     expect(mobileRoot).toMatch(/--grid-card-header: calc\(2 \* 1\.15 \* var\(--font-2xs\)\)/);
   });
 
-  it("drops the clear button below the header, so the name gets the whole row", () => {
-    // The two competed for the top-right corner of a ~103px row: the button is 20px of it and the
-    // longest name needs ~87px, which is why "Brawlmantis" was still "Brawlman…" with the row's
-    // left fifth empty. Derived from the header's own height, so they cannot overlap.
-    expect(grid.replace(/\s+/g, " ")).toMatch(
-      /\.clear \{ top: calc\(var\(--grid-card-header\) \+ var\(--grid-card-padding\)\)/,
-    );
-  });
-
   it("caps a chip row at what the pane can hold, which is three here", () => {
     // Four chips and their gaps need ~130px; a third of a 360px screen is ~103px inside the card's
     // padding. Left at four, the rows broke where they ran out of room rather than where the rule

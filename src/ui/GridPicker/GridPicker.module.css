@@ -105,78 +105,6 @@
   opacity: 0.5;
 }
 
-/*
- * Phones: the pane keeps the desktop's 96px sprite and gives up its square instead (2026-10-08).
- *
- * `--grid-slot-size` is the pane's WIDTH here — the sprite plus the card's padding, which is all a
- * third of a 360px screen has room for — so the header row and the chip band have to be added to
- * its height explicitly rather than fitting inside a square. An explicit height also wins over
- * `aspect-ratio`, which is stated for the desktop in the shared rule above.
- */
-@media (max-width: 640px) {
-  /*
-   * FLUID, not the token. `--team-column-width` is three panes' worth of a fixed slot size, and it
-   * lands tens of pixels short of a phone's width — the board sat in a column of its own with the
-   * rest of the page beside it, and the panes were narrower than the screen could afford while the
-   * panels above them ran the full width.
-   */
-  .grid {
-    width: 100%;
-  }
-
-  .card,
-  .emptyCard {
-    aspect-ratio: auto;
-    height: calc(var(--grid-slot-size) + var(--grid-card-chrome));
-  }
-
-  /*
-   * Two tight lines: the name, then the level under it.
-   *
-   * The level drops below rather than beside the name because across a third of a phone the two do
-   * not fit, and the name losing its last five characters is a worse trade than the level losing a
-   * line it has room for. Flex breaks a line before it shrinks an item, so the name gets the whole
-   * first line to itself.
-   *
-   * TIGHT is the other half of it. At the inherited 145% leading and the desktop's name size, these
-   * two lines measured 42px — a quarter of the pane spent on two words, which is what was squeezing
-   * the sprite out of the middle. Both lines at the chip's size and 1.15 leading come to 26px, and
-   * at that size every name in the corpus fits (the longest is "Steamscuttle", at 12).
-   *
-   * `min-height` reserves BOTH lines whether or not the level wraps, so a short-named pane's sprite
-   * sits at the same height as its neighbour's rather than 13px lower.
-   *
-   * The padding is symmetric and tiny because the clear button is no longer in the way — see
-   * `.clear` below. Holding 20px clear of a corner the button has left is what was still clipping
-   * "Brawlmantis" to "Brawlman…" with a fifth of the row unused.
-   */
-  .header {
-    flex-wrap: wrap;
-    column-gap: var(--space-2xs);
-    row-gap: 0;
-    min-height: var(--grid-card-header);
-    padding-inline: var(--space-3xs);
-  }
-
-  .header .name,
-  .header .level {
-    font-size: var(--font-2xs);
-    line-height: 1.15;
-  }
-
-  /*
-   * BELOW the header rather than in the corner above it, so the name has the pane's whole width.
-   *
-   * The two compete for the top-right corner and the pane is too narrow for both: the button is
-   * 20px of a ~103px row, and the longest name needs ~87px of it. Moving the button down puts it
-   * over the sprite's top-right corner — which is art, not information, and is where an in-game
-   * tile puts its controls anyway — and it stays the same size, so it is no harder to hit.
-   */
-  .clear {
-    top: calc(var(--grid-card-header) + var(--grid-card-padding));
-  }
-}
-
 /* Empty slots are square too -- square filled cards beside non-square placeholders would make the
    grid look broken in exactly the way FR-035 is meant to fix. */
 .emptyCard {
@@ -318,4 +246,70 @@
   font-size: 0.75rem;
   color: #9ca3af;
   cursor: pointer;
+}
+/*
+ * Phones: the pane keeps the desktop's 96px sprite and gives up its square instead (2026-10-08).
+ *
+ * `--grid-slot-size` is the pane's WIDTH here — the sprite plus the card's padding, which is all a
+ * third of a 360px screen has room for — so the header row and the chip band have to be added to
+ * its height explicitly rather than fitting inside a square. An explicit height also wins over
+ * `aspect-ratio`, which is stated for the desktop in the shared rules above.
+ *
+ * LAST IN THE FILE, and that is load-bearing. A media query adds no specificity, so these rules
+ * beat the ones they override on source order alone. Sitting halfway up the file, every override
+ * that named a property the desktop rule below it also named — the header's padding and gap, the
+ * clear button's position — was silently discarded, and two rounds of phone fixes shipped doing
+ * nothing. Anything added here has to stay below the rule it overrides.
+ */
+@media (max-width: 640px) {
+  /*
+   * FLUID, not the token. `--team-column-width` is three panes' worth of a fixed slot size, and it
+   * lands tens of pixels short of a phone's width — the board sat in a column of its own with the
+   * rest of the page beside it, and the panes were narrower than the screen could afford while the
+   * panels above them ran the full width.
+   */
+  .grid {
+    width: 100%;
+  }
+
+  .card,
+  .emptyCard {
+    aspect-ratio: auto;
+    height: calc(var(--grid-slot-size) + var(--grid-card-chrome));
+  }
+
+  /*
+   * TWO ROWS, always: the name beside the clear button, the level underneath.
+   *
+   * `flex-basis: 100%` on the level is what makes it always, rather than only when the name is long
+   * enough to push it over. Panes were disagreeing — a short name kept the level beside it and sat
+   * a row shorter than its neighbour — and a rule that holds for every pane is worth more here than
+   * a line saved on some of them.
+   *
+   * Both rows are LEFT-JUSTIFIED and tight. Centring spends half of whatever a name does not use on
+   * the left of it, which at a third of a phone is width the longest names need; and at the
+   * inherited 145% leading and the desktop's name size these two rows measured 42px of a 166px
+   * pane, which is what was squeezing the sprite out of the middle.
+   *
+   * The right padding is the clear button's corner, which only the first row actually shares — the
+   * level is well short of it on the second.
+   */
+  .header {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    column-gap: var(--space-2xs);
+    row-gap: 0;
+    min-height: var(--grid-card-header);
+    padding-inline: var(--space-3xs) 1.25rem;
+  }
+
+  .header .name,
+  .header .level {
+    font-size: var(--font-2xs);
+    line-height: 1.15;
+  }
+
+  .header .level {
+    flex-basis: 100%;
+  }
 }
