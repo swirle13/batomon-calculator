@@ -1,7 +1,7 @@
 import { useEffect, useRef, type KeyboardEvent, type ReactNode } from "react";
 import type { CreatureType } from "../../data/types";
 import { STAT_COLORS, type StatColorKey } from "../../data/statColors";
-import { formatBadgeValue } from "../../data/format";
+import { formatCompactValue } from "../../data/format";
 import { typeColor } from "../../data/typeColors";
 import { Sprite, type SpriteKind } from "../shared/Sprite";
 import { Button } from "./controls";
@@ -125,7 +125,7 @@ export function StatBadge({ statKey, value, label, prefix }: StatBadgeProps) {
       title={`${label}: ${prefix ?? ""}${value}`}
     >
       {prefix}
-      {formatBadgeValue(value)}
+      {formatCompactValue(value)}
     </span>
   );
 }

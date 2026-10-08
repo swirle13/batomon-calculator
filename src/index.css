@@ -103,6 +103,28 @@ body {
   margin: 0;
 }
 
+/*
+ * The page is never wider than the screen (2026-10-08).
+ *
+ * Without this, ONE element wider than the viewport widens the whole document, and a phone browser
+ * then grows its layout viewport to fit — so the entire app pans left and right, and overlays that
+ * are `position: fixed` drift off centre because the viewport they are fixed to is now bigger than
+ * the screen. The symptom appears everywhere at once and never near its cause: the last instance
+ * was a summary table gaining a digit, which is both invisible in review and a screen away from
+ * what it broke.
+ *
+ * `clip`, not `hidden`. `hidden` would make the root a scroll container, which silently disables
+ * `position: sticky` inside it and allows programmatic scrolling to a place the user cannot reach.
+ * `clip` just refuses the overflow.
+ *
+ * This is a backstop, not a licence: anything that can legitimately be wider than a phone — the
+ * summary tables, most obviously — still needs its own scroll box, or this clips it instead.
+ */
+html,
+body {
+  overflow-x: clip;
+}
+
 h1,
 h2 {
   font-family: var(--heading);

@@ -22,18 +22,35 @@ export function formatRate(value: number): string {
 }
 
 /**
- * A number as it appears on a stat chip, which is a fixed three characters wide
- * (`--stat-chip-width`).
+ * A number short enough to label something narrow: a stat chip, or a chart's y axis.
  *
- * Under 10,000 the figure is shown exactly: a fourth digit still fits, filling the chip edge to
- * edge, and that is the deliberate upper bound rather than an accident. From 10,000 up it is
- * written in thousands — "10K", "123K" — which keeps every reachable value inside four characters
- * (a chip would have to hold ten million before "K" ran out of room). The chip's `title` carries
- * the exact figure either way, so nothing is lost by rounding the label.
+ * Under 10,000 the figure is shown exactly, by `formatBelow` — the caller's own formatter, because
+ * what "exactly" means differs (a chip holds an integer, a rate axis holds two decimals). From
+ * 10,000 up it is written in thousands, millions or billions, at most one decimal, which holds any
+ * value this engine can produce inside four characters: "10K", "123K", "1.2M", "49M".
+ *
+ * Four characters is not incidental. It is the stat chip's width (`--stat-chip-width`), and it is
+ * what keeps a chart's y-axis gutter from growing without limit — an unbounded poison build drew
+ * ticks like "18000000.00", and `yAxisWidthFor` sizes that gutter from the widest tick it will
+ * draw. The exact figure stays reachable: a chip keeps it in its `title`, a chart in its tooltip.
  */
-export function formatBadgeValue(value: number): string {
-  if (Math.abs(value) < 10_000) return String(value);
-  return `${Math.round(value / 1000)}K`;
+export function formatCompactValue(value: number, formatBelow: (v: number) => string = String): string {
+  const abs = Math.abs(value);
+  for (const [limit, suffix] of [
+    [1e9, "B"],
+    [1e6, "M"],
+    [1e3, "K"],
+  ] as const) {
+    // 10,000 rather than 1,000 is the floor for abbreviating at all: "9999" is no wider than "10K"
+    // and says more, so thousands only start paying for themselves in five digits.
+    if (abs < Math.max(limit, 10_000)) continue;
+    const scaled = value / limit;
+    // One decimal below 10 ("1.2M"), none above it ("49M") — four characters at most either way.
+    // The bound is 9.95 rather than 10 because `toFixed(1)` rounds: 9.999 would otherwise render
+    // as "10.0M", which is the five characters this exists to avoid.
+    return `${Math.abs(scaled) < 9.95 ? scaled.toFixed(1) : Math.round(scaled)}${suffix}`;
+  }
+  return formatBelow(value);
 }
 
 /** A signed modifier amount, e.g. `+20` / `-5`. */

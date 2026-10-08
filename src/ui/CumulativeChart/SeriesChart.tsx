@@ -8,6 +8,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { formatCompactValue } from "../../data/format";
 
 /**
  * The ONE line chart (T256 / FR-103), parameterised rather than duplicated.
@@ -57,7 +58,7 @@ export interface SeriesChartProps {
   yTickInterval?: number;
   /** Accessible description of the whole chart. */
   ariaLabel: string;
-  /** Formats values in the tooltip and on the y axis, so both charts read alike. */
+  /** Formats values in the tooltip, where there is room for the exact figure. */
   formatValue?: (value: number) => string;
   /**
    * Total height including the legend row and both axis labels — not the plot area alone. 284
@@ -119,7 +120,17 @@ export function SeriesChart({
   formatValue = (v) => v.toFixed(2),
   height = 284,
 }: SeriesChartProps) {
-  const yAxisWidth = yAxisWidthFor(series, formatValue, yMax);
+  /*
+   * Ticks are ABBREVIATED, the tooltip is not (2026-10-08).
+   *
+   * The gutter is measured from the widest tick, and these series have no ceiling: a poison build
+   * compounds, so a few modifiers took the cumulative axis to "120000000" and the rate axis to
+   * "18000000.00". At 7px a character that is a 100px gutter eating a phone-width plot, and it was
+   * part of what pushed the page wider than the screen. Four characters cap it, by the same rule
+   * the stat chips use — and no precision is lost, because hovering still gives the exact figure.
+   */
+  const formatTick = (v: number) => formatCompactValue(v, formatValue);
+  const yAxisWidth = yAxisWidthFor(series, formatTick, yMax);
 
   const data = xValues.map((x, i) => {
     const row: Record<string, number> = { x };
@@ -156,7 +167,7 @@ export function SeriesChart({
             domain={[0, yMax ?? "auto"]}
             ticks={ticksFor(yMax, yTickInterval)}
             stroke={AXIS}
-            tickFormatter={formatValue}
+            tickFormatter={formatTick}
             /*
               `textAnchor: middle` is the fix for the clipped y label, and it is not obvious:
               a rotated SVG label anchors at its START by default, so "cumulative damage" was being

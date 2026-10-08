@@ -176,7 +176,7 @@
    * slot and the next, and a one-digit value read as a different KIND of thing from a three-digit
    * one. They are now FIXED WIDTH, like the type chips above and for the same reason.
    *
-   * Sized for FOUR characters, which is the most `formatBadgeValue` produces — 10,000 and up are
+   * Sized for FOUR characters, which is the most `formatCompactValue` produces — 10,000 and up are
    * written "10K" / "123K" precisely so nothing longer reaches a chip. Three characters is what the
    * chip is sized to hold COMFORTABLY: they sit with half a digit of air on either side, while a
    * fourth fills the box right up to the padding.

@@ -75,7 +75,7 @@
 /*
  * FIXED WIDTH, not `min-width` (2026-10-08). The content box holds exactly four characters — see
  * `--stat-chip-width` — so a three-character value sits with room around it and the four-character
- * one `formatBadgeValue` can produce fills the chip to its padding.
+ * one `formatCompactValue` can produce fills the chip to its padding.
  *
  * A FLEX box, which is what actually centres the value. As an inline box the declared width did not
  * apply at all, and the text sat against the left padding and ran off the right edge once it
