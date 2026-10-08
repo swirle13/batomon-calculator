@@ -467,14 +467,55 @@ describe("round 9: total DPS and grid sizing", () => {
     expect(screen.getByText("1774.40")).toBeTruthy();
   });
 
-  it("states the engine's coverage ceiling right where the number is (FR-075)", () => {
+  /**
+   * FR-075's counter, and the bug it shipped with (2026-10-07).
+   *
+   * It derived the figure as `needsModelling` minus `actionable` — and `actionable` only ever counts
+   * POSITIONAL tags, because it belongs to the placement optimiser (FR-069). So every creature whose
+   * ability the engine resolves NON-positionally was reported as unmodelled, and the number beside
+   * the DPS figure was simply false.
+   *
+   * `poisonTeam` is the proof: all four of Miasmaw, Cobrex, Drumire and Fumungus have abilities the
+   * engine computes, and the old counter claimed one of them did not. The previous version of this
+   * test asserted only that SOME "N of M" line existed, which the wrong number satisfied — so the
+   * test passed on a false claim. These assert the claim itself, on three boards chosen to cover all
+   * three states.
+   */
+  it("says NOTHING when every placed ability is actually modelled (FR-075)", () => {
     const result = simulate(poisonTeam, corpus);
     render(<TotalDps config={poisonTeam} result={result} />);
-    // Round 11 replaced the sentence with a counter; 2026-10-06 made the counter measure abilities
-    // that NEED modelling. It previously used every placed creature as the denominator, so a team
-    // whose creatures have no abilities at all read "0 of 3 modelled" beside a correct DPS figure.
-    // With a real gap it still reports one; with nothing outstanding it renders nothing.
-    expect(screen.getByText(/\d+ of \d+ abilities not yet modelled/)).toBeTruthy();
+    // The old counter rendered "1 of 4 abilities not yet modelled" here. It was wrong.
+    expect(screen.queryByText(/abilities not yet modelled/)).toBeNull();
+  });
+
+  it("reports a REAL gap, counted from what the engine resolves", () => {
+    const team: TeamConfiguration = {
+      ...poisonTeam,
+      placements: [
+        { slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Miasmaw, level: 1 },
+        { slot: { row: GridRow.Back, col: 1 }, creatureId: Species.Shikitsune, level: 1 },
+        { slot: { row: GridRow.Back, col: 2 }, creatureId: Species.Pebbler, level: 1 },
+      ],
+    };
+    render(<TotalDps config={team} result={simulate(team, corpus)} />);
+    // Shikitsune's revive-and-buff needs a death model; Miasmaw and Pebbler are both computed.
+    expect(screen.getByText("1 of 3 abilities not yet modelled")).toBeTruthy();
+  });
+
+  it("separates abilities that fire OUTSIDE the battle from ones it cannot model", () => {
+    const team: TeamConfiguration = {
+      ...poisonTeam,
+      placements: [
+        { slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Ninflora, level: 1 },
+        { slot: { row: GridRow.Back, col: 1 }, creatureId: Species.Brawlmantis, level: 1 },
+        { slot: { row: GridRow.Back, col: 2 }, creatureId: Species.Craghorn, level: 1 },
+      ],
+    };
+    render(<TotalDps config={team} result={simulate(team, corpus)} />);
+    // All three bank through a button on the card, so "not modelled" is the wrong thing to say:
+    // the ability is fully representable, it just needs the user's input.
+    expect(screen.queryByText(/abilities not yet modelled/)).toBeNull();
+    expect(screen.getByText("3 fire outside the battle — bank them on the card")).toBeTruthy();
   });
 
   it("reads 'DPS average' until the scrubber is moved (WI-R11-003)", () => {

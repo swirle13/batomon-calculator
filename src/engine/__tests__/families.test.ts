@@ -4,6 +4,8 @@ import { RESOLVED_TAG_KINDS, isResolvableTag, resolveEffects } from "../effects"
 import type { GridSlot, TeamConfiguration } from "../../data/types";
 import { AbilityTagKind, GridRow, TargetKind } from "../../data/enums";
 import { Species } from "../../data/ids";
+import { analyzePositionalCoverage } from "../optimize";
+import { abilityNeedsModelling } from "../../data/display";
 
 /**
  * Round 10 (T219): the general selector-based resolver.
@@ -110,5 +112,79 @@ describe("selector-based effect families (T219)", () => {
     // task existed to implement. A kind no engine code reads is the thing this guard watches for.
     expect(isResolvableTag({ kind: AbilityTagKind.CooldownSpeedOnAllyCast })).toBe(true);
     expect(isResolvableTag({ kind: "notARealTagKind" })).toBe(false);
+  });
+});
+
+/**
+ * The FR-075 coverage figure (2026-10-07).
+ *
+ * It shipped wrong: the UI computed it as `needsModelling` minus `actionable`, and `actionable` only
+ * counts POSITIONAL tags because it belongs to the placement optimiser (FR-069). Every creature
+ * whose ability the engine resolves non-positionally was therefore reported as unmodelled, next to a
+ * DPS figure the user is being asked to trust.
+ *
+ * These tests tie the claim to `isResolvableTag` — the same predicate the engine uses to decide what
+ * it acts on — so the number and the behaviour cannot disagree again.
+ */
+describe("coverage reporting is tied to what the engine actually resolves", () => {
+  const board = (picks: Species[]): TeamConfiguration => ({
+    placements: picks.map((creatureId, i) => ({
+      slot: { row: i < 3 ? GridRow.Back : GridRow.Front, col: (i % 3) as 0 | 1 | 2 },
+      creatureId,
+      level: 1 as const,
+    })),
+    trainerId: null,
+    trinketIds: [],
+    itemIds: [],
+    simulationWindowSeconds: 20,
+    teamModifiers: [],
+  });
+
+  it("partitions every ability that needs modelling, with nothing double-counted", () => {
+    // The three buckets must sum to the denominator, or the figure is arithmetic nonsense whatever
+    // else it says.
+    const c = analyzePositionalCoverage(
+      board([Species.Ninflora, Species.Mosslug, Species.Thorntail, Species.Drumire, Species.Cobrex, Species.Miasmaw]),
+      corpus,
+    );
+    expect(c.modelled.length + c.manuallyBanked.length + c.unmodelled.length).toBe(c.needsModelling.length);
+    expect(new Set([...c.modelled, ...c.manuallyBanked, ...c.unmodelled]).size).toBe(c.needsModelling.length);
+  });
+
+  it("counts a resolvable NON-positional tag as modelled — the bug that shipped", () => {
+    /*
+     * Mosslug's `buffOnCast` and Thorntail's `gainOnAllyStatus` are both resolved by the engine and
+     * neither is positional, so the old formula called them unmodelled. This board reported
+     * "3 of 6 abilities not yet modelled" when the true answer was 1 of 6 — Ninflora, whose trigger
+     * fires outside the battle and is banked by a button instead.
+     */
+    const c = analyzePositionalCoverage(
+      board([Species.Ninflora, Species.Mosslug, Species.Thorntail, Species.Drumire, Species.Cobrex, Species.Miasmaw]),
+      corpus,
+    );
+    expect(c.unmodelled).toEqual([]);
+    expect(c.manuallyBanked).toEqual(["Ninflora"]);
+    expect(c.modelled).toContain("Mosslug");
+    expect(c.modelled).toContain("Thorntail");
+
+    // And the old formula, reproduced, still gives the wrong answer — so this is a real regression
+    // guard rather than a restatement of the new code.
+    const oldFormula = c.needsModelling.filter((n) => !c.actionable.includes(n)).length;
+    expect(oldFormula).toBe(3);
+    expect(c.unmodelled.length).toBe(0);
+  });
+
+  it("agrees with isResolvableTag for every creature in the corpus", () => {
+    // The whole-corpus version: whatever `modelled` claims must match the engine's own predicate.
+    const everySpecies = corpus.creatures.filter((cr) => cr.level === 1).map((cr) => cr.id);
+    for (const id of everySpecies) {
+      const creature = corpus.creatures.find((cr) => cr.id === id && cr.level === 1)!;
+      if (!abilityNeedsModelling(creature)) continue;
+      const c = analyzePositionalCoverage(board([id]), corpus);
+      const resolvable = creature.abilityTags.some(isResolvableTag);
+      expect(c.modelled.length === 1, `${id}: modelled=${c.modelled.length}, resolvable=${resolvable}`).toBe(
+        resolvable,
+      );
+    }
   });
 });

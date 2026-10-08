@@ -67,8 +67,18 @@ export function TotalDps({ config, result }: TotalDpsProps) {
   const ttkSeconds = timeToKill(result.cumulativeSeries, day);
 
   const coverage = analyzePositionalCoverage(config, corpus);
-  // Only creatures with an ability that NEEDS modelling count — see `abilityNeedsModelling`.
-  const unmodelled = coverage.needsModelling.filter((n) => !coverage.actionable.includes(n)).length;
+  /*
+   * 2026-10-07: this read `needsModelling.filter((n) => !actionable.includes(n))`, and `actionable`
+   * only ever counts POSITIONAL tags — it belongs to the placement optimiser (FR-069). So any
+   * creature whose ability the engine resolves NON-positionally was reported as unmodelled, and the
+   * figure was simply false: a board of Ninflora, Mosslug, Thorntail, Drumire, Cobrex and Miasmaw
+   * claimed "3 of 6 abilities not yet modelled" when the true answer was 1 of 6.
+   *
+   * `coverage.unmodelled` is computed from `isResolvableTag`, the same predicate the engine uses to
+   * decide what it acts on, so the claim and the behaviour cannot disagree.
+   */
+  const unmodelled = coverage.unmodelled.length;
+  const manuallyBanked = coverage.manuallyBanked.length;
 
   return (
     <section className={styles.wrap}>
@@ -147,9 +157,24 @@ export function TotalDps({ config, result }: TotalDpsProps) {
       {unmodelled > 0 && (
         <p
           className={styles.coverage}
-          title={`${unmodelled} of the ${coverage.needsModelling.length} placed Batomon with a battle ability have one this engine does not yet compute. Creatures with no ability, evolution-only text, or text that just restates their stats are not counted — there is nothing to model.`}
+          title={`${unmodelled} of the ${coverage.needsModelling.length} placed Batomon with a battle ability have one this engine does not yet compute: ${coverage.unmodelled.join(", ")}. Creatures with no ability, evolution-only text, or text that just restates their stats are not counted — there is nothing to model.`}
         >
           {unmodelled} of {coverage.needsModelling.length} abilities not yet modelled
+        </p>
+      )}
+      {/*
+        A SEPARATE line, because this is a different fact and the old counter told the wrong story
+        about it. These abilities fire outside the battle being simulated — winning a round, buying
+        a monster, using an item — so the engine cannot fire them, but the card offers a button that
+        banks each occurrence. Calling them "not modelled" both overstated the gap and hid the
+        feature that closes it.
+      */}
+      {manuallyBanked > 0 && (
+        <p
+          className={styles.coverage}
+          title={`${coverage.manuallyBanked.join(", ")}: the trigger happens outside the battle this engine simulates, so there is a button on the creature's card to bank each occurrence.`}
+        >
+          {manuallyBanked} fire outside the battle — bank them on the card
         </p>
       )}
     </section>

@@ -2,6 +2,7 @@ import type { Corpus, GridSlot, TeamConfiguration, TeamPlacement } from "../data
 import { simulate } from "./simulate";
 import { STABLE_SLOT_ORDER, slotKey } from "./grid";
 import { isResolvableTag } from "./effects";
+import { manualTriggersFor } from "../data/triggers";
 import { applyShinyOverlay } from "../data/corpus";
 import { abilityNeedsModelling } from "../data/display";
 import { AbilityTagKind, TargetKind } from "../data/enums";
@@ -62,9 +63,39 @@ export interface PositionalCoverage {
    * creatures reported "0 of 3 modelled" next to a DPS figure that was entirely correct.
    */
   needsModelling: string[];
+  /**
+   * Of `needsModelling`, the ones `effects.ts`/`simulate()` actually RESOLVE (2026-10-07).
+   *
+   * The three fields below partition `needsModelling`, and they exist because the UI was deriving
+   * its coverage figure from `actionable` — which only ever counts POSITIONAL tags, because it was
+   * built for the placement optimiser (FR-069). A creature with a resolvable non-positional tag was
+   * therefore reported as unmodelled: a board of Ninflora, Mosslug, Thorntail, Drumire, Cobrex and
+   * Miasmaw read "3 of 6 abilities not yet modelled" when the true answer was 1 of 6. Mosslug's
+   * `buffOnCast` and Thorntail's `gainOnAllyStatus` are both computed; they are just not positional.
+   *
+   * `isResolvableTag` is the single source of truth for "the engine acts on this", so these read it
+   * rather than re-deriving a predicate — which is the mistake that produced the wrong number.
+   */
+  modelled: string[];
+  /**
+   * Abilities that fire OUTSIDE the simulated battle — winning a round, buying a monster, using an
+   * item — which the engine cannot fire and the user banks with a button on the card instead.
+   *
+   * Kept separate from `unmodelled` because "not yet modelled" is the wrong thing to tell someone
+   * about these: the ability is fully representable, it just needs their input. Lumping them in
+   * both overstated the gap and hid the feature that closes it.
+   */
+  manuallyBanked: string[];
+  /** Abilities the engine neither resolves nor offers a manual button for. The honest gap. */
+  unmodelled: string[];
   /** Placed creatures carrying any positional-target ability tag. */
   withPositionalTag: string[];
-  /** Placed creatures whose positional tag the engine can actually act on. */
+  /**
+   * Placed creatures whose POSITIONAL tag the engine can act on — the optimiser's own disclosure
+   * (FR-069), answering "can placement advice be trusted for this board?".
+   *
+   * NOT a coverage figure. It was misused as one; see `modelled`.
+   */
   actionable: string[];
   /** Selected trinkets whose effect text implies positional behaviour the engine cannot model. */
   unmodelledTrinkets: string[];
@@ -96,6 +127,9 @@ export function analyzePositionalCoverage(config: TeamConfiguration, corpus: Cor
   const actionable: string[] = [];
   /** Placed creatures with an ability the engine ought to be computing — the honest denominator. */
   const needsModelling: string[] = [];
+  const modelled: string[] = [];
+  const manuallyBanked: string[] = [];
+  const unmodelled: string[] = [];
 
   for (const placement of config.placements) {
     const creature = applyShinyOverlay(
@@ -119,7 +153,14 @@ export function analyzePositionalCoverage(config: TeamConfiguration, corpus: Cor
         tag.kind === AbilityTagKind.CooldownSpeedOnAllyCast
       );
     });
-    if (abilityNeedsModelling(creature)) needsModelling.push(creature.name);
+    if (abilityNeedsModelling(creature)) {
+      needsModelling.push(creature.name);
+      // Read from `isResolvableTag` and `manualTriggersFor`, the two existing sources of truth, so
+      // this cannot drift from what the engine and the card actually do.
+      if (creature.abilityTags.some(isResolvableTag)) modelled.push(creature.name);
+      else if (manualTriggersFor(creature).length > 0) manuallyBanked.push(creature.name);
+      else unmodelled.push(creature.name);
+    }
     if (positional.length === 0) continue;
     withPositionalTag.push(creature.name);
     if (positional.some(isResolvableTag)) actionable.push(creature.name);
@@ -133,7 +174,15 @@ export function analyzePositionalCoverage(config: TeamConfiguration, corpus: Cor
     .filter((t) => POSITIONAL_TRINKET_PATTERN.test(t.effectText) && (t.abilityTags?.length ?? 0) === 0)
     .map((t) => t.name);
 
-  return { withPositionalTag, actionable, unmodelledTrinkets, needsModelling };
+  return {
+    withPositionalTag,
+    actionable,
+    unmodelledTrinkets,
+    needsModelling,
+    modelled,
+    manuallyBanked,
+    unmodelled,
+  };
 }
 
 /** All permutations of `items`. Bounded by 6! = 720 for a full board. */
