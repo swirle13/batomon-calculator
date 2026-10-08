@@ -4,7 +4,7 @@ import { buildId, exportBuild, importBuild } from "../share";
 import { simulate } from "../../engine/simulate";
 import { corpus } from "../corpus";
 import { timeToKill } from "../enemyHealth";
-import { perCastOutputOf } from "../../ui/shared/BatomonCard/BatomonCard";
+import { perCastOutputOf } from "../../ui/shared/BatomonCard/perCastOutput";
 import { StatusEffectType } from "../enums";
 import { Species } from "../ids";
 

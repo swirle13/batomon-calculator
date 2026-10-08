@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { yAxisWidthFor } from "../CumulativeChart/SeriesChart";
+import { yAxisWidthFor } from "../CumulativeChart/yAxisWidth";
 import { formatRate } from "../../data/format";
 
 /**

@@ -1,4 +1,4 @@
-import { useTeamConfig } from "../../context/TeamConfigContext";
+import { useTeamConfig } from "../../context/teamConfig";
 import { resolveCreatureVariant } from "../../data/corpus";
 import { manualTriggersFor, modifiersForPress } from "../../data/triggers";
 import { STAT_COLORS } from "../../data/statColors";

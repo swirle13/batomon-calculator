@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { corpus } from "../../data/corpus";
-import { useTeamConfig } from "../../context/TeamConfigContext";
+import { useTeamConfig } from "../../context/teamConfig";
 import {
   analyzePositionalCoverage,
   suggestPlacement,

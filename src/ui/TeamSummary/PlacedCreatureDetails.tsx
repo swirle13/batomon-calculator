@@ -2,11 +2,12 @@ import { resolveCreatureVariant } from "../../data/corpus";
 import { VariantToggles } from "../shared/VariantToggles/VariantToggles";
 import { TriggerButtons } from "./TriggerButtons";
 import { isPainted } from "../../data/typing";
-import { useTeamConfig } from "../../context/TeamConfigContext";
+import { useTeamConfig } from "../../context/teamConfig";
 import type { GridSlot, SimulationResult } from "../../data/types";
 import {  } from "../../engine/grid";
 import { formatCooldown } from "../../data/format";
-import { BatomonCard, CooldownBlock, StatLines, buildStatLines, perCastOutputOf } from "../shared/BatomonCard/BatomonCard";
+import { BatomonCard, CooldownBlock, StatLines } from "../shared/BatomonCard/BatomonCard";
+import { buildStatLines, perCastOutputOf } from "../shared/BatomonCard/perCastOutput";
 import { placementKey } from "../../engine/grid";
 
 interface PlacedCreatureDetailsProps {

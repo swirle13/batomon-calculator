@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { act, renderHook } from "@testing-library/react";
-import { TeamConfigProvider, useTeamConfig } from "../TeamConfigContext";
+import { TeamConfigProvider } from "../TeamConfigContext";
+import { useTeamConfig } from "../teamConfig";
 import { GridRow, ModifierStat } from "../../data/enums";
 import { Species } from "../../data/ids";
 

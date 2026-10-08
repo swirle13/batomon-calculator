@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { TriggerButtons } from "../TriggerButtons";
-import { TeamConfigProvider, useTeamConfig } from "../../../context/TeamConfigContext";
+import { TeamConfigProvider } from "../../../context/TeamConfigContext";
+import { useTeamConfig } from "../../../context/teamConfig";
 import { resolveCreatureVariant } from "../../../data/corpus";
 import { slotKey } from "../../../engine/grid";
 import type { GridSlot, TeamConfiguration, TeamPlacement } from "../../../data/types";

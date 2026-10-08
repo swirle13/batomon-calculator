@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { TeamConfigProvider, useTeamConfig } from "./context/TeamConfigContext";
+import { TeamConfigProvider } from "./context/TeamConfigContext";
+import { useTeamConfig } from "./context/teamConfig";
 import { GridPicker } from "./ui/GridPicker/GridPicker";
 import { TrainerPicker } from "./ui/GridPicker/TrainerPicker";
 import { TrinketPicker } from "./ui/GridPicker/TrinketPicker";

@@ -11,14 +11,15 @@ import {
 import type { CreatureRecord, CreatureType, GridCol, StatModifier, GridSlot } from "../../data/types";
 import { resolveCreatureVariant } from "../../data/corpus";
 import { isPainted } from "../../data/typing";
-import { useTeamConfig } from "../../context/TeamConfigContext";
+import { useTeamConfig } from "../../context/teamConfig";
 import { typeBackground } from "../../data/typeColors";
 import { STATUS_COLOR_KEY } from "../../data/format";
 import { slotKey, slotsEqual } from "../../engine/grid";
 import { CreatureSprite } from "../shared/CreatureSprite";
 import { StatBadge } from "../primitives";
-import { perCastOutputOf } from "../shared/BatomonCard/BatomonCard";
+import { perCastOutputOf } from "../shared/BatomonCard/perCastOutput";
 import { CreatureSearchModal } from "./CreatureSearchModal";
+import { POINTER_ACTIVATION_CONSTRAINT } from "./dragActivation";
 import styles from "./GridPicker.module.css";
 import { isWildcardType } from "../../data/vocabularies";
 import { GridRow, StatColorKey } from "../../data/enums";
@@ -46,16 +47,6 @@ const COLS: GridCol[] = [0, 1, 2];
  * rarity via native <optgroup> needs no extra UI surface and keeps the plain dropdown the user
  * asked to keep, while making it much faster to visually scan for a specific rarity.
  */
-
-/**
- * Exported so it can be asserted directly (tasks.md T147). jsdom cannot reproduce either half of
- * the real click-vs-drag behaviour -- its synthetic pointer events don't drive @dnd-kit's
- * activation, and its `fireEvent.click` isn't subject to the capture-phase suppression @dnd-kit
- * installs -- so a behavioural test there would pass for the wrong reason in both directions.
- * The presence of this constraint IS the fix (its absence was the bug), so it is what gets pinned.
- * End-to-end behaviour is verified in a real browser per quickstart Scenario 25.
- */
-export const POINTER_ACTIVATION_CONSTRAINT = { distance: 8 } as const;
 
 interface GridPickerProps {
   /** 2026-10-05 round 3 (FR-021): hovering/focusing an occupied card reports its slot upward so

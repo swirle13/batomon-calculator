@@ -1,12 +1,16 @@
-import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
-import type { TeamConfiguration, TeamPlacement, GridSlot, RegionId, StatModifier } from "../data/types";
+import { useMemo, useState, type ReactNode } from "react";
+import type { TeamConfiguration, TeamPlacement } from "../data/types";
 import { slotsEqual } from "../engine/grid";
-import type { Species, TrainerId, TrinketId } from "../data/ids";
+import { TeamConfigContext, type TeamConfigContextValue } from "./teamConfig";
 
 /**
  * The one shared, editable object (research.md A3) feeding both the DPS/status summary and
  * the cumulative chart. No external state library — a single React Context is sufficient at
  * this scale (Constitution Principle VI).
+ *
+ * This module exports ONLY the provider component, and must keep doing so: the context object and
+ * `useTeamConfig` live in `./teamConfig` because a non-component export here takes the whole tree
+ * off React Fast Refresh's path. The reasoning is recorded there.
  */
 
 /**
@@ -38,53 +42,6 @@ let nextModifierId = 1;
 function freshModifierId(): string {
   return `mod-${nextModifierId++}`;
 }
-
-interface TeamConfigContextValue {
-  config: TeamConfiguration;
-  setPlacement: (slot: GridSlot, creatureId: Species | null, level?: 1 | 2 | 3 | 4) => void;
-  /**
-   * Drag-and-drop support (2026-10-05 round 3, data-model.md's "Drag-and-drop placement
-   * editing" amendment): moves the placement at `fromSlot` to `toSlot`. If `toSlot` is already
-   * occupied, the two placements SWAP (each keeps its own level and modifiers) rather than one
-   * overwriting/discarding the other -- unlike `setPlacement`, which always creates a fresh
-   * `TeamPlacement` with no `modifiers`, this preserves the full placement object for both
-   * sides. A no-op if `fromSlot` has no placement.
-   */
-  movePlacement: (fromSlot: GridSlot, toSlot: GridSlot) => void;
-  setTrainerId: (trainerId: TrainerId | null) => void;
-  /** FR-027 (2026-10-06 round 5): multi-select, mirroring the Trainer single-select pattern --
-   * `TeamConfiguration.trinketIds` already existed in the type (round 1) but had no setter. */
-  addTrinketId: (trinketId: TrinketId) => void;
-  removeTrinketId: (trinketId: TrinketId) => void;
-  /*
-   * There is deliberately no `addItemId`/`removeItemId` (2026-10-08, user-reported).
-   *
-   * Items briefly had the trinket treatment — a bag you added to, then spent from. The bag was
-   * pointless: an item has exactly one interesting moment, the moment its bonus lands, and holding
-   * an unused one changes nothing this tool computes. Picking an item in `ItemPicker` now applies
-   * it directly through `addPlacementModifier`, and the record of the use is the labelled modifier
-   * chip it created — removable, visible under Modifiers, and already in the share link.
-   *
-   * `TeamConfiguration.itemIds` stays in the type and the share format (where it has lived since
-   * round 1) and is simply never written. Removing it would be a share-format version bump for no
-   * behavioural gain.
-   */
-  setSimulationWindowSeconds: (seconds: number) => void;
-  addTeamModifier: (modifier: Omit<StatModifier, "id">) => void;
-  removeTeamModifier: (id: string) => void;
-  /** FR-087 (round 11, WI-R11-001): toggle this placement's SHINY variant, independent of level. */
-  setPlacementShiny: (slot: GridSlot, shiny: boolean) => void;
-  /** T229/T235 (FR-087, FR-090). */
-  /** Replaces the entire team, for build import (item 5). Not a merge — see `ShareBuild`. */
-  replaceConfig: (next: TeamConfiguration) => void;
-  setSelectedRegion: (region: RegionId | undefined) => void;
-  setPaintedCreatureIds: (ids: Species[]) => void;
-  setSmuggledCreatureIds: (ids: Species[]) => void;
-  addPlacementModifier: (slot: GridSlot, modifier: Omit<StatModifier, "id">) => void;
-  removePlacementModifier: (slot: GridSlot, id: string) => void;
-}
-
-const TeamConfigContext = createContext<TeamConfigContextValue | null>(null);
 
 export function TeamConfigProvider({
   children,
@@ -225,12 +182,4 @@ export function TeamConfigProvider({
   );
 
   return <TeamConfigContext.Provider value={value}>{children}</TeamConfigContext.Provider>;
-}
-
-export function useTeamConfig(): TeamConfigContextValue {
-  const ctx = useContext(TeamConfigContext);
-  if (!ctx) {
-    throw new Error("useTeamConfig must be used within a TeamConfigProvider");
-  }
-  return ctx;
 }

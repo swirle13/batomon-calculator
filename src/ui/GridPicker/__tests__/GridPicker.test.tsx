@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
-import { GridPicker, POINTER_ACTIVATION_CONSTRAINT } from "../GridPicker";
+import { GridPicker } from "../GridPicker";
+import { POINTER_ACTIVATION_CONSTRAINT } from "../dragActivation";
 import { TeamConfigProvider } from "../../../context/TeamConfigContext";
 import type { StatModifier, TeamConfiguration } from "../../../data/types";
 import { GridRow, ModifierStat } from "../../../data/enums";

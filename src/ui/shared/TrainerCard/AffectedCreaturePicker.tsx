@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { distinctCreatures } from "../../../data/corpus";
 import { isInOppositeRegion } from "../../../data/typing";
-import { useTeamConfig } from "../../../context/TeamConfigContext";
+import { useTeamConfig } from "../../../context/teamConfig";
 import { RARITIES_ASC, RARITIES_DESC, RARITY_COLORS, rarityLabel } from "../../../data/statColors";
 import type { CreatureRecord, Rarity } from "../../../data/types";
 import {

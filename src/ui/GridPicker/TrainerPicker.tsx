@@ -1,5 +1,5 @@
 import { corpus } from "../../data/corpus";
-import { useTeamConfig } from "../../context/TeamConfigContext";
+import { useTeamConfig } from "../../context/teamConfig";
 import { TrainerCard } from "../shared/TrainerCard/TrainerCard";
 import { Field, Select } from "../primitives";
 

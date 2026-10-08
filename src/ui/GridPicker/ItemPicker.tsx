@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { corpus, resolveCreatureVariant } from "../../data/corpus";
-import { useTeamConfig } from "../../context/TeamConfigContext";
+import { useTeamConfig } from "../../context/teamConfig";
 import { RARITY_COLORS, RARITIES_ASC, rarityLabel } from "../../data/statColors";
 import type { CreatureRecord, GridSlot, ItemRecord, Rarity, TeamConfiguration } from "../../data/types";
 import { ItemTargetKind } from "../../data/enums";

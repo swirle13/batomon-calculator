@@ -3,43 +3,15 @@ import type { TrainerRecord } from "../../../data/types";
 import { Button, Surface } from "../../primitives";
 import { Sprite } from "../Sprite";
 import { AffectedCreaturePicker } from "./AffectedCreaturePicker";
+import { designatesCreatureSet } from "./setDesignatingTrainers";
 import styles from "./TrainerCard.module.css";
-import { AffectedSpeciesKind } from "../../../data/enums";
 
 /**
  * The trainer card (T233 / FR-089), replacing the bare `<select>` that was the entire trainer UI.
  *
- * ## Which trainers get the "affected mons" button, and why it is only two
- *
- * Only trainers that designate an **enumerable set of species** get it. Scanning all 23 trainers
- * (research.md M2/M7) gives exactly two:
- *
- * - **Painter** — paints 9 species with every type.
- * - **Smuggler** — brings 9 species in from the opposite region.
- *
- * **Chef** also grants typing ("your single-typed monsters gain Fire typing") but is rule-based:
- * the affected set is derivable from the board, so there is nothing for the user to pick.
- * **Mad Scientist** and **Monster Ranger** do designate sets, but both are scoped by *day*, and
- * this engine simulates one battle with no day counter — neither has a stable set the player could
- * enumerate for a given fight.
+ * Which trainers get the "affected mons" button — and why the answer is exactly two — is recorded
+ * beside the table that decides it, in `setDesignatingTrainers.ts`.
  */
-export const SET_DESIGNATING_TRAINERS = {
-  painter: {
-    label: "Painted species",
-    hint: "9 species painted with every type",
-    kind: AffectedSpeciesKind.Painted,
-  },
-  smuggler: {
-    label: "Smuggled species",
-    hint: "9 species from the opposite region",
-    kind: AffectedSpeciesKind.Smuggled,
-  },
-};
-
-export function designatesCreatureSet(trainerId: string | null | undefined) {
-  if (!trainerId) return null;
-  return SET_DESIGNATING_TRAINERS[trainerId as keyof typeof SET_DESIGNATING_TRAINERS] ?? null;
-}
 
 interface TrainerCardProps {
   /**

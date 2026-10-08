@@ -1,7 +1,7 @@
 import { useRef, useState, type ChangeEvent, type KeyboardEvent } from "react";
 import type { GridCol, GridSlot, TeamPlacement } from "../../data/types";
 import { resolveCreatureVariant } from "../../data/corpus";
-import { useTeamConfig } from "../../context/TeamConfigContext";
+import { useTeamConfig } from "../../context/teamConfig";
 import {
   Button,
   CardGrid,

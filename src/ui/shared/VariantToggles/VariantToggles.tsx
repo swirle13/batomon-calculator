@@ -1,6 +1,6 @@
 import { corpus, hasShinyVariant } from "../../../data/corpus";
 import { resolveLevelUp } from "../../../engine/evolution";
-import { useTeamConfig } from "../../../context/TeamConfigContext";
+import { useTeamConfig } from "../../../context/teamConfig";
 import type { TeamPlacement } from "../../../data/types";
 import styles from "./VariantToggles.module.css";
 
