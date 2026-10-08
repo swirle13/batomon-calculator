@@ -142,6 +142,41 @@ describe("knocked-out allies, and Shikitsune's revive", () => {
     expect(revived).toBeCloseTo(normal / 1.15, 5);
   });
 
+  /**
+   * The crash (2026-10-08, user-reported): placing a Rattleghast blacked the page out with
+   * `Cannot read properties of undefined (reading 'cooldownSpeedGrant')`.
+   *
+   * `resolveBoard` removes a knocked-out creature from its result, and `simulate()` indexed that
+   * result by placement key with a non-null assertion — so every victim produced `undefined` and
+   * the first property read off it took the app down. The assertion had been wrong since the
+   * knockout family was first modelled; tagging Rattleghast only made it reachable in one click.
+   */
+  it("survives a knockout with no reviver, rather than crashing on the missing placement", () => {
+    const board = team([
+      // Rattleghast in the middle, so BOTH neighbours die and neither can revive: Shikitsune is
+      // adjacent too, which is what makes this the board the user actually built.
+      { id: Species.Shikitsune, slot: BACK0 },
+      { id: Species.Rattleghast, slot: BACK1 },
+      { id: Species.Pebbler, slot: BACK2 },
+    ]);
+    const result = simulate(board, corpus);
+
+    expect(result.knockedOutAtBattleStart.map((c) => c.name).sort()).toEqual(["Pebbler", "Shikitsune"]);
+    for (const casualty of result.knockedOutAtBattleStart) {
+      expect(casualty.knockedOutBy).toBe("Rattleghast");
+    }
+    // A corpse casts nothing, so it has no entry anywhere — the state the old `!` assumed could
+    // not happen. Rattleghast is still fighting.
+    expect(result.perCreatureEffectiveStats[placementKey(Species.Pebbler, BACK2)]).toBeUndefined();
+    expect(result.perCreatureEffectiveStats[placementKey(Species.Rattleghast, BACK1)]).toBeDefined();
+  });
+
+  it("reports no casualties when the reviver brings everyone back", () => {
+    // The casualty list is "dead and stayed dead", not "was knocked out at some point" — telling
+    // the user a revived ally is missing from the figure would be the opposite of true.
+    expect(simulate(team(KNOCKED_OUT_BOARD), corpus).knockedOutAtBattleStart).toEqual([]);
+  });
+
   it("models Rattleghast's knockout too, not only Petrirex's", () => {
     // Identical ability shape, untagged until 2026-10-08 — so a Shikitsune board built around
     // Rattleghast silently did nothing at all.

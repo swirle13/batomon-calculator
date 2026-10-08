@@ -230,7 +230,37 @@ function syncReadValues(placements: ResolvedPlacement[]): void {
   }
 }
 
+export interface ResolvedBoard {
+  /**
+   * One entry per placement **that is still on the board**, which is NOT one per placement: a
+   * creature a teammate knocked out at battle start is removed entirely, because a corpse must
+   * not keep feeding adjacency auras and ally totals.
+   */
+  placements: ResolvedPlacement[];
+  /**
+   * The ones removed, named alongside whoever killed them (2026-10-08).
+   *
+   * This exists because the removal above used to be silent, and silence is not a safe way to
+   * drop a creature from the maths. `simulate()` indexed the returned array by placement key and
+   * asserted a hit (`resolvedByKey.get(...)!`), so a Petrirex or Rattleghast standing next to any
+   * ally produced `undefined` and crashed the page. Reporting the casualties makes the gap both
+   * handleable and visible: the UI names them under the DPS figure.
+   */
+  knockedOut: { key: PlacementKey; name: string; knockedOutBy: string }[];
+}
+
+/**
+ * `resolveBoard`, keeping only the survivors.
+ *
+ * The convenient form for the many callers that have no interest in who died — the optimiser, the
+ * coverage report, most tests. `simulate()` must use `resolveBoard` instead, because it is the one
+ * caller that walks `config.placements` and needs to know which of them are no longer there.
+ */
 export function resolveEffects(config: TeamConfiguration, corpus: Corpus): ResolvedPlacement[] {
+  return resolveBoard(config, corpus).placements;
+}
+
+export function resolveBoard(config: TeamConfiguration, corpus: Corpus): ResolvedBoard {
   const members = config.placements
     .map((placement) => {
       // Round 11 (WI-R11-001): the SHINY line when the placement is shiny. This is the single
@@ -346,12 +376,15 @@ export function resolveEffects(config: TeamConfiguration, corpus: Corpus): Resol
   // Petrirex's "+20 Shield permanently for each ally Knockout" is the SELF-inflicted case, which is
   // decidable before the battle starts because the victims are chosen by position. Deaths caused by
   // incoming damage remain unmodelled (no HP system) — see the coverage report.
-  const knockedOut = new Set<string>();
+  // Keyed by victim, valued by KILLER — the name is what lets the UI say "knocked out by
+  // Rattleghast" rather than leaving the user to work out why two of their creatures stopped
+  // contributing.
+  const knockedOut = new Map<PlacementKey, string>();
   for (const source of base) {
     for (const tag of source.creature.abilityTags) {
       if (tag.kind !== AbilityTagKind.KnockoutAlliesOnBattleStart) continue;
       const victims = selectTargets(tag.target, source, base, config);
-      for (const v of victims) knockedOut.add(v.key);
+      for (const v of victims) knockedOut.set(v.key, source.creature.name);
       if (victims.length > 0) {
         source.pendingKnockoutGrants.push({ effect: tag.effectPerKnockout, count: victims.length });
       }
@@ -410,9 +443,14 @@ export function resolveEffects(config: TeamConfiguration, corpus: Corpus): Resol
       knockedOut.delete(m.key);
     }
   }
+  const casualties: ResolvedBoard["knockedOut"] = [];
   if (knockedOut.size > 0) {
     for (let i = base.length - 1; i >= 0; i--) {
-      if (knockedOut.has(base[i]!.key)) base.splice(i, 1);
+      const victim = base[i]!;
+      const killer = knockedOut.get(victim.key);
+      if (killer === undefined) continue;
+      casualties.unshift({ key: victim.key, name: victim.creature.name, knockedOutBy: killer });
+      base.splice(i, 1);
     }
   }
 
@@ -605,5 +643,5 @@ export function resolveEffects(config: TeamConfiguration, corpus: Corpus): Resol
     }
   }
 
-  return base;
+  return { placements: base, knockedOut: casualties };
 }

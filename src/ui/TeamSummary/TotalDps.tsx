@@ -77,8 +77,22 @@ export function TotalDps({ config, result }: TotalDpsProps) {
    * `coverage.unmodelled` is computed from `isResolvableTag`, the same predicate the engine uses to
    * decide what it acts on, so the claim and the behaviour cannot disagree.
    */
-  const unmodelled = coverage.unmodelled.length;
-  const manuallyBanked = coverage.manuallyBanked.length;
+  const casualties = result.knockedOutAtBattleStart;
+  /*
+   * A creature a teammate knocked out is reported ONCE, on the casualty line.
+   *
+   * `analyzePositionalCoverage` walks `config.placements`, which still contains the corpses — it
+   * is a report about the board the user built, not about who survived battle start. Without this
+   * filter a knocked-out creature with an unresolved ability would be listed under "the engine
+   * does not compute this ability yet" as well, which is true in the abstract and useless here:
+   * its ability is not missing from the figure because of an engine gap, it is missing because
+   * the creature is dead.
+   */
+  const dead = new Set(casualties.map((c) => c.name));
+  const unmodelledNames = coverage.unmodelled.filter((n) => !dead.has(n));
+  const bankedNames = coverage.manuallyBanked.filter((n) => !dead.has(n));
+  const unmodelled = unmodelledNames.length;
+  const manuallyBanked = bankedNames.length;
 
   return (
     <section className={styles.wrap}>
@@ -163,12 +177,27 @@ export function TotalDps({ config, result }: TotalDpsProps) {
         Both lines say nothing at all when there is nothing outstanding: a counter reading 0/0, or
         a caveat naming nobody, is noise next to a number.
       */}
-      {(unmodelled > 0 || manuallyBanked > 0) && (
+      {(unmodelled > 0 || manuallyBanked > 0 || casualties.length > 0) && (
         <div className={styles.coverage}>
           <p className={styles.coverageHeading}>Not in this figure</p>
+          {/*
+            2026-10-08, user-reported. Placing a Rattleghast beside two allies removed both from
+            the simulation — correctly, that is what its ability does — but removed them SILENTLY,
+            which reads as the tool losing track of half the board. Naming the creature that
+            killed them is the part that makes it legible rather than alarming.
+
+            This line comes FIRST because it is the one that changes what the user should do: the
+            other two describe a limit of the engine, this describes a consequence of their board.
+          */}
+          {casualties.length > 0 && (
+            <p className={styles.coverageLine}>
+              <span className={styles.coverageNames}>{casualties.map((c) => c.name).join(", ")}</span> — knocked
+              out at battle start by {[...new Set(casualties.map((c) => c.knockedOutBy))].join(" and ")}
+            </p>
+          )}
           {unmodelled > 0 && (
             <p className={styles.coverageLine}>
-              <span className={styles.coverageNames}>{coverage.unmodelled.join(", ")}</span> — the engine does not
+              <span className={styles.coverageNames}>{unmodelledNames.join(", ")}</span> — the engine does not
               compute {unmodelled === 1 ? "this ability" : "these abilities"} yet
             </p>
           )}
@@ -180,7 +209,7 @@ export function TotalDps({ config, result }: TotalDpsProps) {
           */}
           {manuallyBanked > 0 && (
             <p className={styles.coverageLine}>
-              <span className={styles.coverageNames}>{coverage.manuallyBanked.join(", ")}</span> —{" "}
+              <span className={styles.coverageNames}>{bankedNames.join(", ")}</span> —{" "}
               {manuallyBanked === 1 ? "this ability triggers" : "these abilities trigger"} between battles, not
               during one
             </p>

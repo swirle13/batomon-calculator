@@ -772,6 +772,17 @@ export interface SimulationResult {
       cooldownSeconds: number | null;
     }
   >;
+  /**
+   * Creatures a TEAMMATE knocked out at battle start — Petrirex and Rattleghast knock out their
+   * own neighbours — with nobody on the board to revive them (2026-10-08).
+   *
+   * They are absent from every other record here, because they are absent from the battle: no
+   * casts, no stats, no ally auras. That is correct and it is also invisible, which is why this
+   * field exists. Placing a Rattleghast silently deleted two of the user's creatures from the
+   * maths with nothing on screen to say so — and it crashed instead, because `simulate()` assumed
+   * `resolveEffects()` returned one entry per placement, which it has never done for this family.
+   */
+  knockedOutAtBattleStart: { key: PlacementKey; name: string; knockedOutBy: string }[];
   cumulativeSeries: {
     tSeconds: number;
     totalDamage: number;

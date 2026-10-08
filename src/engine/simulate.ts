@@ -3,7 +3,7 @@ import { applyModifiers } from "./modifiers";
 import { effectiveCooldown } from "./cooldown";
 import { applyStatusTick, applyShockProc } from "./status";
 import { STABLE_SLOT_ORDER, isAdjacent, slotKey, slotsEqual, stableSlotIndex } from "./grid";
-import { resolveEffects, selectTargets } from "./effects";
+import { resolveBoard, selectTargets } from "./effects";
 import { creatureHasType } from "../data/typing";
 import { applyShinyOverlay } from "../data/corpus";
 import { InvalidTeamConfigurationError } from "./errors";
@@ -229,10 +229,11 @@ export function simulate(
   // values instead of merely reporting them. Before this, `perCreatureEffectiveStats` was built in
   // Phase A and read by nothing downstream -- Miasmaw's card could show Poison 336 while its
   // timeline still applied Poison 10.
-  const resolved = resolveEffects(config, corpus);
+  const board = resolveBoard(config, corpus);
+  const resolved = board.placements;
   const resolvedByKey = new Map(resolved.map((r) => [r.key, r]));
 
-  const teamMembers = config.placements.map((p) => {
+  const teamMembers = config.placements.flatMap((p) => {
     // Safe to assert: validate() above already confirmed a record exists for this exact
     // (creatureId, level) pair — see the lookup-fix amendment in data-model.md.
     //
@@ -246,12 +247,31 @@ export function simulate(
       corpus.creatures.find((c) => c.id === p.creatureId && c.level === p.level)!,
       p.shiny,
     )!;
-    return {
-      slot: p.slot,
-      creature,
-      resolved: resolvedByKey.get(placementKey(creature.id, p.slot))!,
-      placementModifiers: p.modifiers ?? [],
-    };
+    /*
+     * NOT one resolved entry per placement, and this used to assert that it was (2026-10-08,
+     * user-reported crash).
+     *
+     * `resolveBoard` removes a creature a teammate knocked out at battle start, so the lookup
+     * misses for every victim of a Petrirex or a Rattleghast. The old `.get(...)!` then handed
+     * `undefined` straight into Phase A, which read `.cooldownSpeedGrant` off it and took the
+     * whole page down. The assertion had been wrong since the knockout family was first modelled;
+     * tagging Rattleghast only made it easy to reach.
+     *
+     * Dropping the member is the right answer, not substituting a default: a knocked-out creature
+     * casts nothing, carries no stats and feeds no aura, which is exactly what being absent from
+     * `teamMembers` means. `board.knockedOut` carries the fact onward so it is reported rather
+     * than merely silent.
+     */
+    const resolved = resolvedByKey.get(placementKey(creature.id, p.slot));
+    if (!resolved) return [];
+    return [
+      {
+        slot: p.slot,
+        creature,
+        resolved,
+        placementModifiers: p.modifiers ?? [],
+      },
+    ];
   });
 
   // --- Phase A: generate every creature's cast times across the window, and resolve each
@@ -1097,6 +1117,7 @@ export function simulate(
     perStatusAppliedPerSecond,
     perStatusFinalDamageRate,
     perStatusDamageGrowthPerSecond,
+    knockedOutAtBattleStart: board.knockedOut,
     cumulativeSeries,
   };
 }
