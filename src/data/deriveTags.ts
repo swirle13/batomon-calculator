@@ -1,6 +1,13 @@
-import type { AbilityTag, CreatureRecord, CreatureType, Rarity, TargetSelector } from "./types";
+import type {
+  AbilityTag,
+  CreatureRecord,
+  CreatureType,
+  EffectDescriptor,
+  Rarity,
+  TargetSelector,
+} from "./types";
 import { ABILITY_TRIGGER, CREATURE_TYPE, RARITY } from "./vocabularies";
-import { ModifierStat } from "./enums";
+import { ModifierStat, StatChangeStat, StatusEffectType } from "./enums";
 
 /**
  * Ability tags DERIVED from a creature's own published text (2026-10-07, round 7 WI-002 / FR-113).
@@ -149,6 +156,64 @@ function manualTrigger(
   return { kind: "manualTrigger", trigger: record.abilityTrigger, effects, target, includeSelf };
 }
 
+/**
+ * An `ongoing` aura grant, which the effect resolver ACTS ON — unlike `manualTrigger`.
+ *
+ * Returns `null` when the grant names a stat the tag vocabulary cannot carry, which is a real and
+ * common case rather than a defensive check: `EffectDescriptor.statChange` covers only damage,
+ * multicast and the two cooldown stats, and `statusGrant` only the four statuses. So Aster's
+ * "Adjacent Water allies gain +25 Heal permanently" has **nowhere to be written** — `Heal` is a
+ * published output stat with no slot in the ability vocabulary. Refusing is correct; inventing a
+ * near-miss tag would make the engine compute something the card does not say.
+ */
+function ongoingGrant(
+  targetWord: string,
+  filterWords: string | undefined,
+  clause: string,
+  record: CreatureRecord,
+): AbilityTag | null {
+  const effects = allEffects(clause);
+  if (effects.length !== 1) return null; // multi-stat auras need one tag each; not this round
+
+  const effect = effects[0]!;
+  const descriptor = EFFECT_FOR_STAT[effect.stat]?.(effect.amount);
+  if (!descriptor) return null;
+
+  const word = targetWord.toLowerCase();
+  const filters = filtersFrom(filterWords);
+  const target: TargetSelector | null =
+    word === "adjacent"
+      ? { kind: "adjacent", ...filters }
+      : word === "ally behind"
+        ? { kind: "behind" }
+        : word === "allies"
+          ? { kind: "allAllies", ...filters }
+          : null;
+  if (!target) return null;
+
+  // Belt and braces: an `ongoing` tag IS engine-resolved, so a creature must never end up with both
+  // this and a manual button. Round 6's guard asserts it; this makes it true by construction.
+  if (record.abilityTags.length > 0) return null;
+
+  return { kind: "ongoing", target, effect: descriptor };
+}
+
+/** How a `ModifierStat` grant maps onto an `EffectDescriptor`. Absent = no slot in the vocabulary. */
+const EFFECT_FOR_STAT: Partial<Record<ModifierStat, (amount: number) => EffectDescriptor>> = {
+  [ModifierStat.DamageFlatAdd]: (amount) => ({ statChange: { stat: StatChangeStat.Damage, amount } }),
+  [ModifierStat.MulticastAdd]: (amount) => ({ statChange: { stat: StatChangeStat.Multicast, amount } }),
+  [ModifierStat.CooldownSpeedAdd]: (amount) => ({
+    statChange: { stat: StatChangeStat.CooldownSpeed, amount },
+  }),
+  [ModifierStat.BurnAmountAdd]: (amount) => ({ statusGrant: { type: StatusEffectType.Burn, amount } }),
+  [ModifierStat.PoisonAmountAdd]: (amount) => ({ statusGrant: { type: StatusEffectType.Poison, amount } }),
+  [ModifierStat.ShockAmountAdd]: (amount) => ({ statusGrant: { type: StatusEffectType.Shock, amount } }),
+  [ModifierStat.ShieldAmountAdd]: (amount) => ({ statusGrant: { type: StatusEffectType.Shield, amount } }),
+  // Deliberately absent: `healAmountAdd` and `cooldownFlatAddSeconds`. Heal is a published output
+  // stat with no `EffectDescriptor` slot at all, which is why Aster, Lumijel, Emperooze and Dewlotl
+  // cannot be derived into this family however the text is matched.
+};
+
 // ---------------------------------------------------------------------------
 // The rule table
 // ---------------------------------------------------------------------------
@@ -224,6 +289,28 @@ const RULES: DerivationRule[] = [
       const effects = sharedAmountEffects(clause);
       return manualTrigger(r, effects.length > 0 ? effects : allEffects(clause), { kind: "self" }, false);
     },
+  },
+
+  /*
+   * ONGOING AURA GRANTS — the first family that produces a RESOLVED tag.
+   *
+   * "Adjacent Grass allies gain +7% Cooldown Speed permanently." (Ginsage), "Ally behind has +100%
+   * Shock." (Pylong). These are the six species the double-count guard refuses a manual button:
+   * their trigger is one the engine already fires, so the correct representation is a tag the
+   * resolver acts on, not a button the user presses.
+   *
+   * Scoped tightly to the SIMPLE shape — one target, one or two flat stat grants, nothing else in
+   * the sentence. The family's other members are structurally different ("Allies gain Damage for
+   * this battle equal to 0.8x their Shield" is `statFromStat`; "+10% Damage per Mythical Item used"
+   * has no input in this model) and matching them loosely would fabricate engine behaviour.
+   */
+  {
+    family: "ongoing/aura-grant",
+    pattern: new RegExp(
+      String.raw`^(?:Give )?(Adjacent|Ally behind|Allies)\s*((?:\w+ )*?)all(?:y|ies)?\s*(?:gain|has|have)\s+((?:${AMOUNT}\s*(?:${STAT_NAMES})(?:,? and )?)+)(?: permanently)?\.$`,
+      "i",
+    ),
+    build: (m, r) => ongoingGrant(m[1]!, m[2], m[3]!, r),
   },
 
   // "+4 Burn and +4 Poison permanently." / "+50 Damage permanently." — the bare self-grant.

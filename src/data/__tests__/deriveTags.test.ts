@@ -127,7 +127,6 @@ describe("GUARD: the exception list cannot quietly regrow", () => {
     // already fires, so a manual "bank it once" button would double a bonus the engine computes.
     // These want a RESOLVABLE tag instead -- outstanding work, not a modelling dead end.
     aster: "On Battle Start is engine-propagated; wants a resolvable tag, not a button",
-    ginsage: "On Battle Start is engine-propagated; wants a resolvable tag, not a button",
     lumijel: "On Battle Start is engine-propagated; wants a resolvable tag, not a button",
     brimtoad: "On Battle Start is engine-propagated; wants a resolvable tag, not a button",
     emperooze: "On Battle Start is engine-propagated; wants a resolvable tag, not a button",
@@ -206,14 +205,36 @@ describe("GUARD: derivation does not break the round-6 invariants", () => {
     }
   });
 
-  it("leaves the engine-coverage figure alone", () => {
-    // `manualTrigger` is deliberately absent from `RESOLVED_TAG_KINDS`, which is why this family was
-    // derived first: widening it cannot inflate the counter into claiming abilities the engine does
-    // not compute (FR-114). A family that IS resolved may legitimately move it — deliberately, with
-    // the number reported — but this one must not.
+  it("moves the engine-coverage figure by EXACTLY the resolvable tags it derived", () => {
+    /*
+     * FR-114, stated as a rule rather than a frozen number.
+     *
+     * `manualTrigger` is outside `RESOLVED_TAG_KINDS`, so deriving it must not move the counter --
+     * a button the user presses is not the engine computing anything. `ongoing` IS inside it, so
+     * deriving that family SHOULD move the counter, because the engine really does resolve those
+     * abilities now. The dishonesty FR-075 guards against is a count moving without the engine
+     * computing anything, not a count moving.
+     *
+     * So the assertion is: the rise equals the number of records that gained a resolvable tag, and
+     * nothing else shifted.
+     */
     const resolvedBefore = creatures.filter((c) => c.abilityTags.some(isResolvableTag)).length;
     const resolvedAfter = corpus.creatures.filter((c) => c.abilityTags.some(isResolvableTag)).length;
-    expect(resolvedAfter).toBe(resolvedBefore);
+
+    const gainedResolvable = creatures.filter(
+      (c) => c.abilityTags.length === 0 && deriveAbilityTags(c).some(isResolvableTag),
+    ).length;
+
+    expect(resolvedAfter - resolvedBefore).toBe(gainedResolvable);
+
+    // And the manualTrigger family specifically contributed none of that rise.
+    const manualOnly = creatures.filter(
+      (c) =>
+        c.abilityTags.length === 0 &&
+        deriveAbilityTags(c).length > 0 &&
+        !deriveAbilityTags(c).some(isResolvableTag),
+    ).length;
+    expect(manualOnly).toBeGreaterThan(0);
   });
 });
 
@@ -247,10 +268,13 @@ describe("WI-002 coverage — reported, not implied", () => {
      * residue. 16 of research.md L1's 17 families are still hand-tagged.
      */
     expect(untagged.length).toBe(424);
-    expect(newlyDerived.length).toBe(7);
-    expect(untagged.length - newlyDerived.length).toBe(417);
+    expect(newlyDerived.length).toBe(11);
+    expect(untagged.length - newlyDerived.length).toBe(413);
 
     expect(Object.fromEntries([...byFamily].sort())).toEqual({
+      // Engine-resolved: the counter rises by these, correctly (see the FR-114 test above).
+      "ongoing/aura-grant": 4,
+      // Manual buttons: outside RESOLVED_TAG_KINDS, so they move no coverage figure.
       "manualTrigger/self": 3,
       "manualTrigger/this-and-allies": 4,
     });

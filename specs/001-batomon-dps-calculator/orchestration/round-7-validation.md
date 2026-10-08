@@ -273,3 +273,68 @@ Measured, not estimated. Test suite went 330 -> 382.
   opposite of the per-family validation the plan called for (T301 says "commit per family so a bad rule
   is revertable in isolation"). The mechanism is in place and extensible — adding a family is one rule
   row — which is the structural half of the ask.
+
+## Both deferred items executed (2026-10-07) — and the ceiling that was not known before
+
+### WI-004's `publishedCast` restructure: DONE
+
+356 records collapsed to one optional field, 240 had both lines removed, **zero orphans** —
+356 + 240 = 596. The correlation test written when this was deferred is what made the migration
+safe to automate, and it is now retired: an assertion that two fields agree cannot be written
+against a shape with one field. The illegal state is unrepresentable rather than unobserved.
+
+The strongest argument for doing it only surfaced during the work: **`ShinyStatLine` publishes a
+damage number and no channel**, so under the old pair a shiny could set one without the other —
+precisely the state the pair was meant to exclude, held together only because the UI read `damage`
+and ignored `damageType`. The invariant was true *by luck* on that path. The overlay now answers
+the channel question once, explicitly.
+
+Scope line drawn and recorded: `ResolvedPlacement` and `PerCastOutput` keep their damage/channel
+pair deliberately. Those are COMPUTED values where damage legitimately exists without a published
+channel, because a modifier or ability grant can create a cast (T232). **Stored data must not have
+illegal states; derived values are built in one place that already enforces the invariant.**
+
+### WI-002's remaining families: one more derived, and a measured CEILING
+
+The `ongoing/aura-grant` family now derives, which also resolves six species the double-count guard
+had refused: their trigger is one the engine already fires, so the correct representation was always
+a tag the resolver acts on rather than a button the user presses. Derived records: 7 → **11**.
+
+**The engine-coverage figure rose 83 → 87, and that is correct**, not a regression. `manualTrigger`
+is outside `RESOLVED_TAG_KINDS` so deriving it moves nothing; `ongoing` is inside it, so the engine
+genuinely does resolve those four abilities now. The test was rewritten to assert that *rule* —
+"the rise equals the number of records that gained a resolvable tag" — instead of a frozen number,
+which is a stronger statement of FR-114 than the original.
+
+**The finding that changes what "derive all 17 families" means.** The 417 remaining records were
+categorised, and the blocker is not regex effort:
+
+| Category | Records | Why a rule would not help |
+|---|---|---|
+| Shop / economy / run events | 96 | Outside the single battle the engine simulates, by design |
+| Chained trigger ("Trigger this", "Activate …") | 47 | Partly resolvable; needs the ally-cast hook per shape |
+| Evolution metadata ("Evolves at level 3") | 47 | Already modelled in `evolvesInto`/`evolvesAtLevel` — not an ability |
+| Knockout / death | 40 | Needs an HP model the engine explicitly lacks |
+| Charge / cooldown manipulation | 20 | Partly resolvable |
+| Protect / cleanse / disable | 16 | No model for these effects |
+| Enemy-stat scaling | 12 | No enemy model |
+| **Aura / self-buff / count-scaling** | **82** | **Derivable in principle** |
+| Uncategorised long tail | 57 | 112 distinct shapes over 417 records — under 4 records each |
+
+Two hard limits inside even the "derivable" 82:
+
+1. **The tag vocabulary is narrower than the ability space.** `EffectDescriptor.statChange` covers
+   damage, multicast and the two cooldown stats; `statusGrant` covers the four statuses. **There is
+   no slot for Heal**, which is a published output stat with its own colour and card line. So
+   Aster's "Adjacent Water allies gain +25 Heal permanently" has nowhere to be written however the
+   text is matched — and Lumijel, Emperooze and Dewlotl are blocked the same way. Refusing is
+   correct; a near-miss tag would make the engine compute something the card does not say.
+2. **Most of the rest are structurally complex, not just unmatched.** "Allies gain Damage for this
+   battle equal to 0.8x their Shield" is `statFromStat`; "+10% Damage per Mythical Item used" has no
+   input in this model; "Knockout adjacent allies and gain +4 Poison for each ally Knockout" needs
+   the knockout resolver. These need per-shape engine work, not pattern work.
+
+**So the honest ceiling is well under 417, and it is set by what the engine models rather than by
+how many rules get written.** The mechanism is in place and extensible — adding a shape is one rule
+row, as the `ongoing` family just demonstrated — and the next increment of value is widening
+`EffectDescriptor` (starting with Heal), not writing more regexes.
