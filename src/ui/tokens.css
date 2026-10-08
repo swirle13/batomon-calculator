@@ -87,6 +87,18 @@
   --accent-fill-hover: #c2851f;
 
   /*
+   * Ink for a label sitting ON a filled control whose fill is light — the rarity colours and the
+   * shiny foil are both mid-to-light, so `--text-strong` on them is the low-contrast pairing.
+   * Near-black rather than pure black so it matches the app's darkest surface.
+   */
+  --text-on-fill: #14161c;
+
+  /* The shiny toggle's foil. An angled gradient rather than a flat accent fill, so an active
+     SHINY cannot be mistaken for an active level bubble beside it. */
+  --shiny-foil: linear-gradient(105deg, #f4d774 0%, #fff6d0 42%, #e8b647 60%, #f4d774 100%);
+  --shiny-edge: #f4d774;
+
+  /*
    * The ONE focus treatment. TriggerButtons and VariantToggles each wrote
    * `var(--focus-ring, #8ab4f8)` — a blue from no palette in this project, reached because the
    * token did not exist.
@@ -210,6 +222,27 @@
     var(--stat-chips-per-row) * var(--stat-chip-width) + (var(--stat-chips-per-row) - 1) *
       var(--stat-chip-gap)
   );
+  /* --- the shared creature card (2026-10-08) -------------------------------------------------
+   * `BatomonCard` is rendered by both the Calculator panel and the Corpus Browser, and every one
+   * of its bands used to carry its own padding literal — 0.4/0.5/0.35rem block against a 0.6rem
+   * inline that appears on no scale in this project. Snapping them to the spacing scale is what
+   * makes a band's padding editable in one place instead of six.
+   */
+  --card-band-pad: var(--space-sm) var(--space-md);
+  /* The header and meta bands are deliberately tighter: they are labels around the card's content,
+     not content themselves. */
+  --card-band-pad-tight: var(--space-xs) var(--space-md);
+  /* The sprite well in band 2. Must EXCEED --sprite-card or the art is clipped by its own frame. */
+  --card-sprite-frame-width: 6.5rem;
+  --card-sprite-frame-height: 5.25rem;
+  /* The boxed cooldown in band 3. An intrinsic size on purpose (FR-059): the block is placed in two
+     bands with different heights, and a primitive sized by its container renders at two sizes. */
+  --cooldown-block-width: 3.75rem;
+  --cooldown-block-height: 3.25rem;
+  /* Stands in for a rarity whose colour is unset — grey, so it reads as "no rarity" rather than as
+     one of the published rarity colours. */
+  --rarity-fallback: #70707a;
+
   --sprite-card: 56px;
   --sprite-row: 24px;
   /*

@@ -4,27 +4,44 @@
  * Sits in the card's meta band, below the stats they modify, so the effect of a press is visible
  * in the same glance as the press.
  */
-
-.wrap { display: flex; flex-direction: column; gap: var(--space-2xs); width: 100%; }
-.row { display: flex; align-items: center; gap: var(--space-xs); }
-
+.wrap {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-2xs);
+	width: 100%;
+}
+.row {
+	display: flex;
+	align-items: center;
+	gap: var(--space-xs);
+}
 /* `Button size="sm"` carries the look, including the focus ring this file used to reach for with
    `var(--focus-ring, #8ab4f8)` — a blue from no palette here, reached because the token did not
    exist until the controls layer defined it. */
-.button { flex-shrink: 0; }
-
+.button {
+	flex-shrink: 0;
+}
 /* The preview is coloured per stat, matching the badges, so a press has a predictable result. */
-.effects { display: flex; gap: var(--space-xs); font-size: var(--font-xs); font-weight: 600; }
-.effect { white-space: nowrap; }
-
+.effects {
+	display: flex;
+	gap: var(--space-xs);
+	font-size: var(--font-xs);
+	font-weight: 600;
+}
+.effect {
+	white-space: nowrap;
+}
 /* How many monsters a press lands on, for the ally-wide triggers. Muted and unstat-coloured: it
    qualifies the amounts beside it rather than being another one of them. */
-.scope { white-space: nowrap; color: var(--text-muted); font-weight: 500; }
-
+.scope {
+	white-space: nowrap;
+	color: var(--text-muted);
+	font-weight: 500;
+}
 /* Quieter than the trigger buttons above it: undoing is the rarer act, and `ghost` already means
    "no chrome until you reach for it". */
 .reset {
-  align-self: flex-start;
-  color: var(--text-muted);
-  font-size: var(--font-2xs);
+	align-self: flex-start;
+	color: var(--text-muted);
+	font-size: var(--font-2xs);
 }

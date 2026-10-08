@@ -8,23 +8,37 @@
  */
 
 .strip {
-  display: flex;
+  display: grid;
+  /* Five equal columns — the four levels plus shiny — so the strip fills the card's content width
+     instead of leaving a ragged gap on the right. The group spans the first four and repeats the
+     same gap, which is what keeps every bubble the same width across the two nested grids. */
+  grid-template-columns: repeat(5, 1fr);
   align-items: center;
-  gap: var(--space-sm);
-  flex-wrap: wrap;
+  gap: var(--space-3xs);
+  /* The strip's height is its own content's, never its container's leftover room — the bubbles are
+     a fixed-height control and a card with a roomier meta band must not render them taller.
+     `BatomonCard`'s `.meta` no longer stretches its lines either; this holds wherever else the
+     strip is placed. */
+  align-self: start;
+  flex: 1 0 100%;
+  width: 100%;
 }
 
 .group {
-  display: flex;
-  gap: 2px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-column: span 4;
+  gap: var(--space-3xs);
 }
 
 .bubble {
-  min-width: 1.6rem;
-  height: 1.6rem;
+  min-width: 0;
+  /* The same height as a `Button size="sm"` (`controls.module.css` `.sm`), because these sit in a
+     card cell beside those and a second small-control height would read as a misalignment. */
+  height: var(--control-height-sm);
   padding: 0 var(--space-xs);
   border: 1px solid var(--line-subtle);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--surface-sunken);
   color: var(--text-muted);
   font-size: var(--font-xs);
@@ -45,28 +59,24 @@
 }
 
 .bubble:focus-visible {
-  outline: 2px solid var(--focus-ring, #8ab4f8);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 1px;
 }
 
 .bubbleActive {
-  background: var(--rarity-color, #8ab4f8);
-  border-color: var(--rarity-color, #8ab4f8);
-  /* The rarity colours are mid-to-light, so dark text is the high-contrast pairing here. */
-  color: #14161c;
+  background: var(--rarity-color, var(--accent-fill));
+  border-color: var(--rarity-color, var(--accent-fill));
+  color: var(--text-on-fill);
 }
 
 .shiny {
-  min-width: auto;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  font-size: 0.6rem;
+  font-size: var(--font-2xs);
 }
 
 .shinyActive {
-  /* The sheen is the differentiation anchor: an angled gradient that reads as foil, rather than a
-     flat accent fill that would be indistinguishable from an active level bubble. */
-  background: linear-gradient(105deg, #f4d774 0%, #fff6d0 42%, #e8b647 60%, #f4d774 100%);
-  border-color: #f4d774;
-  color: #14161c;
+  background: var(--shiny-foil);
+  border-color: var(--shiny-edge);
+  color: var(--text-on-fill);
 }
