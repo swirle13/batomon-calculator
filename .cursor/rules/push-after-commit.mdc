@@ -5,6 +5,8 @@ alwaysApply: true
 
 # Push every commit
 
+Stage explicit paths, never `git add -A` — see `stage-explicit-paths.mdc`.
+
 After any commit, push it:
 
 ```bash

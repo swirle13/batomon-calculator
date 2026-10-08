@@ -1,0 +1,40 @@
+---
+description: Stage only the files you changed; never git add -A
+alwaysApply: true
+---
+
+# Never stage everything
+
+Multiple agent sessions work in this repo at the same time, so the working tree routinely contains
+edits that belong to someone else. Staging blindly has repeatedly swept unrelated work into commits.
+
+Never run any of these:
+
+```bash
+git add -A
+git add .
+git add --all
+git add -u
+git commit -a
+git commit -am "..."
+```
+
+Stage by explicit path instead, listing every file you touched:
+
+```bash
+git add src/engine/itemEffects.ts src/ui/GridPicker/ItemPicker.tsx
+git commit -m "..."
+```
+
+If a file is new, it still gets named explicitly — no wildcards that could match another session's
+files.
+
+## Before committing
+
+Run `git status` and confirm the staged set contains only files you edited in this session. If
+something you did not touch is already staged, unstage it with `git restore --staged <path>` rather
+than committing it.
+
+## If you are unsure who changed a file
+
+Do not guess and do not commit it. Leave it unstaged and tell the user it is dirty, naming the file.
