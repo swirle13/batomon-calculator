@@ -20,6 +20,27 @@
   border-collapse: collapse;
 }
 
+/*
+ * Each table scrolls INSIDE its own box (2026-10-08).
+ *
+ * A table is as wide as its widest row, and these hold figures with no ceiling: a poison build is
+ * a quadratic, so a modifier that leaves the DPS table reading five digits puts eight in the status
+ * table. One cell crossing into another digit widened the table past a phone's screen, and because
+ * nothing here contained it, it widened the PAGE — reported as the whole canvas becoming draggable
+ * left and right, and as the Modifiers overlay sliding off centre, which is what a fixed overlay
+ * does once a mobile browser grows the layout viewport to fit an overflowing document. One cell,
+ * one character, and the symptom appears a screen away from its cause.
+ *
+ * `min-width: 0` is the half that is easy to miss: these are flex items, and a flex item's
+ * automatic minimum size is its CONTENT, so `overflow-x` alone would have been overruled by the
+ * table inside it and the page would still have grown.
+ */
+.tableScroll {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
 .tables caption {
   font-size: 0.85rem;
   color: #9ca3af;

@@ -57,6 +57,9 @@ export function TeamSummary({ config, result }: TeamSummaryProps) {
     <section>
       <h2>Team Summary</h2>
       <div className={styles.tables}>
+        {/* Each table scrolls inside its own box rather than widening the page — see `.tableScroll`
+            for the whole-page symptom that caused. */}
+        <div className={styles.tableScroll}>
         <table>
           <caption>Damage per second, by creature</caption>
           <thead>
@@ -104,7 +107,9 @@ export function TeamSummary({ config, result }: TeamSummaryProps) {
             )}
           </tbody>
         </table>
+        </div>
 
+        <div className={styles.tableScroll}>
         <table>
           <caption>Status effect output</caption>
           <thead>
@@ -159,6 +164,7 @@ export function TeamSummary({ config, result }: TeamSummaryProps) {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
       <p className={styles.note}>
         Status damage climbs as a fight goes on, so <strong>Dmg/s (avg)</strong> understates a long

@@ -256,8 +256,13 @@ describe("TeamSummary layout (FR-038, item 10)", () => {
     const { container } = render(<TeamSummary config={CONFIG} result={result} />);
     const tables = container.querySelectorAll("table");
     expect(tables.length).toBe(2);
-    // Side by side as one aligned unit: both tables share a single parent element.
-    expect(tables[0]!.parentElement).toBe(tables[1]!.parentElement);
+    // Side by side as one aligned unit: both tables sit in a single container.
+    //
+    // 2026-10-08: each table now has a scroll box of its OWN between it and that container, so it
+    // can outgrow a phone's screen without widening the page (see `.tableScroll`). The pair being
+    // aligned is the requirement; sharing an immediate parent was only how it was done.
+    expect(tables[0]!.parentElement).not.toBe(tables[1]!.parentElement);
+    expect(tables[0]!.parentElement!.parentElement).toBe(tables[1]!.parentElement!.parentElement);
   });
 });
 
