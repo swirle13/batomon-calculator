@@ -92,6 +92,8 @@ export function TeamLibrary() {
    */
   const [opened, setOpened] = useState(false);
   const isSheet = useIsSheet();
+  const drawerRef = useRef<HTMLElement>(null);
+  const tabRef = useRef<HTMLButtonElement>(null);
 
   const commit = useCallback((next: Library) => {
     setLibrary(next);
@@ -159,6 +161,33 @@ export function TeamLibrary() {
     return () => document.removeEventListener("keydown", onKey);
   }, [open]);
 
+  /*
+   * Press anywhere else and the drawer closes.
+   *
+   * On a phone the scrim already does this, and it is only half the behaviour there — it also has
+   * to stop the press reaching the page. On a desktop there is no scrim, deliberately: the page
+   * stays live behind an open drawer. So the dismissal has to come from a listener, and the page
+   * still receives the press that caused it, which is the point — one click both closes the
+   * library and does the thing you clicked.
+   *
+   * `pointerdown`, not `click`: a selection dragged out of the drawer and released on the page
+   * would otherwise count as a click outside it.
+   */
+  useEffect(() => {
+    if (!open) return;
+    function onPointerDown(event: globalThis.PointerEvent) {
+      const target = event.target as Node | null;
+      if (!target) return;
+      // The tab is excluded because it is a TOGGLE: closing here would be undone by its own
+      // handler a moment later, and the drawer would refuse to shut from the control that opened
+      // it.
+      if (drawerRef.current?.contains(target) || tabRef.current?.contains(target)) return;
+      setOpen(false);
+    }
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
+  }, [open]);
+
   function toggle() {
     setOpen((wasOpen) => !wasOpen);
     setOpened(true);
@@ -188,8 +217,9 @@ export function TeamLibrary() {
       />
 
       <button
+        ref={tabRef}
         type="button"
-        className={styles.tab}
+        className={`${styles.tab} ${open ? styles.tabOpen : ""}`}
         onClick={toggle}
         aria-expanded={open}
         aria-controls="team-library"
@@ -199,6 +229,7 @@ export function TeamLibrary() {
       </button>
 
       <aside
+        ref={drawerRef}
         id="team-library"
         className={`${styles.drawer} ${open ? styles.drawerOpen : ""}`}
         aria-label="Team library"

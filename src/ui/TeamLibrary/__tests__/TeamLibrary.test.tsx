@@ -171,6 +171,35 @@ describe("saving and loading", () => {
   });
 });
 
+describe("dismissing", () => {
+  it("closes when something outside it is pressed", () => {
+    setup();
+    fireEvent.pointerDown(screen.getByTestId("board"));
+    expect(drawer()).toHaveAttribute("inert");
+  });
+
+  it("stays open when something inside it is pressed", () => {
+    setup();
+    fireEvent.pointerDown(screen.getByLabelText("Team name"));
+    expect(drawer()).not.toHaveAttribute("inert");
+  });
+
+  it("still shuts from the tab that opened it", () => {
+    // The tab is a toggle, so an outside-press rule that counted it would close and immediately
+    // reopen the drawer.
+    setup();
+    fireEvent.pointerDown(screen.getByRole("button", { name: /library/i }));
+    fireEvent.click(screen.getByRole("button", { name: /library/i }));
+    expect(drawer()).toHaveAttribute("inert");
+  });
+
+  it("closes on Escape", () => {
+    setup();
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(drawer()).toHaveAttribute("inert");
+  });
+});
+
 describe("the mobile sheet", () => {
   // 2026-10-08, user-reported: the handle invited a drag that did nothing, and the gesture fell
   // through to the page behind the sheet instead.

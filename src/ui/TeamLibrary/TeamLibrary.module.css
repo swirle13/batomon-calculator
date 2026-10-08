@@ -43,6 +43,23 @@
   cursor: pointer;
   font: inherit;
   font-size: var(--font-sm);
+  transition: transform 180ms ease;
+}
+
+/*
+ * While the drawer is open the tab rides its left edge rather than staying pinned to the viewport,
+ * where the drawer would cover it: it sits at a lower z-index, so an open drawer buried the one
+ * control carrying `aria-expanded` and the toggle could not be toggled back. Moving it keeps the
+ * pull attached to the thing it pulls.
+ */
+.tabOpen {
+  transform: translate(calc(-1 * var(--library-width)), -50%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab {
+    transition: none;
+  }
 }
 
 .tab:hover {
@@ -521,6 +538,12 @@ details[open] > .groupSummary::before {
     border-left: 2px solid var(--accent-fill);
     border-radius: var(--radius-pill);
     box-shadow: var(--shadow);
+  }
+
+  /* The sheet covers the full width, so there is no edge for the tab to ride — it hides instead
+     (see below) and must not carry the desktop shift into that state. */
+  .tabOpen {
+    transform: none;
   }
 
   .tabLabel {
