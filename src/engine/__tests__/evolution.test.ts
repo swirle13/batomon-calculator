@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { resolveLevelUp } from "../evolution";
 import { corpus } from "../../data/corpus";
 import type { Corpus, CreatureRecord } from "../../data/types";
+import { CreatureType, DamageChannel, Rarity } from "../../data/enums";
 
 /**
  * Synthetic corpus isolating the evolution-chain resolver from the real corpus's current data
@@ -14,14 +15,14 @@ function evolutionCorpus(): Corpus {
   const panbudL1: CreatureRecord = {
     id: "panbud",
     name: "Panbud",
-    rarity: "Common",
-    types: ["Grass"],
+    rarity: Rarity.Common,
+    types: [CreatureType.Grass],
     level: 1,
     baseMulticast: 1,
     shopCost: 10,
     baseCooldownSeconds: 5.5,
     baseDamage: 25,
-    damageType: "Direct",
+    damageType: DamageChannel.Direct,
     evolvesInto: "bambudo",
     evolvesAtLevel: 3,
     abilityText: "Evolves at level 3.",
@@ -32,14 +33,14 @@ function evolutionCorpus(): Corpus {
   const bambudoL3: CreatureRecord = {
     id: "bambudo",
     name: "Bambudo",
-    rarity: "Common",
-    types: ["Grass"],
+    rarity: Rarity.Common,
+    types: [CreatureType.Grass],
     level: 3,
     baseMulticast: 1,
     shopCost: 10,
     baseCooldownSeconds: 5,
     baseDamage: 60,
-    damageType: "Direct",
+    damageType: DamageChannel.Direct,
     abilityText: "test fixture",
     abilityTags: [],
     sourceRefs: [],
@@ -48,14 +49,14 @@ function evolutionCorpus(): Corpus {
   const nonEvolving: CreatureRecord = {
     id: "steadymon",
     name: "Steadymon",
-    rarity: "Common",
-    types: ["Rock"],
+    rarity: Rarity.Common,
+    types: [CreatureType.Rock],
     level: 2,
     baseMulticast: 1,
     shopCost: 10,
     baseCooldownSeconds: 2,
     baseDamage: 5,
-    damageType: "Direct",
+    damageType: DamageChannel.Direct,
     abilityText: "test fixture, no evolution",
     abilityTags: [],
     sourceRefs: [],
@@ -113,8 +114,8 @@ describe("resolveLevelUp", () => {
     const victoryTriggered: CreatureRecord = {
       id: "victoryMon",
       name: "Victory Mon",
-      rarity: "SuperRare",
-      types: ["Fire"],
+      rarity: Rarity.SuperRare,
+      types: [CreatureType.Fire],
       level: 1,
       baseMulticast: 1,
       shopCost: 40,

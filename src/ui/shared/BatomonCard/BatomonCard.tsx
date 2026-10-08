@@ -1,9 +1,9 @@
 import type { ReactNode } from "react";
 import type { CreatureRecord } from "../../../data/types";
-import { RARITY_COLORS, STAT_COLORS, rarityLabel, type StatColorKey } from "../../../data/statColors";
+import { RARITY_COLORS, STAT_COLORS, rarityLabel } from "../../../data/statColors";
 import { STATUS_COLOR_KEY } from "../../../data/format";
 import { displayField, hasAbilityText, isUnconfirmed } from "../../../data/display";
-import type { ModifierStat, PerCastOutput, StatModifier, StatusEffectType } from "../../../data/types";
+import type { PerCastOutput, StatModifier, StatusEffectType } from "../../../data/types";
 import { formatCooldown } from "../../../data/format";
 import { applyModifiers } from "../../../engine/modifiers";
 import { AllTypeTag, TypeTag } from "../TypeTag";
@@ -11,6 +11,7 @@ import { CreatureSprite } from "../CreatureSprite";
 import styles from "./BatomonCard.module.css";
 import { isWildcardType } from "../../../data/vocabularies";
 import { AbilityText } from "../AbilityText";
+import { ModifierStat, StatColorKey } from "../../../data/enums";
 
 /**
  * The one creature card, shared by the Corpus Browser and the Calculator's selected-creature panel
@@ -68,10 +69,10 @@ export function perCastOutputOf(
     (modifiers ?? []).filter((m) => m.stat === stat).reduce((total, m) => total + m.amount, 0);
 
   const statusAdd: Record<StatusEffectType, number> = {
-    Burn: sum("burnAmountAdd"),
-    Poison: sum("poisonAmountAdd"),
-    Shock: sum("shockAmountAdd"),
-    Shield: sum("shieldAmountAdd"),
+    Burn: sum(ModifierStat.BurnAmountAdd),
+    Poison: sum(ModifierStat.PoisonAmountAdd),
+    Shock: sum(ModifierStat.ShockAmountAdd),
+    Shield: sum(ModifierStat.ShieldAmountAdd),
   };
 
   // Shared with the engine so the card and the simulation cannot disagree about what a modifier
@@ -85,9 +86,9 @@ export function perCastOutputOf(
       heal: creature.healAmount ?? null,
     },
     {
-      damageFlatAdd: sum("damageFlatAdd"),
-      multicastAdd: sum("multicastAdd"),
-      healAmountAdd: sum("healAmountAdd"),
+      damageFlatAdd: sum(ModifierStat.DamageFlatAdd),
+      multicastAdd: sum(ModifierStat.MulticastAdd),
+      healAmountAdd: sum(ModifierStat.HealAmountAdd),
       status: statusAdd,
     },
   );
@@ -101,21 +102,21 @@ export function buildStatLines(input: PerCastOutput): StatLine[] {
   // 149 species still have `baseDamage: null`, so this is the common path, not an edge case
   // (research.md H9).
   if (input.damage !== null && !input.damageUnconfirmed) {
-    // 2026-10-07 (round 7 WI-004): this read `input.damageType === "Direct" ? "Deal" : "Deal"` --
+    // 2026-10-07 (round 7 WI-004): this read `input.damageType === DamageChannel.Direct ? "Deal" : "Deal"` --
     // a branch whose two arms were the same string, so the field was consulted for a decision that
     // could not have an outcome. It is the clearest evidence that `damageType` on a record carries
     // no information: measured over all 596 records it is `null` exactly when `baseDamage` is null,
     // with zero exceptions either way (research.md R3).
-    lines.push({ key: "damage", label: `Deal ${input.damage} damage` });
+    lines.push({ key: StatColorKey.Damage, label: `Deal ${input.damage} damage` });
   }
   for (const status of input.appliesStatus) {
     lines.push({ key: STATUS_COLOR_KEY[status.type], label: `${status.type} ${status.amount}` });
   }
   if (input.heal != null && input.heal > 0) {
-    lines.push({ key: "heal", label: `Heal ${input.heal}` });
+    lines.push({ key: StatColorKey.Heal, label: `Heal ${input.heal}` });
   }
   if (input.multicast > 1) {
-    lines.push({ key: "multicast", label: `Multicast ×${input.multicast}` });
+    lines.push({ key: StatColorKey.Multicast, label: `Multicast ×${input.multicast}` });
   }
   return lines;
 }

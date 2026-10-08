@@ -1,4 +1,4 @@
-import type { Corpus, CreatureRecord, CreatureType, Rarity, TeamConfiguration } from "./types";
+import type { Corpus, CreatureRecord, Rarity, TeamConfiguration } from "./types";
 import { creatures } from "./creatures";
 import { trainers } from "./trainers";
 import { trinkets } from "./trinkets";
@@ -6,6 +6,7 @@ import { items } from "./items";
 import { SHINY_STATS } from "./shiny";
 import { creatureHasType } from "./typing";
 import { deriveAbilityTags } from "./deriveTags";
+import { CreatureType } from "./enums";
 
 /**
  * The single assembled corpus lookup object. UI and engine code should import `corpus` from
@@ -170,7 +171,7 @@ export function filterCreatures(criteria: {
 }): CreatureRecord[] {
   return distinctCreatures.filter((c) => {
     // T230/FR-086: painted and natively-"All" creatures surface under EVERY type filter. Before
-    // this, Omnichrome (types: ["All"]) matched no filter at all.
+    // this, Omnichrome (types: [CreatureType.All]) matched no filter at all.
     if (criteria.type && !creatureHasType(c, criteria.type, criteria.config)) return false;
     if (criteria.rarity && c.rarity !== criteria.rarity) return false;
     return true;

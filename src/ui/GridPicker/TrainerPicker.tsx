@@ -2,7 +2,9 @@ import { corpus } from "../../data/corpus";
 import { useTeamConfig } from "../../context/TeamConfigContext";
 import { TrainerCard } from "../shared/TrainerCard/TrainerCard";
 import { Field, Select } from "../primitives";
-import type { RegionId } from "../../data/types";
+
+import { parseRegionId } from "../../data/vocabularies";
+import { RegionId } from "../../data/enums";
 
 /**
  * Region + Trainer selection (FR-006, FR-087, FR-089).
@@ -36,8 +38,8 @@ import type { RegionId } from "../../data/types";
  * creatures are MARKED in the picker rather than removed.
  */
 const REGIONS: { id: RegionId; label: string }[] = [
-  { id: "pantra", label: "Pantra" },
-  { id: "jinto", label: "Jinto" },
+  { id: RegionId.Pantra, label: "Pantra" },
+  { id: RegionId.Jinto, label: "Jinto" },
 ];
 
 export function TrainerPicker() {
@@ -58,7 +60,7 @@ export function TrainerPicker() {
             <Select
               block
               value={config.selectedRegion ?? ""}
-              onChange={(e) => setSelectedRegion(e.target.value === "" ? undefined : e.target.value)}
+              onChange={(e) => setSelectedRegion(parseRegionId(e.target.value))}
             >
               <option value="">— choose a region —</option>
               {REGIONS.map((r) => (

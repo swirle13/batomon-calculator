@@ -5,8 +5,7 @@ import type {
   StatModifier,
   TargetSelector,
 } from "./types";
-import { ABILITY_TRIGGER } from "./vocabularies";
-import { keysInOrder } from "./vocabulary";
+import { ABILITY_TRIGGER, ABILITY_TRIGGERS } from "./vocabularies";
 
 /**
  * The trigger registry: one entry per `AbilityTrigger`, describing how that trigger behaves and
@@ -50,8 +49,9 @@ export interface TriggerDefinition {
 export const TRIGGER_DEFINITIONS: Readonly<Record<AbilityTrigger, TriggerDefinition>> =
   ABILITY_TRIGGER;
 
-/** Every trigger, in canonical order. Derived, so a new union member cannot be missed. */
-export const ABILITY_TRIGGERS: AbilityTrigger[] = keysInOrder(ABILITY_TRIGGER);
+/** Every trigger, in canonical order. Re-exported from the registry, so a new enum member cannot
+ * be missed by a hand-written list -- the drift this round removes. */
+export { ABILITY_TRIGGERS };
 
 /** One press-able trigger on a creature: what it is called, what one press banks, and on whom. */
 export interface ManualTrigger {

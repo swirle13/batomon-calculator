@@ -1,4 +1,5 @@
-import type { DamageType, PerCastOutput, StatusEffectType } from "../data/types";
+import type { PerCastOutput } from "../data/types";
+import { DamageChannel, StatusEffectType } from "../data/enums";
 
 /**
  * Applying user modifiers to a creature's per-cast output.
@@ -25,7 +26,7 @@ import type { DamageType, PerCastOutput, StatusEffectType } from "../data/types"
  * which keeps "unknown damage renders no line" working for the 62 species with `baseDamage: null`.
  */
 
-export const STATUS_TYPES: StatusEffectType[] = ["Burn", "Poison", "Shock", "Shield"];
+export const STATUS_TYPES: StatusEffectType[] = [StatusEffectType.Burn, StatusEffectType.Poison, StatusEffectType.Shock, StatusEffectType.Shield];
 
 /** The modifier totals that bear on a single cast, already summed across team and placement. */
 export interface ModifierAmounts {
@@ -38,7 +39,7 @@ export interface ModifierAmounts {
 /** The unmodified per-cast values a modifier applies to. */
 export interface ModifiableBase {
   damage: number | null;
-  damageType: DamageType | null;
+  damageType: DamageChannel | null;
   appliesStatus: { type: StatusEffectType; amount: number }[];
   baseMulticast: number;
   heal: number | null;
@@ -51,7 +52,7 @@ export interface ModifiableBase {
  * plain, immediate hit the game shows as "Deal N damage". A creature that already has a type keeps
  * it — a `+40` on a Burn-type attacker scales the burn, it does not bolt a direct hit onto it.
  */
-const CREATED_DAMAGE_TYPE: DamageType = "Direct";
+const CREATED_DAMAGE_TYPE: DamageChannel = DamageChannel.Direct;
 
 export function applyModifiers(base: ModifiableBase, amounts: ModifierAmounts): PerCastOutput {
   const damage =

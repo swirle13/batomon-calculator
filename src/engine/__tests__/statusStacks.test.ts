@@ -2,9 +2,10 @@ import { describe, expect, it } from "vitest";
 import { simulate } from "../simulate";
 import { corpus } from "../../data/corpus";
 import type { TeamConfiguration } from "../../data/types";
+import { GridRow, TimelineEventKind } from "../../data/enums";
 
 const solo = (creatureId: string, windowSeconds = 10): TeamConfiguration => ({
-  placements: [{ slot: { row: "back", col: 0 }, creatureId, level: 1 }],
+  placements: [{ slot: { row: GridRow.Back, col: 0 }, creatureId, level: 1 }],
   trainerId: null,
   trinketIds: [],
   itemIds: [],
@@ -73,7 +74,7 @@ describe("Burn tick damage — the full sequence, confirmed against gameplay 202
     // the alternative — for a 170-stack burn that is 14,535 versus 170, an 85x difference. Pinned
     // end-to-end rather than per-tick so the sequence AND its timing are both locked.
     const ticks = simulate(solo("magmite"), corpus)
-      .timeline.filter((e) => e.kind === "statusTick" && e.damageType === "Burn")
+      .timeline.filter((e) => e.kind === TimelineEventKind.StatusTick && e.damageType === "Burn")
       .map((e) => e.damage);
     expect(ticks.slice(0, 4)).toEqual([4, 3, 2, 1]);
   });
@@ -101,7 +102,7 @@ describe("statuses tick as ONE pool on a GLOBAL clock", () => {
     // sharing a cast's instant uses the PRE-cast stack.
     const r = simulate(solo("venopuff", 23), corpus);
     const ticks = r.timeline
-      .filter((e) => e.kind === "statusTick" && e.damageType === "Poison")
+      .filter((e) => e.kind === TimelineEventKind.StatusTick && e.damageType === "Poison")
       .map((e) => `${e.tSeconds}:${e.damage}`);
     expect(ticks).toEqual([
       "4:4", "5:4", "6:4",
@@ -120,7 +121,7 @@ describe("statuses tick as ONE pool on a GLOBAL clock", () => {
     // The bug this replaces: the clock started at `application + interval`, so a cast at 3.5 put
     // the first tick at 4.5. Observed play puts it at 4.0 — the next whole second.
     const ticks = simulate(solo("venopuff", 10), corpus)
-      .timeline.filter((e) => e.kind === "statusTick" && e.damageType === "Poison")
+      .timeline.filter((e) => e.kind === TimelineEventKind.StatusTick && e.damageType === "Poison")
       .map((e) => e.tSeconds);
     expect(ticks[0]).toBe(4);
     for (const t of ticks) expect(Number.isInteger(t), `tick at ${t} is off the whole-second grid`).toBe(true);
@@ -131,7 +132,7 @@ describe("statuses tick as ONE pool on a GLOBAL clock", () => {
     // the stack as it stood before the cast, and 8 only from the next tick.
     const r = simulate(solo("venopuff", 10), corpus);
     const at = (t: number) =>
-      r.timeline.find((e) => e.kind === "statusTick" && e.damageType === "Poison" && e.tSeconds === t)?.damage;
+      r.timeline.find((e) => e.kind === TimelineEventKind.StatusTick && e.damageType === "Poison" && e.tSeconds === t)?.damage;
     expect(at(7)).toBe(4);
     expect(at(8)).toBe(8);
   });
@@ -140,7 +141,7 @@ describe("statuses tick as ONE pool on a GLOBAL clock", () => {
     // The opposite failure mode: if a cast restarted the clock, a fast applier could postpone its
     // own damage indefinitely.
     const ticks = simulate(solo("venopuff", 12), corpus)
-      .timeline.filter((e) => e.kind === "statusTick" && e.damageType === "Poison")
+      .timeline.filter((e) => e.kind === TimelineEventKind.StatusTick && e.damageType === "Poison")
       .map((e) => e.tSeconds);
     for (let i = 1; i < ticks.length; i++) expect(ticks[i]! - ticks[i - 1]!).toBeCloseTo(1, 5);
   });
@@ -150,7 +151,7 @@ describe("statuses tick as ONE pool on a GLOBAL clock", () => {
     // first tick is 5.0 and not 4.5, even though 4.5 is already on the grid: a status applied on a
     // grid line waits for the next one.
     const ticks = simulate(solo("magmite", 12), corpus)
-      .timeline.filter((e) => e.kind === "statusTick" && e.damageType === "Burn")
+      .timeline.filter((e) => e.kind === TimelineEventKind.StatusTick && e.damageType === "Burn")
       .map((e) => `${e.tSeconds}:${e.damage}`);
     expect(ticks.slice(0, 4)).toEqual(["5:4", "5.5:3", "6:2", "6.5:1"]);
   });
@@ -160,8 +161,8 @@ describe("statuses tick as ONE pool on a GLOBAL clock", () => {
     // parts must sum to it (FR-056).
     const team: TeamConfiguration = {
       placements: [
-        { slot: { row: "back", col: 0 }, creatureId: "venopuff", level: 1 },
-        { slot: { row: "back", col: 1 }, creatureId: "miasmaw", level: 1 },
+        { slot: { row: GridRow.Back, col: 0 }, creatureId: "venopuff", level: 1 },
+        { slot: { row: GridRow.Back, col: 1 }, creatureId: "miasmaw", level: 1 },
       ],
       trainerId: null,
       trinketIds: [],
@@ -201,9 +202,9 @@ describe("observed battle: Venopuff + Magmite + shiny Dribblet vs 300 HP", () =>
 
   const team: TeamConfiguration = {
     placements: [
-      { slot: { row: "back", col: 0 }, creatureId: "venopuff", level: 1 },
-      { slot: { row: "back", col: 1 }, creatureId: "magmite", level: 1 },
-      { slot: { row: "back", col: 2 }, creatureId: "dribblet", level: 1, shiny: true },
+      { slot: { row: GridRow.Back, col: 0 }, creatureId: "venopuff", level: 1 },
+      { slot: { row: GridRow.Back, col: 1 }, creatureId: "magmite", level: 1 },
+      { slot: { row: GridRow.Back, col: 2 }, creatureId: "dribblet", level: 1, shiny: true },
     ],
     trainerId: null,
     trinketIds: [],
@@ -216,7 +217,7 @@ describe("observed battle: Venopuff + Magmite + shiny Dribblet vs 300 HP", () =>
     const r = simulate(team, corpus);
     const byTime = new Map<number, { Poison: number; Burn: number }>();
     for (const e of r.timeline) {
-      if (e.kind !== "statusTick" || e.damage === undefined) continue;
+      if (e.kind !== TimelineEventKind.StatusTick || e.damage === undefined) continue;
       const slot = byTime.get(e.tSeconds) ?? { Poison: 0, Burn: 0 };
       slot[e.damageType as "Poison" | "Burn"] += e.damage;
       byTime.set(e.tSeconds, slot);
@@ -246,7 +247,7 @@ describe("observed battle: Venopuff + Magmite + shiny Dribblet vs 300 HP", () =>
     const r = simulate(team, corpus);
     const observedTimes = new Set(OBSERVED.map(([t]) => t));
     const engineTimes = r.timeline
-      .filter((e) => e.kind === "statusTick" && (e.damage ?? 0) > 0 && e.tSeconds <= 23)
+      .filter((e) => e.kind === TimelineEventKind.StatusTick && (e.damage ?? 0) > 0 && e.tSeconds <= 23)
       .map((e) => e.tSeconds);
     for (const t of engineTimes) {
       expect(observedTimes.has(t), `engine ticked at t=${t}, which the recording has no event for`).toBe(true);

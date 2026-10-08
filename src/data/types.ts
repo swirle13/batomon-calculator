@@ -11,35 +11,40 @@
 // ---------------------------------------------------------------------------
 
 /**
- * The closed vocabularies are now DERIVED from the registries in `./vocabularies.ts` (2026-10-07,
- * round 7) rather than hand-written here beside the three separate structures that carried their
- * labels, ordering and colours.
+ * The closed vocabularies are STRING ENUMS, declared once in `./enums.ts` (2026-10-07, round 7).
  *
- * The unions themselves are unchanged — same members, same stored keys, every existing
- * `import type { Rarity } from "./types"` keeps working. What changed is that there is now exactly
- * one declaration per vocabulary, so a member cannot be added with a colour and without an order,
- * and `"SuperRare"` has a `label` of `"Super Rare"` instead of doubling as its own display text.
- * See `vocabulary.ts` for why a const-object registry rather than TypeScript's `enum`.
+ * Imported as VALUES and re-exported, which serves both roles: every existing
+ * `import type { Rarity } from "./types"` keeps working, this file can use them in type positions
+ * below, and new code can reach for `Rarity.SuperRare`.
+ *
+ * The enums are **nominal** — a bare `"SuperRare"` is no longer assignable — which is the property
+ * three rounds of literal unions could not provide and the whole reason the representation changed.
+ * Per-member data (label, ordering, colour) lives in `./vocabularies.ts`.
  */
-import type {
-  Rarity,
+/*
+ * Imported for this file's own type positions AND re-exported for consumers. Both are needed: a
+ * bare `export … from` does not bring the names into local scope.
+ */
+import { AbilityTrigger, CreatureType, DamageChannel, EventLabel, GridRow, ModifierStat, MultiplierScope, RegionId, StatusEffectType, TimelineEventKind } from "./enums";
+import { Rarity, StatChangeStat } from "./enums";
+
+// Re-exports the LOCAL bindings above rather than a second `export … from "./enums"`, which would
+// be a duplicate declaration of each name.
+export {
+  AbilityTrigger,
   CreatureType,
   DamageChannel,
+  EventLabel,
+  GridRow,
+  ModifierStat,
+  MultiplierScope,
+  Rarity,
+  RegionId,
+  StatChangeStat,
   StatusEffectType,
-  AbilityTrigger,
-} from "./vocabularies";
-
-export type { Rarity, CreatureType, DamageChannel, StatusEffectType, AbilityTrigger };
-
-/**
- * Deprecated alias kept for one round so the `DamageType` -> `DamageChannel` rename lands without
- * touching every engine call site in the same commit. `DamageChannel` is the name that says what it
- * is: the channel a HIT lands on, which is a different concept from the kind of cast a creature
- * publishes (research.md R3).
- *
- * @deprecated Use `DamageChannel`.
- */
-export type DamageType = DamageChannel;
+  TimelineEventKind,
+};
+export { StatColorKey } from "./enums";
 
 /*
  * `CreatureType`'s provenance notes, which the registry's members now carry a `kind` for:
@@ -94,7 +99,6 @@ export interface Provenance {
  * Open union, not a strict pair — the official notes say "the power level of **all regions**",
  * which does not commit to there being exactly two (research.md M4).
  */
-export type RegionId = "pantra" | "jinto" | (string & {});
 
 /** T250/FR-100. The closed set of ability triggers (research.md N2). */
 /*
@@ -109,8 +113,6 @@ export type RegionId = "pantra" | "jinto" | (string & {});
  * dying; `On Knockout` is about any monster dying. Different events, easily conflated, so both are
  * spelled out.
  */
-
-export type EventLabel = "OnCast" | "OnBattleStart" | "OnVictory" | "OnKnockout";
 
 /**
  * Filters a selector can additionally apply. Round 11 (T225): real ability text needs all three,
@@ -148,7 +150,7 @@ export interface EffectDescriptor {
    * not what the ability says.
    */
   statChange?: {
-    stat: "cooldownSpeed" | "damage" | "multicast" | "cooldownFlatSeconds";
+    stat: StatChangeStat;
     amount: number;
   };
   statusGrant?: { type: StatusEffectType; amount: number };
@@ -233,7 +235,7 @@ export type AbilityTag =
    * The tag vocabulary could not express a multiplier at all; the capture shows one driving the
    * board's largest numbers.
    */
-  | { kind: "statMultiplier"; target: TargetSelector; stat: "damage" | "status" | "all"; factor: number }
+  | { kind: "statMultiplier"; target: TargetSelector; stat: MultiplierScope; factor: number }
   /**
    * 2026-10-06 (T244 / FR-098). "additional Damage equal to 200% of the Poison stacks on the
    * enemy" — Fumungus. Read from the SHARED TARGET's accumulated status, recomputed every cast and
@@ -295,7 +297,7 @@ export type AbilityTag =
    * against a listed base of 50 — so it carried enormous modifiers — and every single increment was
    * still exactly its listed +24. It therefore lands in `postMultiplierFlatAdd`, not `base`.
    */
-  | { kind: "gainOnAllyStatus"; status: StatusEffectType; stat: "damage"; amount: number }
+  | { kind: "gainOnAllyStatus"; status: StatusEffectType; stat: StatChangeStat.Damage; amount: number }
   | { kind: "statFromUniqueTypes"; target: TargetSelector; effect: EffectDescriptor }
   /**
    * 2026-10-06 (T220). "Knockout adjacent allies and gain <effect> for each ally knocked out" —
@@ -314,7 +316,7 @@ export type AbilityTag =
   | {
       kind: "statFromStat";
       sourceSelector: TargetSelector;
-      sourceStat: StatusEffectType | "damage" | "multicast";
+      sourceStat: StatusEffectType | StatChangeStat.Damage | StatChangeStat.Multicast;
       multiplier: number;
       effect: EffectDescriptor;
     };
@@ -345,7 +347,7 @@ export interface CreatureRecord extends Provenance {
   baseCooldownSeconds: number | null;
   baseDamage: number | null;
   /** null if the creature has no direct-damage cast */
-  damageType: DamageType | null;
+  damageType: DamageChannel | null;
   /**
    * Number of independent direct-damage events a single cooldown completion fires (2026-10-05
    * round 2, research.md D3). Default `1` ("no stated Multicast bonus") — backfilled onto all
@@ -427,14 +429,13 @@ export interface CreatureRecord extends Provenance {
  */
 export interface PerCastOutput {
   damage: number | null;
-  damageType: DamageType | null;
+  damageType: DamageChannel | null;
   appliesStatus: { type: StatusEffectType; amount: number }[];
   heal: number | null;
   multicast: number;
   /** True when `damage` is sourced but not confirmed, so it renders no line rather than a wrong one. */
   damageUnconfirmed: boolean;
 }
-
 
 export interface TrainerRecord extends Provenance {
   id: string;
@@ -489,7 +490,7 @@ export interface Corpus {
 // ---------------------------------------------------------------------------
 
 /** B5: back row = "A" row, front row = "B" row in the wiki's own labeling */
-export type GridRow = "back" | "front";
+
 export type GridCol = 0 | 1 | 2;
 
 export interface GridSlot {
@@ -506,26 +507,10 @@ export interface GridSlot {
  * the user can describe the net effect of such carry-overs directly as a flat adjustment on
  * top of a creature's base stats for this one simulated battle.
  */
-export type ModifierStat =
-  | "damageFlatAdd"
-  | "cooldownFlatAddSeconds"
-  | "cooldownSpeedAdd"
-  | "burnAmountAdd"
-  | "poisonAmountAdd"
-  | "shockAmountAdd"
-  | "shieldAmountAdd"
-  /** 2026-10-05 round 2 (research.md D3): adds to a creature's baseMulticast count. */
-  | "multicastAdd"
-  /**
-   * 2026-10-07 (round 7 WI-002). Heal was the one output stat with no modifier, which made four
-   * species' published abilities HALF-unexpressible: Lumijel's "Allies of level 3 or above gain +15
-   * Damage and +15 Heal permanently", plus Aster, Emperooze and Dewlotl. Deriving those abilities
-   * would have had to silently drop the heal clause, which is worse than not deriving them.
-   *
-   * `heal` was already a first-class output — it is in `PerCastOutput`, it has a `STAT_COLORS` entry
-   * and the card renders a line for it — so this closes an asymmetry rather than adding a concept.
-   */
-  | "healAmountAdd";
+/*
+ * `ModifierStat` is now an enum in `./enums.ts`; the rationale that lived here is kept because it
+ * explains why the vocabulary exists at all.
+ */
 
 export interface StatModifier {
   /** Stable id for list management/removal in the UI; not otherwise meaningful */
@@ -581,13 +566,6 @@ export interface TeamConfiguration {
 // Simulation entities
 // ---------------------------------------------------------------------------
 
-export type TimelineEventKind =
-  | "attack"
-  | "trigger"
-  | "statusTick"
-  | "shockProc"
-  | "ongoingChange";
-
 export interface TimelineEvent {
   tSeconds: number;
   kind: TimelineEventKind;
@@ -595,7 +573,7 @@ export interface TimelineEvent {
   /** Absent for self/ongoing-only events */
   targetSlot?: GridSlot;
   damage?: number;
-  damageType?: DamageType;
+  damageType?: DamageChannel;
   statusDelta?: { type: StatusEffectType; slot: GridSlot; layerDelta: number };
 }
 

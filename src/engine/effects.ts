@@ -15,6 +15,7 @@ import { isWildcardType } from "../data/vocabularies";
 import { hasAbilityText } from "../data/display";
 import { addFlat, addPostMultiplier, applyMultiplier, readRounded, statValue, type StatValue } from "./statValue";
 import { TYPE_COLORS } from "../data/typeColors";
+import { EventLabel, GridRow } from "../data/enums";
 
 /**
  * Effect resolution (FR-073/FR-074, 2026-10-06 round 9).
@@ -164,8 +165,8 @@ export function selectTargets<T extends { slot: GridSlot; key: string; creature:
       return filtered(others.filter((m) => m.slot.row === source.slot.row));
     case "inFront": {
       // The mirror of `behind`: defined only from the back row, looking forward.
-      if (source.slot.row !== "back") return [];
-      return others.filter((m) => m.slot.row === "front" && m.slot.col === source.slot.col);
+      if (source.slot.row !== GridRow.Back) return [];
+      return others.filter((m) => m.slot.row === GridRow.Front && m.slot.col === source.slot.col);
     }
     case "behind": {
       const slot = behindSlot(source.slot);
@@ -410,7 +411,7 @@ export function resolveEffects(config: TeamConfiguration, corpus: Corpus): Resol
           // simulation runs. OnCast/OnVictory/OnKnockout depend on battle state this engine either
           // schedules itself (OnCast) or does not model at all (victory, knockout — there is no
           // death or HP system), so acting on them here would fabricate output.
-          if (tag.event === "OnBattleStart") applyEffect(source.key, tag.effect);
+          if (tag.event === EventLabel.OnBattleStart) applyEffect(source.key, tag.effect);
           break;
 
         case "statFromCount": {

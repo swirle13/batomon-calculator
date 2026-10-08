@@ -5,6 +5,7 @@ import { hasAbilityText } from "../display";
 import { deriveAbilityTags, derivedFamilyFor } from "../deriveTags";
 import { manualTriggersFor } from "../triggers";
 import { isResolvableTag } from "../../engine/effects";
+import { AbilityTrigger, CreatureType, ModifierStat } from "../enums";
 
 /**
  * Derived ability tags (2026-10-07, round 7 WI-002 / FR-113).
@@ -35,10 +36,10 @@ describe("WI-002 acceptance: Ninflora works with no tag written for it", () => {
       expect(tag, `ninflora L${level} derived nothing`).toBeDefined();
       expect(tag).toEqual({
         kind: "manualTrigger",
-        trigger: "On Victory",
+        trigger: AbilityTrigger.OnVictory,
         effects: [{ stat: "cooldownSpeedAdd", amount }],
         // "your Grass allies" plus the "This and" that names the presser separately.
-        target: { kind: "allAllies", typeFilter: "Grass" },
+        target: { kind: "allAllies", typeFilter: CreatureType.Grass },
         includeSelf: true,
       });
     }
@@ -61,7 +62,7 @@ describe("the rule table reads targets, not just self-grants", () => {
    * the table not at all.
    */
   const derived = (id: string, level = 1) =>
-    deriveAbilityTags({ ...rawById(id, level), abilityTrigger: "On Victory" })[0] as
+    deriveAbilityTags({ ...rawById(id, level), abilityTrigger: AbilityTrigger.OnVictory })[0] as
       | { target: unknown; includeSelf: boolean; effects: unknown[] }
       | undefined;
 
@@ -69,9 +70,9 @@ describe("the rule table reads targets, not just self-grants", () => {
     // "Adjacent Water allies gain +25 Heal permanently." Self NOT included: the text does not name
     // it, and `adjacent` already excludes the source.
     const tag = derived("aster");
-    expect(tag?.target).toEqual({ kind: "adjacent", typeFilter: "Water" });
+    expect(tag?.target).toEqual({ kind: "adjacent", typeFilter: CreatureType.Water });
     expect(tag?.includeSelf).toBe(false);
-    expect(tag?.effects).toEqual([{ stat: "healAmountAdd", amount: 25 }]);
+    expect(tag?.effects).toEqual([{ stat: ModifierStat.HealAmountAdd, amount: 25 }]);
   });
 
   it("reads a positional grant (Boomagon's ally behind)", () => {
@@ -82,8 +83,8 @@ describe("the rule table reads targets, not just self-grants", () => {
     const tag = derived("lumijel");
     expect(tag?.target).toEqual({ kind: "allAllies", minLevelFilter: 3 });
     expect(tag?.effects).toEqual([
-      { stat: "damageFlatAdd", amount: 15 },
-      { stat: "healAmountAdd", amount: 15 },
+      { stat: ModifierStat.DamageFlatAdd, amount: 15 },
+      { stat: ModifierStat.HealAmountAdd, amount: 15 },
     ]);
   });
 
@@ -91,8 +92,8 @@ describe("the rule table reads targets, not just self-grants", () => {
     const tag = derived("brimtoad");
     expect(tag?.target).toEqual({ kind: "self" });
     expect(tag?.effects).toEqual([
-      { stat: "burnAmountAdd", amount: 4 },
-      { stat: "poisonAmountAdd", amount: 4 },
+      { stat: ModifierStat.BurnAmountAdd, amount: 4 },
+      { stat: ModifierStat.PoisonAmountAdd, amount: 4 },
     ]);
   });
 

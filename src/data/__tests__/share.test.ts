@@ -1,21 +1,22 @@
 import { describe, expect, it } from "vitest";
 import { InvalidBuildCodeError, buildId, canonicalize, exportBuild, importBuild, readBuildFromUrl } from "../share";
 import type { TeamConfiguration } from "../types";
+import { GridRow, ModifierStat, RegionId } from "../enums";
 
 const base: TeamConfiguration = {
-  selectedRegion: "pantra",
+  selectedRegion: RegionId.Pantra,
   trainerId: "painter",
   placements: [
-    { slot: { row: "front", col: 1 }, creatureId: "miasmaw", level: 2, shiny: true },
-    { slot: { row: "back", col: 0 }, creatureId: "cobrex", level: 1,
-      modifiers: [{ id: "x1", stat: "damageFlatAdd", amount: 10 }] },
+    { slot: { row: GridRow.Front, col: 1 }, creatureId: "miasmaw", level: 2, shiny: true },
+    { slot: { row: GridRow.Back, col: 0 }, creatureId: "cobrex", level: 1,
+      modifiers: [{ id: "x1", stat: ModifierStat.DamageFlatAdd, amount: 10 }] },
   ],
   trinketIds: ["link_cable", "gold_nugget"],
   itemIds: [],
   paintedCreatureIds: ["mosslug"],
   smuggledCreatureIds: [],
   simulationWindowSeconds: 30,
-  teamModifiers: [{ id: "t1", stat: "poisonAmountAdd", amount: 4 }],
+  teamModifiers: [{ id: "t1", stat: ModifierStat.PoisonAmountAdd, amount: 4 }],
 };
 
 describe("build export/import", () => {
@@ -52,14 +53,14 @@ describe("build export/import", () => {
     const variants: [string, TeamConfiguration][] = [
       ["level", { ...base, placements: base.placements.map((p, i) => (i === 0 ? { ...p, level: 3 as const } : p)) }],
       ["shiny", { ...base, placements: base.placements.map((p, i) => (i === 0 ? { ...p, shiny: false } : p)) }],
-      ["slot", { ...base, placements: base.placements.map((p, i) => (i === 0 ? { ...p, slot: { row: "back" as const, col: 2 } } : p)) }],
+      ["slot", { ...base, placements: base.placements.map((p, i) => (i === 0 ? { ...p, slot: { row: GridRow.Back as const, col: 2 } } : p)) }],
       ["creature", { ...base, placements: base.placements.map((p, i) => (i === 0 ? { ...p, creatureId: "drumire" } : p)) }],
-      ["region", { ...base, selectedRegion: "jinto" }],
+      ["region", { ...base, selectedRegion: RegionId.Jinto }],
       ["trainer", { ...base, trainerId: "smuggler" }],
       ["trinkets", { ...base, trinketIds: ["link_cable"] }],
       ["painted", { ...base, paintedCreatureIds: [] }],
       ["window", { ...base, simulationWindowSeconds: 20 }],
-      ["modifier amount", { ...base, teamModifiers: [{ id: "t1", stat: "poisonAmountAdd", amount: 5 }] }],
+      ["modifier amount", { ...base, teamModifiers: [{ id: "t1", stat: ModifierStat.PoisonAmountAdd, amount: 5 }] }],
     ];
     for (const [label, variant] of variants) {
       expect(buildId(variant), `${label} did not change the id`).not.toBe(id);

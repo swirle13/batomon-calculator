@@ -1,5 +1,5 @@
 import type { StatusEffectType } from "./types";
-import type { StatColorKey } from "./statColors";
+import { StatColorKey } from "./enums";
 
 /**
  * Shared display formatters (2026-10-06 round 7, Constitution Principle VII, FR-044).
@@ -32,8 +32,8 @@ export function formatSignedAmount(amount: number): string {
  * third `toLowerCase()`-based variant in `statColors.ts`.
  */
 export const STATUS_COLOR_KEY: Record<StatusEffectType, StatColorKey> = {
-  Burn: "burn",
-  Poison: "poison",
-  Shock: "shock",
-  Shield: "shield",
+  Burn: StatColorKey.Burn,
+  Poison: StatColorKey.Poison,
+  Shock: StatColorKey.Shock,
+  Shield: StatColorKey.Shield,
 };

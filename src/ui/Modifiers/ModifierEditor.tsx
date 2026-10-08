@@ -1,5 +1,5 @@
 import { useRef, useState, type ChangeEvent, type KeyboardEvent } from "react";
-import type { GridCol, GridRow, ModifierStat, GridSlot, TeamPlacement } from "../../data/types";
+import type { GridCol, GridSlot, TeamPlacement } from "../../data/types";
 import { resolveCreatureVariant } from "../../data/corpus";
 import { useTeamConfig } from "../../context/TeamConfigContext";
 import {
@@ -16,6 +16,7 @@ import {
 } from "../primitives";
 import { slotKey } from "../../engine/grid";
 import styles from "./ModifierEditor.module.css";
+import { GridRow, ModifierStat } from "../../data/enums";
 
 interface StatOption {
   value: ModifierStat;
@@ -51,10 +52,10 @@ interface StatOption {
  * better output.
  */
 const STAT_OPTIONS: StatOption[] = [
-  { value: "damageFlatAdd", label: "Damage", chip: "Damage", store: same, show: signed, step: "any" },
-  { value: "healAmountAdd", label: "Heal", chip: "Heal", store: same, show: signed, step: "any" },
+  { value: ModifierStat.DamageFlatAdd, label: "Damage", chip: "Damage", store: same, show: signed, step: "any" },
+  { value: ModifierStat.HealAmountAdd, label: "Heal", chip: "Heal", store: same, show: signed, step: "any" },
   {
-    value: "cooldownFlatAddSeconds",
+    value: ModifierStat.CooldownFlatAddSeconds,
     label: "Cooldown reduction (sec)",
     chip: "Cooldown",
     // Typed 1 = one second SOONER. The engine adds seconds, so a reduction is stored negative.
@@ -63,7 +64,7 @@ const STAT_OPTIONS: StatOption[] = [
     step: "any",
   },
   {
-    value: "cooldownSpeedAdd",
+    value: ModifierStat.CooldownSpeedAdd,
     label: "Cooldown Speed (%)",
     chip: "Cooldown Speed",
     store: (typed) => typed / 100,
@@ -72,10 +73,10 @@ const STAT_OPTIONS: StatOption[] = [
     show: (stored) => `${signed(Math.round(stored * 1000) / 10)}%`,
     step: "1",
   },
-  { value: "burnAmountAdd", label: "Burn applied", chip: "Burn applied", store: same, show: signed, step: "any" },
-  { value: "poisonAmountAdd", label: "Poison applied", chip: "Poison applied", store: same, show: signed, step: "any" },
-  { value: "shockAmountAdd", label: "Shock applied", chip: "Shock applied", store: same, show: signed, step: "any" },
-  { value: "shieldAmountAdd", label: "Shield applied", chip: "Shield applied", store: same, show: signed, step: "any" },
+  { value: ModifierStat.BurnAmountAdd, label: "Burn applied", chip: "Burn applied", store: same, show: signed, step: "any" },
+  { value: ModifierStat.PoisonAmountAdd, label: "Poison applied", chip: "Poison applied", store: same, show: signed, step: "any" },
+  { value: ModifierStat.ShockAmountAdd, label: "Shock applied", chip: "Shock applied", store: same, show: signed, step: "any" },
+  { value: ModifierStat.ShieldAmountAdd, label: "Shield applied", chip: "Shield applied", store: same, show: signed, step: "any" },
 ];
 
 function same(typed: number): number {
@@ -143,7 +144,7 @@ function chipText(stat: ModifierStat, amount: number): string {
  * overlay is where a modifier is read and removed now, which is also where it is created — one
  * place for the whole job, and one that can grow without displacing anything.
  */
-const ROWS: GridRow[] = ["back", "front"];
+const ROWS: GridRow[] = [GridRow.Back, GridRow.Front];
 const COLS: GridCol[] = [0, 1, 2];
 
 export function ModifierEditor() {
@@ -238,7 +239,7 @@ interface PlacementModifierCellProps {
 function PlacementModifierCell({ placement, onAdd, onRemove }: PlacementModifierCellProps) {
   const creature = resolveCreatureVariant(placement.creatureId, placement.level, placement.shiny);
   const name = creature?.name ?? placement.creatureId;
-  const [stat, setStat] = useState<ModifierStat>("damageFlatAdd");
+  const [stat, setStat] = useState<ModifierStat>(ModifierStat.DamageFlatAdd);
   // Starts EMPTY, not "0". A prefilled zero meant typing 20 produced "020" unless you deleted it
   // first — the field is for a number you are about to type, so it should not already contain one.
   // The placeholder still shows a 0 so the expected shape is obvious.
@@ -261,9 +262,9 @@ function PlacementModifierCell({ placement, onAdd, onRemove }: PlacementModifier
    */
   const inertReason = ((): string | null => {
     if (!creature || creature.baseCooldownSeconds !== null) return null;
-    if (stat === "cooldownSpeedAdd")
+    if (stat === ModifierStat.CooldownSpeedAdd)
       return `${name} has no published cooldown, so there is no cast cycle for a percentage to speed up.`;
-    if (stat === "cooldownFlatAddSeconds" && Number(amount) > 0)
+    if (stat === ModifierStat.CooldownFlatAddSeconds && Number(amount) > 0)
       return `${name} has no published cooldown, so there is nothing to shorten. A negative amount gives it one instead: -3 means it casts every 3 seconds.`;
     return null;
   })();

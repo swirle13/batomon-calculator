@@ -1,4 +1,5 @@
-import type { DamageType, StatusEffectInstance } from "../data/types";
+import type { StatusEffectInstance } from "../data/types";
+import { DamageChannel, StatusEffectType } from "../data/enums";
 
 /**
  * Status-effect timing/decay rules.
@@ -20,7 +21,7 @@ export function applyStatusTick(
       "applyStatusTick does not handle Shock — Shock is reactive on direct-damage hits, use applyShockProc instead (research.md B2/B4).",
     );
   }
-  if (instance.type === "Shield") {
+  if (instance.type === StatusEffectType.Shield) {
     throw new Error(
       "Shield is not a periodic-tick status — it is consumed via applyShieldReduction, not applyStatusTick.",
     );
@@ -42,7 +43,7 @@ export function applyStatusTick(
 }
 
 export function applyShockProc(
-  directHit: { damage: number; damageType: "Direct" },
+  directHit: { damage: number; damageType: DamageChannel.Direct },
   shockInstance: StatusEffectInstance | null,
 ):
   | {
@@ -57,7 +58,7 @@ export function applyShockProc(
   // The Shock hit resolves FIRST, equal to the current layer count, before the direct hit
   // (research.md B2/B4). Shock itself is never mutated here — it only changes via an explicit
   // new application, never from this proc.
-  const shockHit = { damage: shockInstance.layers, damageType: "Shock" as const };
+  const shockHit = { damage: shockInstance.layers, damageType: DamageChannel.Shock as const };
   return {
     shockDamage: shockHit.damage,
     orderedHits: [shockHit, directHit],
@@ -65,6 +66,6 @@ export function applyShockProc(
 }
 
 /** Guard used by callers that need to confirm a damage type is one Shock can react to. */
-export function isDirectDamage(damageType: DamageType): damageType is "Direct" {
-  return damageType === "Direct";
+export function isDirectDamage(damageType: DamageChannel): damageType is DamageChannel.Direct {
+  return damageType === DamageChannel.Direct;
 }

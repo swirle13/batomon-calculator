@@ -1,7 +1,6 @@
-import type { Rarity, StatusEffectType } from "./types";
-import { RARITY } from "./vocabularies";
-import { keysInOrder } from "./vocabulary";
-import { STATUS_COLOR_KEY } from "./format";
+import { Rarity, type StatusEffectType } from "./enums";
+import { RARITY, RARITIES_ASC, RARITIES_DESC, statusColorKey } from "./vocabularies";
+import { StatColorKey } from "./enums";
 
 /**
  * Canonical stat/rarity -> color mappings (2026-10-06 round 6, data-model.md's "Canonical stat
@@ -18,25 +17,26 @@ import { STATUS_COLOR_KEY } from "./format";
  */
 
 /**
- * Keyed by the published lowercase stat key rather than reusing `StatusEffectType`, because this
- * set includes `damage`, `heal`, and `multicast`, which are not status effects.
+ * `StatColorKey` is an enum in `./enums.ts` -- keyed by the published lowercase stat key rather
+ * than reusing `StatusEffectType`, because this set includes Damage, Heal and Multicast, which are
+ * not status effects.
  */
-export type StatColorKey = "damage" | "burn" | "poison" | "shock" | "shield" | "heal" | "multicast";
+export { StatColorKey };
 
 export const STAT_COLORS: Record<StatColorKey, string> = {
-  damage: "#ef426b",
-  burn: "#ed6b3a",
-  poison: "#7b57a1",
-  shock: "#e7c61c",
+  [StatColorKey.Damage]: "#ef426b",
+  [StatColorKey.Burn]: "#ed6b3a",
+  [StatColorKey.Poison]: "#7b57a1",
+  [StatColorKey.Shock]: "#e7c61c",
   // 2026-10-06 round 7 (tasks.md T154 / FR-041): OVERRIDES the batodex-published `#a47c41`
   // (brown) that H2 cites. The game renders Shield on a silver/steel plate -- pixel-sampling the
   // user's in-game capture gives #a7a8b4 / #a8a9b4 / #a5a9da, and this is that hue family nudged
   // darker so white badge text keeps legible contrast. Six of the seven colours here were
   // cross-checked against an in-game card in round 6; `shield` was the one that wasn't, which is
   // why it is the one that was wrong.
-  shield: "#9aa1b8",
-  heal: "#578ac9",
-  multicast: "#7b93c3",
+  [StatColorKey.Shield]: "#9aa1b8",
+  [StatColorKey.Heal]: "#578ac9",
+  [StatColorKey.Multicast]: "#7b93c3",
 };
 
 /**
@@ -52,8 +52,7 @@ export const STAT_COLORS: Record<StatColorKey, string> = {
  * mechanism: `RARITY.SuperRare.label` is `"Super Rare"`, and `labelOf` is the only way the UI gets a
  * rarity's display text.
  */
-export const RARITIES_ASC: Rarity[] = keysInOrder(RARITY);
-export const RARITIES_DESC: Rarity[] = [...RARITIES_ASC].reverse();
+export { RARITIES_ASC, RARITIES_DESC };
 
 export const RARITY_COLORS: Record<Rarity, string> = Object.fromEntries(
   RARITIES_ASC.map((r) => [r, RARITY[r].color]),
@@ -70,7 +69,7 @@ export function rarityLabel(rarity: Rarity): string {
  * copy of the same mapping (tasks.md T172).
  */
 export function statusColor(type: StatusEffectType): string {
-  return STAT_COLORS[STATUS_COLOR_KEY[type]];
+  return STAT_COLORS[statusColorKey(type)];
 }
 
 /**

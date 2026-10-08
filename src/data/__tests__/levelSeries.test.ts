@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { corpus } from "../corpus";
-import type { StatusEffectType } from "../types";
+
 import sourceSeries from "./fixtures/batodex-level-series.json";
+import { StatusEffectType } from "../enums";
 
 /**
  * Value-for-value regression guard on the creature corpus (2026-10-06 round 6, research.md H11).
@@ -28,10 +29,10 @@ type SourceLevel = {
 };
 
 const STATUS_FROM_KEY: Record<string, StatusEffectType> = {
-  burn: "Burn",
-  poison: "Poison",
-  shock: "Shock",
-  shield: "Shield",
+  burn: StatusEffectType.Burn,
+  poison: StatusEffectType.Poison,
+  shock: StatusEffectType.Shock,
+  shield: StatusEffectType.Shield,
 };
 
 const series = sourceSeries as Record<string, SourceLevel[]>;

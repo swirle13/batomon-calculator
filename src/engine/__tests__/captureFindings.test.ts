@@ -4,6 +4,7 @@ import { corpus } from "../../data/corpus";
 import { resolveEffects } from "../effects";
 import { addFlat, applyMultiplier, read, statValue } from "../statValue";
 import type { GridSlot, TeamConfiguration } from "../../data/types";
+import { GridRow, TimelineEventKind } from "../../data/enums";
 
 /**
  * Round 5: the findings from `orchestration/engine-handoff-gameplay-capture.md`.
@@ -75,12 +76,12 @@ describe("Finding 5 — damage from the TARGET's status (T244)", () => {
     // Paired with a Poison applier so stacks accumulate.
     const r = simulate(
       team([
-        { id: "fumungus", slot: { row: "front", col: 0 }, level: 2 },
-        { id: "miasmaw", slot: { row: "front", col: 1 } },
+        { id: "fumungus", slot: { row: GridRow.Front, col: 0 }, level: 2 },
+        { id: "miasmaw", slot: { row: GridRow.Front, col: 1 } },
       ]),
       corpus,
     );
-    const hits = r.timeline.filter((e) => e.kind === "attack" && e.damage !== undefined);
+    const hits = r.timeline.filter((e) => e.kind === TimelineEventKind.Attack && e.damage !== undefined);
     expect(hits.length).toBeGreaterThan(1);
     // It GROWS, because Poison stacks only ever accumulate — the finding's central claim.
     expect(hits[hits.length - 1]!.damage!).toBeGreaterThan(hits[0]!.damage!);
@@ -94,13 +95,13 @@ describe("Finding 7b — a reaction must not consume the reactor's cooldown (T24
     // reactor, so a reaction consumed the cast it should have been additional to.
     const r = simulate(
       team([
-        { id: "puffloon", slot: { row: "back", col: 1 }, level: 2 },
-        { id: "miasmaw", slot: { row: "back", col: 2 } },
+        { id: "puffloon", slot: { row: GridRow.Back, col: 1 }, level: 2 },
+        { id: "miasmaw", slot: { row: GridRow.Back, col: 2 } },
       ], 30),
       corpus,
     );
     const puffloonCasts = r.timeline.filter(
-      (e) => e.kind === "attack" && e.sourceSlot.row === "back" && e.sourceSlot.col === 1,
+      (e) => e.kind === TimelineEventKind.Attack && e.sourceSlot.row === GridRow.Back && e.sourceSlot.col === 1,
     );
     const base = corpus.creatures.find((c) => c.id === "puffloon" && c.level === 2)!.baseCooldownSeconds!;
     // More casts than its own cooldown alone could produce in the window — the reactions are extra.
@@ -116,8 +117,8 @@ describe("Finding 1 — phase ordering (T242)", () => {
     // guess as a fixture.
     const resolved = resolveEffects(
       team([
-        { id: "miasmaw", slot: { row: "front", col: 1 } },
-        { id: "cobrex", slot: { row: "front", col: 2 } },
+        { id: "miasmaw", slot: { row: GridRow.Front, col: 1 } },
+        { id: "cobrex", slot: { row: GridRow.Front, col: 2 } },
       ]),
       corpus,
     );

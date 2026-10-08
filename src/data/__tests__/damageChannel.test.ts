@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { creatures } from "../creatures";
 import { SHINY_STATS } from "../shiny";
 import { DAMAGE_CHANNEL } from "../vocabularies";
+import { DamageChannel } from "../enums";
 
 /**
  * `damageType` on a record is redundant (2026-10-07, round 7 WI-004 / FR-111).
@@ -60,7 +61,7 @@ describe("WI-004: the (baseDamage, damageType) pair cannot start disagreeing", (
   });
 
   it("counts the split, so the redundancy claim is a number and not an impression", () => {
-    const direct = creatures.filter((c) => c.damageType === "Direct").length;
+    const direct = creatures.filter((c) => c.damageType === DamageChannel.Direct).length;
     const none = creatures.filter((c) => c.damageType === null).length;
     expect(direct).toBe(356);
     expect(none).toBe(240);

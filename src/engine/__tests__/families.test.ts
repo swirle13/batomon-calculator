@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { corpus } from "../../data/corpus";
 import { RESOLVED_TAG_KINDS, isResolvableTag, resolveEffects } from "../effects";
 import type { GridSlot, TeamConfiguration } from "../../data/types";
+import { GridRow } from "../../data/enums";
 
 /**
  * Round 10 (T219): the general selector-based resolver.
@@ -22,10 +23,10 @@ const team = (placements: { id: string; slot: GridSlot }[]): TeamConfiguration =
   teamModifiers: [],
 });
 
-const BACK0: GridSlot = { row: "back", col: 0 };
-const BACK1: GridSlot = { row: "back", col: 1 };
-const BACK2: GridSlot = { row: "back", col: 2 };
-const FRONT0: GridSlot = { row: "front", col: 0 };
+const BACK0: GridSlot = { row: GridRow.Back, col: 0 };
+const BACK1: GridSlot = { row: GridRow.Back, col: 1 };
+const BACK2: GridSlot = { row: GridRow.Back, col: 2 };
+const FRONT0: GridSlot = { row: GridRow.Front, col: 0 };
 
 describe("selector-based effect families (T219)", () => {
   it("adjacency is side-sharing only, so a gap in the row breaks the aura", () => {

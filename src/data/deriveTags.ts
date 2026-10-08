@@ -1,12 +1,6 @@
-import type {
-  AbilityTag,
-  CreatureRecord,
-  CreatureType,
-  ModifierStat,
-  Rarity,
-  TargetSelector,
-} from "./types";
+import type { AbilityTag, CreatureRecord, CreatureType, Rarity, TargetSelector } from "./types";
 import { ABILITY_TRIGGER, CREATURE_TYPE, RARITY } from "./vocabularies";
+import { ModifierStat } from "./enums";
 
 /**
  * Ability tags DERIVED from a creature's own published text (2026-10-07, round 7 WI-002 / FR-113).
@@ -58,14 +52,14 @@ const AMOUNT = String.raw`\+?(\d+(?:\.\d+)?)(%?)`;
 
 /** The stat names a grant can name, mapped to the `ModifierStat` they write. */
 const STAT_BY_NAME: Record<string, ModifierStat> = {
-  damage: "damageFlatAdd",
-  shield: "shieldAmountAdd",
-  burn: "burnAmountAdd",
-  poison: "poisonAmountAdd",
-  shock: "shockAmountAdd",
-  multicast: "multicastAdd",
-  "cooldown speed": "cooldownSpeedAdd",
-  heal: "healAmountAdd",
+  damage: ModifierStat.DamageFlatAdd,
+  shield: ModifierStat.ShieldAmountAdd,
+  burn: ModifierStat.BurnAmountAdd,
+  poison: ModifierStat.PoisonAmountAdd,
+  shock: ModifierStat.ShockAmountAdd,
+  multicast: ModifierStat.MulticastAdd,
+  "cooldown speed": ModifierStat.CooldownSpeedAdd,
+  heal: ModifierStat.HealAmountAdd,
 };
 
 const STAT_NAMES = Object.keys(STAT_BY_NAME).join("|");

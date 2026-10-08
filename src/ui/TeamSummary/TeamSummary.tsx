@@ -3,6 +3,7 @@ import { getCreatureById } from "../../data/corpus";
 import { statusColor } from "../../data/statColors";
 import { formatRate } from "../../data/format";
 import styles from "./TeamSummary.module.css";
+import { STATUS_EFFECTS_ASC } from "../../data/vocabularies";
 
 interface TeamSummaryProps {
   config: TeamConfiguration;
@@ -34,9 +35,17 @@ export function TeamSummary({ config, result }: TeamSummaryProps) {
 
   // FR-067 (WI-016): sorted at the point of display. These followed `Object.entries` key order,
   // i.e. the order the engine happened to build the record in -- a list whose order was an accident.
-  const statusRows = Object.entries(result.perStatusPerSecond)
-    .filter(([, value]) => value > 0)
-    .sort(([a], [b]) => a.localeCompare(b));
+  /*
+   * Iterated through the STATUS VOCABULARY rather than `Object.entries`, which erases the key type
+   * to `string` and forced a cast at the colour lookup below (2026-10-07, round 7). Going through
+   * `STATUS_EFFECTS_ASC` keeps `status` a `StatusEffectType` end to end, and it also means the
+   * display order is the vocabulary's declared order rather than whatever order the engine happened
+   * to build the record in -- which is the FR-067 complaint, fixed at its cause this time instead
+   * of with a `localeCompare` on stringified keys.
+   */
+  const statusRows = STATUS_EFFECTS_ASC
+    .map((status) => ({ status, value: result.perStatusPerSecond[status] ?? 0 }))
+    .filter(({ value }) => value > 0);
 
   return (
     <section>
@@ -124,13 +133,13 @@ export function TeamSummary({ config, result }: TeamSummaryProps) {
                 <td colSpan={5}>No active status effects.</td>
               </tr>
             )}
-            {statusRows.map(([status, value]) => (
+            {statusRows.map(({ status, value }) => (
               <tr key={status}>
                 {/* Shield deals no damage — it's a granted/sec rate, not a damage/sec rate like
                     the other three (data-model.md's "Shield counted as an output stat"). The
                     status name carries its published colour (FR-029), the same colour the card
                     stat lines and the grid badges use. */}
-                <td style={{ color: statusColor(status as "Burn" | "Poison" | "Shock" | "Shield"), fontWeight: 600 }}>
+                <td style={{ color: statusColor(status), fontWeight: 600 }}>
                   {status}
                 </td>
                 <td className={styles.numeric}>{formatRate(value)}</td>

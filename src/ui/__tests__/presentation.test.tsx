@@ -18,6 +18,7 @@ import { simulate } from "../../engine/simulate";
 import { corpus } from "../../data/corpus";
 import { RARITIES_ASC } from "../../data/statColors";
 import type { TeamConfiguration } from "../../data/types";
+import { GridRow, ModifierStat, RegionId } from "../../data/enums";
 
 /**
  * Tripwires for the round-6 presentation items that would otherwise have **no** automated coverage
@@ -30,7 +31,7 @@ import type { TeamConfiguration } from "../../data/types";
  */
 
 const CONFIG: TeamConfiguration = {
-  placements: [{ slot: { row: "front", col: 0 }, creatureId: "bumblebolt", level: 1 }],
+  placements: [{ slot: { row: GridRow.Front, col: 0 }, creatureId: "bumblebolt", level: 1 }],
   trainerId: null,
   trinketIds: [],
   itemIds: [],
@@ -206,9 +207,9 @@ describe("the card's output band overflows into a second column (WI-003)", () =>
   it("splits the ask's six-line example into 3 rows, in the published order", () => {
     // The ask: "col 1: Deal 15 damage, POison 3, shock 3. col 2: shield 4, heal 15, multicast x3".
     const band = statLinesElement([
-      { id: "p", stat: "poisonAmountAdd", amount: 3 },
-      { id: "s", stat: "shockAmountAdd", amount: 3 },
-      { id: "h", stat: "shieldAmountAdd", amount: 4 },
+      { id: "p", stat: ModifierStat.PoisonAmountAdd, amount: 3 },
+      { id: "s", stat: ModifierStat.ShockAmountAdd, amount: 3 },
+      { id: "h", stat: ModifierStat.ShieldAmountAdd, amount: 4 },
     ]);
     expect(band.style.getPropertyValue("--stat-rows")).toBe("3");
     expect(Array.from(band.children).map((c) => c.textContent)).toEqual([
@@ -224,10 +225,10 @@ describe("the card's output band overflows into a second column (WI-003)", () =>
   it("holds the 7-line worst case as 4 rows, never a third column", () => {
     // Seven is the ceiling: damage + all four statuses + heal + multicast (research.md Q2).
     const band = statLinesElement([
-      { id: "b", stat: "burnAmountAdd", amount: 2 },
-      { id: "p", stat: "poisonAmountAdd", amount: 3 },
-      { id: "s", stat: "shockAmountAdd", amount: 3 },
-      { id: "h", stat: "shieldAmountAdd", amount: 4 },
+      { id: "b", stat: ModifierStat.BurnAmountAdd, amount: 2 },
+      { id: "p", stat: ModifierStat.PoisonAmountAdd, amount: 3 },
+      { id: "s", stat: ModifierStat.ShockAmountAdd, amount: 3 },
+      { id: "h", stat: ModifierStat.ShieldAmountAdd, amount: 4 },
     ]);
     expect(band.children.length).toBe(7);
     // 7 items over 4 rows is two columns of 4 and 3. A third column cannot arise from ceil(n/2).
@@ -237,7 +238,7 @@ describe("the card's output band overflows into a second column (WI-003)", () =>
 
 describe("CreatureSearchModal heading (FR-034, item 13)", () => {
   it("shows no slot position in the visible heading, but keeps it for assistive tech", () => {
-    render(<CreatureSearchModal slot={{ row: "back", col: 1 }} onClose={() => {}} onSelect={() => {}} />);
+    render(<CreatureSearchModal slot={{ row: GridRow.Back, col: 1 }} onClose={() => {}} onSelect={() => {}} />);
     expect(screen.getByRole("heading", { name: "Choose a Batomon" })).toBeTruthy();
     expect(screen.queryByRole("heading", { name: /back row, slot/i })).toBeNull();
     // The user clicked the slot so they know which it is; a screen-reader user may not have.
@@ -294,7 +295,7 @@ describe("round 7 presentation fixes", () => {
         <PlacedCreatureDetails result={simulate(CONFIG, corpus)} highlightedSlot={null} />
       </TeamConfigProvider>,
     );
-    render(<CreatureSearchModal slot={{ row: "back", col: 1 }} onClose={() => {}} onSelect={() => {}} />);
+    render(<CreatureSearchModal slot={{ row: GridRow.Back, col: 1 }} onClose={() => {}} onSelect={() => {}} />);
     expect(screen.getByRole("heading", { name: "Choose a Batomon" })).toBeTruthy();
     expect(document.body.textContent).not.toMatch(/Banto\b/);
   });
@@ -316,7 +317,7 @@ describe("round 7 presentation fixes", () => {
   });
 
   it("renders the split type background without a gradient (FR-049, item 11)", () => {
-    render(<CreatureSearchModal slot={{ row: "back", col: 0 }} onClose={() => {}} onSelect={() => {}} />);
+    render(<CreatureSearchModal slot={{ row: GridRow.Back, col: 0 }} onClose={() => {}} onSelect={() => {}} />);
     // The sliver came from a linear-gradient painted across the border box. Two explicit halves
     // cannot reproduce it, so the absence of any gradient is the structural guarantee.
     const withGradient = Array.from(document.querySelectorAll<HTMLElement>("[style]")).filter((el) =>
@@ -326,7 +327,7 @@ describe("round 7 presentation fixes", () => {
   });
 
   it("groups picker results into rarity sections and puts no rarity text on the cards (FR-048, item 10)", () => {
-    render(<CreatureSearchModal slot={{ row: "back", col: 0 }} onClose={() => {}} onSelect={() => {}} />);
+    render(<CreatureSearchModal slot={{ row: GridRow.Back, col: 0 }} onClose={() => {}} onSelect={() => {}} />);
     expect(screen.getAllByRole("heading", { level: 4 }).length).toBeGreaterThan(1);
     // Rarity is structure now, not a per-card label; the only "Common" text should be headings
     // and the filter <option>, never inside a result card.
@@ -358,7 +359,7 @@ describe("round 7 presentation fixes", () => {
     // two bands — which is the point of that change, not a regression in this one.
     const modified: TeamConfiguration = {
       ...CONFIG,
-      teamModifiers: [{ id: "m1", stat: "damageFlatAdd", amount: 5 }],
+      teamModifiers: [{ id: "m1", stat: ModifierStat.DamageFlatAdd, amount: 5 }],
     };
     render(
       <TeamConfigProvider initialConfig={modified}>
@@ -383,14 +384,14 @@ describe("round 7 presentation fixes", () => {
   });
 
   it("reports Shield without the over-qualifying parenthetical (FR-046, item 7)", () => {
-    const shieldConfig = { ...CONFIG, placements: [{ slot: { row: "back", col: 0 } as const, creatureId: "opalion", level: 1 as const }] };
+    const shieldConfig = { ...CONFIG, placements: [{ slot: { row: GridRow.Back, col: 0 as const }, creatureId: "opalion", level: 1 as const }] };
     render(<TeamSummary config={shieldConfig} result={simulate(shieldConfig, corpus)} />);
     expect(screen.queryByText(/Shield \(granted\)/)).toBeNull();
     expect(screen.getByText("Shield")).toBeTruthy();
   });
 
   it("reports second-order status metrics, not just one averaged figure (FR-055, item 20)", () => {
-    const poison = { ...CONFIG, placements: [{ slot: { row: "back", col: 0 } as const, creatureId: "drumire", level: 1 as const }] };
+    const poison = { ...CONFIG, placements: [{ slot: { row: GridRow.Back, col: 0 as const }, creatureId: "drumire", level: 1 as const }] };
     render(<TeamSummary config={poison} result={simulate(poison, corpus)} />);
     // getAllByText: earlier cases in this file also render a TeamSummary, so the header text can
     // legitimately appear more than once in the shared DOM.
@@ -412,10 +413,10 @@ describe("round 9: total DPS and grid sizing", () => {
   /** The user's own team: four Poison creatures, zero direct damage. */
   const poisonTeam: TeamConfiguration = {
     placements: [
-      { slot: { row: "front", col: 1 }, creatureId: "miasmaw", level: 1 },
-      { slot: { row: "front", col: 2 }, creatureId: "cobrex", level: 1 },
-      { slot: { row: "back", col: 0 }, creatureId: "drumire", level: 1 },
-      { slot: { row: "back", col: 1 }, creatureId: "fumungus", level: 1 },
+      { slot: { row: GridRow.Front, col: 1 }, creatureId: "miasmaw", level: 1 },
+      { slot: { row: GridRow.Front, col: 2 }, creatureId: "cobrex", level: 1 },
+      { slot: { row: GridRow.Back, col: 0 }, creatureId: "drumire", level: 1 },
+      { slot: { row: GridRow.Back, col: 1 }, creatureId: "fumungus", level: 1 },
     ],
     trainerId: null,
     trinketIds: [],
@@ -493,7 +494,7 @@ describe("effective band renders healing (2026-10-06)", () => {
   // `perCreatureEffectiveStats` carried no heal field at all, and the band's `buildStatLines` call
   // omitted it. 9 species were fully blank this way and 20 were missing a heal line.
   const healerTeam: TeamConfiguration = {
-    placements: [{ slot: { row: "back", col: 0 }, creatureId: "dribblet", level: 1 }],
+    placements: [{ slot: { row: GridRow.Back, col: 0 }, creatureId: "dribblet", level: 1 }],
     trainerId: null,
     trinketIds: [],
     itemIds: [],
@@ -534,7 +535,7 @@ describe("effective band renders healing (2026-10-06)", () => {
 
 describe("modifier amount input (2026-10-07)", () => {
   const CFG: TeamConfiguration = {
-    placements: [{ slot: { row: "back", col: 0 }, creatureId: "bumblebolt", level: 1 }],
+    placements: [{ slot: { row: GridRow.Back, col: 0 }, creatureId: "bumblebolt", level: 1 }],
     trainerId: null,
     trinketIds: [],
     itemIds: [],
@@ -637,18 +638,18 @@ describe("region never blocks a selection (2026-10-07)", () => {
     // The actual bug: searching for an event-granted creature returned nothing, because the pool
     // excluded other regions outright.
     const jintoOnly = corpus.creatures.find(
-      (c) => c.level === 1 && regionsOf(c.id).length === 1 && regionsOf(c.id)[0] === "jinto",
+      (c) => c.level === 1 && regionsOf(c.id).length === 1 && regionsOf(c.id)[0] === RegionId.Jinto,
     )!;
     render(
       <TeamConfigProvider initialConfig={{
         placements: [], trainerId: null, trinketIds: [], itemIds: [],
-        simulationWindowSeconds: 30, teamModifiers: [], selectedRegion: "pantra",
+        simulationWindowSeconds: 30, teamModifiers: [], selectedRegion: RegionId.Pantra,
       }}>
         <CreatureSearchModal
-          slot={{ row: "back", col: 0 }}
+          slot={{ row: GridRow.Back, col: 0 }}
           onClose={() => {}}
           onSelect={() => {}}
-          config={{ selectedRegion: "pantra" }}
+          config={{ selectedRegion: RegionId.Pantra }}
         />
       </TeamConfigProvider>,
     );

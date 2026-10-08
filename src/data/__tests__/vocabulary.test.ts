@@ -4,6 +4,7 @@ import { join } from "node:path";
 import {
   ABILITY_TRIGGER,
   CREATURE_TYPE,
+  CREATURE_TYPES_ASC,
   DAMAGE_CHANNEL,
   FILTERABLE_CREATURE_TYPES,
   RARITY,
@@ -11,11 +12,13 @@ import {
   damageChannelOf,
   isWildcardType,
 } from "../vocabularies";
-import { keysInOrder, type VocabularyMember } from "../vocabulary";
+import type { VocabularyMember } from "../vocabularies";
 import { RARITIES_ASC, RARITIES_DESC, RARITY_COLORS, rarityLabel } from "../statColors";
 import { TYPE_COLORS } from "../typeColors";
 import { ABILITY_TRIGGERS, TRIGGER_DEFINITIONS } from "../triggers";
 import { corpus } from "../corpus";
+import { AbilityTrigger, DamageChannel } from "../enums";
+import { CreatureType, Rarity, StatusEffectType } from "../enums";
 
 /**
  * The vocabulary registries (2026-10-07, round 7 WI-001/003/004/005/006).
@@ -37,7 +40,15 @@ function sourceFiles(dir = "src"): string[] {
 }
 
 /** Production source only: tests and the registry itself are allowed to name a vocabulary. */
-const files = () => sourceFiles().filter((f) => !f.includes("__tests__") && !f.endsWith("vocabularies.ts"));
+const files = () =>
+  sourceFiles().filter(
+    (f) =>
+      !f.includes("__tests__") &&
+      // The declaration files are allowed to NAME a vocabulary -- that is what they are for, and
+      // `enums.ts` documents the dropped `SuddenDeath` member in a comment explaining its removal.
+      !f.endsWith("vocabularies.ts") &&
+      !f.endsWith("enums.ts"),
+  );
 
 describe("vocabulary registries — one declaration each", () => {
   // Widened to the base member shape so all five can be checked in one loop; the per-vocabulary
@@ -74,30 +85,39 @@ describe("vocabulary registries — one declaration each", () => {
     expect(Object.isFrozen(CREATURE_TYPE)).toBe(true);
   });
 
-  it("orders keys by `order`, which is what every derived list reads", () => {
-    expect(keysInOrder(RARITY)).toEqual([
-      "Common", "Uncommon", "Rare", "SuperRare", "Legendary", "Mythical",
+  it("orders members by `order`, which is what every derived list reads", () => {
+    expect(RARITIES_ASC).toEqual([
+      Rarity.Common, Rarity.Uncommon, Rarity.Rare, Rarity.SuperRare, Rarity.Legendary, Rarity.Mythical,
     ]);
+  });
+
+  it("is a real enum, so a bare string is not a member", () => {
+    // The property three rounds of literal unions could not give. `Object.values` is the runtime
+    // list; the compile-time half is asserted by the codebase continuing to build at all, since a
+    // stray `"SuperRare"` anywhere is now an error rather than a silent pass.
+    expect(Object.values(Rarity)).toContain("SuperRare");
+    expect(Rarity.SuperRare).toBe("SuperRare");
+    expect(RARITY[Rarity.SuperRare].label).toBe("Super Rare");
   });
 });
 
 describe("derived lists are key-complete against their registry", () => {
   // The drift this round removes: a list that restates a vocabulary and then falls behind it.
-  it("RARITIES_ASC / RARITIES_DESC / RARITY_COLORS cover exactly the registry's keys", () => {
-    const keys = keysInOrder(RARITY);
-    expect(RARITIES_ASC).toEqual(keys);
-    expect(RARITIES_DESC).toEqual([...keys].reverse());
-    expect(Object.keys(RARITY_COLORS).sort()).toEqual([...keys].sort());
+  it("RARITIES_ASC / RARITIES_DESC / RARITY_COLORS cover exactly the enum's members", () => {
+    const members = Object.values(Rarity);
+    expect([...RARITIES_ASC].sort()).toEqual([...members].sort());
+    expect(RARITIES_DESC).toEqual([...RARITIES_ASC].reverse());
+    expect(Object.keys(RARITY_COLORS).sort()).toEqual([...members].sort());
   });
 
   it("TYPE_COLORS covers exactly the creature-type registry's keys", () => {
     expect(Object.keys(TYPE_COLORS).sort()).toEqual(Object.keys(CREATURE_TYPE).sort());
   });
 
-  it("the trigger list covers exactly the trigger registry's keys", () => {
+  it("the trigger list covers exactly the trigger enum's members", () => {
     // Replaces a hand-written ten-value array in `triggers.test.ts`, which could not see a value
     // added to the union and omitted from itself — the exact drift its own guard existed to catch.
-    expect(ABILITY_TRIGGERS).toEqual(keysInOrder(ABILITY_TRIGGER));
+    expect([...ABILITY_TRIGGERS].sort()).toEqual([...Object.values(AbilityTrigger)].sort());
     for (const t of ABILITY_TRIGGERS) {
       expect(TRIGGER_DEFINITIONS[t].actionLabel.length, `no actionLabel for ${t}`).toBeGreaterThan(0);
     }
@@ -107,10 +127,10 @@ describe("derived lists are key-complete against their registry", () => {
     // Curio (11 level-1 species) and NULL (4) are real published Type values attested by two
     // independent sources. An earlier draft of this round excluded them along with the wildcard,
     // which would have made 15 species unreachable by type filter.
-    expect(FILTERABLE_CREATURE_TYPES).not.toContain("All");
-    expect(FILTERABLE_CREATURE_TYPES).toContain("Curio");
-    expect(FILTERABLE_CREATURE_TYPES).toContain("NULL");
-    expect(FILTERABLE_CREATURE_TYPES.length).toBe(Object.keys(CREATURE_TYPE).length - 1);
+    expect(FILTERABLE_CREATURE_TYPES).not.toContain(CreatureType.All);
+    expect(FILTERABLE_CREATURE_TYPES).toContain(CreatureType.Curio);
+    expect(FILTERABLE_CREATURE_TYPES).toContain(CreatureType.NULL);
+    expect(FILTERABLE_CREATURE_TYPES.length).toBe(CREATURE_TYPES_ASC.length - 1);
   });
 });
 
@@ -141,10 +161,10 @@ describe("GUARD: nothing restates a vocabulary", () => {
 
 describe("WI-006: the stored key is never the displayed label", () => {
   it('spells SuperRare as "Super Rare" for display while storing "SuperRare"', () => {
-    expect(rarityLabel("SuperRare")).toBe("Super Rare");
+    expect(rarityLabel(Rarity.SuperRare)).toBe("Super Rare");
     // The stored key is deliberately unchanged, which is what makes this a zero-churn change: no
     // corpus record and no cited fixture was edited for it.
-    expect(corpus.creatures.some((c) => c.rarity === "SuperRare")).toBe(true);
+    expect(corpus.creatures.some((c) => c.rarity === Rarity.SuperRare)).toBe(true);
     expect(Object.keys(RARITY)).toContain("SuperRare");
   });
 
@@ -157,25 +177,25 @@ describe("WI-006: the stored key is never the displayed label", () => {
 
 describe("WI-004: DamageChannel and StatusEffectType are related, not merged", () => {
   it("maps a damaging status onto the channel its ticks land on", () => {
-    expect(damageChannelOf("Burn")).toBe("Burn");
-    expect(damageChannelOf("Poison")).toBe("Poison");
-    expect(damageChannelOf("Shock")).toBe("Shock");
+    expect(damageChannelOf(StatusEffectType.Burn)).toBe("Burn");
+    expect(damageChannelOf(StatusEffectType.Poison)).toBe("Poison");
+    expect(damageChannelOf(StatusEffectType.Shock)).toBe("Shock");
   });
 
   it("gives Shield no channel, because Shield absorbs damage rather than dealing it", () => {
     // This is the asymmetry that keeps them two vocabularies: "Shield" is a status and never a
     // channel, "Direct" is a channel and never a status. Merging them would let the compiler accept
     // `applyShieldReduction(n, "Shield", s)` (research.md R3a).
-    expect(damageChannelOf("Shield")).toBeUndefined();
+    expect(damageChannelOf(StatusEffectType.Shield)).toBeUndefined();
   });
 
   it("keeps Direct out of the status vocabulary and Shield out of the channel one", () => {
-    expect(Object.keys(STATUS_EFFECT)).not.toContain("Direct");
-    expect(Object.keys(DAMAGE_CHANNEL)).not.toContain("Shield");
+    expect(Object.values(StatusEffectType)).not.toContain("Direct");
+    expect(Object.values(DamageChannel)).not.toContain("Shield");
   });
 
   it('drops "SuddenDeath", which no record and no runtime site ever produced', () => {
-    expect(Object.keys(DAMAGE_CHANNEL)).not.toContain("SuddenDeath");
+    expect(Object.values(DamageChannel)).not.toContain("SuddenDeath");
     // Scanned over production files only: this file and the registry both NAME the dropped member
     // in comments explaining why it is gone, which is documentation rather than use.
     const offenders = files().filter((f) => readFileSync(f, "utf8").includes("SuddenDeath"));
@@ -185,7 +205,7 @@ describe("WI-004: DamageChannel and StatusEffectType are related, not merged", (
 
 describe("WI-003: the wildcard is marked, not guessed", () => {
   it("treats only All as the wildcard", () => {
-    expect(isWildcardType("All")).toBe(true);
+    expect(isWildcardType(CreatureType.All)).toBe(true);
     for (const t of FILTERABLE_CREATURE_TYPES) expect(isWildcardType(t)).toBe(false);
   });
 
@@ -195,5 +215,49 @@ describe("WI-003: the wildcard is marked, not guessed", () => {
     const typeless = corpus.creatures.filter((c) => c.types.length === 0);
     expect(typeless.length).toBeGreaterThan(0);
     expect(new Set(typeless.map((c) => c.id))).toEqual(new Set(["dragonegg", "purpleegg"]));
+  });
+});
+
+describe("GUARD: the corpus stores enum members, never bare strings", () => {
+  /**
+   * The regression this round exists to prevent.
+   *
+   * Three earlier rounds left the vocabularies as literal unions, which were type-safe at their
+   * literals but meant the DATA was 596 records of bare strings. That is what let two spellings of
+   * one tier coexist, and what made every boundary a cast. These assertions are on the SOURCE TEXT
+   * rather than the parsed values, because a parsed value cannot tell you how it was written.
+   */
+  const DATA_FILES = ["src/data/creatures.ts", "src/data/trinkets.ts", "src/data/trainers.ts", "src/data/items.ts"];
+
+  it.each(DATA_FILES)("%s writes no bare vocabulary literal", (file) => {
+    const source = readFileSync(file, "utf8");
+    const offenders = [
+      /\brarity: "/,
+      /\bdamageType: "/,
+      /\babilityTrigger: "/,
+      /\btypes: \["/,
+      /\btypeFilter: "/,
+      /\brarityFilter: "/,
+      /\bstat: "/,
+      /\btrigger: "/,
+    ].filter((re) => re.test(source));
+    expect(offenders.map(String)).toEqual([]);
+  });
+
+  it("keeps ability TEXT untouched, which the migration could easily have corrupted", () => {
+    // The migration rewrote literals only where a known field name preceded them. A blind
+    // find-and-replace of `"Common"` would have mangled this sentence, and 148 others like it.
+    const brawlmantis = corpus.creatures.find((c) => c.id === "brawlmantis" && c.level === 1)!;
+    expect(brawlmantis.abilityText).toBe("This and Common allies gain +10 Damage permanently.");
+    expect(brawlmantis.rarity).toBe(Rarity.Uncommon);
+    expect(brawlmantis.types).toEqual([CreatureType.Bug, CreatureType.Fighting]);
+  });
+
+  it("still serializes to the published strings, so nothing on the wire changed", () => {
+    // String enums carry their stored value as the initialiser, so a record round-trips exactly as
+    // before. This is why no build code, cited fixture or share URL needed migrating.
+    expect(JSON.stringify({ r: Rarity.SuperRare, t: CreatureType.Bug })).toBe(
+      '{"r":"SuperRare","t":"Bug"}',
+    );
   });
 });

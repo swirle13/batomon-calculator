@@ -5,6 +5,7 @@ import { simulate } from "../../engine/simulate";
 import { corpus } from "../corpus";
 import { timeToKill } from "../enemyHealth";
 import { perCastOutputOf } from "../../ui/shared/BatomonCard/BatomonCard";
+import { StatusEffectType } from "../enums";
 
 /**
  * Regression anchors from recorded play. Each board came from a real run with a video reference.
@@ -54,7 +55,7 @@ describe("recorded run fixtures", () => {
     expect(record.baseDamage).toBe(20);
     const shown = perCastOutputOf(record, craghorn.modifiers);
     expect(shown.damage).toBe(40);
-    expect(shown.appliesStatus.find((s) => s.type === "Shield")?.amount).toBe(40);
+    expect(shown.appliesStatus.find((s) => s.type === StatusEffectType.Shield)?.amount).toBe(40);
   });
 });
 

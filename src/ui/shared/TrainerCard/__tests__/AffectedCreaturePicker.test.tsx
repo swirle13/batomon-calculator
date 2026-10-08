@@ -5,6 +5,7 @@ import { TeamConfigProvider } from "../../../../context/TeamConfigContext";
 import { distinctCreatures } from "../../../../data/corpus";
 import { isInOppositeRegion } from "../../../../data/typing";
 import type { TeamConfiguration } from "../../../../data/types";
+import { RegionId } from "../../../../data/enums";
 
 /**
  * The affected-species picker (WI-001, WI-002 — orchestration round 6).
@@ -113,7 +114,7 @@ describe("AffectedCreaturePicker (WI-002) — nine slots, shown and enforced", (
 describe("AffectedCreaturePicker — Smuggler's pool (FR-088)", () => {
   it("offers only opposite-region species, never the set complement", () => {
     render(
-      <TeamConfigProvider initialConfig={configWith({ trainerId: "smuggler", selectedRegion: "pantra" })}>
+      <TeamConfigProvider initialConfig={configWith({ trainerId: "smuggler", selectedRegion: RegionId.Pantra })}>
         <AffectedCreaturePicker kind="smuggled" onClose={() => {}} />
       </TeamConfigProvider>,
     );
@@ -123,7 +124,7 @@ describe("AffectedCreaturePicker — Smuggler's pool (FR-088)", () => {
       .map((b) => /^Add (.+)$/.exec(b.getAttribute("aria-label") ?? "")?.[1])
       .filter((name): name is string => name !== undefined);
 
-    const expected = distinctCreatures.filter((c) => isInOppositeRegion(c.id, "pantra")).map((c) => c.name);
+    const expected = distinctCreatures.filter((c) => isInOppositeRegion(c.id, RegionId.Pantra)).map((c) => c.name);
     expect(offered.length).toBe(expected.length);
     // 14 species are in both regions and 13 in neither, so a `!== selectedRegion` filter would wrongly
     // offer all 27 — that difference is the whole point of FR-088.

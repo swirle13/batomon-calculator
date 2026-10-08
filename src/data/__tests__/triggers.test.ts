@@ -3,7 +3,8 @@ import { corpus } from "../corpus";
 import { TRIGGER_DEFINITIONS, manualTriggersFor, modifiersForPress } from "../triggers";
 import { isResolvableTag } from "../../engine/effects";
 import { recipientsOfPress } from "../../engine/manualTriggers";
-import type { AbilityTrigger, CreatureRecord, GridSlot } from "../types";
+import type { CreatureRecord, GridSlot } from "../types";
+import { AbilityTrigger, GridRow, ModifierStat, Rarity } from "../enums";
 
 describe("manual trigger framework", () => {
   it("Craghorn offers its item trigger with the right per-level amounts", () => {
@@ -16,8 +17,8 @@ describe("manual trigger framework", () => {
       expect(trigger, `craghorn L${level}`).toBeDefined();
       expect(trigger!.trigger).toBe("On Item Used");
       expect(trigger!.effects).toEqual([
-        { stat: "damageFlatAdd", amount },
-        { stat: "shieldAmountAdd", amount },
+        { stat: ModifierStat.DamageFlatAdd, amount },
+        { stat: ModifierStat.ShieldAmountAdd, amount },
       ]);
     }
   });
@@ -55,8 +56,8 @@ describe("manual trigger framework", () => {
   it("every AbilityTrigger value has a registry entry", () => {
     // Adding a trigger to the union without describing it here would render a blank button.
     const triggers: AbilityTrigger[] = [
-      "Ongoing", "On Cast", "On Battle Start", "On Bought", "On Victory",
-      "On Knocked Out", "On Knockout", "On Trinket Gained", "On Item Used", "On Battle Lost",
+      AbilityTrigger.Ongoing, AbilityTrigger.OnCast, AbilityTrigger.OnBattleStart, AbilityTrigger.OnBought, AbilityTrigger.OnVictory,
+      AbilityTrigger.OnKnockedOut, AbilityTrigger.OnKnockout, AbilityTrigger.OnTrinketGained, AbilityTrigger.OnItemUsed, AbilityTrigger.OnBattleLost,
     ];
     for (const t of triggers) {
       expect(TRIGGER_DEFINITIONS[t], `no definition for ${t}`).toBeDefined();
@@ -68,8 +69,8 @@ describe("manual trigger framework", () => {
     const c = corpus.creatures.find((x) => x.id === "craghorn" && x.level === 1)!;
     const press = modifiersForPress(manualTriggersFor(c)[0]!);
     expect(press).toEqual([
-      { stat: "damageFlatAdd", amount: 20 },
-      { stat: "shieldAmountAdd", amount: 20 },
+      { stat: ModifierStat.DamageFlatAdd, amount: 20 },
+      { stat: ModifierStat.ShieldAmountAdd, amount: 20 },
     ]);
     for (const m of press) expect("id" in m).toBe(false);
   });
@@ -101,12 +102,12 @@ describe("manual trigger recipients", () => {
   const lv1 = (id: string) => corpus.creatures.find((c) => c.id === id && c.level === 1)!;
 
   const SLOTS: GridSlot[] = [
-    { row: "back", col: 0 },
-    { row: "back", col: 1 },
-    { row: "back", col: 2 },
-    { row: "front", col: 0 },
-    { row: "front", col: 1 },
-    { row: "front", col: 2 },
+    { row: GridRow.Back, col: 0 },
+    { row: GridRow.Back, col: 1 },
+    { row: GridRow.Back, col: 2 },
+    { row: GridRow.Front, col: 0 },
+    { row: GridRow.Front, col: 1 },
+    { row: GridRow.Front, col: 2 },
   ];
 
   /** A full board in the shape the selectors read, `source` first. */
@@ -123,7 +124,7 @@ describe("manual trigger recipients", () => {
     for (const level of [1, 2, 3, 4]) {
       const c = corpus.creatures.find((x) => x.id === "brawlmantis" && x.level === level)!;
       const [trigger] = manualTriggersFor(c);
-      expect(trigger!.target, `brawlmantis L${level}`).toEqual({ kind: "allAllies", rarityFilter: "Common" });
+      expect(trigger!.target, `brawlmantis L${level}`).toEqual({ kind: "allAllies", rarityFilter: Rarity.Common });
       expect(trigger!.includeSelf).toBe(true);
     }
 

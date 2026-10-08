@@ -1,5 +1,6 @@
-import { KEYWORD_MECHANIC_COLOR, STAT_COLORS, type StatColorKey } from "./statColors";
+import { KEYWORD_MECHANIC_COLOR, STAT_COLORS } from "./statColors";
 import { ABILITY_TRIGGERS } from "./triggers";
+import { StatColorKey } from "./enums";
 
 /**
  * Ability-text keyword highlighting (2026-10-07, round 7 WI-007 / FR-115).
@@ -52,16 +53,16 @@ const KEYWORDS: { pattern: string; colorKey: StatColorKey | "mechanic" }[] = [
   // --- tier 1: output stats, coloured as their badges are ---
   // "Cooldown Speed" must outrank any future "Cooldown" entry; the sort below guarantees it, but
   // the adjacency is called out because this is the pair that motivated rule 1.
-  { pattern: "Cooldown Speed", colorKey: "multicast" },
-  { pattern: "Multicast", colorKey: "multicast" },
-  { pattern: "Damage", colorKey: "damage" },
+  { pattern: "Cooldown Speed", colorKey: StatColorKey.Multicast },
+  { pattern: "Multicast", colorKey: StatColorKey.Multicast },
+  { pattern: "Damage", colorKey: StatColorKey.Damage },
   // Lowercase "damage" appears in two records ("Deals 3 direct damage every 2.5 seconds"); matching
   // is case-insensitive, so one entry covers both.
-  { pattern: "Shield", colorKey: "shield" },
-  { pattern: "Burn", colorKey: "burn" },
-  { pattern: "Poison", colorKey: "poison" },
-  { pattern: "Shock", colorKey: "shock" },
-  { pattern: "Heal", colorKey: "heal" },
+  { pattern: "Shield", colorKey: StatColorKey.Shield },
+  { pattern: "Burn", colorKey: StatColorKey.Burn },
+  { pattern: "Poison", colorKey: StatColorKey.Poison },
+  { pattern: "Shock", colorKey: StatColorKey.Shock },
+  { pattern: "Heal", colorKey: StatColorKey.Heal },
 
   // --- tier 2: mechanic nouns ---
   { pattern: "Sell Value", colorKey: "mechanic" },

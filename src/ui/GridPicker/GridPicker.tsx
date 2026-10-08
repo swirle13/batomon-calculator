@@ -8,19 +8,12 @@ import {
   useSensors,
   type DragEndEvent,
 } from "@dnd-kit/core";
-import type {
-  CreatureRecord,
-  CreatureType,
-  GridCol,
-  StatModifier,
-  GridRow,
-  GridSlot,
-} from "../../data/types";
+import type { CreatureRecord, CreatureType, GridCol, StatModifier, GridSlot } from "../../data/types";
 import { resolveCreatureVariant } from "../../data/corpus";
 import { isPainted } from "../../data/typing";
 import { useTeamConfig } from "../../context/TeamConfigContext";
 import { typeBackground } from "../../data/typeColors";
-import { STAT_COLORS, type StatColorKey } from "../../data/statColors";
+import { STAT_COLORS } from "../../data/statColors";
 import { STATUS_COLOR_KEY } from "../../data/format";
 import { slotKey, slotsEqual } from "../../engine/grid";
 import { CreatureSprite } from "../shared/CreatureSprite";
@@ -28,6 +21,7 @@ import { perCastOutputOf } from "../shared/BatomonCard/BatomonCard";
 import { CreatureSearchModal } from "./CreatureSearchModal";
 import styles from "./GridPicker.module.css";
 import { isWildcardType } from "../../data/vocabularies";
+import { GridRow, StatColorKey } from "../../data/enums";
 
 /**
  * 2x3 slot assignment UI (FR-005). Back row first (research.md B5 — A-row/back, B-row/front),
@@ -44,7 +38,7 @@ import { isWildcardType } from "../../data/vocabularies";
  * badge, colour-coded per-cast stat badges along the bottom matching the in-game team panel
  * (FR-035), and a clear control (FR-033). The BACK ROW / FRONT ROW labels are gone (FR-034).
  */
-const ROWS: GridRow[] = ["back", "front"];
+const ROWS: GridRow[] = [GridRow.Back, GridRow.Front];
 const COLS: GridCol[] = [0, 1, 2];
 
 /**
@@ -114,7 +108,7 @@ function SlotBadges({ creature, modifiers }: SlotBadgesProps) {
     <div className={styles.badges}>
       {/* An unknown damage value shows NO badge rather than a `0` -- 62 of 149 species still have
           `baseDamage: null`, so a 0 here would be actively misleading, not merely empty. */}
-      {damage !== null && <StatBadge statKey="damage" value={damage} label="Damage" />}
+      {damage !== null && <StatBadge statKey={StatColorKey.Damage} value={damage} label="Damage" />}
       {appliesStatus.map((status) => (
         <StatBadge
           key={status.type}
@@ -125,9 +119,9 @@ function SlotBadges({ creature, modifiers }: SlotBadgesProps) {
       ))}
       {/* T209 (WI-001): Heal lives in `healAmount`, not `appliesStatus`, so it was never shown. */}
       {creature.healAmount != null && creature.healAmount > 0 && (
-        <StatBadge statKey="heal" value={creature.healAmount} label="Heal" />
+        <StatBadge statKey={StatColorKey.Heal} value={creature.healAmount} label="Heal" />
       )}
-      {multicast > 1 && <StatBadge statKey="multicast" value={multicast} label="Multicast" />}
+      {multicast > 1 && <StatBadge statKey={StatColorKey.Multicast} value={multicast} label="Multicast" />}
     </div>
   );
 }

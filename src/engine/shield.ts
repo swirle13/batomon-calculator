@@ -1,4 +1,5 @@
-import type { DamageType, Provenance } from "../data/types";
+import type { Provenance } from "../data/types";
+import { DamageChannel } from "../data/enums";
 
 /**
  * Source (research.md F1, 2026-10-05 round 4): "Batomon Showdown Combat Mechanics"
@@ -38,11 +39,11 @@ export const STATUS_VS_SHIELD_REDUCTION_PROVENANCE: Provenance = {
 
 export function applyShieldReduction(
   incomingDamage: number,
-  damageType: DamageType,
+  damageType: DamageChannel,
   shieldRemaining: number,
 ): { damageToShield: number; damageToHp: number; shieldRemaining: number } {
   const effectiveIncoming =
-    damageType === "Direct" ? incomingDamage : incomingDamage * (1 - STATUS_VS_SHIELD_REDUCTION);
+    damageType === DamageChannel.Direct ? incomingDamage : incomingDamage * (1 - STATUS_VS_SHIELD_REDUCTION);
 
   const absorbed = Math.min(effectiveIncoming, shieldRemaining);
   const overflow = effectiveIncoming - absorbed;

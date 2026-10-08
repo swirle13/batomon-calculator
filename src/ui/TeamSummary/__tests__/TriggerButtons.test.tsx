@@ -5,6 +5,7 @@ import { TeamConfigProvider, useTeamConfig } from "../../../context/TeamConfigCo
 import { resolveCreatureVariant } from "../../../data/corpus";
 import { slotKey } from "../../../engine/grid";
 import type { GridSlot, TeamConfiguration, TeamPlacement } from "../../../data/types";
+import { GridRow, ModifierStat } from "../../../data/enums";
 
 /**
  * The manual trigger buttons (2026-10-07, user-reported).
@@ -17,12 +18,12 @@ import type { GridSlot, TeamConfiguration, TeamPlacement } from "../../../data/t
 
 /** The reported board: two Commons that should gain, and three non-Commons that must not. */
 const BOARD: { name: string; id: string; slot: GridSlot }[] = [
-  { name: "Shikitsune", id: "shikitsune", slot: { row: "back", col: 0 } }, // Rare
-  { name: "Pyronade", id: "pyronade", slot: { row: "back", col: 1 } }, // Uncommon
-  { name: "Pebbler", id: "pebbler", slot: { row: "back", col: 2 } }, // Common
-  { name: "Brawlmantis", id: "brawlmantis", slot: { row: "front", col: 0 } }, // Uncommon, the presser
-  { name: "Venopuff", id: "venopuff", slot: { row: "front", col: 1 } }, // Common
-  { name: "Craghorn", id: "craghorn", slot: { row: "front", col: 2 } }, // Uncommon
+  { name: "Shikitsune", id: "shikitsune", slot: { row: GridRow.Back, col: 0 } }, // Rare
+  { name: "Pyronade", id: "pyronade", slot: { row: GridRow.Back, col: 1 } }, // Uncommon
+  { name: "Pebbler", id: "pebbler", slot: { row: GridRow.Back, col: 2 } }, // Common
+  { name: "Brawlmantis", id: "brawlmantis", slot: { row: GridRow.Front, col: 0 } }, // Uncommon, the presser
+  { name: "Venopuff", id: "venopuff", slot: { row: GridRow.Front, col: 1 } }, // Common
+  { name: "Craghorn", id: "craghorn", slot: { row: GridRow.Front, col: 2 } }, // Uncommon
 ];
 
 function configWith(placements: TeamPlacement[]): TeamConfiguration {
@@ -44,7 +45,7 @@ function Probe() {
       {config.placements.map((p) => (
         <li key={slotKey(p.slot)} data-testid={`banked-${p.creatureId}`}>
           {(p.modifiers ?? [])
-            .filter((m) => m.stat === "damageFlatAdd")
+            .filter((m) => m.stat === ModifierStat.DamageFlatAdd)
             .map((m) => String(m.amount))
             .join(",")}
         </li>

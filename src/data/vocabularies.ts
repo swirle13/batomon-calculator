@@ -1,20 +1,37 @@
-import { defineVocabulary, keysInOrder, type VocabularyKey, type VocabularyMember } from "./vocabulary";
-import type { StatColorKey } from "./statColors";
+import { RegionId } from "./enums";
+import { AbilityTrigger, CreatureType, DamageChannel, Rarity, StatColorKey, StatusEffectType } from "./enums";
 
 /**
- * The five closed vocabularies describing a creature (2026-10-07, round 7).
+ * Per-member data for the closed vocabularies (2026-10-07, round 7).
  *
- * One declaration each, carrying label, ordering and colour together — see `vocabulary.ts` for why
- * this shape rather than TypeScript's `enum`, and for the two defects that hand-written
- * restatements of these lists had already caused.
+ * The enums in `./enums.ts` are the IDENTITY of each member; these tables are everything else about
+ * it — its rendered label, its canonical ordering, its colour. Keyed by enum member, so
+ * `Record<Rarity, …>` makes omitting a member a compile error rather than a dropped chip at
+ * runtime. That was the round-6 defect: a colour table, an ordering array and a shape map were
+ * three parallel structures keyed by the same union, and one of them misspelled a tier.
  *
- * Declared here rather than in `types.ts` because these are runtime values, and `types.ts` is
- * imported by every layer as types only. `types.ts` re-exports the unions derived from these, so
- * every existing `import type { Rarity } from "./types"` keeps working untouched.
+ * The split that matters: **the enum member is for storing and comparing; `label` is for
+ * rendering.** A raw stored value reaching the screen is a defect — `"SuperRare"` did, which is
+ * what WI-006 was about.
  */
 
+export interface VocabularyMember {
+  /** The ONLY string the UI may render. Distinct from the member's stored value. */
+  readonly label: string;
+  /** Canonical ordering, ascending. Ordered lists derive from this; none are hand-written. */
+  readonly order: number;
+}
+
+/** A vocabulary's members in `order`, ascending. Derived, so no hand-written list can disagree. */
+function membersInOrder<K extends string, M extends VocabularyMember>(
+  table: Record<K, M>,
+  all: K[],
+): K[] {
+  return [...all].sort((a, b) => table[a].order - table[b].order);
+}
+
 // ---------------------------------------------------------------------------
-// Rarity (WI-005, WI-006)
+// Rarity
 // ---------------------------------------------------------------------------
 
 interface RarityMember extends VocabularyMember {
@@ -25,141 +42,141 @@ interface RarityMember extends VocabularyMember {
  * The game's own published colours (research.md H2, cross-checked against an in-game card), not a
  * palette chosen here.
  *
- * `SuperRare`'s label is **"Super Rare" with a space**, which is the PUBLISHED spelling: the
- * extracted batodex database uses it, and `"SuperRare"` was this corpus's own compression. So this
- * restores cited data rather than imposing a preference (research.md R5), and because only the
- * label changed, not one of the 138 stored occurrences was edited.
+ * `Rarity.SuperRare`'s label is **"Super Rare" with a space**, which is the PUBLISHED spelling: the
+ * extracted batodex database uses it and `"SuperRare"` is this corpus's own compression. So this
+ * restores cited data rather than imposing a preference (research.md R5).
  */
-export const RARITY = defineVocabulary<RarityMember, "Common" | "Uncommon" | "Rare" | "SuperRare" | "Legendary" | "Mythical">({
-  Common: { label: "Common", order: 0, color: "#70707a" },
-  Uncommon: { label: "Uncommon", order: 1, color: "#4ab500" },
-  Rare: { label: "Rare", order: 2, color: "#0084bd" },
-  SuperRare: { label: "Super Rare", order: 3, color: "#a040a0" },
-  Legendary: { label: "Legendary", order: 4, color: "#d47c00" },
-  Mythical: { label: "Mythical", order: 5, color: "#dc2844" },
+export const RARITY: Readonly<Record<Rarity, RarityMember>> = Object.freeze({
+  [Rarity.Common]: { label: "Common", order: 0, color: "#70707a" },
+  [Rarity.Uncommon]: { label: "Uncommon", order: 1, color: "#4ab500" },
+  [Rarity.Rare]: { label: "Rare", order: 2, color: "#0084bd" },
+  [Rarity.SuperRare]: { label: "Super Rare", order: 3, color: "#a040a0" },
+  [Rarity.Legendary]: { label: "Legendary", order: 4, color: "#d47c00" },
+  [Rarity.Mythical]: { label: "Mythical", order: 5, color: "#dc2844" },
 });
 
-export type Rarity = VocabularyKey<typeof RARITY>;
+export const RARITIES_ASC: Rarity[] = membersInOrder(RARITY, Object.values(Rarity));
+export const RARITIES_DESC: Rarity[] = [...RARITIES_ASC].reverse();
 
 // ---------------------------------------------------------------------------
-// CreatureType (WI-003)
+// CreatureType
 // ---------------------------------------------------------------------------
 
 /**
  * `kind` is the load-bearing field, and it exists because of a real bug.
  *
  * - `element` — an actual creature type.
- * - `wildcard` — `"All"`. Matches EVERY type. Carried by exactly one species (Omnichrome), and
- *   comparing it as though it were an element is what caused round 10's Omnichrome bug, where the
- *   one creature that is every type matched no type filter at all.
- * - `placeholder` — `"Curio"` and `"NULL"`. These name no element, but they are **real published
- *   Type values** attested by two independent sources (see the `CreatureType` note in `types.ts`),
- *   carried by 11 and 4 level-1 species respectively. They stay filterable; only the wildcard is
- *   withheld from filter lists. An earlier draft of this round excluded all three, which would have
- *   made 15 species unreachable by type filter — a regression dressed up as a fix.
+ * - `wildcard` — `All`. Matches EVERY type, carried by exactly one species (Omnichrome). Comparing
+ *   it as though it were an element is what caused round 10's Omnichrome bug, where the one
+ *   creature that is every type matched no type filter at all.
+ * - `placeholder` — `Curio` and `NULL`. They name no element but are real published Type values
+ *   attested by two independent sources, carried by 11 and 4 level-1 species. **They stay
+ *   filterable**; only the wildcard is withheld from filter lists. An earlier draft of this round
+ *   excluded all three, which would have made 15 species unreachable by type filter.
  *
- * Note what is deliberately NOT here: a member for "typeless". Eight records (`dragonegg` and
- * `purpleegg` at all four levels) carry `types: []`, which is a legitimate state for a shop item
- * that hatches into a creature rather than being one.
+ * Note what is deliberately absent: a member for "typeless". Eight records (`dragonegg` and
+ * `purpleegg` at all four levels) carry `types: []`, a legitimate state for a shop item that
+ * hatches into a creature rather than being one.
  */
 interface CreatureTypeMember extends VocabularyMember {
   readonly color: string;
   readonly kind: "element" | "wildcard" | "placeholder";
 }
 
-export const CREATURE_TYPE = defineVocabulary<
-  CreatureTypeMember,
-  | "Fire" | "Water" | "Electric" | "Toxic" | "Flying" | "Rock" | "Grass" | "Bug"
-  | "Steel" | "Dragon" | "Ghost" | "Fighting" | "Curio" | "NULL" | "All"
->({
-  Fire: { label: "Fire", order: 0, color: "#e05a2b", kind: "element" },
-  Water: { label: "Water", order: 1, color: "#2e86de", kind: "element" },
-  Electric: { label: "Electric", order: 2, color: "#d4b106", kind: "element" },
-  Toxic: { label: "Toxic", order: 3, color: "#8e44ad", kind: "element" },
-  Flying: { label: "Flying", order: 4, color: "#70a1d7", kind: "element" },
-  Rock: { label: "Rock", order: 5, color: "#8d6e63", kind: "element" },
-  Grass: { label: "Grass", order: 6, color: "#4caf50", kind: "element" },
-  Bug: { label: "Bug", order: 7, color: "#8bc34a", kind: "element" },
-  Steel: { label: "Steel", order: 8, color: "#90a4ae", kind: "element" },
-  Dragon: { label: "Dragon", order: 9, color: "#5c6bc0", kind: "element" },
-  Ghost: { label: "Ghost", order: 10, color: "#512da8", kind: "element" },
-  Fighting: { label: "Fighting", order: 11, color: "#c0392b", kind: "element" },
-  Curio: { label: "Curio", order: 12, color: "#26a69a", kind: "placeholder" },
-  NULL: { label: "NULL", order: 13, color: "#37474f", kind: "placeholder" },
+/** Colours are an original design choice for this app's dark background — no official palette is
+ * published to cite (unlike the rarity and stat colours, which are the game's own). */
+export const CREATURE_TYPE: Readonly<Record<CreatureType, CreatureTypeMember>> = Object.freeze({
+  [CreatureType.Fire]: { label: "Fire", order: 0, color: "#e05a2b", kind: "element" },
+  [CreatureType.Water]: { label: "Water", order: 1, color: "#2e86de", kind: "element" },
+  [CreatureType.Electric]: { label: "Electric", order: 2, color: "#d4b106", kind: "element" },
+  [CreatureType.Toxic]: { label: "Toxic", order: 3, color: "#8e44ad", kind: "element" },
+  [CreatureType.Flying]: { label: "Flying", order: 4, color: "#70a1d7", kind: "element" },
+  [CreatureType.Rock]: { label: "Rock", order: 5, color: "#8d6e63", kind: "element" },
+  [CreatureType.Grass]: { label: "Grass", order: 6, color: "#4caf50", kind: "element" },
+  [CreatureType.Bug]: { label: "Bug", order: 7, color: "#8bc34a", kind: "element" },
+  [CreatureType.Steel]: { label: "Steel", order: 8, color: "#90a4ae", kind: "element" },
+  [CreatureType.Dragon]: { label: "Dragon", order: 9, color: "#5c6bc0", kind: "element" },
+  [CreatureType.Ghost]: { label: "Ghost", order: 10, color: "#512da8", kind: "element" },
+  [CreatureType.Fighting]: { label: "Fighting", order: 11, color: "#c0392b", kind: "element" },
+  [CreatureType.Curio]: { label: "Curio", order: 12, color: "#26a69a", kind: "placeholder" },
+  [CreatureType.NULL]: { label: "NULL", order: 13, color: "#37474f", kind: "placeholder" },
   // No single real-world analog; a distinct accent flags it as the special case it is.
-  All: { label: "All", order: 14, color: "#d81b60", kind: "wildcard" },
+  [CreatureType.All]: { label: "All", order: 14, color: "#d81b60", kind: "wildcard" },
 });
 
-export type CreatureType = VocabularyKey<typeof CREATURE_TYPE>;
+export const CREATURE_TYPES_ASC: CreatureType[] = membersInOrder(
+  CREATURE_TYPE,
+  Object.values(CreatureType),
+);
 
 /** The types a filter UI may offer: everything except the wildcard. */
-export const FILTERABLE_CREATURE_TYPES: CreatureType[] = keysInOrder(CREATURE_TYPE).filter(
+export const FILTERABLE_CREATURE_TYPES: CreatureType[] = CREATURE_TYPES_ASC.filter(
   (t) => CREATURE_TYPE[t].kind !== "wildcard",
 );
 
-/** True when `type` matches every other type. One place, so no call site compares the literal. */
+/** True when `type` matches every other type. One place, so no call site compares a literal. */
 export function isWildcardType(type: CreatureType): boolean {
   return CREATURE_TYPE[type].kind === "wildcard";
 }
 
 // ---------------------------------------------------------------------------
-// DamageChannel and StatusEffectType (WI-004)
+// DamageChannel and StatusEffectType
 // ---------------------------------------------------------------------------
 
-/**
- * The channel a HIT lands on — not a property of a creature.
- *
- * This replaces `DamageType`, which was one type doing two jobs and is why it looked half-empty
- * (research.md R3): `"Burn"`/`"Poison"`/`"Shock"` are alive at runtime on `TimelineEvent` and in
- * `shield.ts`'s status-vs-shield branch, while on `CreatureRecord` only `"Direct"` ever appeared.
- * The creature-side concept is now `publishedCast.channel`.
- *
- * `"SuddenDeath"` is dropped: it appeared in no record and at no runtime site, and research.md P2
- * retracted the sudden-death claim it was added for.
- */
-export const DAMAGE_CHANNEL = defineVocabulary<VocabularyMember, "Direct" | "Burn" | "Poison" | "Shock">({
-  Direct: { label: "Direct", order: 0 },
-  Burn: { label: "Burn", order: 1 },
-  Poison: { label: "Poison", order: 2 },
-  Shock: { label: "Shock", order: 3 },
+export const DAMAGE_CHANNEL: Readonly<Record<DamageChannel, VocabularyMember>> = Object.freeze({
+  [DamageChannel.Direct]: { label: "Direct", order: 0 },
+  [DamageChannel.Burn]: { label: "Burn", order: 1 },
+  [DamageChannel.Poison]: { label: "Poison", order: 2 },
+  [DamageChannel.Shock]: { label: "Shock", order: 3 },
 });
 
-export type DamageChannel = VocabularyKey<typeof DAMAGE_CHANNEL>;
-
-/**
- * Statuses a cast applies. Overlaps `DamageChannel` on three members and is NOT the same
- * vocabulary — the ledger required this relationship be stated, and research.md R3a argues it:
- *
- *   `"Direct"` is a channel and never a status (a direct hit was never a status).
- *   `"Shield"` is a status and never a channel (Shield absorbs damage; it never deals any).
- *
- * So `DamageChannel` is exactly "the statuses that tick for damage, plus Direct", and the shared
- * three are a status naming the channel its own ticks land on. Merging them would make the compiler
- * accept `applyShieldReduction(n, "Shield", s)` and a `statusTick` of `"Direct"`, both nonsense the
- * split rejects today. Related by `damageChannelOf` below instead.
- */
 interface StatusMember extends VocabularyMember {
   readonly colorKey: StatColorKey;
   /** The channel this status's tick damage lands on; absent when it deals none. */
   readonly channel?: DamageChannel;
 }
 
-export const STATUS_EFFECT = defineVocabulary<StatusMember, "Burn" | "Poison" | "Shock" | "Shield">({
-  Burn: { label: "Burn", order: 0, colorKey: "burn", channel: "Burn" },
-  Poison: { label: "Poison", order: 1, colorKey: "poison", channel: "Poison" },
-  Shock: { label: "Shock", order: 2, colorKey: "shock", channel: "Shock" },
-  Shield: { label: "Shield", order: 3, colorKey: "shield" },
+export const STATUS_EFFECT: Readonly<Record<StatusEffectType, StatusMember>> = Object.freeze({
+  [StatusEffectType.Burn]: {
+    label: "Burn",
+    order: 0,
+    colorKey: StatColorKey.Burn,
+    channel: DamageChannel.Burn,
+  },
+  [StatusEffectType.Poison]: {
+    label: "Poison",
+    order: 1,
+    colorKey: StatColorKey.Poison,
+    channel: DamageChannel.Poison,
+  },
+  [StatusEffectType.Shock]: {
+    label: "Shock",
+    order: 2,
+    colorKey: StatColorKey.Shock,
+    channel: DamageChannel.Shock,
+  },
+  // No `channel`: Shield ABSORBS damage, it never deals any. That asymmetry is why this and
+  // `DamageChannel` stay two vocabularies rather than one five-member type.
+  [StatusEffectType.Shield]: { label: "Shield", order: 3, colorKey: StatColorKey.Shield },
 });
 
-export type StatusEffectType = VocabularyKey<typeof STATUS_EFFECT>;
+export const STATUS_EFFECTS_ASC: StatusEffectType[] = membersInOrder(
+  STATUS_EFFECT,
+  Object.values(StatusEffectType),
+);
 
 /** The channel a status's tick damage lands on. `undefined` for Shield, which deals none. */
 export function damageChannelOf(status: StatusEffectType): DamageChannel | undefined {
   return STATUS_EFFECT[status].channel;
 }
 
+/** A status's stat colour key. The single mapping; `format.ts` re-exports it for compatibility. */
+export function statusColorKey(status: StatusEffectType): StatColorKey {
+  return STATUS_EFFECT[status].colorKey;
+}
+
 // ---------------------------------------------------------------------------
-// AbilityTrigger (WI-001)
+// AbilityTrigger
 // ---------------------------------------------------------------------------
 
 /**
@@ -168,13 +185,9 @@ export function damageChannelOf(status: StatusEffectType): DamageChannel | undef
  *
  * `enginePropagated` is the important field. Anything true here must NOT also get a manual button,
  * or the user would bank a bonus the engine is already computing and double it. It is the single
- * place that distinction is stated.
+ * place that distinction is stated, and `deriveTags.ts` reads it to refuse six real species.
  *
- * Merged in from `TRIGGER_DEFINITIONS`, which used to be a second map beside the union — the
- * duplication this round removes. `CreatureRecord.abilityTrigger` stays optional rather than gaining
- * a "None" member: 134 records have real ability text and no published trigger, and batodex's own
- * extraction represents that as `"trigger": null`, so "not published" is a real state and inventing
- * a member for it would assert a fact no source supports.
+ * Absorbed from `TRIGGER_DEFINITIONS`, which used to be a second map keyed by the same vocabulary.
  */
 interface TriggerMember extends VocabularyMember {
   /** Button text, e.g. "Use an item". Phrased as the action the player takes. */
@@ -185,26 +198,22 @@ interface TriggerMember extends VocabularyMember {
   readonly enginePropagated: boolean;
 }
 
-export const ABILITY_TRIGGER = defineVocabulary<
-  TriggerMember,
-  | "Ongoing" | "On Cast" | "On Battle Start" | "On Bought" | "On Victory"
-  | "On Knocked Out" | "On Knockout" | "On Trinket Gained" | "On Item Used" | "On Battle Lost"
->({
-  Ongoing: {
+export const ABILITY_TRIGGER: Readonly<Record<AbilityTrigger, TriggerMember>> = Object.freeze({
+  [AbilityTrigger.Ongoing]: {
     label: "Ongoing",
     order: 0,
     actionLabel: "Ongoing",
     description: "Always active; the engine applies it for the whole battle.",
     enginePropagated: true,
   },
-  "On Cast": {
+  [AbilityTrigger.OnCast]: {
     label: "On Cast",
     order: 1,
     actionLabel: "Cast",
     description: "Fires every time this creature casts; the engine schedules those casts.",
     enginePropagated: true,
   },
-  "On Battle Start": {
+  [AbilityTrigger.OnBattleStart]: {
     label: "On Battle Start",
     order: 2,
     actionLabel: "Start the battle",
@@ -214,49 +223,49 @@ export const ABILITY_TRIGGER = defineVocabulary<
     // Those carry a manualTrigger tag explicitly; this flag governs only the default.
     enginePropagated: true,
   },
-  "On Bought": {
+  [AbilityTrigger.OnBought]: {
     label: "On Bought",
     order: 3,
     actionLabel: "Buy a monster",
     description: "Fires when you buy a monster in the shop — outside the battle this simulates.",
     enginePropagated: false,
   },
-  "On Victory": {
+  [AbilityTrigger.OnVictory]: {
     label: "On Victory",
     order: 4,
     actionLabel: "Win a round",
     description: "Fires after you win a round, so the bonus carries into later battles.",
     enginePropagated: false,
   },
-  "On Knocked Out": {
+  [AbilityTrigger.OnKnockedOut]: {
     label: "On Knocked Out",
     order: 5,
     actionLabel: "Get knocked out",
     description: "Fires when THIS creature is knocked out. The engine models no deaths.",
     enginePropagated: false,
   },
-  "On Knockout": {
+  [AbilityTrigger.OnKnockout]: {
     label: "On Knockout",
     order: 6,
     actionLabel: "Knock out a monster",
     description: "Fires when ANY monster is knocked out. The engine models no deaths.",
     enginePropagated: false,
   },
-  "On Trinket Gained": {
+  [AbilityTrigger.OnTrinketGained]: {
     label: "On Trinket Gained",
     order: 7,
     actionLabel: "Gain a trinket",
     description: "Fires when you gain a trinket — outside the battle this simulates.",
     enginePropagated: false,
   },
-  "On Item Used": {
+  [AbilityTrigger.OnItemUsed]: {
     label: "On Item Used",
     order: 8,
     actionLabel: "Use an item",
     description: "Fires when you use an item — outside the battle this simulates.",
     enginePropagated: false,
   },
-  "On Battle Lost": {
+  [AbilityTrigger.OnBattleLost]: {
     label: "On Battle Lost",
     order: 9,
     actionLabel: "Lose a round",
@@ -265,4 +274,29 @@ export const ABILITY_TRIGGER = defineVocabulary<
   },
 });
 
-export type AbilityTrigger = VocabularyKey<typeof ABILITY_TRIGGER>;
+export const ABILITY_TRIGGERS: AbilityTrigger[] = membersInOrder(
+  ABILITY_TRIGGER,
+  Object.values(AbilityTrigger),
+);
+
+// ---------------------------------------------------------------------------
+// Boundary parsing — the only place a raw string becomes a vocabulary member
+// ---------------------------------------------------------------------------
+
+/**
+ * "Parse, don't validate": a string from outside the app (a `<select>` value, a URL parameter, the
+ * batodex JSON fixture) becomes a domain value exactly once, here, and the interior never sees a
+ * string again. Returns `undefined` rather than throwing so a UI can treat "no filter" and "bad
+ * input" the same way, which is what every current call site wants.
+ */
+function parserFor<E extends Record<string, string>>(e: E) {
+  const values = new Set<string>(Object.values(e));
+  return (raw: string | null | undefined): E[keyof E] | undefined =>
+    raw !== null && raw !== undefined && values.has(raw) ? (raw as E[keyof E]) : undefined;
+}
+
+export const parseRarity = parserFor(Rarity);
+export const parseCreatureType = parserFor(CreatureType);
+export const parseRegionId = parserFor(RegionId);
+export const parseAbilityTrigger = parserFor(AbilityTrigger);
+export const parseStatusEffectType = parserFor(StatusEffectType);

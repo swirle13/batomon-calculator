@@ -3,6 +3,7 @@ import { corpus } from "../corpus";
 import { hasAbilityText } from "../display";
 import { runColor, tokenizeAbilityText, type AbilityTextRun } from "../abilityHighlight";
 import { STAT_COLORS } from "../statColors";
+import { StatColorKey } from "../enums";
 
 /**
  * Ability-text keyword highlighting (2026-10-07, round 7 WI-007 / FR-115).
@@ -30,7 +31,7 @@ describe("tokenizeAbilityText — the reference cards from the ask", () => {
   it("colours Pebbler's '+15 Shield' in the Shield colour", () => {
     const c = corpus.creatures.find((x) => x.id === "pebbler" && x.level === 1)!;
     const runs = coloured(tokenizeAbilityText(c.abilityText));
-    expect(runs).toEqual([{ text: "+15 Shield", colorKey: "shield" }]);
+    expect(runs).toEqual([{ text: "+15 Shield", colorKey: StatColorKey.Shield }]);
     expect(runColor(runs[0]!)).toBe(STAT_COLORS.shield);
   });
 
@@ -116,8 +117,8 @@ describe("WI-007 coverage — stated, not implied", () => {
   it("uses the stat badges' own palette, so text and badges cannot drift", () => {
     // Principle VII: one colour source. If these diverged, a card would show the same stat in two
     // different reds six pixels apart.
-    expect(runColor({ text: "+20 Damage", colorKey: "damage" })).toBe(STAT_COLORS.damage);
-    expect(runColor({ text: "Burn", colorKey: "burn" })).toBe(STAT_COLORS.burn);
+    expect(runColor({ text: "+20 Damage", colorKey: StatColorKey.Damage })).toBe(STAT_COLORS.damage);
+    expect(runColor({ text: "Burn", colorKey: StatColorKey.Burn })).toBe(STAT_COLORS.burn);
     expect(runColor({ text: "plain" })).toBeUndefined();
   });
 });

@@ -3,6 +3,7 @@ import { applyModifiers, type ModifierAmounts } from "../modifiers";
 import { simulate } from "../simulate";
 import { corpus } from "../../data/corpus";
 import type { TeamConfiguration } from "../../data/types";
+import { DamageChannel, GridRow, ModifierStat, StatusEffectType } from "../../data/enums";
 
 /**
  * FR-078 (amended 2026-10-07): a user modifier may CREATE an effect, not only scale one.
@@ -20,14 +21,19 @@ const NONE: ModifierAmounts = {
   damageFlatAdd: 0,
   multicastAdd: 0,
   healAmountAdd: 0,
-  status: { Burn: 0, Poison: 0, Shock: 0, Shield: 0 },
+  status: {
+    [StatusEffectType.Burn]: 0,
+    [StatusEffectType.Poison]: 0,
+    [StatusEffectType.Shock]: 0,
+    [StatusEffectType.Shield]: 0,
+  },
 };
 
 /** Pebbler's real shape: no published damage and no damage type, but it does apply Shield. */
 const pebbler = {
   damage: null,
   damageType: null,
-  appliesStatus: [{ type: "Shield" as const, amount: 20 }],
+  appliesStatus: [{ type: StatusEffectType.Shield, amount: 20 }],
   baseMulticast: 1,
   heal: null,
 };
@@ -47,22 +53,22 @@ describe("applyModifiers — a modifier may create an effect", () => {
 
   it("leaves an existing damage type alone rather than converting it to Direct", () => {
     // A +40 on a Burn-type attacker scales the burn; it does not bolt a direct hit on as well.
-    const burner = { ...pebbler, damage: 10, damageType: "Burn" as const };
+    const burner = { ...pebbler, damage: 10, damageType: DamageChannel.Burn as const };
     const out = applyModifiers(burner, { ...NONE, damageFlatAdd: 40 });
     expect(out.damage).toBe(50);
     expect(out.damageType).toBe("Burn");
   });
 
   it("applies a damage modifier to a non-Direct attacker", () => {
-    // The engine gated this behind `damageType === "Direct"`, so every Burn/Poison/Shock-type
+    // The engine gated this behind `damageType === DamageChannel.Direct`, so every Burn/Poison/Shock-type
     // attacker silently ignored a damage modifier.
-    const poisoner = { ...pebbler, damage: 12, damageType: "Poison" as const };
+    const poisoner = { ...pebbler, damage: 12, damageType: DamageChannel.Poison as const };
     expect(applyModifiers(poisoner, { ...NONE, damageFlatAdd: 8 }).damage).toBe(20);
   });
 
   it("applies a status the creature does not already apply", () => {
     const out = applyModifiers(pebbler, { ...NONE, status: { ...NONE.status, Burn: 15 } });
-    expect(out.appliesStatus).toContainEqual({ type: "Burn", amount: 15 });
+    expect(out.appliesStatus).toContainEqual({ type: StatusEffectType.Burn, amount: 15 });
   });
 
   it("keeps published statuses ahead of created ones so the card's lines do not reshuffle", () => {
@@ -72,7 +78,7 @@ describe("applyModifiers — a modifier may create an effect", () => {
 
   it("adds to a status the creature does publish", () => {
     const out = applyModifiers(pebbler, { ...NONE, status: { ...NONE.status, Shield: 5 } });
-    expect(out.appliesStatus).toEqual([{ type: "Shield", amount: 25 }]);
+    expect(out.appliesStatus).toEqual([{ type: StatusEffectType.Shield, amount: 25 }]);
   });
 });
 
@@ -86,7 +92,7 @@ describe("applyModifiers — null still means nothing is there", () => {
   });
 
   it("does not invent a status entry for a modifier of zero", () => {
-    expect(applyModifiers(pebbler, NONE).appliesStatus).toEqual([{ type: "Shield", amount: 20 }]);
+    expect(applyModifiers(pebbler, NONE).appliesStatus).toEqual([{ type: StatusEffectType.Shield, amount: 20 }]);
   });
 
   it("never drops multicast below 1, so a negative modifier cannot silence a creature", () => {
@@ -101,7 +107,7 @@ describe("applyModifiers — null still means nothing is there", () => {
 describe("simulate — modifiers reach a creature that had nothing to scale", () => {
   function pebblerTeam(modifiers: TeamConfiguration["placements"][number]["modifiers"]): TeamConfiguration {
     return {
-      placements: [{ slot: { row: "front", col: 0 }, creatureId: "pebbler", level: 1, modifiers }],
+      placements: [{ slot: { row: GridRow.Front, col: 0 }, creatureId: "pebbler", level: 1, modifiers }],
       trainerId: null,
       trinketIds: [],
       itemIds: [],
@@ -114,12 +120,12 @@ describe("simulate — modifiers reach a creature that had nothing to scale", ()
       r.cumulativeSeries[r.cumulativeSeries.length - 1]?.totalDamage ?? 0;
     const before = simulate(pebblerTeam([]), corpus);
     const after = simulate(
-      pebblerTeam([{ id: "m1", stat: "damageFlatAdd", amount: 40, label: "trinket" }]),
+      pebblerTeam([{ id: "m1", stat: ModifierStat.DamageFlatAdd, amount: 40, label: "trinket" }]),
       corpus,
     );
     expect(total(before)).toBe(0);
     // Pebbler casts every 5s across a 30s window, so the modifier has to show up repeatedly rather
-    // than once. The engine previously gated this on `damageType === "Direct"`, which Pebbler is
+    // than once. The engine previously gated this on `damageType === DamageChannel.Direct`, which Pebbler is
     // not, so the number stayed at 0 and the user saw their input do nothing.
     expect(total(after)).toBeGreaterThan(0);
   });
@@ -130,10 +136,10 @@ describe("simulate — modifiers reach a creature that had nothing to scale", ()
     const config: TeamConfiguration = {
       placements: [
         {
-          slot: { row: "front", col: 0 },
+          slot: { row: GridRow.Front, col: 0 },
           creatureId: passive.id,
           level: passive.level,
-          modifiers: [{ id: "m1", stat: "damageFlatAdd", amount: 25, label: "trinket" }],
+          modifiers: [{ id: "m1", stat: ModifierStat.DamageFlatAdd, amount: 25, label: "trinket" }],
         },
       ],
       trainerId: null,

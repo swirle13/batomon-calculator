@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { simulate } from "../simulate";
 import { corpus } from "../../data/corpus";
 import type { TeamConfiguration } from "../../data/types";
+import { GridRow, TimelineEventKind } from "../../data/enums";
 
 /**
  * T231 / WI-009-011. The three creatures round 11 deliberately left untagged.
@@ -16,7 +17,7 @@ import type { TeamConfiguration } from "../../data/types";
  * here so the answer cannot be re-litigated by a future refactor.
  */
 const solo = (creatureId: string, windowSeconds: number): TeamConfiguration => ({
-  placements: [{ slot: { row: "back", col: 0 }, creatureId, level: 1 }],
+  placements: [{ slot: { row: GridRow.Back, col: 0 }, creatureId, level: 1 }],
   trainerId: null,
   trinketIds: [],
   itemIds: [],
@@ -26,12 +27,12 @@ const solo = (creatureId: string, windowSeconds: number): TeamConfiguration => (
 
 const grantsOf = (creatureId: string, windowSeconds: number, type: string) =>
   simulate(solo(creatureId, windowSeconds), corpus)
-    .timeline.filter((e) => e.kind === "ongoingChange" && e.statusDelta?.type === type)
+    .timeline.filter((e) => e.kind === TimelineEventKind.OngoingChange && e.statusDelta?.type === type)
     .map((e) => e.statusDelta!.layerDelta);
 
 const damageOf = (creatureId: string, windowSeconds: number) =>
   simulate(solo(creatureId, windowSeconds), corpus)
-    .timeline.filter((e) => e.kind === "attack" && e.damage !== undefined)
+    .timeline.filter((e) => e.kind === TimelineEventKind.Attack && e.damage !== undefined)
     .map((e) => e.damage);
 
 describe("cascading on-cast grants (T231)", () => {

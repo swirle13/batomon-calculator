@@ -23,7 +23,22 @@
     /* Linting */
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "erasableSyntaxOnly": true,
+    /*
+     * `erasableSyntaxOnly` REMOVED 2026-10-07 (round 7).
+     *
+     * It arrived as a Vite `react-ts` scaffold default in the initial commit -- nobody here chose
+     * it -- and it bans `enum`, `namespace`, parameter properties and TS import aliases, because
+     * those need code generation rather than type erasure.
+     *
+     * Measured before removing: nothing in this toolchain needs erasure-only syntax. `tsc -b`,
+     * `vitest`, `vite build` and `tsx` all handle enums; no script runs a `.ts` file through a
+     * strip-only runtime. So the flag was protecting a capability with zero consumers while
+     * blocking the closed-vocabulary representation the data model actually wants.
+     *
+     * The guardrail half of its value is kept deliberately instead: every enum here is a STRING
+     * enum with explicit initialisers. Numeric enums -- the real footgun, with reverse mappings and
+     * arbitrary numbers assignable -- are not used, and neither is `namespace`.
+     */
     "noFallthroughCasesInSwitch": true,
 
     /* Strictness (Constitution Principle II) */

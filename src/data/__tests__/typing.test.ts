@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { corpus } from "../corpus";
 import { CREATURE_REGIONS, REGION_UNSOURCED } from "../regions";
 import { creatureHasType, isInOppositeRegion, isOutOfRegion, isPainted } from "../typing";
+import { CreatureType, RegionId } from "../enums";
 
 /** Round 4 orchestration: painting, the "All" type, and region membership. */
 describe("type matching (T230 / FR-086)", () => {
@@ -12,25 +13,25 @@ describe("type matching (T230 / FR-086)", () => {
     // Before the single predicate, every call site did `types.includes(t)`, and
     // `["All"].includes("Fire")` is false. The one creature in the game that is every type was
     // matched by no type-based ability at all.
-    expect(omnichrome.types).toEqual(["All"]);
-    for (const t of ["Fire", "Grass", "Flying", "Rock"] as const) {
+    expect(omnichrome.types).toEqual([CreatureType.All]);
+    for (const t of [CreatureType.Fire, CreatureType.Grass, CreatureType.Flying, CreatureType.Rock]) {
       expect(creatureHasType(omnichrome, t), `All should match ${t}`).toBe(true);
     }
   });
 
   it("a painted species matches every type; the same species unpainted does not", () => {
     const painted = { paintedCreatureIds: ["bumblebolt"] };
-    expect(creatureHasType(bumblebolt, "Fire", painted)).toBe(true);
-    expect(creatureHasType(bumblebolt, "Fire", { paintedCreatureIds: [] })).toBe(false);
+    expect(creatureHasType(bumblebolt, CreatureType.Fire, painted)).toBe(true);
+    expect(creatureHasType(bumblebolt, CreatureType.Fire, { paintedCreatureIds: [] })).toBe(false);
     // Its real typing still matches either way.
-    expect(creatureHasType(bumblebolt, "Electric", { paintedCreatureIds: [] })).toBe(true);
+    expect(creatureHasType(bumblebolt, CreatureType.Electric, { paintedCreatureIds: [] })).toBe(true);
   });
 
   it("painting is by SPECIES, so it is not slot- or level-dependent", () => {
     const cfg = { paintedCreatureIds: ["bumblebolt"] };
     for (const c of corpus.creatures.filter((x) => x.id === "bumblebolt")) {
       expect(isPainted(c.id, cfg)).toBe(true);
-      expect(creatureHasType(c, "Rock", cfg)).toBe(true);
+      expect(creatureHasType(c, CreatureType.Rock, cfg)).toBe(true);
     }
   });
 });
@@ -51,26 +52,26 @@ describe("regions (T229 / FR-087, FR-088)", () => {
   it("'opposite region' excludes dual-region and region-less species", () => {
     const dual = Object.entries(CREATURE_REGIONS).find(([, r]) => r.length > 1)![0];
     const none = Object.entries(CREATURE_REGIONS).find(([, r]) => r.length === 0)![0];
-    const jintoOnly = Object.entries(CREATURE_REGIONS).find(([, r]) => r.length === 1 && r[0] === "jinto")![0];
+    const jintoOnly = Object.entries(CREATURE_REGIONS).find(([, r]) => r.length === 1 && r[0] === RegionId.Jinto)![0];
 
     // From Pantra, only a Jinto-exclusive species is "the other region".
-    expect(isInOppositeRegion(jintoOnly, "pantra")).toBe(true);
-    expect(isInOppositeRegion(dual, "pantra"), "dual-region is already yours").toBe(false);
-    expect(isInOppositeRegion(none, "pantra"), "region-less was never regional stock").toBe(false);
+    expect(isInOppositeRegion(jintoOnly, RegionId.Pantra)).toBe(true);
+    expect(isInOppositeRegion(dual, RegionId.Pantra), "dual-region is already yours").toBe(false);
+    expect(isInOppositeRegion(none, RegionId.Pantra), "region-less was never regional stock").toBe(false);
   });
 
   it("marks out-of-region species without ever hiding them", () => {
     // This was a FILTER until 2026-10-07, which made creatures the Travelling Merchant event can
     // put on your team unselectable — the tool could not represent a board the player was looking
     // at. It is now a marker, so nothing is unreachable.
-    const jintoOnly = Object.entries(CREATURE_REGIONS).find(([, r]) => r.length === 1 && r[0] === "jinto")![0];
+    const jintoOnly = Object.entries(CREATURE_REGIONS).find(([, r]) => r.length === 1 && r[0] === RegionId.Jinto)![0];
     const none = Object.entries(CREATURE_REGIONS).find(([, r]) => r.length === 0)![0];
 
-    expect(isOutOfRegion(jintoOnly, { selectedRegion: "pantra" })).toBe(true);
+    expect(isOutOfRegion(jintoOnly, { selectedRegion: RegionId.Pantra })).toBe(true);
     // Smuggled in deliberately, so not foreign.
-    expect(isOutOfRegion(jintoOnly, { selectedRegion: "pantra", smuggledCreatureIds: [jintoOnly] })).toBe(false);
+    expect(isOutOfRegion(jintoOnly, { selectedRegion: RegionId.Pantra, smuggledCreatureIds: [jintoOnly] })).toBe(false);
     // Events and fossils were never regional stock.
-    expect(isOutOfRegion(none, { selectedRegion: "pantra" })).toBe(false);
+    expect(isOutOfRegion(none, { selectedRegion: RegionId.Pantra })).toBe(false);
     // Nothing is foreign before a region is chosen.
     expect(isOutOfRegion(jintoOnly, {})).toBe(false);
   });

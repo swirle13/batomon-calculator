@@ -1,12 +1,13 @@
 import { useTeamConfig } from "../../context/TeamConfigContext";
 import { resolveCreatureVariant } from "../../data/corpus";
 import { manualTriggersFor, modifiersForPress } from "../../data/triggers";
-import { STAT_COLORS, type StatColorKey } from "../../data/statColors";
-import type { CreatureRecord, GridSlot, ModifierStat, TeamPlacement } from "../../data/types";
+import { STAT_COLORS } from "../../data/statColors";
+import type { CreatureRecord, GridSlot, TeamPlacement } from "../../data/types";
 import { slotKey } from "../../engine/grid";
 import { recipientsOfPress } from "../../engine/manualTriggers";
 import { Button } from "../primitives";
 import styles from "./TriggerButtons.module.css";
+import { ModifierStat, StatColorKey } from "../../data/enums";
 
 /**
  * One-press buttons for abilities the battle engine cannot trigger.
@@ -42,14 +43,14 @@ interface TriggerButtonsProps {
 
 /** Which colour a modifier's stat should read as, so the preview matches the stat badges. */
 const STAT_KEY: Partial<Record<ModifierStat, StatColorKey>> = {
-  damageFlatAdd: "damage",
-  burnAmountAdd: "burn",
-  poisonAmountAdd: "poison",
-  shockAmountAdd: "shock",
-  shieldAmountAdd: "shield",
-  multicastAdd: "multicast",
-  healAmountAdd: "heal",
-  cooldownSpeedAdd: "multicast",
+  damageFlatAdd: StatColorKey.Damage,
+  burnAmountAdd: StatColorKey.Burn,
+  poisonAmountAdd: StatColorKey.Poison,
+  shockAmountAdd: StatColorKey.Shock,
+  shieldAmountAdd: StatColorKey.Shield,
+  multicastAdd: StatColorKey.Multicast,
+  healAmountAdd: StatColorKey.Heal,
+  cooldownSpeedAdd: StatColorKey.Multicast,
 };
 
 const STAT_LABEL: Partial<Record<ModifierStat, string>> = {
@@ -73,7 +74,7 @@ const STAT_LABEL: Partial<Record<ModifierStat, string>> = {
  * `0.125` is "+12.5%" rather than binary-float noise.
  */
 function formatAmount(stat: ModifierStat, amount: number): string {
-  if (stat !== "cooldownSpeedAdd") return `+${amount}`;
+  if (stat !== ModifierStat.CooldownSpeedAdd) return `+${amount}`;
   return `+${Math.round(amount * 1000) / 10}%`;
 }
 

@@ -1,6 +1,5 @@
 import type { CreatureType } from "./types";
-import { CREATURE_TYPE } from "./vocabularies";
-import { keysInOrder } from "./vocabulary";
+import { CREATURE_TYPE, CREATURE_TYPES_ASC } from "./vocabularies";
 
 /**
  * Canonical `CreatureType` -> color mapping (2026-10-05 round 3, data-model.md's "Canonical
@@ -23,7 +22,7 @@ import { keysInOrder } from "./vocabulary";
  * unchanged; a new type can no longer be added to the union without a colour.
  */
 export const TYPE_COLORS: Record<CreatureType, string> = Object.fromEntries(
-  keysInOrder(CREATURE_TYPE).map((t) => [t, CREATURE_TYPE[t].color]),
+  CREATURE_TYPES_ASC.map((t) => [t, CREATURE_TYPE[t].color]),
 ) as Record<CreatureType, string>;
 
 export function typeColor(type: CreatureType): string {

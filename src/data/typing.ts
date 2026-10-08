@@ -1,6 +1,7 @@
 import { CREATURE_REGIONS } from "./regions";
 import { isWildcardType } from "./vocabularies";
-import type { CreatureRecord, CreatureType, RegionId, TeamConfiguration } from "./types";
+import type { CreatureRecord, RegionId, TeamConfiguration } from "./types";
+import { CreatureType } from "./enums";
 
 /**
  * The ONE type-matching predicate (T230 / FR-086).
@@ -13,7 +14,7 @@ import type { CreatureRecord, CreatureType, RegionId, TeamConfiguration } from "
  *
  * ## Painted and native "All" mean the same thing
  *
- * `CreatureType` already includes `"All"`, and Omnichrome natively carries `types: ["All"]`.
+ * `CreatureType` already includes `"All"`, and Omnichrome natively carries `types: [CreatureType.All]`.
  * Painter's effect is precisely "make this species an Omnichrome for typing purposes", so both
  * return true for every type. They differ only in provenance: native `"All"` is corpus data,
  * painted is run configuration.

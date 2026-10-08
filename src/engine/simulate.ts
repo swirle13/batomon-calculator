@@ -1,15 +1,4 @@
-import type {
-  PerCastOutput,
-  Corpus,
-  CreatureRecord,
-  GridSlot,
-  ModifierStat,
-  StatModifier,
-  StatusEffectInstance,
-  StatusEffectType,
-  TeamConfiguration,
-  TimelineEvent,
-} from "../data/types";
+import type { PerCastOutput, Corpus, CreatureRecord, GridSlot, StatModifier, StatusEffectInstance, TeamConfiguration, TimelineEvent } from "../data/types";
 import { applyModifiers } from "./modifiers";
 import { effectiveCooldown } from "./cooldown";
 import { applyStatusTick, applyShockProc } from "./status";
@@ -18,6 +7,17 @@ import { resolveEffects, selectTargets } from "./effects";
 import { creatureHasType } from "../data/typing";
 import { applyShinyOverlay } from "../data/corpus";
 import { InvalidTeamConfigurationError } from "./errors";
+
+import { damageChannelOf } from "../data/vocabularies";
+import { DamageChannel, ModifierStat, StatChangeStat, StatusEffectType, TimelineEventKind } from "../data/enums";
+
+/**
+ * The statuses that tick for damage: the `StatusEffectType` members that have a `DamageChannel`.
+ * Shield absorbs rather than deals, and Shock procs on a hit instead of on a clock, so neither is
+ * here -- `damageChannelOf` is the general form of that distinction.
+ */
+type TickingStatus = StatusEffectType.Burn | StatusEffectType.Poison;
+const TICKING_STATUSES: readonly TickingStatus[] = [StatusEffectType.Burn, StatusEffectType.Poison];
 
 /**
  * Tick intervals per research.md B2 — Burn every 0.5s, Poison every 1s. Shock has no interval:
@@ -287,19 +287,19 @@ export function simulate(
 
     // Modifiers are resolved up front — even when this creature has no ordinary cooldown cast
     // — so `perCreatureEffectiveStats` can report them below regardless of cast eligibility.
-    const multicastAdd = sumModifier("multicastAdd", teamModifiers, placementModifiers);
-    const damageFlatAdd = sumModifier("damageFlatAdd", teamModifiers, placementModifiers);
-    const healAmountAdd = sumModifier("healAmountAdd", teamModifiers, placementModifiers);
+    const multicastAdd = sumModifier(ModifierStat.MulticastAdd, teamModifiers, placementModifiers);
+    const damageFlatAdd = sumModifier(ModifierStat.DamageFlatAdd, teamModifiers, placementModifiers);
+    const healAmountAdd = sumModifier(ModifierStat.HealAmountAdd, teamModifiers, placementModifiers);
     const statusAmountAdd = {
-      Burn: sumModifier("burnAmountAdd", teamModifiers, placementModifiers),
-      Poison: sumModifier("poisonAmountAdd", teamModifiers, placementModifiers),
-      Shock: sumModifier("shockAmountAdd", teamModifiers, placementModifiers),
-      Shield: sumModifier("shieldAmountAdd", teamModifiers, placementModifiers),
+      Burn: sumModifier(ModifierStat.BurnAmountAdd, teamModifiers, placementModifiers),
+      Poison: sumModifier(ModifierStat.PoisonAmountAdd, teamModifiers, placementModifiers),
+      Shock: sumModifier(ModifierStat.ShockAmountAdd, teamModifiers, placementModifiers),
+      Shield: sumModifier(ModifierStat.ShieldAmountAdd, teamModifiers, placementModifiers),
     };
     const cooldownSpeedTotal =
       resolveCooldownSpeedTotal(slot, creature, teamMembers, config) +
-      sumModifier("cooldownSpeedAdd", teamModifiers, placementModifiers);
-    const cooldownFlatAdd = sumModifier("cooldownFlatAddSeconds", teamModifiers, placementModifiers);
+      sumModifier(ModifierStat.CooldownSpeedAdd, teamModifiers, placementModifiers);
+    const cooldownFlatAdd = sumModifier(ModifierStat.CooldownFlatAddSeconds, teamModifiers, placementModifiers);
 
     /*
      * A creature with no published cooldown has no cast cycle of its own, but a modifier may GIVE
@@ -325,7 +325,7 @@ export function simulate(
     /*
      * Shared with the detail card (engine/modifiers.ts) so the two cannot disagree.
      *
-     * This previously gated `damageFlatAdd` behind `creature.damageType === "Direct" &&
+     * This previously gated `damageFlatAdd` behind `creature.damageType === DamageChannel.Direct &&
      * baseDamage !== null`, which silently dropped a damage modifier on every damage-less creature
      * AND on every Burn/Poison/Shock-type attacker.
      */
@@ -384,9 +384,11 @@ export function simulate(
     return roundTime((Math.floor(roundTime(t) / interval + 1e-9) + 1) * interval);
   }
 
-  const pools: Record<"Burn" | "Poison", StatusPool> = {
-    Burn: { layers: 0, nextTickAt: null, bySource: new Map(), sourceSlot: STABLE_SLOT_ORDER[0]! },
-    Poison: { layers: 0, nextTickAt: null, bySource: new Map(), sourceSlot: STABLE_SLOT_ORDER[0]! },
+  // The two statuses that TICK for damage. Shield absorbs and Shock procs on a hit, so neither
+  // belongs in a tick pool -- `damageChannelOf` is the general form of this distinction.
+  const pools: Record<TickingStatus, StatusPool> = {
+    [StatusEffectType.Burn]: { layers: 0, nextTickAt: null, bySource: new Map(), sourceSlot: STABLE_SLOT_ORDER[0]! },
+    [StatusEffectType.Poison]: { layers: 0, nextTickAt: null, bySource: new Map(), sourceSlot: STABLE_SLOT_ORDER[0]! },
   };
 
   /**
@@ -414,9 +416,9 @@ export function simulate(
     // Repeatedly process the earliest pending POOL tick <= limit, so multiple ticks between two
     // casts (or before the window end) are each handled in order.
     while (true) {
-      let next: "Burn" | "Poison" | null = null;
+      let next: TickingStatus | null = null;
       let earliestTime = Infinity;
-      for (const type of ["Burn", "Poison"] as const) {
+      for (const type of TICKING_STATUSES) {
         const at = pools[type].nextTickAt;
         if (at !== null && at <= limit && at < earliestTime) {
           earliestTime = at;
@@ -426,7 +428,7 @@ export function simulate(
       if (next === null) break;
 
       const pool = pools[next];
-      const interval = next === "Burn" ? BURN_TICK_SECONDS : POISON_TICK_SECONDS;
+      const interval = next === StatusEffectType.Burn ? BURN_TICK_SECONDS : POISON_TICK_SECONDS;
 
       // Through `applyStatusTick`, so "damage equals the current layer count, and Burn then sheds
       // one" stays defined in exactly one place. The pool is handed to it as a single instance,
@@ -445,10 +447,10 @@ export function simulate(
 
       timeline.push({
         tSeconds: earliestTime,
-        kind: "statusTick",
+        kind: TimelineEventKind.StatusTick,
         sourceSlot: pool.sourceSlot,
         damage,
-        damageType: next,
+        damageType: damageChannelOf(next),
       });
       perStatusDamage[next] += damage;
 
@@ -671,7 +673,7 @@ export function simulate(
       // A creature with no published damageType that has ACCRUED damage hits directly: Bonshell's
       // damageType is null because its base card has no attack, but the ability grants one.
       const isDirectHit =
-        resolvedDamage !== null && (creature.damageType === "Direct" || creature.damageType === null);
+        resolvedDamage !== null && (creature.damageType === DamageChannel.Direct || creature.damageType === null);
 
       if (isDirectHit) {
         // `damageFlatAdd` is already inside `resolvedDamage` via `extra`; adding it here too would
@@ -679,21 +681,21 @@ export function simulate(
         const effectiveDamage = resolvedDamage!;
         const shockInstance: StatusEffectInstance | null =
           snapshotShockLayers > 0
-            ? { type: "Shock", layers: snapshotShockLayers, sourceSlot, targetSlot: placeholderTargetSlot(sourceSlot), appliedAtSeconds: tSeconds }
+            ? { type: StatusEffectType.Shock, layers: snapshotShockLayers, sourceSlot, targetSlot: placeholderTargetSlot(sourceSlot), appliedAtSeconds: tSeconds }
             : null;
-        const procResult = applyShockProc({ damage: effectiveDamage, damageType: "Direct" }, shockInstance);
+        const procResult = applyShockProc({ damage: effectiveDamage, damageType: DamageChannel.Direct }, shockInstance);
         if (procResult.shockDamage > 0) {
-          timeline.push({ tSeconds, kind: "shockProc", sourceSlot, damage: procResult.shockDamage, damageType: "Shock" });
+          timeline.push({ tSeconds, kind: TimelineEventKind.ShockProc, sourceSlot, damage: procResult.shockDamage, damageType: DamageChannel.Shock });
           perStatusDamage.Shock += procResult.shockDamage;
           for (const [key, layers] of snapshotShockLayersBySource) {
             const share = (procResult.shockDamage * layers) / snapshotShockLayers;
             facilitatedDamage.set(key, (facilitatedDamage.get(key) ?? 0) + share);
           }
         }
-        timeline.push({ tSeconds, kind: "attack", sourceSlot, damage: effectiveDamage, damageType: "Direct" });
+        timeline.push({ tSeconds, kind: TimelineEventKind.Attack, sourceSlot, damage: effectiveDamage, damageType: DamageChannel.Direct });
         perCreatureDamage.set(sourceKey, (perCreatureDamage.get(sourceKey) ?? 0) + effectiveDamage);
       } else {
-        timeline.push({ tSeconds, kind: "attack", sourceSlot });
+        timeline.push({ tSeconds, kind: TimelineEventKind.Attack, sourceSlot });
       }
 
       // RESOLVED status amounts, not the creature's base ones — this is what makes the simulation
@@ -716,8 +718,8 @@ export function simulate(
           const amount = applied.amount + modifiers.shockAmountAdd;
           shockLayers += amount;
           shockLayersBySource.set(sourceKey, (shockLayersBySource.get(sourceKey) ?? 0) + amount);
-          timeline.push({ tSeconds, kind: "ongoingChange", sourceSlot, statusDelta: { type: "Shock", slot: placeholderTargetSlot(sourceSlot), layerDelta: amount } });
-          appliedThisInstant.push({ sourceKey, type: "Shock", amount });
+          timeline.push({ tSeconds, kind: TimelineEventKind.OngoingChange, sourceSlot, statusDelta: { type: StatusEffectType.Shock, slot: placeholderTargetSlot(sourceSlot), layerDelta: amount } });
+          appliedThisInstant.push({ sourceKey, type: StatusEffectType.Shock, amount });
         } else if (applied.type === "Burn" || applied.type === "Poison") {
           const amount = applied.amount + (applied.type === "Burn" ? modifiers.burnAmountAdd : modifiers.poisonAmountAdd);
           const interval = applied.type === "Burn" ? BURN_TICK_SECONDS : POISON_TICK_SECONDS;
@@ -745,13 +747,13 @@ export function simulate(
             if (v > topAmount) { topAmount = v; topKey = k; }
           }
           if (topKey === sourceKey) pool.sourceSlot = sourceSlot;
-          timeline.push({ tSeconds, kind: "ongoingChange", sourceSlot, statusDelta: { type: applied.type, slot: placeholderTargetSlot(sourceSlot), layerDelta: amount } });
+          timeline.push({ tSeconds, kind: TimelineEventKind.OngoingChange, sourceSlot, statusDelta: { type: applied.type, slot: placeholderTargetSlot(sourceSlot), layerDelta: amount } });
           appliedThisInstant.push({ sourceKey, type: applied.type, amount });
-        } else if (applied.type === "Shield") {
+        } else if (applied.type === StatusEffectType.Shield) {
           const amount = applied.amount + modifiers.shieldAmountAdd;
-          timeline.push({ tSeconds, kind: "ongoingChange", sourceSlot, statusDelta: { type: "Shield", slot: placeholderTargetSlot(sourceSlot), layerDelta: amount } });
+          timeline.push({ tSeconds, kind: TimelineEventKind.OngoingChange, sourceSlot, statusDelta: { type: StatusEffectType.Shield, slot: placeholderTargetSlot(sourceSlot), layerDelta: amount } });
           perStatusDamage.Shield += amount;
-          appliedThisInstant.push({ sourceKey, type: "Shield", amount });
+          appliedThisInstant.push({ sourceKey, type: StatusEffectType.Shield, amount });
         }
         // KNOWN SCOPE GAP (tasks.md T037): applyShieldReduction() exists and is unit-tested, but
         // Shield still never reduces incoming damage here — that needs a modelled target with its
@@ -779,7 +781,7 @@ export function simulate(
           const b = buffFor(target.key);
           if (tag.effect.statChange?.stat === "damage") b.damage += tag.effect.statChange.amount;
           if (tag.effect.statChange?.stat === "multicast") b.multicast += tag.effect.statChange.amount;
-          if (tag.effect.statChange?.stat === "cooldownFlatSeconds") {
+          if (tag.effect.statChange?.stat === StatChangeStat.CooldownFlatSeconds) {
             // T227a: Saberhorn's "+8 seconds to this monster's Cooldown" — a COST, pushing its own
             // next cast later. Applied to the schedule directly, since cooldown is a property of
             // when the creature acts rather than of what the cast emits.
@@ -980,7 +982,7 @@ export function simulate(
       // Shield grants carry no `damage`/`damageType` (Shield deals no damage — see the
       // "Shield counted as an output stat" amendment above); they're tracked via
       // `statusDelta` instead and intentionally excluded from `totalDamage`.
-      if (event.statusDelta?.type === "Shield") {
+      if (event.statusDelta?.type === StatusEffectType.Shield) {
         byStatus.Shield += event.statusDelta.layerDelta;
         continue;
       }

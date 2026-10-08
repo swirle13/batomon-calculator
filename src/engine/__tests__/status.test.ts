@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { applyStatusTick, applyShockProc } from "../status";
 import type { StatusEffectInstance } from "../../data/types";
+import { DamageChannel, GridRow, StatusEffectType } from "../../data/enums";
 
 /**
  * Source (research.md B2): "Batomon Showdown Status Effects and Debuff Removal"
@@ -8,13 +9,13 @@ import type { StatusEffectInstance } from "../../data/types";
  * "Batomon Showdown Shock Builds Guide" https://batomonshowdowngame.wiki/guides/shock-build/
  */
 
-const baseSlot = { row: "front" as const, col: 0 as const };
-const sourceSlot = { row: "back" as const, col: 0 as const };
+const baseSlot = { row: GridRow.Front as const, col: 0 as const };
+const sourceSlot = { row: GridRow.Back as const, col: 0 as const };
 
 describe("applyStatusTick", () => {
   it("Burn: tick damage equals current layers, then loses 1 layer", () => {
     const burn: StatusEffectInstance = {
-      type: "Burn",
+      type: StatusEffectType.Burn,
       targetSlot: baseSlot,
       sourceSlot,
       layers: 5,
@@ -27,7 +28,7 @@ describe("applyStatusTick", () => {
 
   it("Burn: fully decays (nextInstance null) once layers reach 0", () => {
     const burn: StatusEffectInstance = {
-      type: "Burn",
+      type: StatusEffectType.Burn,
       targetSlot: baseSlot,
       sourceSlot,
       layers: 1,
@@ -40,7 +41,7 @@ describe("applyStatusTick", () => {
 
   it("Poison: tick damage equals current layers, layers unchanged after", () => {
     const poison: StatusEffectInstance = {
-      type: "Poison",
+      type: StatusEffectType.Poison,
       targetSlot: baseSlot,
       sourceSlot,
       layers: 4,
@@ -53,7 +54,7 @@ describe("applyStatusTick", () => {
 
   it("throws when given a Shock instance (Shock is reactive, not tick-based)", () => {
     const shock: StatusEffectInstance = {
-      type: "Shock",
+      type: StatusEffectType.Shock,
       targetSlot: baseSlot,
       sourceSlot,
       layers: 2,
@@ -66,23 +67,23 @@ describe("applyStatusTick", () => {
 describe("applyShockProc", () => {
   it("resolves a Shock hit equal to current layers before the direct hit", () => {
     const shock: StatusEffectInstance = {
-      type: "Shock",
+      type: StatusEffectType.Shock,
       targetSlot: baseSlot,
       sourceSlot,
       layers: 5,
       appliedAtSeconds: 0,
     };
-    const result = applyShockProc({ damage: 30, damageType: "Direct" }, shock);
+    const result = applyShockProc({ damage: 30, damageType: DamageChannel.Direct }, shock);
     expect(result.shockDamage).toBe(5);
     expect(result.orderedHits).toEqual([
-      { damage: 5, damageType: "Shock" },
-      { damage: 30, damageType: "Direct" },
+      { damage: 5, damageType: DamageChannel.Shock },
+      { damage: 30, damageType: DamageChannel.Direct },
     ]);
   });
 
   it("produces no Shock hit when there is no active Shock instance", () => {
-    const result = applyShockProc({ damage: 30, damageType: "Direct" }, null);
+    const result = applyShockProc({ damage: 30, damageType: DamageChannel.Direct }, null);
     expect(result.shockDamage).toBe(0);
-    expect(result.orderedHits).toEqual([{ damage: 30, damageType: "Direct" }]);
+    expect(result.orderedHits).toEqual([{ damage: 30, damageType: DamageChannel.Direct }]);
   });
 });

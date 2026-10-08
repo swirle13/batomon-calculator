@@ -3,6 +3,7 @@ import { corpus, hasShinyVariant, resolveCreatureVariant } from "../corpus";
 import { simulate } from "../../engine/simulate";
 import type { TeamConfiguration } from "../types";
 import { SHINY_STATS } from "../shiny";
+import { GridRow, TimelineEventKind } from "../enums";
 
 /**
  * Round 11 (WI-R11-001). Shiny is a published per-creature stat line, not a multiplier.
@@ -70,7 +71,7 @@ describe("shiny variants", () => {
 
 describe("shiny reaches the ENGINE, not just the card (2026-10-06)", () => {
   const place = (creatureId: string, shiny: boolean): TeamConfiguration => ({
-    placements: [{ slot: { row: "back", col: 0 }, creatureId, level: 1, shiny }],
+    placements: [{ slot: { row: GridRow.Back, col: 0 }, creatureId, level: 1, shiny }],
     trainerId: null,
     trinketIds: [],
     itemIds: [],
@@ -95,7 +96,7 @@ describe("shiny reaches the ENGINE, not just the card (2026-10-06)", () => {
     // makes shiny Velocect worth taking was invisible.
     const normal = simulate(place("velocect", false), corpus);
     const shiny = simulate(place("velocect", true), corpus);
-    const casts = (r: typeof normal) => r.timeline.filter((e) => e.kind === "attack").length;
+    const casts = (r: typeof normal) => r.timeline.filter((e) => e.kind === TimelineEventKind.Attack).length;
     expect(casts(shiny)).toBe(casts(normal) * 2);
     expect(Object.values(shiny.perCreatureEffectiveStats)[0]!.output.damage).toBe(8);
   });
@@ -108,8 +109,8 @@ describe("shiny reaches the ENGINE, not just the card (2026-10-06)", () => {
     const shiny = simulate(longWindow("furnadon", true), corpus);
     expect(Object.values(normal.perCreatureEffectiveStats)[0]!.cooldownSeconds).toBe(5);
     expect(Object.values(shiny.perCreatureEffectiveStats)[0]!.cooldownSeconds).toBe(4);
-    expect(shiny.timeline.filter((e) => e.kind === "attack").length).toBeGreaterThan(
-      normal.timeline.filter((e) => e.kind === "attack").length,
+    expect(shiny.timeline.filter((e) => e.kind === TimelineEventKind.Attack).length).toBeGreaterThan(
+      normal.timeline.filter((e) => e.kind === TimelineEventKind.Attack).length,
     );
   });
 
