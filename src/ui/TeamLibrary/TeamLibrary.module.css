@@ -129,6 +129,11 @@
   display: none;
 }
 
+/* On a desktop the grip is just the header's wrapper; the mobile block gives it its behaviour. */
+.grip {
+  flex: 0 0 auto;
+}
+
 .header {
   display: flex;
   align-items: center;
@@ -152,6 +157,12 @@
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
+  /*
+   * Scrolling past either end stops here instead of handing the rest of the gesture to the page.
+   * Without it, flicking a short list on a phone scrolls the board behind the sheet, which reads
+   * as the sheet having let go of the screen.
+   */
+  overscroll-behavior: contain;
   padding: var(--space-md);
   display: flex;
   flex-direction: column;
@@ -482,6 +493,9 @@ details[open] > .groupSummary::before {
     inset: 0;
     z-index: var(--z-library-scrim);
     background: var(--surface-overlay);
+    /* Swallows the gesture rather than passing it to the page underneath, which is what a scrim
+       is for — the page is covered, so it must not also scroll. */
+    touch-action: none;
     opacity: 0;
     visibility: hidden;
     transition:
@@ -536,6 +550,22 @@ details[open] > .groupSummary::before {
 
   .drawerOpen {
     transform: translateY(0);
+  }
+
+  /*
+   * The part you pull the sheet down by.
+   *
+   * `touch-action: none` is the fix for the reported bug: without it the browser claimed the
+   * vertical gesture as a page scroll before the pointer handlers ever saw it, so dragging the
+   * handle scrolled the board behind the sheet and the handle's promise went unkept.
+   */
+  .grip {
+    touch-action: none;
+    cursor: grab;
+  }
+
+  .grip:active {
+    cursor: grabbing;
   }
 
   .grabber {

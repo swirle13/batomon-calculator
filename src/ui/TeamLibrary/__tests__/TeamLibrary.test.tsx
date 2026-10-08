@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { TeamLibrary } from "../TeamLibrary";
 import { TeamConfigProvider } from "../../../context/TeamConfigContext";
@@ -64,6 +64,37 @@ beforeEach(() => {
   localStorage.removeItem(LIBRARY_STORAGE_KEY);
 });
 
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
+
+/**
+ * jsdom's `matchMedia` reports no match for everything, so the component is a desktop drawer in
+ * every test unless this says otherwise.
+ */
+function pretendPhone() {
+  vi.stubGlobal("matchMedia", (media: string) => ({
+    media,
+    matches: true,
+    onchange: null,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    addListener: () => {},
+    removeListener: () => {},
+    dispatchEvent: () => false,
+  }));
+}
+
+const drawer = () => document.getElementById("team-library")!;
+/** The handle and header are one grip; a test drags it the way a thumb would. */
+const grip = () => screen.getByRole("heading", { name: "Library" }).closest("header")!.parentElement!;
+
+function drag(from: number, to: number) {
+  fireEvent.pointerDown(grip(), { clientY: from });
+  fireEvent.pointerMove(window, { clientY: to });
+  fireEvent.pointerUp(window, { clientY: to });
+}
+
 describe("saving and loading", () => {
   it("saves the live board and loads it back over a different one", () => {
     setup();
@@ -123,8 +154,8 @@ describe("saving and loading", () => {
     expect(screen.getByText("One-off")).toBeInTheDocument();
     // No disclosure anywhere: there is no group, so there is nothing to expand.
     expect(document.querySelectorAll("summary")).toHaveLength(0);
-    // And no round/day badge, which only means something inside a run.
-    expect(screen.queryByText(/^R\d+·D\d+$/)).not.toBeInTheDocument();
+    // And no day badge, which only means something inside a run.
+    expect(screen.queryByText(/^Day \d+$/)).not.toBeInTheDocument();
   });
 
   it("deletes only on the second press", () => {
@@ -140,6 +171,44 @@ describe("saving and loading", () => {
   });
 });
 
+describe("the mobile sheet", () => {
+  // 2026-10-08, user-reported: the handle invited a drag that did nothing, and the gesture fell
+  // through to the page behind the sheet instead.
+  it("closes when the grip is pulled far enough down", () => {
+    pretendPhone();
+    setup();
+    expect(drawer()).not.toHaveAttribute("inert");
+
+    drag(100, 300);
+    expect(drawer()).toHaveAttribute("inert");
+  });
+
+  it("snaps back when the pull is short", () => {
+    pretendPhone();
+    setup();
+
+    drag(100, 140);
+    expect(drawer()).not.toHaveAttribute("inert");
+    // The sheet is back where it was rather than left part-way down the screen.
+    expect(drawer().style.transform).toBe("");
+  });
+
+  it("does not drag on a desktop, where the drawer comes from the side", () => {
+    setup();
+
+    drag(100, 400);
+    expect(drawer()).not.toHaveAttribute("inert");
+  });
+
+  it("leaves Close alone — a press on it is not the start of a drag", () => {
+    pretendPhone();
+    setup();
+
+    fireEvent.click(screen.getByRole("button", { name: "Close" }));
+    expect(drawer()).toHaveAttribute("inert");
+  });
+});
+
 describe("runs", () => {
   it("files saves into the active run and numbers them day by day", () => {
     setup();
@@ -147,19 +216,27 @@ describe("runs", () => {
     fireEvent.change(screen.getByLabelText("New run name"), { target: { value: "NL run 1" } });
     fireEvent.click(screen.getByRole("button", { name: "Create" }));
 
-    // A new run is the active one, so the name and position fields now describe a position in it.
-    expect(screen.getByLabelText("Team name")).toHaveValue("Round 1, day 1");
+    // A new run is the active one, so the name and day now describe a position in it.
+    expect(screen.getByLabelText("Team name")).toHaveValue("Day 1");
+    expect(screen.getByLabelText("Day")).toHaveValue(1);
 
     fireEvent.click(screen.getByRole("button", { name: "set A" }));
+    fireEvent.change(screen.getByLabelText("Team name"), { target: { value: "Opener" } });
     fireEvent.click(screen.getByRole("button", { name: "Save this board" }));
+
+    // The day advanced, and the next suggested name followed it.
+    expect(screen.getByLabelText("Day")).toHaveValue(2);
     fireEvent.click(screen.getByRole("button", { name: "set B" }));
     fireEvent.click(screen.getByRole("button", { name: "Save this board" }));
 
     // By the heading rather than the text, which also appears as the run select's chosen option.
     const group = screen.getByText("NL run 1", { selector: "span" }).closest("section");
     expect(group).not.toBeNull();
-    expect(within(group!).getByText("R1·D1")).toBeInTheDocument();
-    expect(within(group!).getByText("R1·D2")).toBeInTheDocument();
+    // The named board carries a day badge; the one left at its suggested name does not, because
+    // its name already says the same thing.
+    expect(within(group!).getByText("Opener")).toBeInTheDocument();
+    expect(within(group!).getByText("Day 1")).toBeInTheDocument();
+    expect(within(group!).getByText("Day 2")).toBeInTheDocument();
   });
 
   it("keeps the teams when the run holding them is deleted", () => {

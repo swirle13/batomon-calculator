@@ -7,9 +7,13 @@ import { buildId, exportBuild } from "./share";
  * ## Why a run is a grouping layer rather than a tag
  *
  * A run is the unit of play — one attempt from day 1 to a win or a loss — and the boards inside it
- * are a sequence, not a set. That is why a saved team carries `round` and `day` rather than an
- * ordinal: the numbers are the user's own labels for where they are in the run, they can repeat
- * across runs, and a board saved out of order still files itself in the right place.
+ * are a sequence, not a set. That is why a saved team carries a `day` rather than an ordinal: the
+ * number is the user's own label for where they are in the run, it repeats across runs, and a
+ * board saved out of order still files itself in the right place.
+ *
+ * There was briefly a `round` beside it, on the strength of `RECORDED_RUNS` labelling its boards
+ * "Round 2, day 3". The game does not work that way — a round and a day are the same tick of the
+ * run — so the pair was two fields for one fact and two numbers to keep straight at every save.
  *
  * ## Why run membership lives on the team
  *
@@ -53,7 +57,7 @@ export interface SavedTeam {
   savedAt: string;
   /** Absent for a team saved outside any run. */
   runId?: string;
-  round?: number;
+  /** Which day of the run this board was played on. Absent exactly when `runId` is. */
   day?: number;
 }
 
@@ -134,35 +138,27 @@ export function writeLibrary(library: Library, storage: Storage | null = default
 /* ------------------------------------- queries -------------------------------------- */
 
 /**
- * A run's teams in play order: round, then day, then the order they were saved in.
+ * A run's teams in play order: by day, then by the order they were saved in.
  *
  * `undefined` asks for the teams in no run at all, which is a real query rather than a special
- * case — the drawer renders that group exactly like any other.
+ * case — the drawer lists those boards as entries of their own.
  */
 export function teamsForRun(library: Library, runId: string | undefined): SavedTeam[] {
   return library.teams
     .filter((team) => team.runId === runId)
-    .sort(
-      (a, b) =>
-        (a.round ?? 0) - (b.round ?? 0) ||
-        (a.day ?? 0) - (b.day ?? 0) ||
-        a.savedAt.localeCompare(b.savedAt),
-    );
+    .sort((a, b) => (a.day ?? 0) - (b.day ?? 0) || a.savedAt.localeCompare(b.savedAt));
 }
 
 /**
- * Where the next save in this run goes: the run's current round, and the day after its last.
+ * The day the next save in this run goes to: one after the run's LAST day.
  *
- * "Current round" is the HIGHEST round already saved, not the latest one saved, so a board filed
- * retroactively into round 2 does not drag the next save back there with it. Both numbers are a
- * suggestion the user can overwrite before saving — a round is advanced by typing the next one.
+ * The last day, not the most recently saved one, so a board filed retroactively into day 2 does
+ * not pull the next save back to day 3 behind boards that are already there. It is a suggestion
+ * the user can overwrite before saving.
  */
-export function nextPosition(library: Library, runId: string | undefined): { round: number; day: number } {
+export function nextDay(library: Library, runId: string | undefined): number {
   const teams = teamsForRun(library, runId);
-  if (teams.length === 0) return { round: 1, day: 1 };
-  const round = Math.max(...teams.map((team) => team.round ?? 1));
-  const lastDay = Math.max(0, ...teams.filter((team) => (team.round ?? 1) === round).map((team) => team.day ?? 0));
-  return { round, day: lastDay + 1 };
+  return Math.max(0, ...teams.map((team) => team.day ?? 0)) + 1;
 }
 
 /** An existing save of this exact board, if there is one. Used to warn, never to block. */
@@ -177,7 +173,6 @@ interface SaveTeamInput {
   name: string;
   config: TeamConfiguration;
   runId?: string;
-  round?: number;
   day?: number;
 }
 
@@ -188,7 +183,7 @@ export function saveTeam(library: Library, input: SaveTeamInput): { library: Lib
     code: exportBuild(input.config),
     buildId: buildId(input.config),
     savedAt: new Date().toISOString(),
-    ...(input.runId ? { runId: input.runId, round: input.round, day: input.day } : {}),
+    ...(input.runId ? { runId: input.runId, day: input.day } : {}),
   };
   return { library: { ...library, teams: [...library.teams, team] }, team };
 }
@@ -238,7 +233,7 @@ export function setRunOutcome(library: Library, runId: string, outcome: RunOutco
  *
  * Deleting a group should not destroy what was filed in it: the user is discarding the grouping,
  * and a board they spent a run building is not something to throw away as a side effect. Their
- * round and day are dropped with the run that gave those numbers meaning.
+ * day is dropped with the run that gave that number meaning.
  */
 export function deleteRun(library: Library, runId: string): Library {
   return {
@@ -246,7 +241,7 @@ export function deleteRun(library: Library, runId: string): Library {
     runs: library.runs.filter((run) => run.id !== runId),
     teams: library.teams.map((team) => {
       if (team.runId !== runId) return team;
-      const { runId: _runId, round: _round, day: _day, ...loose } = team;
+      const { runId: _runId, day: _day, ...loose } = team;
       return loose;
     }),
     activeRunId: library.activeRunId === runId ? undefined : library.activeRunId,

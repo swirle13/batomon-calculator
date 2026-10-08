@@ -8,7 +8,7 @@ import {
   deleteTeam,
   emptyLibrary,
   findDuplicate,
-  nextPosition,
+  nextDay,
   readLibrary,
   renameTeam,
   saveTeam,
@@ -55,58 +55,52 @@ function fakeStorage(seed: Record<string, string> = {}): Storage {
 }
 
 describe("run numbering", () => {
-  it("starts a new run at round 1, day 1", () => {
+  it("starts a new run at day 1", () => {
     const { library, run } = createRun(emptyLibrary(), "NL run 1");
-    expect(nextPosition(library, run.id)).toEqual({ round: 1, day: 1 });
+    expect(nextDay(library, run.id)).toBe(1);
   });
 
-  it("advances the day within the run's current round", () => {
+  it("advances the day with each save", () => {
     const { library: withRun, run } = createRun(emptyLibrary(), "NL run 1");
     const { library } = saveTeam(withRun, {
-      name: "Round 1, day 1",
+      name: "Day 1",
       config: config(Species.Venopuff),
       runId: run.id,
-      round: 1,
       day: 1,
     });
-    expect(nextPosition(library, run.id)).toEqual({ round: 1, day: 2 });
+    expect(nextDay(library, run.id)).toBe(2);
   });
 
-  it("follows the HIGHEST round, not the most recently saved one", () => {
-    // A board filed retroactively into round 1 must not drag the next save back there with it.
+  it("follows the LAST day, not the most recently saved one", () => {
+    // A board filed retroactively into day 2 must not pull the next save back behind day 5.
     const { library: withRun, run } = createRun(emptyLibrary(), "NL run 1");
-    const { library: a } = saveTeam(withRun, { name: "r2d3", config: config(Species.Venopuff), runId: run.id, round: 2, day: 3 });
-    const { library: b } = saveTeam(a, { name: "r1d2", config: config(Species.Pebbler), runId: run.id, round: 1, day: 2 });
-    expect(nextPosition(b, run.id)).toEqual({ round: 2, day: 4 });
+    const { library: a } = saveTeam(withRun, { name: "d5", config: config(Species.Venopuff), runId: run.id, day: 5 });
+    const { library: b } = saveTeam(a, { name: "d2", config: config(Species.Pebbler), runId: run.id, day: 2 });
+    expect(nextDay(b, run.id)).toBe(6);
   });
 
   it("numbers each run independently", () => {
     const { library: one, run: runA } = createRun(emptyLibrary(), "A");
     const { library: two, run: runB } = createRun(one, "B");
-    const { library } = saveTeam(two, { name: "a1", config: config(Species.Venopuff), runId: runA.id, round: 1, day: 1 });
-    expect(nextPosition(library, runB.id)).toEqual({ round: 1, day: 1 });
+    const { library } = saveTeam(two, { name: "a1", config: config(Species.Venopuff), runId: runA.id, day: 1 });
+    expect(nextDay(library, runB.id)).toBe(1);
   });
 });
 
 describe("ordering", () => {
-  it("lists a run's teams by round then day, whatever order they were saved in", () => {
+  it("lists a run's teams by day, whatever order they were saved in", () => {
     const { library: withRun, run } = createRun(emptyLibrary(), "NL run 1");
-    const saves: [string, number, number][] = [
-      ["r2d1", 2, 1],
-      ["r1d1", 1, 1],
-      ["r1d2", 1, 2],
-    ];
-    const library = saves.reduce<Library>(
-      (acc, [name, round, day]) =>
-        saveTeam(acc, { name, config: config(Species.Venopuff), runId: run.id, round, day }).library,
+    const library = [3, 1, 2].reduce<Library>(
+      (acc, day) =>
+        saveTeam(acc, { name: `d${day}`, config: config(Species.Venopuff), runId: run.id, day }).library,
       withRun,
     );
-    expect(teamsForRun(library, run.id).map((team) => team.name)).toEqual(["r1d1", "r1d2", "r2d1"]);
+    expect(teamsForRun(library, run.id).map((team) => team.name)).toEqual(["d1", "d2", "d3"]);
   });
 
-  it("treats 'no run' as a group of its own", () => {
+  it("keeps the teams in no run queryable on their own", () => {
     const { library: withRun, run } = createRun(emptyLibrary(), "NL run 1");
-    const { library: a } = saveTeam(withRun, { name: "in run", config: config(Species.Venopuff), runId: run.id, round: 1, day: 1 });
+    const { library: a } = saveTeam(withRun, { name: "in run", config: config(Species.Venopuff), runId: run.id, day: 1 });
     const { library } = saveTeam(a, { name: "loose", config: config(Species.Pebbler) });
     expect(teamsForRun(library, undefined).map((t) => t.name)).toEqual(["loose"]);
     expect(teamsForRun(library, run.id).map((t) => t.name)).toEqual(["in run"]);
@@ -117,13 +111,13 @@ describe("mutations", () => {
   it("keeps a deleted run's teams, as loose saves", () => {
     // Discarding the grouping must not discard the boards filed in it.
     const { library: withRun, run } = createRun(emptyLibrary(), "NL run 1");
-    const { library: saved } = saveTeam(withRun, { name: "r1d1", config: config(Species.Venopuff), runId: run.id, round: 1, day: 1 });
+    const { library: saved } = saveTeam(withRun, { name: "d1", config: config(Species.Venopuff), runId: run.id, day: 1 });
     const library = deleteRun(saved, run.id);
 
     expect(library.runs).toEqual([]);
     expect(library.teams).toHaveLength(1);
     expect(library.teams[0]).not.toHaveProperty("runId");
-    expect(library.teams[0]).not.toHaveProperty("round");
+    expect(library.teams[0]).not.toHaveProperty("day");
     expect(teamsForRun(library, undefined)).toHaveLength(1);
   });
 

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type PointerEvent as ReactPointerEvent } from "react";
 import { useTeamConfig } from "../../context/teamConfig";
 import { formatRate } from "../../data/format";
 import { importBuild } from "../../data/share";
@@ -7,7 +7,7 @@ import {
   deleteRun,
   deleteTeam,
   findDuplicate,
-  nextPosition,
+  nextDay,
   readLibrary,
   renameRun,
   renameTeam,
@@ -55,6 +55,32 @@ import styles from "./TeamLibrary.module.css";
  * 2/6 slots" is what a list of near-identical runs looks like after a week; the arrangement is the
  * thing the user recognises, and it is also the thing this whole tool is about.
  */
+/** Matches the breakpoint `TeamLibrary.module.css` turns the drawer into a bottom sheet at. */
+const SHEET_QUERY = "(max-width: 640px)";
+
+/** How far the sheet has to be pulled down before letting go dismisses it rather than snapping back. */
+const DISMISS_AFTER_PX = 96;
+
+/**
+ * True while the drawer is a bottom sheet.
+ *
+ * A live subscription, not a one-off read: the behaviours keyed off it — dragging to dismiss,
+ * closing on load — would otherwise be whatever they were when the component mounted, which is
+ * wrong for the whole session after a phone is rotated or a desktop window is dragged narrow.
+ */
+function useIsSheet(): boolean {
+  return useSyncExternalStore(
+    (onChange) => {
+      const query = globalThis.matchMedia?.(SHEET_QUERY);
+      query?.addEventListener("change", onChange);
+      return () => query?.removeEventListener("change", onChange);
+    },
+    () => globalThis.matchMedia?.(SHEET_QUERY).matches ?? false,
+    // No media to match while server-rendering or in a test environment without `matchMedia`.
+    () => false,
+  );
+}
+
 export function TeamLibrary() {
   const { config, replaceConfig } = useTeamConfig();
   const [library, setLibrary] = useState<Library>(() => readLibrary());
@@ -65,11 +91,64 @@ export function TeamLibrary() {
    * would put the whole library in the critical path of first paint.
    */
   const [opened, setOpened] = useState(false);
+  const isSheet = useIsSheet();
 
   const commit = useCallback((next: Library) => {
     setLibrary(next);
     writeLibrary(next);
   }, []);
+
+  /*
+   * Drag the sheet down to dismiss it.
+   *
+   * The grab handle promised this and did not do it, which is worse than having no handle: the
+   * gesture it invites fell through to the page, so pulling on the sheet scrolled the board behind
+   * it. `touch-action: none` on the grip is the half of the fix that stops the fall-through; this
+   * is the half that makes the gesture mean something.
+   *
+   * The live offset is held in a ref as well as in state because the pointerup handler needs the
+   * distance travelled, and a handler registered once per drag would otherwise close over the
+   * offset as it was when the drag started.
+   */
+  const dragRef = useRef<{ startY: number; offset: number } | null>(null);
+  const [dragging, setDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState(0);
+
+  function startDrag(event: ReactPointerEvent) {
+    // A side drawer does not slide down, and `Close` is a button inside the grip — capturing its
+    // press as the start of a drag would eat the click.
+    if (!isSheet || (event.target as HTMLElement).closest("button")) return;
+    dragRef.current = { startY: event.clientY, offset: 0 };
+    setDragging(true);
+  }
+
+  useEffect(() => {
+    if (!dragging) return;
+    function onMove(event: globalThis.PointerEvent) {
+      const drag = dragRef.current;
+      if (!drag) return;
+      // Downward only: pulling up on a sheet already at its full height has nowhere to go.
+      drag.offset = Math.max(0, event.clientY - drag.startY);
+      setDragOffset(drag.offset);
+    }
+    function onEnd() {
+      const drag = dragRef.current;
+      dragRef.current = null;
+      setDragging(false);
+      setDragOffset(0);
+      if (drag && drag.offset > DISMISS_AFTER_PX) setOpen(false);
+    }
+    // On `window`, not the grip: a finger that leaves the element mid-drag is still dragging, and
+    // a pointer released anywhere must end it.
+    window.addEventListener("pointermove", onMove, { passive: true });
+    window.addEventListener("pointerup", onEnd);
+    window.addEventListener("pointercancel", onEnd);
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onEnd);
+      window.removeEventListener("pointercancel", onEnd);
+    };
+  }, [dragging]);
 
   useEffect(() => {
     if (!open) return;
@@ -126,14 +205,21 @@ export function TeamLibrary() {
         // Out of the tab order and out of the accessibility tree while closed: it is still in the
         // DOM only so that opening it can be animated.
         inert={!open}
+        // Follows the finger while dragging, and is dropped on release so the class transition
+        // takes over — snapping back or sliding the rest of the way out.
+        style={dragOffset > 0 ? { transform: `translateY(${dragOffset}px)`, transition: "none" } : undefined}
       >
-        <div className={styles.grabber} aria-hidden="true" />
-        <header className={styles.header}>
-          <h2 className={styles.title}>Library</h2>
-          <Button size="sm" variant="ghost" onClick={() => setOpen(false)}>
-            Close
-          </Button>
-        </header>
+        {/* The handle and the header are ONE grip. A sheet is dragged by its top, and a 4px bar is
+            not a target — the header is the part a thumb actually lands on. */}
+        <div className={styles.grip} onPointerDown={startDrag}>
+          <div className={styles.grabber} aria-hidden="true" />
+          <header className={styles.header}>
+            <h2 className={styles.title}>Library</h2>
+            <Button size="sm" variant="ghost" onClick={() => setOpen(false)}>
+              Close
+            </Button>
+          </header>
+        </div>
 
         {opened && (
           <div className={styles.body}>
@@ -181,10 +267,10 @@ export function TeamLibrary() {
       // `TeamCard` already marks an unreadable code, so the button is effectively dead by then.
       return;
     }
-    // On a phone the drawer is ON TOP of the board it just changed, so staying open would hide the
+    // On a phone the sheet is ON TOP of the board it just changed, so staying open would hide the
     // only evidence that anything happened. On a desktop it sits beside it and staying open is the
     // entire point — swapping boards is what the drawer is for.
-    if (globalThis.matchMedia?.("(max-width: 640px)").matches) setOpen(false);
+    if (isSheet) setOpen(false);
   }
 }
 
@@ -206,16 +292,13 @@ function SaveForm({
    * there would be no way to tell a user's "1" from a stale default.
    */
   const [nameEdit, setNameEdit] = useState<string | null>(null);
-  const [roundEdit, setRoundEdit] = useState<number | null>(null);
   const [dayEdit, setDayEdit] = useState<number | null>(null);
   const [newRunName, setNewRunName] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
 
   const activeRunId = library.activeRunId;
-  const suggestion = nextPosition(library, activeRunId);
-  const round = roundEdit ?? suggestion.round;
-  const day = dayEdit ?? suggestion.day;
-  const suggestedName = activeRunId ? `Round ${round}, day ${day}` : "Untitled team";
+  const day = dayEdit ?? nextDay(library, activeRunId);
+  const suggestedName = activeRunId ? `Day ${day}` : "Untitled team";
   const name = nameEdit ?? suggestedName;
   const duplicate = findDuplicate(library, config);
 
@@ -223,11 +306,10 @@ function SaveForm({
     const { library: next } = saveTeam(library, {
       name,
       config,
-      ...(activeRunId ? { runId: activeRunId, round, day } : {}),
+      ...(activeRunId ? { runId: activeRunId, day } : {}),
     });
     commit(next);
     setNameEdit(null);
-    setRoundEdit(null);
     setDayEdit(null);
     setSaved(true);
     setTimeout(() => setSaved(false), 1500);
@@ -305,19 +387,10 @@ function SaveForm({
         </div>
       )}
 
-      {/* Round and day belong to a run and are meaningless without one, so they are not rendered
-          greyed-out beside a "No run" selection — there is nothing to number. */}
+      {/* The day belongs to a run and is meaningless without one, so it is not rendered greyed-out
+          beside a "not part of a run" selection — there is nothing to number. */}
       {activeRunId && (
         <div className={styles.positionRow}>
-          <Field label="Round" inline className={styles.positionField}>
-            <NumberField
-              size="sm"
-              min={1}
-              width="3.5rem"
-              value={round}
-              onChange={(e) => setRoundEdit(Math.max(1, Number(e.target.value) || 1))}
-            />
-          </Field>
           <Field label="Day" inline className={styles.positionField}>
             <NumberField
               size="sm"
@@ -516,10 +589,11 @@ function TeamCard({
         ) : (
           <>
             <span className={styles.cardName}>{team.name}</span>
-            {team.round !== undefined && (
-              <span className={styles.position}>
-                R{team.round}·D{team.day}
-              </span>
+            {/* Suppressed when the name already says it, which it does by default — the suggested
+                name for a board in a run IS "Day 4", and a card reading "Day 4 · Day 4" states one
+                fact twice. The badge is for the boards a user has given a name of their own. */}
+            {team.day !== undefined && team.name.trim() !== `Day ${team.day}` && (
+              <span className={styles.position}>Day {team.day}</span>
             )}
           </>
         )}
