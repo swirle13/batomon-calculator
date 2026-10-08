@@ -1,0 +1,141 @@
+/*
+ * Item picker (T046). Like the trinket picker, almost nothing is here: the panel is `EditorPanel`,
+ * the chrome is `Modal`/`FilterBar`, the grid is `CardGrid`, the browse card is `PickerCard` and
+ * every tile is `SpriteTile`.
+ *
+ * What IS specific to items is the bag card. It cannot be a `PickerCard`, because that primitive
+ * is itself a `<button>` and a bag card carries its own Use and Remove buttons — a button inside a
+ * button is invalid HTML and unreachable by keyboard. So the bag card is a `Surface` with the same
+ * tile on top, and only its two controls are local.
+ */
+
+/* --- shared tile sizing, so a bag card and a browse card line up --- */
+.cardTile {
+  height: var(--trinket-tile-height);
+  flex: none;
+  border: none;
+  border-radius: 0;
+}
+
+.cardEffect {
+  margin: 0;
+  padding: var(--space-xs) var(--space-sm) var(--space-sm);
+  font-size: var(--font-sm);
+  line-height: 1.3;
+  color: var(--text-body);
+  white-space: pre-line;
+}
+
+/* --- the bag card --- */
+.bagCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  padding: 0;
+  overflow: hidden;
+}
+
+/* The tile keeps the card's rounded top corners now that the card itself has no padding. */
+.bagCard .cardTile {
+  border-start-start-radius: inherit;
+  border-start-end-radius: inherit;
+}
+
+.bagControls {
+  display: flex;
+  gap: var(--space-2xs);
+  padding: 0 var(--space-sm) var(--space-sm);
+}
+
+.bagControls > * {
+  flex: 1;
+}
+
+/*
+ * What one use will do, in the user's own units — "+5 Damage to 3 monsters".
+ *
+ * Stated BEFORE the press rather than discovered after it in a changed number somewhere else on
+ * the page, the same rule `TriggerButtons` follows for an ability whose recipients are not the
+ * card it sits on.
+ */
+.useSummary {
+  margin: 0;
+  padding: 0 var(--space-sm);
+  font-size: var(--font-sm);
+  line-height: 1.3;
+  color: var(--text-muted);
+}
+
+/* The reason a Use button is disabled, said where the button is. */
+.blocked {
+  color: var(--text-warn);
+}
+
+.countBadge,
+.removeMark {
+  position: absolute;
+  top: var(--space-2xs);
+  min-width: 1.25rem;
+  height: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--space-3xs);
+  border-radius: var(--radius-pill);
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: var(--font-sm);
+  font-weight: 700;
+}
+
+.countBadge {
+  left: var(--space-2xs);
+}
+
+.removeMark {
+  right: var(--space-2xs);
+  background: rgba(176, 42, 55, 0.85);
+}
+
+/* --- the "who gets it?" step --- */
+
+/*
+ * Replaces the overlay's body rather than opening a second modal on top of the first. A nested
+ * dialog would have two focus traps and two Escape handlers competing, and the choice being made
+ * here belongs to the overlay that is already open.
+ */
+.chooseIntro {
+  margin: 0 0 var(--space-sm);
+  font-size: var(--font-sm);
+  line-height: 1.4;
+  color: var(--text-body);
+}
+
+.chooseActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+}
+
+/* An unoccupied board slot, drawn rather than omitted so the grid keeps the shape of the board —
+   the same reason the Modifiers overlay draws all six cells. */
+.emptySlot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--trinket-tile-height);
+  border: 1px dashed var(--control-border);
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  font-size: var(--font-sm);
+}
+
+/* Where a used item's bonus went. The one non-obvious thing about this overlay: the effect leaves
+   no trace here, it appears as modifier chips on the monsters that received it. */
+.note {
+  margin: var(--space-md) 0 0;
+  font-size: var(--font-sm);
+  line-height: 1.45;
+  color: var(--text-muted);
+}

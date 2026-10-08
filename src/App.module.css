@@ -32,27 +32,31 @@
 }
 
 /*
- * Trinkets and Modifiers, side by side above the grid and below the trainer card.
+ * Trinkets, Items and Modifiers, in one row above the grid and below the trainer card.
  *
- * They are a pair because they are the same kind of thing — a count of what you have set, and the
+ * They are a set because they are the same kind of thing — a count of what you have set, and the
  * panel itself opens the overlay where you set it — so they are the same component (`EditorPanel`)
- * at the same size, and neither reads as more important than the other. Equal `minmax(0, 1fr)`
- * tracks rather than `auto`, so a long hint cannot widen its own panel and shrink the other one.
+ * at the same size, and none reads as more important than the others. Equal `minmax(0, 1fr)`
+ * tracks rather than `auto`, so a long hint cannot widen its own panel and shrink the others.
  *
- * `stretch`, not `start`: if one panel's action wraps to a second line at some width, both panels
- * still read as one pressable row rather than one being visibly shorter than the other.
+ * `stretch`, not `start`: a panel whose action wraps to a second line at some width would
+ * otherwise leave the others visibly shorter than it, breaking the row.
+ *
+ * It was a PAIR until 2026-10-08, when Items joined (T046). Three tracks rather than two is the
+ * only change that needed: the row was already built on equal fractions, so nothing here encoded
+ * the number two except the number two.
  */
-.panelPair {
+.panelRow {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-md);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-sm);
   align-items: stretch;
 }
 
-/* One above the other on phones: at half of a narrow screen neither panel's title and count fit on
+/* One above the other on phones: at a third of a narrow screen no panel's title and count fit on
    a line with its action. */
 @media (max-width: 640px) {
-  .panelPair {
+  .panelRow {
     grid-template-columns: 1fr;
   }
 }

@@ -3,6 +3,7 @@ import { TeamConfigProvider, useTeamConfig } from "./context/TeamConfigContext";
 import { GridPicker } from "./ui/GridPicker/GridPicker";
 import { TrainerPicker } from "./ui/GridPicker/TrainerPicker";
 import { TrinketPicker } from "./ui/GridPicker/TrinketPicker";
+import { ItemPicker } from "./ui/GridPicker/ItemPicker";
 import { TeamSummary } from "./ui/TeamSummary/TeamSummary";
 import { TotalDps } from "./ui/TeamSummary/TotalDps";
 import { PlacedCreatureDetails } from "./ui/TeamSummary/PlacedCreatureDetails";
@@ -54,10 +55,12 @@ function CalculatorView() {
       <div aria-label="Team Builder" className={layout.builderRow}>
         <div aria-label="Team Grid" className={layout.teamColumn}>
           <TrainerPicker />
-          {/* Trinkets and Modifiers are a matched pair of EditorPanels, so they sit side by side
-              rather than stacking two near-identical full-width rows above the grid. */}
-          <div className={layout.panelPair}>
+          {/* Trinkets, Items and Modifiers are matched EditorPanels, so they sit in one row rather
+              than stacking three near-identical full-width rows above the grid. Items sits in the
+              middle because it feeds Modifiers: using an item writes the chips Modifiers shows. */}
+          <div className={layout.panelRow}>
             <TrinketPicker />
+            <ItemPicker />
             <ModifierEditor />
           </div>
           <GridPicker onHighlightSlot={setHighlightedSlot} />

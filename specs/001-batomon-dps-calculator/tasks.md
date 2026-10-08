@@ -225,7 +225,11 @@ and confirm a known conflicting entry shows both values with their sources.
       via T109 below** (2026-10-06 round 5): all 93 `TrinketRecord` entries with
       `name`/`effectText`/`rarity` and per-trinket batodex.com citations; the file's own header
       records that it supersedes this task's empty stub
-- [ ] T046 [P] [US3] Populate `src/data/items.ts` with the full cited Item corpus
+- [x] T046 [P] [US3] Populate `src/data/items.ts` with the full cited Item corpus
+      **Done 2026-10-08** via the same research.md G2 technique the Trinket corpus used: all **40**
+      items extracted from batodex.com's embedded items database, each cited, rarity-tagged and
+      sprite-vendored. Scope grew past "populate a file" at the user's request — items also had to
+      be *usable* — which is Phase 8 below.
 - [x] T047 [US3] Build `CorpusBrowser` in `src/ui/CorpusBrowser/CorpusBrowser.tsx`: name search +
       type/rarity filter controls (FR-013), wired to T042's helpers
 - [x] T048 [US3] Build `EntryDetail` in `src/ui/CorpusBrowser/EntryDetail.tsx`: ability/effect text,
@@ -3001,3 +3005,71 @@ All of T271-T303 shipped, with two exceptions marked `SUPERSEDED` rather than do
 **Still open, deliberately:** `toLowerCase()` word matching inside `deriveTags.ts` and the corpus
 search. It is inherent to parsing prose — the parsers emit typed values, but their internal lookup is
 still case-insensitive string matching. See research.md R9 for the full hazard table.
+
+---
+
+## Phase 8: Items — the corpus and using it (2026-10-08, user-requested)
+
+**Goal**: T046's remaining half, plus the ask it arrived with — "we need to add Items to the game.
+We also need to facilitate being able to use them when adding them. They can apply to entire team,
+to mon in a specific slot, or chosen mon. I'd like to lean into the modifier button."
+
+**The design decision the whole phase rests on**: a used item's lasting effect **is** a
+`StatModifier`. An item is spent in the shop, between battles; by the time the simulated battle
+starts, all that remains of it is a permanent bonus on some monsters, which is exactly what the
+modifier system already represents. So using an item writes `addPlacementModifier` — the same call
+`TriggerButtons` banks a manual trigger with, and the same one the user types by hand. One
+representation, one display path, one place to remove it, and `share.ts` round-trips it for free.
+
+The rejected alternative was a `usedItemIds` list that `simulate()` re-resolves each render. It
+would have been a second way to state the same fact, and this project has lost that bet before.
+
+**Independent test**: `src/ui/__tests__/itemPicker.test.tsx` — add an item, use it, and confirm the
+bonus appears as chips in the Modifiers overlay on exactly the monsters that received it.
+
+- [x] T304 Write `scripts/extract-batodex-items.mjs`: extract the items database and vendor the 40
+      sprites into `public/sprites/item/`. **Rarity is derived from `tier` and the derivation is
+      asserted** — RSC deduplicates 33 of the 40 `rarity` objects into `$...` back-references, so
+      reading `rarity.label` directly yields 7 rarities and 33 blanks. The 7 literals are one per
+      tier and all agree, and the script throws if that ever stops being true
+- [x] T305 Widen `ItemRecord` with `rarity`/`cost`/`uniquePerRound`/`spriteFile`, and add
+      `ItemEffect` + `ItemTarget` + the `ItemTargetKind` vocabulary — the user's three scopes
+      (`Team`, `FixedSlot`, `Chosen`) as a closed union
+- [x] T306 Generate `src/data/items.ts` via `scripts/build-items.mjs` and regenerate `ItemId`.
+      11 of the 40 carry an `effect`; the other 29 are shop/economy mechanics, run-state changes
+      (level-ups, SHINY, copying an enemy) or Coffee's extra activation — browsable, cited, and
+      honestly Use-less, the same treatment 87 of the 93 trinkets get
+- [x] T307 Implement `src/engine/itemEffects.ts`: `itemRecipients` / `modifiersForUse` /
+      `usableItems` / `requiredChoiceCount`. Deliberately NOT `TargetSelector`, which resolves
+      relative to a source creature — an item has no source on the board and all three of its
+      target kinds are absolute. Type filters route through `creatureHasType`, so a PAINTED species
+      counts (FR-086)
+- [x] T308 Add `addItemId`/`removeItemId` to `TeamConfigContext` (duplicates allowed, removal takes
+      one copy — the trinket rule, for the same reason: the shop can stock an item twice) and an
+      `"item"` `SpriteKind`
+- [x] T309 Build `src/ui/GridPicker/ItemPicker.tsx` on the shared primitives, as the fourth
+      instance of the overlay idiom rather than a fourth hand-rolled one (Principle VII). The bag
+      card is the one local piece: `PickerCard` is itself a `<button>` and a bag card carries its
+      own Use and Discard buttons, which cannot nest. The `Chosen` chooser **replaces the overlay's
+      body instead of opening a second modal** — two stacked dialogs mean two focus traps and two
+      Escape handlers over one decision
+- [x] T310 Widen `App.module.css`'s `.panelPair` to `.panelRow` and seat Items between Trinkets and
+      Modifiers — it feeds Modifiers, so it reads left to right
+- [x] T311 Tests: `engine/__tests__/itemEffects.test.ts` (recipient rules, the unit traps, corpus
+      integrity) and `ui/__tests__/itemPicker.test.tsx` (the wiring, asserted through the real
+      Modifiers panel rather than against the context)
+
+### Two traps this phase was written to catch, both of which a type check would have missed
+
+1. **Cooldown Speed is stored as a fraction.** Nana Berry publishes "+5%"; the engine stores `0.05`.
+   Writing `5` is a 100x error with no compile-time signal, so a corpus test asserts every
+   `cooldownSpeedAdd` grant is below 1 and a UI test pins the "+5%" rendering.
+2. **The RSC `$`-reference rarities** (T304). A naive read produces a corpus that looks fine and is
+   67% blank, which is why the derivation is asserted rather than trusted.
+
+### Known gap, stated rather than papered over
+
+`uniquePerRound` and `cost` are recorded and **not enforced**. This tool models a board, not a
+shop economy: it has no notion of a day, a gold total or how many items you have already used, so
+enforcing "one per round" would be inventing a constraint it cannot actually evaluate. The fields
+are published, so they are carried; a future shop model is where they would start mattering.

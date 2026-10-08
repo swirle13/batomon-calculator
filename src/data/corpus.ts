@@ -1,4 +1,4 @@
-import type { Corpus, CreatureRecord, Rarity, TeamConfiguration } from "./types";
+import type { Corpus, CreatureRecord, ItemRecord, Rarity, TeamConfiguration } from "./types";
 import { creatures } from "./creatures";
 import { trainers } from "./trainers";
 import { trinkets } from "./trinkets";
@@ -8,7 +8,7 @@ import { creatureHasType } from "./typing";
 import { deriveAbilityTags } from "./deriveTags";
 import { CreatureType } from "./enums";
 
-import type { Species } from "./ids";
+import type { ItemId, Species } from "./ids";
 import { DamageChannel } from "./enums";
 
 /**
@@ -53,6 +53,11 @@ export const corpus: Corpus = {
 
 export function getCreatureById(id: Species) {
   return corpus.creatures.find((c) => c.id === id) ?? null;
+}
+
+/** One item by id, or `null`. Mirrors `getCreatureById` (T046). */
+export function getItemById(id: ItemId): ItemRecord | null {
+  return corpus.items.find((i) => i.id === id) ?? null;
 }
 
 /**

@@ -13,7 +13,7 @@
  */
 /** The subdirectories that exist under `public/sprites/`. Exported so components that merely pass
  * a kind through (`SpriteTile`) cannot drift from the set this component can resolve. */
-export type SpriteKind = "monster" | "trinket" | "trainer";
+export type SpriteKind = "monster" | "trinket" | "trainer" | "item";
 
 interface SpriteProps {
   /** The record's `spriteFile`. Renders nothing when absent. */

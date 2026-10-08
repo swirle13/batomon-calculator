@@ -1,7 +1,7 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
 import type { TeamConfiguration, TeamPlacement, GridSlot, RegionId, StatModifier } from "../data/types";
 import { slotsEqual } from "../engine/grid";
-import type { Species, TrainerId, TrinketId } from "../data/ids";
+import type { ItemId, Species, TrainerId, TrinketId } from "../data/ids";
 
 /**
  * The one shared, editable object (research.md A3) feeding both the DPS/status summary and
@@ -56,6 +56,18 @@ interface TeamConfigContextValue {
    * `TeamConfiguration.trinketIds` already existed in the type (round 1) but had no setter. */
   addTrinketId: (trinketId: TrinketId) => void;
   removeTrinketId: (trinketId: TrinketId) => void;
+  /**
+   * T046 (2026-10-08). Items are held the same way trinkets are — a LIST, duplicates allowed,
+   * removal taking one copy — because the shop can stock the same item twice and two Feasts are
+   * two lots of +5 Damage.
+   *
+   * Holding an item is deliberately separate from USING one: `itemIds` records what is in the
+   * player's bag, and using it writes `StatModifier`s onto the recipients (see
+   * `engine/itemEffects.ts`). That split is what makes a used item survive as a modifier chip
+   * even after the item itself is spent.
+   */
+  addItemId: (itemId: ItemId) => void;
+  removeItemId: (itemId: ItemId) => void;
   setSimulationWindowSeconds: (seconds: number) => void;
   addTeamModifier: (modifier: Omit<StatModifier, "id">) => void;
   removeTeamModifier: (id: string) => void;
@@ -149,6 +161,14 @@ export function TeamConfigProvider({
             ...prev,
             trinketIds: [...prev.trinketIds.slice(0, index), ...prev.trinketIds.slice(index + 1)],
           };
+        }),
+      addItemId: (itemId) => setConfig((prev) => ({ ...prev, itemIds: [...prev.itemIds, itemId] })),
+      /** Removes ONE copy, matching `removeTrinketId`. A `filter` would drop every copy. */
+      removeItemId: (itemId) =>
+        setConfig((prev) => {
+          const index = prev.itemIds.lastIndexOf(itemId);
+          if (index === -1) return prev;
+          return { ...prev, itemIds: [...prev.itemIds.slice(0, index), ...prev.itemIds.slice(index + 1)] };
         }),
       setSimulationWindowSeconds: (seconds) =>
         setConfig((prev) => ({ ...prev, simulationWindowSeconds: seconds })),

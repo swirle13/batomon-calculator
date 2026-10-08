@@ -1431,3 +1431,62 @@ Three constraints read off the corpus rather than assumed (research.md R6):
 The card's reserved height (FR-043) is unaffected: it is sized to a measured 169-character worst case
 and no text grows. Inline elements can still change line-breaking, so this is verified in a browser,
 not only in jsdom.
+
+## Items, and what "using" one means (2026-10-08, T046 + the use amendment)
+
+`ItemRecord` gains `rarity`, `cost`, `uniquePerRound`, `spriteFile` and an optional `effect`:
+
+```ts
+export type ItemTarget =
+  | { kind: ItemTargetKind.Team; typeFilter?: CreatureType; abilitylessOnly?: boolean }
+  | { kind: ItemTargetKind.FixedSlot; slot: GridSlot }
+  | { kind: ItemTargetKind.Chosen; count: number };
+
+export interface ItemEffect {
+  target: ItemTarget;
+  stats: { stat: ModifierStat; amount: number }[];
+}
+```
+
+**Why items need a target where trinkets did not.** `TrinketRecord.effectTags` is a bare
+`{ stat, amount }[]` because every trinket effect this engine models applies to "your team",
+unconditionally — there is no positional targeting to encode. Items are the first corpus entity
+where that is false: Feast gives "your monsters" +5 Damage, Pom Berry gives "the bottom right
+monster" +8, and Cake gives "2 random monsters" +5 each. Three different recipient rules, and no
+single shape covers them.
+
+**Why not `TargetSelector`.** The creature selector is relative to a SOURCE — adjacent, behind, in
+front, allies. An item is used from the shop and has no position on the board, so every one of its
+targets is absolute. Reusing that selector would have meant inventing a fake source slot per use.
+
+**Why `Chosen` is user-picked and never rolled.** The game rolls; the player is reconciling a run
+that has *already* rolled. A second independent roll produces a board they cannot match against
+their screen — the same argument `AffectedCreaturePicker` makes for Painter's nine species.
+
+**`Team` carries its own two filters** rather than reusing `SelectorFilters`. The filters items
+need are not the ones creatures need: seven items read "your `<Type>` monsters" and one reads "your
+monsters with no abilities"; none reads "allies of rarity X" or "allies of level 3+", which is most
+of what `SelectorFilters` offers. `abilitylessOnly` is a boolean rather than a predicate language
+because exactly one item (Focus Pill) has the condition, and a flag says what the card says.
+
+### Using an item produces `StatModifier`s — it is not a third effect system
+
+`TeamConfiguration.itemIds` is the **bag**: items held and not yet spent. Using one resolves its
+recipients, writes one `StatModifier` per recipient per stat via `addPlacementModifier`, and
+removes the copy from the bag.
+
+This is the same destination a manual trigger banks into (`engine/manualTriggers.ts`) and the same
+one the user types into by hand. The three are not three mechanisms; they are three ways of saying
+"this monster carries a bonus the battle engine cannot derive". Consequences that fall out for
+free: one display path, one removal affordance, and `share.ts` already round-trips placement
+modifiers, so a used item survives a share link with no format change.
+
+The modifier is `label`led with the item's name, which is what makes a resulting "+5 Damage" chip
+attributable rather than anonymous among five others.
+
+**Coverage is 11 of 40.** The remaining 29 are shop/economy mechanics (rerolls, shop rank, gifts,
+gold), run-state changes with no battle-stat expression (level-ups, turning a monster SHINY,
+copying the enemy's top-middle monster), or Coffee's extra On Battle Start activation — a
+trigger-count change rather than a stat. They are real, cited and browsable with no Use control,
+because a Use button that silently did nothing is the dishonest option the trinket picker's
+"★ affects DPS" badge was removed for.
