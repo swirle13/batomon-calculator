@@ -118,21 +118,18 @@ export const creatures: CreatureSpecies[] = [{
 	baseCooldownSeconds: 3.5,
 	baseMulticast: 1,
 	appliesStatus: [{ type: StatusEffectType.Poison, amount: 4 }],
-	abilityText: "Applies 4 Poison per cast.",
+	abilityText: "",
 	abilityTags: [],
 	levels: {
 		2: {
 			appliesStatus: [{ type: StatusEffectType.Poison, amount: 8 }],
-			abilityText: "",
 		},
 		3: {
 			appliesStatus: [{ type: StatusEffectType.Poison, amount: 12 }],
-			abilityText: "",
 		},
 		4: {
 			baseMulticast: 2,
 			appliesStatus: [{ type: StatusEffectType.Poison, amount: 12 }],
-			abilityText: "",
 		},
 	},
 }, {

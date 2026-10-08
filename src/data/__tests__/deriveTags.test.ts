@@ -267,9 +267,10 @@ describe("WI-002 coverage — reported, not implied", () => {
      * The baseline and the result, pinned so a regression in the rule table is visible as a number
      * rather than as a creature quietly losing its button.
      *
-     * 415 records have published ability text and no tag (424, then 423 once `dewlotl`'s record was
+     * 414 records have published ability text and no tag (424, then 423 once `dewlotl`'s record was
      * corrected, then 415 once Shikitsune and Rattleghast were hand-tagged for the knockout/revive
-     * pairing on 2026-10-08 — 4 levels each). The `manualTrigger` family reaches **7** of them —
+     * pairing on 2026-10-08 — 4 levels each — then 414 once Venopuff's level 1 text was cleared,
+     * since it published no ability). The `manualTrigger` family reaches **7** of them —
      * Ninflora (the reported case, 4 levels) and Beetdown (3).
      *
      * That number is small for a reason worth stating rather than hiding: the rule table reads 30
@@ -283,9 +284,9 @@ describe("WI-002 coverage — reported, not implied", () => {
      * which is what the ask was about — plus the reported case fixed, plus a measured, justified
      * residue. 16 of research.md L1's 17 families are still hand-tagged.
      */
-    expect(untagged.length).toBe(415);
+    expect(untagged.length).toBe(414);
     expect(newlyDerived.length).toBe(15);
-    expect(untagged.length - newlyDerived.length).toBe(400);
+    expect(untagged.length - newlyDerived.length).toBe(399);
 
     expect(Object.fromEntries([...byFamily].sort())).toEqual({
       // Engine-resolved: the counter rises by these, correctly (see the FR-114 test above).

@@ -102,19 +102,36 @@ describe("WI-007 coverage — stated, not implied", () => {
     const bare = withText.filter((c) => coloured(tokenizeAbilityText(c.abilityText)).length === 0);
 
     /*
-     * 542 of 542 — the ask ("for all mon's ability text") is now literally met.
+     * 541 of 541 — the ask ("for all mon's ability text") is now literally met.
      *
      * It read 542 of 543 until the holdout was investigated, and the holdout turned out not to be a
      * highlighting gap at all: `dewlotl`'s `abilityText` held a sourcing disclaimer rather than an
      * ability (research.md R7.4), which `hasAbilityText` accepted, so a provenance note was being
      * rendered as a creature's ability. Fixing the record dropped the denominator to 542 and the
-     * exceptions to none.
+     * exceptions to none. 2026-10-08: 541, after Venopuff's level 1 text was cleared — it published
+     * no ability, and the line it carried merely restated its Poison stat.
      *
      * The previous version of this test pinned the holdout as an exact list precisely so that
      * fixing it would fail loudly rather than quietly stay true of some other creature. It did.
      */
-    expect(withText.length).toBe(542);
+    expect(withText.length).toBe(541);
     expect(bare.map((c) => c.id)).toEqual([]);
+  });
+
+  /**
+   * Venopuff publishes NO ability at any level, and must keep publishing none.
+   *
+   * This is pinned because it has been undone three times. The level 1 record once held "Applies 4
+   * Poison per cast.", which is not an ability — it is a restatement of `appliesStatus`, which the
+   * card already renders as a stat. Clearing it drops the census above by one, so the failure
+   * presents as two off-by-one count assertions, and the tempting fix is to put the text back
+   * rather than to correct the counts. That is exactly the wrong direction, so it now fails here
+   * too, by name, with the reason attached.
+   */
+  it("keeps Venopuff ability-text-free at every level", () => {
+    for (const level of [1, 2, 3, 4] as const) {
+      expect(getCreatureByIdAndLevel(Species.Venopuff, level)!.abilityText).toBe("");
+    }
   });
 
   it("uses the stat badges' own palette, so text and badges cannot drift", () => {
