@@ -1,0 +1,531 @@
+/*
+ * The team library drawer.
+ *
+ * Fixed to the viewport on both form factors, and the ONLY difference between them is which edge
+ * it comes from: a right-hand drawer on a desktop, where it sits beside the page, and a bottom
+ * sheet on a phone, where it sits over it. Everything else — the tab, the cards, the groups — is
+ * one set of rules at both sizes.
+ *
+ * The drawer stays mounted and closed with a transform rather than being unmounted, so it slides.
+ * `visibility` rides along with the transform so a closed drawer is not a transparent sheet
+ * sitting over the right-hand third of the page swallowing clicks.
+ */
+
+/* ------------------------------------- the tab -------------------------------------- */
+
+/*
+ * A vertical tab on the viewport's right edge — the one piece of this feature that is always on
+ * screen, so it is also the one piece that must cost the page nothing. It is fixed, outside the
+ * document flow, and `--page-pad` and the layout tokens never see it.
+ */
+.tab {
+  position: fixed;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  z-index: var(--z-library-tab);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-md) var(--space-2xs);
+
+  background: var(--surface-3);
+  color: var(--text-body);
+  border: 1px solid var(--line);
+  border-right: none;
+  /* Rounded on the side it is not attached to, which is what makes it read as a pull rather than
+     as a button someone placed in the corner. */
+  border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+  /* The one flash of accent in the resting page. */
+  border-left: 2px solid var(--accent-fill);
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--font-sm);
+}
+
+.tab:hover {
+  background: var(--surface-4);
+  border-left-color: var(--text-accent);
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.tabLabel {
+  writing-mode: vertical-rl;
+  /* `vertical-rl` alone reads top-to-bottom with the glyphs turned clockwise; the half turn stands
+     them back up and runs the word bottom-to-top, the way a spine is read. */
+  rotate: 180deg;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-size: var(--font-2xs);
+  font-weight: 700;
+}
+
+.tabCount {
+  min-width: 1.5rem;
+  padding: 0 var(--space-3xs);
+  border-radius: var(--radius-pill);
+  background: var(--surface-1);
+  color: var(--text-strong);
+  font-size: var(--font-2xs);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+/* -------------------------------------- the scrim ----------------------------------- */
+
+/* Desktop: no scrim at all. The page stays usable behind an open drawer, and dimming it would
+   claim otherwise. The mobile block at the bottom of this file turns it on. */
+.scrim {
+  display: none;
+}
+
+/* -------------------------------------- the drawer ---------------------------------- */
+
+.drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: var(--z-library);
+  width: var(--library-width);
+  max-width: 100vw;
+
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-2);
+  border-left: 1px solid var(--line-strong);
+  box-shadow: var(--shadow);
+  text-align: left;
+
+  transform: translateX(100%);
+  visibility: hidden;
+  transition:
+    transform 180ms ease,
+    visibility 180ms;
+}
+
+.drawerOpen {
+  transform: translateX(0);
+  visibility: visible;
+}
+
+/* Honour a reduced-motion preference by arriving rather than sliding. The drawer still appears and
+   disappears; only the travel is removed. */
+@media (prefers-reduced-motion: reduce) {
+  .drawer,
+  .scrim {
+    transition: none;
+  }
+}
+
+/* The sheet's drag handle. Mobile-only — see the bottom of this file. */
+.grabber {
+  display: none;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  border-bottom: 1px solid var(--line-subtle);
+  background: var(--surface-1);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--font-2xl);
+  font-weight: 700;
+  color: var(--text-strong);
+  letter-spacing: 0.02em;
+}
+
+/* The one scroll container. The header stays put; everything else scrolls under it. */
+.body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+/* ------------------------------------ the save form --------------------------------- */
+
+.saveForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding: var(--space-sm);
+  background: var(--surface-1);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-md);
+}
+
+/* A field and the button that acts on it, on one line, with the field taking whatever is left. */
+.runRow {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-sm);
+}
+
+.runField {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.positionRow {
+  display: flex;
+  gap: var(--space-md);
+}
+
+.positionField {
+  font-size: var(--font-sm);
+}
+
+.duplicate {
+  margin: 0;
+  font-size: var(--font-sm);
+  color: var(--text-warn);
+}
+
+.saved {
+  margin: 0;
+  font-size: var(--font-sm);
+  color: var(--text-accent);
+}
+
+/* -------------------------------------- run groups ---------------------------------- */
+
+.groups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+/*
+ * Each run is a card with a coloured rail down its left edge carrying its outcome. The rail is
+ * never the ONLY statement of the outcome — the select inside the group says it in words, so the
+ * colour is a shortcut for people who can use it rather than the information itself.
+ */
+.group {
+  border: 1px solid var(--line-subtle);
+  border-left: 3px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface-3);
+}
+
+.inProgress {
+  border-left-color: var(--accent-fill);
+}
+.won {
+  border-left-color: var(--outcome-win);
+}
+.lost {
+  border-left-color: var(--outcome-loss);
+}
+
+.groupSummary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm);
+  cursor: pointer;
+  font-size: var(--font-lg);
+  font-weight: 600;
+  color: var(--text-strong);
+  list-style: none;
+}
+
+.groupSummary::-webkit-details-marker {
+  display: none;
+}
+
+/* The disclosure's own marker, drawn rather than inherited so it turns with the group. */
+.groupSummary::before {
+  content: "▸";
+  font-size: var(--font-sm);
+  color: var(--text-muted);
+  transition: rotate 120ms ease;
+}
+
+details[open] > .groupSummary::before {
+  rotate: 90deg;
+}
+
+.groupName {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.groupCount {
+  flex: 0 0 auto;
+  min-width: 1.5rem;
+  padding: 0 var(--space-3xs);
+  border-radius: var(--radius-pill);
+  background: var(--surface-1);
+  color: var(--text-muted);
+  font-size: var(--font-2xs);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+/* Repeats the rail's colour, so the run's state is legible with the group collapsed. */
+.outcomeDot {
+  flex: 0 0 auto;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: var(--radius-pill);
+  background: var(--line-strong);
+}
+
+.inProgress .outcomeDot {
+  background: var(--accent-fill);
+}
+.won .outcomeDot {
+  background: var(--outcome-win);
+}
+.lost .outcomeDot {
+  background: var(--outcome-loss);
+}
+
+.groupTools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2xs);
+  padding: 0 var(--space-sm) var(--space-sm);
+}
+
+/* ------------------------------------- team cards ----------------------------------- */
+
+.cards {
+  list-style: none;
+  margin: 0;
+  padding: 0 var(--space-sm) var(--space-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding: var(--space-sm);
+  background: var(--surface-2);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-md);
+}
+
+.cardHead {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-sm);
+}
+
+.cardName {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--font-lg);
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+/* "R2·D1". Monospaced digits so the badge is the same width whatever the numbers are, and the
+   cards' names all end at the same place. */
+.position {
+  flex: 0 0 auto;
+  padding: 0 var(--space-2xs);
+  border-radius: var(--radius-sm);
+  background: var(--surface-4);
+  color: var(--text-body);
+  font-family: var(--mono);
+  font-size: var(--font-2xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.cardBody {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: flex-start;
+}
+
+/*
+ * THE thing that makes a saved team recognisable: its actual 2x3 board, back row on top, drawn at
+ * card scale. A name and a slot count cannot tell two days of the same run apart; an arrangement
+ * can, and the arrangement is what this whole tool is about.
+ */
+.miniBoard {
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, var(--sprite-library));
+  gap: 1px;
+  padding: 1px;
+  background: var(--line-subtle);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+
+.cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--sprite-library);
+  height: var(--sprite-library);
+  background: var(--surface-1);
+}
+
+/* An empty slot is drawn, not omitted: "nothing in the back-left" is information about the board. */
+.cellEmpty {
+  background: repeating-linear-gradient(
+    45deg,
+    var(--surface-1),
+    var(--surface-1) 3px,
+    var(--surface-2) 3px,
+    var(--surface-2) 6px
+  );
+}
+
+.cardStats {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.dps {
+  font-size: var(--font-2xl);
+  font-weight: 700;
+  color: var(--text-strong);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.dpsLabel {
+  font-size: var(--font-2xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+/* The roster in words, which is also the accessible description of the board beside it. */
+.roster {
+  margin-top: var(--space-2xs);
+  font-size: var(--font-2xs);
+  color: var(--text-muted);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+
+.cardActions {
+  display: flex;
+  gap: var(--space-2xs);
+}
+
+.empty {
+  margin: 0;
+  padding: 0 var(--space-sm) var(--space-sm);
+  font-size: var(--font-sm);
+  color: var(--text-muted);
+}
+
+/* ---------------------------------------- phones ------------------------------------ */
+
+/*
+ * A bottom sheet, not a side drawer (2026-10-08, at the user's request).
+ *
+ * The reading order on a phone is board, then detail card, then the DPS line, then the charts —
+ * one column, scrolled. A side drawer at this width is a full-screen takeover with none of a
+ * sheet's affordances; a sheet comes from the bottom, stops short of the top, and leaves the top
+ * of that column visible the whole time.
+ */
+@media (max-width: 640px) {
+  .scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-library-scrim);
+    background: var(--surface-overlay);
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity 180ms ease,
+      visibility 180ms;
+  }
+
+  .scrimOpen {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  /* A floating pill above the thumb, rather than a tab on an edge a thumb cannot comfortably reach
+     and that a browser's own gesture areas already claim. */
+  .tab {
+    top: auto;
+    bottom: var(--space-lg);
+    right: var(--space-lg);
+    transform: none;
+    flex-direction: row;
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--line);
+    border-left: 2px solid var(--accent-fill);
+    border-radius: var(--radius-pill);
+    box-shadow: var(--shadow);
+  }
+
+  .tabLabel {
+    writing-mode: horizontal-tb;
+    rotate: none;
+  }
+
+  /* Hidden while the sheet is open: it would sit on top of the sheet it opened, and the sheet has
+     its own Close. Keyed off the SCRIM because that is the element rendered BEFORE the tab — the
+     drawer comes after it, where no sibling combinator can reach. */
+  .scrimOpen ~ .tab {
+    display: none;
+  }
+
+  .drawer {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
+    height: var(--library-sheet-height);
+    border-left: none;
+    border-top: 1px solid var(--line-strong);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    transform: translateY(100%);
+  }
+
+  .drawerOpen {
+    transform: translateY(0);
+  }
+
+  .grabber {
+    display: block;
+    width: 2.5rem;
+    height: 0.25rem;
+    margin: var(--space-sm) auto var(--space-2xs);
+    border-radius: var(--radius-pill);
+    background: var(--line-strong);
+  }
+}

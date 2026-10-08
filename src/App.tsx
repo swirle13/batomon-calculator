@@ -11,6 +11,7 @@ import { PlacedCreatureDetails } from "./ui/TeamSummary/PlacedCreatureDetails";
 import { ModifierEditor } from "./ui/Modifiers/ModifierEditor";
 import { PlacementAdvisor } from "./ui/TeamSummary/PlacementAdvisor";
 import { ShareBuild } from "./ui/TeamSummary/ShareBuild";
+import { TeamLibrary } from "./ui/TeamLibrary/TeamLibrary";
 import { CumulativeChart } from "./ui/CumulativeChart/CumulativeChart";
 import { DpsRateChart } from "./ui/CumulativeChart/DpsRateChart";
 import { StatusStackChart } from "./ui/CumulativeChart/StatusStackChart";
@@ -90,6 +91,10 @@ function CalculatorView() {
       <CumulativeChart result={result} />
       <DpsRateChart result={result} />
       <StatusStackChart result={result} />
+      {/* Fixed to the viewport, so its position in this tree is immaterial to the layout — it is
+          last because it is last in reading order for anyone tabbing through the page, and the
+          board and its readouts should come first. */}
+      <TeamLibrary />
     </div>
   );
 }

@@ -258,6 +258,30 @@
      (previously `flex: 1 1 16rem`) visibly resized the column on every hover. */
   --detail-panel-width: 22rem;
 
+  /* --- team library drawer (2026-10-08) -----------------------------------------------------
+   * The drawer is fixed to the viewport, so unlike every other width here this one is not derived
+   * from the board — nothing lays out against it. It is sized to hold a saved-team card: a 3-wide
+   * mini board of 48px sprites beside its figures, with the card's and the drawer's padding.
+   */
+  --library-width: 23rem;
+  /* The mobile sheet. Short enough that the board behind it stays partly visible, which is what
+     tells the user the page is still there and still interactive. */
+  --library-sheet-height: 78svh;
+  /* 1x the 48x48 source art. A fractional size would go soft under `image-rendering: pixelated`,
+     and these six cells are the whole point of the card. */
+  --sprite-library: 48px;
+  /*
+   * Below the modal overlay's 1000, deliberately: the creature and trinket pickers are MODAL and
+   * must cover the drawer, while the drawer only has to cover the page.
+   */
+  --z-library-tab: 800;
+  --z-library-scrim: 850;
+  --z-library: 900;
+  /* A run's outcome, as the only two colours in the app that mean "good" and "bad". Muted to sit
+     beside `--accent-fill` without competing with the DPS figures, which are the page's subject. */
+  --outcome-win: #4b8b5a;
+  --outcome-loss: #8b4b4b;
+
   /* `main`'s inset. A token because the team board's width is measured against what is left of the
      viewport after it, which only the board's own tokens can do if they can name it. */
   --page-pad: 1rem;
