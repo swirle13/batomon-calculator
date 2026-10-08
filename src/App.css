@@ -12,6 +12,27 @@ main {
      and the board's sprite size is derived from what remains (see `--sprite-grid`). */
   padding: var(--page-pad);
   /*
+   * THE page-width bug, 2026-10-08. `#root` is a column flex container, so `main` is a flex item,
+   * and a flex item's automatic minimum size is its CONTENT: `main` was sized to the min-content
+   * width of its widest descendant — measured at 409.56px inside a 360px viewport — rather than to
+   * the viewport.
+   *
+   * Everything downstream inherited that width, which is why a summary table gaining a digit moved
+   * the entire app: the table widened `main`, `main` widened the document, and a phone grew its
+   * layout viewport to fit, carrying the `position: fixed` overlays off centre with it. It is also
+   * why giving the tables their own scroll boxes changed nothing — the boxes are `max-width: 100%`
+   * of a parent that had already grown to the table's width, so there was never any overflow left
+   * for them to scroll.
+   *
+   * `width: 100%` is the fix and `min-width: 0` alone was NOT: the `margin: 0 auto` below, which
+   * centres this element on a wide screen, is an auto margin in the flex container's cross axis,
+   * and an auto cross-axis margin turns OFF stretch. Without stretch the cross size is fit-content,
+   * which is floored at min-content whatever the minimum says. An explicit width is immune to that
+   * floor, and the auto margins still centre it whenever `max-width` is the binding constraint.
+   */
+  width: 100%;
+  min-width: 0;
+  /*
    * Never narrower than the builder row needs. A flat 60rem looked sufficient but is not derived
    * from anything, so when the team grid grew the row no longer fit and the grid spilled over the
    * detail panel. `max()` keeps the comfortable reading width for the prose and tables below while
