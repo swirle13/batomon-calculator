@@ -86,6 +86,25 @@ export function Sprite({ spriteFile, kind, size = 48, sizeVar, widthVar, heightV
       className={className}
       loading="lazy"
       /*
+       * NOT NATIVELY DRAGGABLE (2026-10-08, performance).
+       *
+       * An `<img>` is draggable by default, and the grid's drag handle is a card whose largest
+       * target is this sprite — so pressing a Batomon and moving started the BROWSER's own
+       * HTML5 image drag at the same time as @dnd-kit's pointer drag. Two things then went wrong,
+       * both visible in a Performance recording:
+       *
+       *  - The native drag fires `pointercancel`, which ends the pointer interaction Chrome was
+       *    measuring. One press-drag-release was therefore reported as TWO interactions, and the
+       *    second was the expensive one — which is what "INP 104ms" was actually naming.
+       *  - Starting it is not free: the browser rasterises a drag image of the element. `dragstart`
+       *    measured 40-56ms, the largest single event left in the gesture.
+       *
+       * Nothing wants the native behaviour. @dnd-kit drags via pointer events and never reads
+       * `dataTransfer`, and no DOM `onDragStart`/`onDrop` handler exists anywhere in the app, so
+       * the only thing the browser's drag ever did here was fight the one we implement.
+       */
+      draggable={false}
+      /*
        * 48x48 source art: keep the pixel grid crisp when scaled up rather than blurring it.
        *
        * This makes the rendered size matter. `pixelated` maps each source pixel to whole device
