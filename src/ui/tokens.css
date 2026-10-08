@@ -137,12 +137,15 @@
     var(--sprite-grid) + var(--grid-card-chrome) + 2 * var(--grid-card-padding)
   );
   /*
-   * 1rem, up from 0.5rem (2026-10-07). The gap BETWEEN cards was never 0.5rem in practice: the drop
-   * zone's reserved border and padding added 4.7px on each facing edge, so the cards sat 18.4px
-   * apart. Removing that reservation (see `.dropZone`) would have halved the spacing of a grid
-   * nobody asked to change, so the gap token now states the spacing that was actually there.
+   * The same gap the Trinkets / Items / Modifiers row above the board uses (`.panelRow` in
+   * App.module.css), because the two rows sit directly on top of each other in the same column and
+   * two different gaps between three equal tracks read as a mistake.
+   *
+   * It was 1rem from 2026-10-07 to 2026-10-08, which preserved the 18.4px the cards really sat at
+   * before the drop zone's reserved border and padding were removed. That number was only ever a
+   * record of the old chrome, and against the panels above it the board looked airy.
    */
-  --grid-gap: 1rem;
+  --grid-gap: var(--space-sm);
   /*
    * `--grid-cell-chrome` is gone with the drop zone's border and padding. The drag-over indicator is
    * an `outline` now, which takes no space, so a grid track holds exactly its card and the cards line
