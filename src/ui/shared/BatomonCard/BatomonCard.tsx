@@ -11,7 +11,7 @@ import { CreatureSprite } from "../CreatureSprite";
 import styles from "./BatomonCard.module.css";
 import { isWildcardType } from "../../../data/vocabularies";
 import { AbilityText } from "../AbilityText";
-import { ModifierStat, StatColorKey } from "../../../data/enums";
+import { ConfirmableField, ModifierStat, StatColorKey } from "../../../data/enums";
 
 /**
  * The one creature card, shared by the Corpus Browser and the Calculator's selected-creature panel
@@ -79,8 +79,8 @@ export function perCastOutputOf(
   // does. This is also where "a modifier may CREATE an effect" lives -- see engine/modifiers.ts.
   const output = applyModifiers(
     {
-      damage: creature.baseDamage,
-      damageType: creature.damageType,
+      damage: creature.publishedCast?.damage ?? null,
+      damageType: creature.publishedCast?.channel ?? null,
       appliesStatus: creature.appliesStatus ?? [],
       baseMulticast: creature.baseMulticast,
       heal: creature.healAmount ?? null,
@@ -93,7 +93,7 @@ export function perCastOutputOf(
     },
   );
 
-  return { ...output, damageUnconfirmed: isUnconfirmed(creature, "baseDamage") };
+  return { ...output, damageUnconfirmed: isUnconfirmed(creature, ConfirmableField.PublishedCast) };
 }
 
 export function buildStatLines(input: PerCastOutput): StatLine[] {
@@ -201,7 +201,7 @@ export function BatomonCard({ creature, children, levelLabel, fixedHeight, meta,
   // browser test. Callers that know about a run pass it; callers that do not, do not.
   const isAllType = creature.types.some(isWildcardType) || painted === true;
   const rarityColor = RARITY_COLORS[creature.rarity];
-  const cooldownUnconfirmed = isUnconfirmed(creature, "baseCooldownSeconds");
+  const cooldownUnconfirmed = isUnconfirmed(creature, ConfirmableField.BaseCooldownSeconds);
   const statLines = buildStatLines(perCastOutputOf(creature, modifiers));
 
   return (
@@ -214,7 +214,7 @@ export function BatomonCard({ creature, children, levelLabel, fixedHeight, meta,
           {creature.name}
           {levelLabel ? <small style={{ opacity: 0.7, fontWeight: 400 }}> {levelLabel}</small> : null}
         </h3>
-        <span className={styles.rarity}>{displayField(creature, "rarity", rarityLabel(creature.rarity))}</span>
+        <span className={styles.rarity}>{displayField(creature, ConfirmableField.Rarity, rarityLabel(creature.rarity))}</span>
       </header>
 
       <div className={styles.identity}>

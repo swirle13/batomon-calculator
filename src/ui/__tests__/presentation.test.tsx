@@ -522,7 +522,7 @@ describe("effective band renders healing (2026-10-06)", () => {
       (c) =>
         c.level === 1 &&
         (c.healAmount ?? 0) > 0 &&
-        c.baseDamage === null &&
+        c.publishedCast === undefined &&
         (c.appliesStatus ?? []).length === 0,
     );
     expect(healOnly.length, "fixture depends on heal-only species existing").toBeGreaterThan(0);

@@ -53,7 +53,7 @@ describe("cascading on-cast grants (T231)", () => {
     // "First cast grants 100 shield, then updates its state to 80 damage and 180 shield for the
     // next cast." Bonshell's `baseDamage` is null, so this only works because an ability grant may
     // bring a damage effect into existence (FR-093). A user modifier still may not.
-    expect(corpus.creatures.find((c) => c.id === "bonshell" && c.level === 1)?.baseDamage).toBeNull();
+    expect(corpus.creatures.find((c) => c.id === "bonshell" && c.level === 1)?.publishedCast?.damage ?? null).toBeNull();
     expect(damageOf("bonshell", 29)).toEqual([80, 160, 240]);
   });
 

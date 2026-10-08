@@ -74,7 +74,7 @@ describe("selector-based effect families (T219)", () => {
     for (const id of ["formiqueen", "onsetra", "miasmaw"]) {
       const solo = resolveEffects(team([{ id, slot: BACK1 }]), corpus);
       const base = corpus.creatures.find((c) => c.id === id && c.level === 1)!;
-      expect(solo[0]!.baseDamage, `${id} solo damage`).toBe(base.baseDamage);
+      expect(solo[0]!.baseDamage, `${id} solo damage`).toBe(base.publishedCast?.damage ?? null);
       expect(solo[0]!.multicast, `${id} solo multicast`).toBe(base.baseMulticast);
       expect(solo[0]!.extraOngoingApplications, `${id} solo ongoing`).toBe(0);
     }

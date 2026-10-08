@@ -1,4 +1,5 @@
 import type { TrainerRecord, SourceRef } from "./types";
+import { ConfirmableField } from "./enums";
 
 const RETRIEVED = "2026-10-05";
 
@@ -72,7 +73,7 @@ export const trainers: TrainerRecord[] = [
       "On Battle Start: if you have exactly 1 Fighting monster on your team, activate its " +
       "On Victory ability immediately.",
     abilityTags: [],
-    unconfirmedFields: ["abilityText"],
+    unconfirmedFields: [ConfirmableField.AbilityText],
     sourceRefs: [trainersAbilitiesGuide, trainersAndPicksGuide],
     patch: NAMED_ONLY_1_0_0,
   },
@@ -91,7 +92,7 @@ export const trainers: TrainerRecord[] = [
     name: "Burglar",
     abilityText: "Trinket gifts only offer 2 choices, but you can take both of them.",
     abilityTags: [],
-    unconfirmedFields: ["abilityText"],
+    unconfirmedFields: [ConfirmableField.AbilityText],
     sourceRefs: [trainersAbilitiesGuide],
     patch: NAMED_ONLY_1_0_0,
   },
@@ -152,7 +153,7 @@ export const trainers: TrainerRecord[] = [
     name: "Gentleman",
     abilityText: "From day 4 onwards, your shop no longer stocks Common or Uncommon monsters.",
     abilityTags: [],
-    unconfirmedFields: ["abilityText"],
+    unconfirmedFields: [ConfirmableField.AbilityText],
     sourceRefs: [trainersAbilitiesGuide],
     patch: NAMED_ONLY_1_0_0,
   },
@@ -244,7 +245,7 @@ export const trainers: TrainerRecord[] = [
     name: "Scavenger",
     abilityText: "Gain an additional copy of each non-unique Common or Uncommon Trinket from a gift.",
     abilityTags: [],
-    unconfirmedFields: ["abilityText"],
+    unconfirmedFields: [ConfirmableField.AbilityText],
     sourceRefs: [trainersAbilitiesGuide],
     patch: NAMED_ONLY_1_0_0,
   },
@@ -265,7 +266,7 @@ export const trainers: TrainerRecord[] = [
     abilityTags: [],
     sourceRefs: [trainersAbilitiesGuide],
     patch: "1.2.0 (added 2026-09-30; exact discount % not in official patch notes themselves)",
-    unconfirmedFields: ["abilityText"],
+    unconfirmedFields: [ConfirmableField.AbilityText],
   },
   {
     id: "swim-coach",
@@ -291,7 +292,7 @@ export const trainers: TrainerRecord[] = [
     name: "Twins",
     abilityText: "When monsters merge into level 3, gain an exact copy with a sell value of 0.",
     abilityTags: [],
-    unconfirmedFields: ["abilityText"],
+    unconfirmedFields: [ConfirmableField.AbilityText],
     sourceRefs: [trainersAbilitiesGuide],
     patch: NAMED_ONLY_1_0_0,
   },

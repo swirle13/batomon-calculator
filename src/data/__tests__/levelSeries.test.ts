@@ -85,11 +85,11 @@ describe("creature corpus matches the authoritative per-level series (research.m
         const sourceDamage = source.stats.find((s) => s.key === "damage");
         // `null` here means "the source publishes no damage line for this creature" -- which is
         // NOT the same as "confirmed to deal no damage" (research.md H9, still an open gap).
-        return (c.baseDamage ?? null) !== (sourceDamage ? sourceDamage.value : null);
+        return (c.publishedCast?.damage ?? null) !== (sourceDamage ? sourceDamage.value : null);
       })
       .map(({ c, source }) => {
         const sourceDamage = source!.stats.find((s) => s.key === "damage");
-        return `${c.id}@L${c.level}: ours=${c.baseDamage} source=${sourceDamage ? sourceDamage.value : null}`;
+        return `${c.id}@L${c.level}: ours=${c.publishedCast?.damage ?? null} source=${sourceDamage ? sourceDamage.value : null}`;
       });
     expect(mismatches).toEqual([]);
   });

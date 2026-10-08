@@ -236,3 +236,31 @@ export enum StatColorKey {
   Heal = "heal",
   Multicast = "multicast",
 }
+
+// ---------------------------------------------------------------------------
+// Provenance
+// ---------------------------------------------------------------------------
+
+/**
+ * The fields a record can flag as "published nowhere with confidence" (2026-10-07, round 7).
+ *
+ * `unconfirmedFields` was `string[]`, and `isUnconfirmed(creature, "baseDamage")` was a call site
+ * naming a field in a string. That is the hazard in its purest form, and it went live in this very
+ * round: renaming `baseDamage` to `publishedCast` left the string pointing at a field that no longer
+ * exists, so the "unknown" damage badge would have stopped appearing **with no compile error and no
+ * failing test** — the UI would just quietly never flag an unconfirmed damage value again.
+ *
+ * As an enum the rename is a compile error instead. `provenance.test.ts` additionally asserts every
+ * member is a real key of `CreatureRecord`, so the enum cannot drift from the schema either.
+ */
+export enum ConfirmableField {
+  ShopCost = "shopCost",
+  AbilityText = "abilityText",
+  EvolvesInto = "evolvesInto",
+  Rarity = "rarity",
+  Types = "types",
+  PublishedCast = "publishedCast",
+  BaseCooldownSeconds = "baseCooldownSeconds",
+  HealAmount = "healAmount",
+  SellValue = "sellValue",
+}

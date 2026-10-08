@@ -71,7 +71,7 @@ describe("Finding 3 — reactive gains are never scaled (T241)", () => {
 describe("Finding 5 — damage from the TARGET's status (T244)", () => {
   it("Fumungus deals damage proportional to accumulated enemy Poison, from a null base", () => {
     const fumungus = corpus.creatures.find((c) => c.id === "fumungus" && c.level === 2)!;
-    expect(fumungus.baseDamage, "base damage is null; all of it comes from the target").toBeNull();
+    expect(fumungus.publishedCast?.damage ?? null, "base damage is null; all of it comes from the target").toBeNull();
 
     // Paired with a Poison applier so stacks accumulate.
     const r = simulate(

@@ -18,7 +18,7 @@ import { TYPE_COLORS } from "../typeColors";
 import { ABILITY_TRIGGERS, TRIGGER_DEFINITIONS } from "../triggers";
 import { corpus } from "../corpus";
 import { AbilityTrigger, DamageChannel } from "../enums";
-import { CreatureType, Rarity, StatusEffectType } from "../enums";
+import { ConfirmableField, CreatureType, Rarity, StatusEffectType } from "../enums";
 
 /**
  * The vocabulary registries (2026-10-07, round 7 WI-001/003/004/005/006).
@@ -258,6 +258,50 @@ describe("GUARD: the corpus stores enum members, never bare strings", () => {
     // before. This is why no build code, cited fixture or share URL needed migrating.
     expect(JSON.stringify({ r: Rarity.SuperRare, t: CreatureType.Bug })).toBe(
       '{"r":"SuperRare","t":"Bug"}',
+    );
+  });
+});
+
+describe("GUARD: ConfirmableField cannot drift from the schema", () => {
+  /**
+   * The hazard this enum replaced, and the one that nearly shipped in this round.
+   *
+   * `unconfirmedFields` was `string[]`, and `BatomonCard` called
+   * `isUnconfirmed(creature, "baseDamage")`. Renaming `baseDamage` to `publishedCast` left that
+   * string pointing at a field that no longer exists — so the "unknown" damage badge would have
+   * stopped appearing forever, with **no compile error and no failing test**. Exactly the silent
+   * failure mode that motivated moving off strings.
+   *
+   * The enum makes the rename a compile error. This test closes the other half: that an enum member
+   * still names a REAL field, so the two cannot drift apart in the other direction either.
+   */
+  it("names only real fields of a corpus record", () => {
+    const sampleCreature = corpus.creatures[0]!;
+    const sampleTrinket = corpus.trinkets[0]!;
+    const knownKeys = new Set([
+      ...Object.keys(sampleCreature),
+      ...Object.keys(sampleTrinket),
+      // Optional fields are absent on any given sample, so they are listed from the schema.
+      "evolvesInto", "healAmount", "sellValue", "publishedCast", "appliesStatus",
+    ]);
+
+    const unknown = Object.values(ConfirmableField).filter((f) => !knownKeys.has(f));
+    expect(unknown).toEqual([]);
+  });
+
+  it("covers every value the corpus actually flags", () => {
+    // The reverse direction: a record flagging a field the enum does not know would not compile,
+    // but this states the set so the data and the enum are visibly reconciled.
+    const flagged = new Set(corpus.creatures.flatMap((c) => c.unconfirmedFields ?? []));
+    for (const f of flagged) expect(Object.values(ConfirmableField)).toContain(f);
+    expect([...flagged].sort()).toEqual(
+      [
+        ConfirmableField.AbilityText,
+        ConfirmableField.EvolvesInto,
+        ConfirmableField.Rarity,
+        ConfirmableField.ShopCost,
+        ConfirmableField.Types,
+      ].sort(),
     );
   });
 });

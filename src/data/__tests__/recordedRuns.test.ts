@@ -52,7 +52,7 @@ describe("recorded run fixtures", () => {
     const craghorn = config.placements.find((p) => p.creatureId === "craghorn")!;
     const record = corpus.creatures.find((c) => c.id === "craghorn" && c.level === 1)!;
 
-    expect(record.baseDamage).toBe(20);
+    expect(record.publishedCast?.damage ?? null).toBe(20);
     const shown = perCastOutputOf(record, craghorn.modifiers);
     expect(shown.damage).toBe(40);
     expect(shown.appliesStatus.find((s) => s.type === StatusEffectType.Shield)?.amount).toBe(40);

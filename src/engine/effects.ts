@@ -192,7 +192,7 @@ export function selectTargets<T extends { slot: GridSlot; key: string; creature:
 function syncReadValues(placements: ResolvedPlacement[]): void {
   for (const p of placements) {
     p.baseDamage =
-      p.creature.baseDamage === null && readRounded(p.stats.damage) === 0
+      p.creature.publishedCast === undefined && readRounded(p.stats.damage) === 0
         ? null
         : readRounded(p.stats.damage);
     p.appliesStatus = [...p.stats.status.entries()]
@@ -241,13 +241,13 @@ export function resolveEffects(config: TeamConfiguration, corpus: Corpus): Resol
     slot: placement.slot,
     creature,
     appliesStatus: (creature.appliesStatus ?? []).map((s) => ({ ...s })),
-    baseDamage: creature.baseDamage,
+    baseDamage: creature.publishedCast?.damage ?? null,
     cooldownSeconds: creature.baseCooldownSeconds,
     multicast: creature.baseMulticast,
     chargeRules: [] as { status: StatusEffectType; seconds: number }[],
     extraOngoingApplications: 0,
     stats: {
-      damage: statValue(creature.baseDamage ?? 0),
+      damage: statValue(creature.publishedCast?.damage ?? 0),
       status: new Map<StatusEffectType, StatValue>(
         (creature.appliesStatus ?? []).map((s) => [s.type, statValue(s.amount)]),
       ),

@@ -332,7 +332,7 @@ export function simulate(
     const output = applyModifiers(
       {
         damage: member.resolved.baseDamage,
-        damageType: creature.damageType,
+        damageType: creature.publishedCast?.channel ?? null,
         appliesStatus: member.resolved.appliesStatus,
         baseMulticast: creature.baseMulticast,
         // `healAmountAdd` (round 7) is what finally lets a modifier reach this. It still belongs
@@ -646,7 +646,7 @@ export function simulate(
       const effective = resolvedByKey.get(sourceKey);
       // T224: base/resolved damage PLUS whatever this creature has accumulated so far this battle.
       const accrued = runtimeBuffs.get(sourceKey);
-      const resolvedBase = effective?.baseDamage ?? creature.baseDamage;
+      const resolvedBase = effective?.baseDamage ?? creature.publishedCast?.damage ?? null;
       // T232/FR-093: an ability grant may bring a damage effect INTO EXISTENCE. Bonshell has
       // `baseDamage: null` yet deals 80 damage from its second cast, so `null + buff` must resolve
       // to the buff rather than staying null.
@@ -670,10 +670,13 @@ export function simulate(
       const extra = accruedDamage + Math.round(targetScaled) + modifiers.damageFlatAdd;
       const resolvedDamage =
         resolvedBase === null ? (extra !== 0 ? extra : null) : resolvedBase + extra;
-      // A creature with no published damageType that has ACCRUED damage hits directly: Bonshell's
-      // damageType is null because its base card has no attack, but the ability grants one.
+      // A creature with NO published cast that has ACCRUED damage hits directly: Bonshell publishes
+      // no attack at all, but its ability grants one from cast 2. So "no cast" and "a Direct cast"
+      // both count, which reads more plainly now that absence is a single state rather than two
+      // nulls that had to be checked together.
+      const channel = creature.publishedCast?.channel;
       const isDirectHit =
-        resolvedDamage !== null && (creature.damageType === DamageChannel.Direct || creature.damageType === null);
+        resolvedDamage !== null && (channel === DamageChannel.Direct || channel === undefined);
 
       if (isDirectHit) {
         // `damageFlatAdd` is already inside `resolvedDamage` via `extra`; adding it here too would

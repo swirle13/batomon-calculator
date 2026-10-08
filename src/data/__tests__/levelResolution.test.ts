@@ -38,7 +38,7 @@ describe("creature lookup resolves by level", () => {
       return variants.some(
         (v) =>
           v.level !== 1 &&
-          (v.baseDamage !== base.baseDamage ||
+          (v.publishedCast?.damage !== base.publishedCast?.damage ||
             v.baseMulticast !== base.baseMulticast ||
             v.healAmount !== base.healAmount),
       );

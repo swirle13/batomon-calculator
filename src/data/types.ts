@@ -25,13 +25,14 @@
  * Imported for this file's own type positions AND re-exported for consumers. Both are needed: a
  * bare `export … from` does not bring the names into local scope.
  */
-import { AbilityTrigger, CreatureType, DamageChannel, EventLabel, GridRow, ModifierStat, MultiplierScope, RegionId, StatusEffectType, TimelineEventKind } from "./enums";
+import { AbilityTrigger, ConfirmableField, CreatureType, DamageChannel, EventLabel, GridRow, ModifierStat, MultiplierScope, RegionId, StatusEffectType, TimelineEventKind } from "./enums";
 import { Rarity, StatChangeStat } from "./enums";
 
 // Re-exports the LOCAL bindings above rather than a second `export … from "./enums"`, which would
 // be a duplicate declaration of each name.
 export {
   AbilityTrigger,
+  ConfirmableField,
   CreatureType,
   DamageChannel,
   EventLabel,
@@ -87,7 +88,7 @@ export interface Provenance {
    * can flag a low-confidence field the same way creatures already do — see data-model.md's
    * "`unconfirmedFields` promoted..." amendment.
    */
-  unconfirmedFields?: string[];
+  unconfirmedFields?: ConfirmableField[];
 }
 
 // ---------------------------------------------------------------------------
@@ -345,9 +346,24 @@ export interface CreatureRecord extends Provenance {
   shopCost: number;
   /** null for creatures with no ordinary cooldown cast */
   baseCooldownSeconds: number | null;
-  baseDamage: number | null;
-  /** null if the creature has no direct-damage cast */
-  damageType: DamageChannel | null;
+  /**
+   * The creature's published damaging cast, or ABSENT if it has none (2026-10-07, round 7 WI-004).
+   *
+   * Replaces the `(baseDamage, damageType)` pair, which was two nullable fields that had to agree.
+   * Measured over all 596 records they always did — `damageType` was `null` exactly when
+   * `baseDamage` was, zero exceptions either way — so the pair stored one fact in two places and
+   * four representable combinations of which only two were legal. One optional field cannot
+   * disagree with itself, which is the whole point: the illegal state stops being representable
+   * rather than being prevented by a test.
+   *
+   * 240 of 596 records have no cast at all. That is the common case, not an edge case: a shield or
+   * status creature deals no direct damage, and absence says so better than two nulls did.
+   *
+   * A modifier or an ability grant can still CREATE a cast for a creature with none — see
+   * `engine/modifiers.ts`. That now reads as "no `publishedCast`, but a resolved cast", instead of
+   * two nullables that had to be updated together.
+   */
+  publishedCast?: { damage: number; channel: DamageChannel };
   /**
    * Number of independent direct-damage events a single cooldown completion fires (2026-10-05
    * round 2, research.md D3). Default `1` ("no stated Multicast bonus") — backfilled onto all

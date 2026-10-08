@@ -20,6 +20,11 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { execSync } from "node:child_process";
 
 const MEMBERS = {
+  ConfirmableField: {
+    shopCost: "ShopCost", abilityText: "AbilityText", evolvesInto: "EvolvesInto",
+    rarity: "Rarity", types: "Types", publishedCast: "PublishedCast",
+    baseCooldownSeconds: "BaseCooldownSeconds", healAmount: "HealAmount", sellValue: "SellValue",
+  },
   Rarity: { Common: "Common", Uncommon: "Uncommon", Rare: "Rare", SuperRare: "SuperRare", Legendary: "Legendary", Mythical: "Mythical" },
   CreatureType: Object.fromEntries(
     ["Fire", "Water", "Electric", "Toxic", "Flying", "Rock", "Grass", "Bug", "Steel", "Dragon", "Ghost", "Fighting", "Curio", "NULL", "All"].map((v) => [v, v]),

@@ -6,7 +6,7 @@ import { items } from "./items";
 import { SHINY_STATS } from "./shiny";
 import { creatureHasType } from "./typing";
 import { deriveAbilityTags } from "./deriveTags";
-import { CreatureType } from "./enums";
+import { CreatureType, DamageChannel } from "./enums";
 
 /**
  * The single assembled corpus lookup object. UI and engine code should import `corpus` from
@@ -117,7 +117,18 @@ export function applyShinyOverlay(
   if (!line) return base;
   return {
     ...base,
-    baseDamage: line.baseDamage,
+    /*
+     * The shiny line publishes a damage NUMBER and no channel, which under the old
+     * `(baseDamage, damageType)` pair meant a shiny could set one without the other -- exactly the
+     * state the pair was supposed to exclude, held together only by the UI reading just `damage`.
+     * With one optional field the override is atomic, and the channel question has to be answered
+     * here, once, instead of being left implicit: a shiny keeps the normal line's channel, and a
+     * shiny that GRANTS a cast the normal line lacks deals it directly.
+     */
+    publishedCast:
+      line.baseDamage === null
+        ? undefined
+        : { damage: line.baseDamage, channel: base.publishedCast?.channel ?? DamageChannel.Direct },
     baseCooldownSeconds: line.baseCooldownSeconds,
     baseMulticast: line.baseMulticast,
     // `??` not `||`: a published healAmount/appliesStatus of 0 is a real value, and a shiny line

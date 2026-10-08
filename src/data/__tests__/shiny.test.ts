@@ -19,8 +19,8 @@ describe("shiny variants", () => {
     for (const [key, line] of Object.entries(SHINY_STATS)) {
       const [id, lvl] = key.split("|");
       const base = corpus.creatures.find((c) => c.id === id && c.level === Number(lvl));
-      if (!base || base.baseDamage == null || line.baseDamage == null) continue;
-      if (base.baseDamage === line.baseDamage) unchanged++;
+      if (!base || base.publishedCast === undefined || line.baseDamage == null) continue;
+      if (base.publishedCast.damage === line.baseDamage) unchanged++;
       else changed++;
     }
     // If someone replaces this table with `base * 1.2`, `unchanged` collapses to 0.
@@ -46,8 +46,8 @@ describe("shiny variants", () => {
     for (const [key, line] of Object.entries(SHINY_STATS)) {
       const [id, lvl] = key.split("|");
       const base = corpus.creatures.find((c) => c.id === id && c.level === Number(lvl));
-      if (!base?.baseDamage || line.baseDamage == null) continue;
-      if (line.baseDamage < base.baseDamage) worse.push(key);
+      if (base?.publishedCast === undefined || line.baseDamage == null) continue;
+      if (line.baseDamage < base.publishedCast.damage) worse.push(key);
     }
     expect(worse.length).toBeGreaterThan(0);
   });
@@ -56,7 +56,7 @@ describe("shiny variants", () => {
     const missing = corpus.creatures.find((c) => !hasShinyVariant(c.id, c.level));
     if (!missing) return; // every species has shiny data; nothing to assert
     const resolved = resolveCreatureVariant(missing.id, missing.level, true);
-    expect(resolved?.baseDamage).toBe(missing.baseDamage);
+    expect(resolved?.publishedCast?.damage).toBe(missing.publishedCast?.damage);
   });
 
   it("leaves the creature's identity and ability alone — shiny swaps stats, not behaviour", () => {
