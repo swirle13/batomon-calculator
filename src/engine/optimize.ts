@@ -4,6 +4,7 @@ import { STABLE_SLOT_ORDER, slotKey } from "./grid";
 import { isResolvableTag } from "./effects";
 import { applyShinyOverlay } from "../data/corpus";
 import { abilityNeedsModelling } from "../data/display";
+import { AbilityTagKind, TargetKind } from "../data/enums";
 
 /**
  * Placement optimiser (FR-069, WI-018, 2026-10-06 round 8).
@@ -110,12 +111,12 @@ export function analyzePositionalCoverage(config: TeamConfiguration, corpus: Cor
     const positional = creature.abilityTags.filter((tag) => {
       const target = (tag as { target?: { kind?: string } }).target;
       return (
-        target?.kind === "adjacent" ||
-        target?.kind === "behind" ||
-        target?.kind === "above" ||
-        tag.kind === "battleStartStatusFromAllies" ||
-        tag.kind === "chargeOnAllyStatus" ||
-        tag.kind === "cooldownSpeedOnAllyCast"
+        target?.kind === TargetKind.Adjacent ||
+        target?.kind === TargetKind.Behind ||
+        target?.kind === TargetKind.Above ||
+        tag.kind === AbilityTagKind.BattleStartStatusFromAllies ||
+        tag.kind === AbilityTagKind.ChargeOnAllyStatus ||
+        tag.kind === AbilityTagKind.CooldownSpeedOnAllyCast
       );
     });
     if (abilityNeedsModelling(creature)) needsModelling.push(creature.name);

@@ -5,7 +5,7 @@ import { hasAbilityText } from "../display";
 import { deriveAbilityTags, derivedFamilyFor } from "../deriveTags";
 import { manualTriggersFor } from "../triggers";
 import { isResolvableTag } from "../../engine/effects";
-import { AbilityTrigger, CreatureType, ModifierStat } from "../enums";
+import { AbilityTagKind, AbilityTrigger, CreatureType, ModifierStat, TargetKind } from "../enums";
 
 /**
  * Derived ability tags (2026-10-07, round 7 WI-002 / FR-113).
@@ -35,11 +35,11 @@ describe("WI-002 acceptance: Ninflora works with no tag written for it", () => {
       const [tag] = deriveAbilityTags(record);
       expect(tag, `ninflora L${level} derived nothing`).toBeDefined();
       expect(tag).toEqual({
-        kind: "manualTrigger",
+        kind: AbilityTagKind.ManualTrigger,
         trigger: AbilityTrigger.OnVictory,
         effects: [{ stat: "cooldownSpeedAdd", amount }],
         // "your Grass allies" plus the "This and" that names the presser separately.
-        target: { kind: "allAllies", typeFilter: CreatureType.Grass },
+        target: { kind: TargetKind.AllAllies, typeFilter: CreatureType.Grass },
         includeSelf: true,
       });
     }
@@ -77,8 +77,8 @@ describe("the rule table reads targets, not just self-grants", () => {
      */
     const [tag] = deriveAbilityTags(rawById("aster", 1));
     expect(tag).toEqual({
-      kind: "ongoing",
-      target: { kind: "adjacent", typeFilter: CreatureType.Water },
+      kind: AbilityTagKind.Ongoing,
+      target: { kind: TargetKind.Adjacent, typeFilter: CreatureType.Water },
       effect: { statChange: { stat: "heal", amount: 25 } },
     });
   });
@@ -87,18 +87,18 @@ describe("the rule table reads targets, not just self-grants", () => {
     // "Adjacent Water allies gain +25 Heal permanently." Self NOT included: the text does not name
     // it, and `adjacent` already excludes the source.
     const tag = derived("aster");
-    expect(tag?.target).toEqual({ kind: "adjacent", typeFilter: CreatureType.Water });
+    expect(tag?.target).toEqual({ kind: TargetKind.Adjacent, typeFilter: CreatureType.Water });
     expect(tag?.includeSelf).toBe(false);
     expect(tag?.effects).toEqual([{ stat: ModifierStat.HealAmountAdd, amount: 25 }]);
   });
 
   it("reads a positional grant (Boomagon's ally behind)", () => {
-    expect(derived("boomagon")?.target).toEqual({ kind: "behind" });
+    expect(derived("boomagon")?.target).toEqual({ kind: TargetKind.Behind });
   });
 
   it("reads a level-filtered grant with TWO stats (Lumijel)", () => {
     const tag = derived("lumijel");
-    expect(tag?.target).toEqual({ kind: "allAllies", minLevelFilter: 3 });
+    expect(tag?.target).toEqual({ kind: TargetKind.AllAllies, minLevelFilter: 3 });
     expect(tag?.effects).toEqual([
       { stat: ModifierStat.DamageFlatAdd, amount: 15 },
       { stat: ModifierStat.HealAmountAdd, amount: 15 },
@@ -107,7 +107,7 @@ describe("the rule table reads targets, not just self-grants", () => {
 
   it("reads a bare two-stat self-grant (Brimtoad)", () => {
     const tag = derived("brimtoad");
-    expect(tag?.target).toEqual({ kind: "self" });
+    expect(tag?.target).toEqual({ kind: TargetKind.Self });
     expect(tag?.effects).toEqual([
       { stat: ModifierStat.BurnAmountAdd, amount: 4 },
       { stat: ModifierStat.PoisonAmountAdd, amount: 4 },
@@ -119,7 +119,7 @@ describe("the rule table reads targets, not just self-grants", () => {
     // permanently" on its tail if it ran first, buffing the wrong creature. Targeted rules run
     // first, and this is the assertion that keeps them there.
     for (const id of ["aster", "boomagon", "lumijel", "ninflora"]) {
-      expect(derived(id)?.target, `${id} resolved to self`).not.toEqual({ kind: "self" });
+      expect(derived(id)?.target, `${id} resolved to self`).not.toEqual({ kind: TargetKind.Self });
     }
   });
 });
@@ -162,7 +162,7 @@ describe("GUARD: the exception list cannot quietly regrow", () => {
     // table reproduces them, the hand-written entries are redundant and should go; if it does not,
     // they are exceptions and must stay. Either way the answer must be explicit, so this test
     // reports which of them the table can now derive rather than asserting a count.
-    const handTagged = creatures.filter((c) => c.abilityTags.some((t) => t.kind === "manualTrigger"));
+    const handTagged = creatures.filter((c) => c.abilityTags.some((t) => t.kind === AbilityTagKind.ManualTrigger));
     expect(handTagged.length).toBeGreaterThan(0);
     const reproducible = handTagged.filter((c) => deriveAbilityTags({ ...c, abilityTags: [] }).length > 0);
     // Craghorn/Guardiant/Cawnushi/Emburn (leading trigger clause) and the bare self-grants are
@@ -212,7 +212,7 @@ describe("GUARD: derivation does not break the round-6 invariants", () => {
           !grantsToSelf &&
           (/all(?:y|ies)[^.]*\bgain/i.test(text) || /\bGive\b[^.]*\ball(?:y|ies)\b/i.test(text));
         expect(
-          t.target.kind !== "self",
+          t.target.kind !== TargetKind.Self,
           `${c.id} L${c.level}: "${c.abilityText}" vs target ${JSON.stringify(t.target)}`,
         ).toBe(grantsToAllies);
       }
@@ -296,7 +296,7 @@ describe("WI-002 coverage — reported, not implied", () => {
 
   it("raises the number of species offering a manual trigger from 9", () => {
     const before = new Set(
-      creatures.filter((c) => c.abilityTags.some((t) => t.kind === "manualTrigger")).map((c) => c.id),
+      creatures.filter((c) => c.abilityTags.some((t) => t.kind === AbilityTagKind.ManualTrigger)).map((c) => c.id),
     );
     const after = new Set(corpus.creatures.filter((c) => manualTriggersFor(c).length > 0).map((c) => c.id));
     expect(before.size).toBe(9);

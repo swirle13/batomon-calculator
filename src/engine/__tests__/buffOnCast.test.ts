@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { simulate } from "../simulate";
 import type { Corpus, CreatureRecord, TeamConfiguration } from "../../data/types";
-import { AbilityTrigger, CreatureType, DamageChannel, GridRow, Rarity, StatChangeStat, TimelineEventKind } from "../../data/enums";
+import { AbilityTagKind, AbilityTrigger, CreatureType, DamageChannel, GridRow, Rarity, StatChangeStat, TargetKind, TimelineEventKind } from "../../data/enums";
 
 /**
  * T224: per-cast ACCUMULATING buffs (research.md L5).
@@ -21,7 +21,7 @@ const base: Omit<CreatureRecord, "id" | "name"> = {
   abilityText: "+10 Damage for this battle.",
   abilityTrigger: AbilityTrigger.OnCast,
   abilityTags: [
-    { kind: "buffOnCast", target: { kind: "self" }, effect: { statChange: { stat: StatChangeStat.Damage, amount: 10 } } },
+    { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statChange: { stat: StatChangeStat.Damage, amount: 10 } } },
   ],
   sourceRefs: [],
   patch: "test",

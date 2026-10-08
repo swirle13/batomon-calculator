@@ -283,3 +283,58 @@ export enum ConfirmableField {
   HealAmount = "healAmount",
   SellValue = "sellValue",
 }
+
+// ---------------------------------------------------------------------------
+// Union discriminants
+// ---------------------------------------------------------------------------
+
+/**
+ * Which creature a `TargetSelector` picks out (2026-10-07, round 7).
+ *
+ * These are discriminants of a closed union, so a typo was ALREADY a compile error -- that is why
+ * they were the last string vocabulary converted rather than the first. The value they gain is
+ * rename-safety and one declaration site: `kind` values are stored in `creatures.ts`, so renaming a
+ * selector previously meant a find-and-replace across 596 records with nothing checking it had
+ * found them all.
+ *
+ * Board geometry lives in `engine/grid.ts`; these only name the relationships.
+ */
+export enum TargetKind {
+  Self = "self",
+  Adjacent = "adjacent",
+  Row = "row",
+  Behind = "behind",
+  Above = "above",
+  InFront = "inFront",
+  AllAllies = "allAllies",
+}
+
+/**
+ * Which mechanism an `AbilityTag` describes.
+ *
+ * Nineteen members, one per modelled ability family (research.md L1). `RESOLVED_TAG_KINDS` in
+ * `engine/effects.ts` is the subset the engine actually acts on, and it is deliberately NOT all of
+ * them -- `ManualTrigger` in particular must stay outside it, or the coverage counter would claim
+ * abilities the engine does not compute.
+ */
+export enum AbilityTagKind {
+  Ongoing = "ongoing",
+  Trigger = "trigger",
+  OnEvent = "onEvent",
+  CooldownSpeedModifier = "cooldownSpeedModifier",
+  StatusGrant = "statusGrant",
+  BattleStartStatusFromAllies = "battleStartStatusFromAllies",
+  ChargeOnAllyStatus = "chargeOnAllyStatus",
+  CooldownSpeedOnAllyCast = "cooldownSpeedOnAllyCast",
+  StatFromCount = "statFromCount",
+  BuffOnCast = "buffOnCast",
+  TriggerOnAllyCast = "triggerOnAllyCast",
+  StatMultiplier = "statMultiplier",
+  StatFromTargetStatus = "statFromTargetStatus",
+  TriggerOnAllyTrigger = "triggerOnAllyTrigger",
+  ManualTrigger = "manualTrigger",
+  GainOnAllyStatus = "gainOnAllyStatus",
+  StatFromUniqueTypes = "statFromUniqueTypes",
+  KnockoutAlliesOnBattleStart = "knockoutAlliesOnBattleStart",
+  StatFromStat = "statFromStat",
+}

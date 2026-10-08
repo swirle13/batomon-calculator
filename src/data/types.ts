@@ -26,7 +26,7 @@
  * bare `export … from` does not bring the names into local scope.
  */
 import { AbilityTrigger, ConfirmableField, CreatureType, DamageChannel, EventLabel, GridRow, ModifierStat, MultiplierScope, RegionId, StatusEffectType, TimelineEventKind } from "./enums";
-import { Rarity, StatChangeStat } from "./enums";
+import { AbilityTagKind, Rarity, StatChangeStat, TargetKind } from "./enums";
 
 // Re-exports the LOCAL bindings above rather than a second `export … from "./enums"`, which would
 // be a duplicate declaration of each name.
@@ -130,18 +130,18 @@ export interface SelectorFilters {
 }
 
 export type TargetSelector =
-  | { kind: "self" }
-  | ({ kind: "adjacent"; sameTeamOnly?: boolean } & SelectorFilters)
-  | ({ kind: "row"; sameTeamOnly?: boolean } & SelectorFilters)
-  | { kind: "behind" }
-  | { kind: "above" }
+  | { kind: TargetKind.Self }
+  | ({ kind: TargetKind.Adjacent; sameTeamOnly?: boolean } & SelectorFilters)
+  | ({ kind: TargetKind.Row; sameTeamOnly?: boolean } & SelectorFilters)
+  | { kind: TargetKind.Behind }
+  | { kind: TargetKind.Above }
   /**
    * The ally directly IN FRONT — the opposite direction to `behind`. Distinct because the board is
    * two rows and the relationship is not symmetric: Saberhorn's "give the ally in front +1
    * Multicast" reads from the back row forward, where `behind`/`above` read from the front row back.
    */
-  | { kind: "inFront" }
-  | ({ kind: "allAllies" } & SelectorFilters);
+  | { kind: TargetKind.InFront }
+  | ({ kind: TargetKind.AllAllies } & SelectorFilters);
 
 export interface EffectDescriptor {
   /**
@@ -163,11 +163,11 @@ export interface EffectDescriptor {
  * runtime. Each tag encodes one part of the ability's cited description.
  */
 export type AbilityTag =
-  | { kind: "ongoing"; target: TargetSelector; effect: EffectDescriptor }
-  | { kind: "trigger"; target: TargetSelector; event: EventLabel }
-  | { kind: "onEvent"; event: EventLabel; effect: EffectDescriptor }
-  | { kind: "cooldownSpeedModifier"; target: TargetSelector; amount: number }
-  | { kind: "statusGrant"; target: TargetSelector; status: StatusEffectType; amount: number }
+  | { kind: AbilityTagKind.Ongoing; target: TargetSelector; effect: EffectDescriptor }
+  | { kind: AbilityTagKind.Trigger; target: TargetSelector; event: EventLabel }
+  | { kind: AbilityTagKind.OnEvent; event: EventLabel; effect: EffectDescriptor }
+  | { kind: AbilityTagKind.CooldownSpeedModifier; target: TargetSelector; amount: number }
+  | { kind: AbilityTagKind.StatusGrant; target: TargetSelector; status: StatusEffectType; amount: number }
   /**
    * 2026-10-06 round 9 (FR-073). Three kinds the effect resolver acts on.
    *
@@ -175,13 +175,13 @@ export type AbilityTag =
    * Reads allies' per-application amounts (not accumulated stacks) and excludes self and
    * same-species allies — see `effects.ts` for why each of those is decided rather than guessed.
    */
-  | { kind: "battleStartStatusFromAllies"; status: StatusEffectType; multiplier: number }
+  | { kind: AbilityTagKind.BattleStartStatusFromAllies; status: StatusEffectType; multiplier: number }
   /** "Whenever an ally inflicts <status>, Charge this by <seconds> second(s)." Shortens this
    * creature's remaining cooldown during the battle, so it needs the event-driven scheduler. */
-  | { kind: "chargeOnAllyStatus"; status: StatusEffectType; seconds: number }
+  | { kind: AbilityTagKind.ChargeOnAllyStatus; status: StatusEffectType; seconds: number }
   /** "When a <typeFilter> ally casts, give it +<amount> Cooldown Speed for this battle."
    * Recorded for completeness; see `effects.ts` for current coverage. */
-  | { kind: "cooldownSpeedOnAllyCast"; typeFilter?: CreatureType; amount: number }
+  | { kind: AbilityTagKind.CooldownSpeedOnAllyCast; typeFilter?: CreatureType; amount: number }
   /**
    * 2026-10-06 round 10 (T219). Two scaling shapes that the selector-based tags above cannot
    * express, because their magnitude depends on the board rather than being a fixed amount.
@@ -190,7 +190,7 @@ export type AbilityTag =
    * once per match, to whoever `target` selects.
    */
   | {
-      kind: "statFromCount";
+      kind: AbilityTagKind.StatFromCount;
       target: TargetSelector;
       effect: EffectDescriptor;
       typeFilter?: CreatureType;
@@ -216,7 +216,7 @@ export type AbilityTag =
    * It cannot live in `effects.ts`, which resolves once before the battle starts. It is applied by
    * `simulate()` inside the cast loop.
    */
-  | { kind: "buffOnCast"; target: TargetSelector; effect: EffectDescriptor }
+  | { kind: AbilityTagKind.BuffOnCast; target: TargetSelector; effect: EffectDescriptor }
   /**
    * 2026-10-06 (T220). "+N <stat> for each UNIQUE TYPE on your team" — Prismagon.
    *
@@ -230,13 +230,13 @@ export type AbilityTag =
    * The creature casts in response to an ally rather than only on its own cooldown, so it needs
    * the ally-cast hook from T213. Chains are depth-capped; see `MAX_CHAIN_DEPTH` in `simulate.ts`.
    */
-  | { kind: "triggerOnAllyCast"; target: TargetSelector }
+  | { kind: AbilityTagKind.TriggerOnAllyCast; target: TargetSelector }
   /**
    * 2026-10-06 (T240 / FR-094). Multiplicative stat scaling — "+70% to mons with cooldown >= 5s".
    * The tag vocabulary could not express a multiplier at all; the capture shows one driving the
    * board's largest numbers.
    */
-  | { kind: "statMultiplier"; target: TargetSelector; stat: MultiplierScope; factor: number }
+  | { kind: AbilityTagKind.StatMultiplier; target: TargetSelector; stat: MultiplierScope; factor: number }
   /**
    * 2026-10-06 (T244 / FR-098). "additional Damage equal to 200% of the Poison stacks on the
    * enemy" — Fumungus. Read from the SHARED TARGET's accumulated status, recomputed every cast and
@@ -245,7 +245,7 @@ export type AbilityTag =
    * This was the captured team's largest damage term (14K+ by t~6.3, against Thorntail's 7994) and
    * it grows superlinearly, because Poison stacks only ever accumulate.
    */
-  | { kind: "statFromTargetStatus"; status: StatusEffectType; multiplier: number }
+  | { kind: AbilityTagKind.StatFromTargetStatus; status: StatusEffectType; multiplier: number }
   /**
    * 2026-10-06 (T245 / FR-099). "Trigger this when adjacent Toxic allies trigger" — Puffloon.
    *
@@ -254,7 +254,7 @@ export type AbilityTag =
    * monotonically 13 -> 19px through a four-hit cascade and it still cast off its own 10s cycle
    * afterwards.
    */
-  | { kind: "triggerOnAllyTrigger"; target: TargetSelector }
+  | { kind: AbilityTagKind.TriggerOnAllyTrigger; target: TargetSelector }
   /**
    * 2026-10-07. A repeatable permanent stat gain whose trigger the BATTLE ENGINE cannot fire —
    * buying a monster, using an item, winning a round, gaining a trinket.
@@ -268,7 +268,7 @@ export type AbilityTag =
    * the coverage counter would claim abilities it does not compute.
    */
   | {
-      kind: "manualTrigger";
+      kind: AbilityTagKind.ManualTrigger;
       trigger: AbilityTrigger;
       /** Applied once per press, as placement modifiers. */
       effects: { stat: ModifierStat; amount: number }[];
@@ -298,8 +298,8 @@ export type AbilityTag =
    * against a listed base of 50 — so it carried enormous modifiers — and every single increment was
    * still exactly its listed +24. It therefore lands in `postMultiplierFlatAdd`, not `base`.
    */
-  | { kind: "gainOnAllyStatus"; status: StatusEffectType; stat: StatChangeStat.Damage; amount: number }
-  | { kind: "statFromUniqueTypes"; target: TargetSelector; effect: EffectDescriptor }
+  | { kind: AbilityTagKind.GainOnAllyStatus; status: StatusEffectType; stat: StatChangeStat.Damage; amount: number }
+  | { kind: AbilityTagKind.StatFromUniqueTypes; target: TargetSelector; effect: EffectDescriptor }
   /**
    * 2026-10-06 (T220). "Knockout adjacent allies and gain <effect> for each ally knocked out" —
    * Petrirex. A SELF-INFLICTED knockout resolved at battle start.
@@ -310,12 +310,12 @@ export type AbilityTag =
    * family (a creature dying to incoming damage) still needs an HP model this engine does not have.
    */
   | {
-      kind: "knockoutAlliesOnBattleStart";
+      kind: AbilityTagKind.KnockoutAlliesOnBattleStart;
       target: TargetSelector;
       effectPerKnockout: EffectDescriptor;
     }
   | {
-      kind: "statFromStat";
+      kind: AbilityTagKind.StatFromStat;
       sourceSelector: TargetSelector;
       sourceStat: StatusEffectType | StatChangeStat.Damage | StatChangeStat.Multicast;
       multiplier: number;

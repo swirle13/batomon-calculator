@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { corpus } from "../../data/corpus";
 import { RESOLVED_TAG_KINDS, isResolvableTag, resolveEffects } from "../effects";
 import type { GridSlot, TeamConfiguration } from "../../data/types";
-import { GridRow } from "../../data/enums";
+import { AbilityTagKind, GridRow, TargetKind } from "../../data/enums";
 
 /**
  * Round 10 (T219): the general selector-based resolver.
@@ -92,7 +92,7 @@ describe("selector-based effect families (T219)", () => {
     const offenders: string[] = [];
     for (const c of corpus.creatures) {
       for (const tag of c.abilityTags) {
-        if (tag.kind !== "statusGrant" || tag.target.kind !== "self") continue;
+        if (tag.kind !== AbilityTagKind.StatusGrant || tag.target.kind !== TargetKind.Self) continue;
         if ((c.appliesStatus ?? []).some((s) => s.type === tag.status)) {
           offenders.push(`${c.id} L${c.level} ${tag.status}`);
         }
@@ -107,7 +107,7 @@ describe("selector-based effect families (T219)", () => {
     for (const kind of RESOLVED_TAG_KINDS) expect(isResolvableTag({ kind })).toBe(true);
     // `cooldownSpeedOnAllyCast` moved from unresolved to resolved in T213 — it is the tag that
     // task existed to implement. A kind no engine code reads is the thing this guard watches for.
-    expect(isResolvableTag({ kind: "cooldownSpeedOnAllyCast" })).toBe(true);
+    expect(isResolvableTag({ kind: AbilityTagKind.CooldownSpeedOnAllyCast })).toBe(true);
     expect(isResolvableTag({ kind: "notARealTagKind" })).toBe(false);
   });
 });

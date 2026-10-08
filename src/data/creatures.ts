@@ -1,5 +1,5 @@
 import type { CreatureRecord, SourceRef } from "./types";
-import { AbilityTrigger, ConfirmableField, CreatureType, DamageChannel, ModifierStat, Rarity, StatChangeStat, StatusEffectType } from "./enums";
+import { AbilityTagKind, AbilityTrigger, ConfirmableField, CreatureType, DamageChannel, ModifierStat, Rarity, StatChangeStat, StatusEffectType, TargetKind } from "./enums";
 
 /**
  * Full-corpus widening pass (tasks.md T043, completed 2026-10-05). This file now covers 149
@@ -234,11 +234,11 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Ongoing: Adjacent Common allies have +25% Cooldown Speed.",
     abilityTags: [
       {
-        kind: "ongoing",
-        target: { kind: "adjacent", sameTeamOnly: true },
+        kind: AbilityTagKind.Ongoing,
+        target: { kind: TargetKind.Adjacent, sameTeamOnly: true },
         effect: { statChange: { stat: StatChangeStat.CooldownSpeed, amount: 0.25 } },
       },
-      { kind: "cooldownSpeedModifier", target: { kind: "adjacent", sameTeamOnly: true }, amount: 0.25 },
+      { kind: AbilityTagKind.CooldownSpeedModifier, target: { kind: TargetKind.Adjacent, sameTeamOnly: true }, amount: 0.25 },
     ],
     spriteFile: "formiqueen.png",
     abilityTrigger: AbilityTrigger.Ongoing,
@@ -320,7 +320,7 @@ export const creatures: CreatureRecord[] = [
     baseCooldownSeconds: 5,
     abilityText: "+15 Shield for this battle.",
     abilityTags: [
-      { kind: "buffOnCast", target: { kind: "self" }, effect: { statusGrant: { type: StatusEffectType.Shield, amount: 15 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statusGrant: { type: StatusEffectType.Shield, amount: 15 } } },
     ],
     spriteFile: "pebbler.png",
     abilityTrigger: AbilityTrigger.OnCast,
@@ -357,8 +357,8 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Ongoing: the ally behind applies its Ongoing abilities 1 additional time.",
     abilityTags: [
       {
-        kind: "ongoing",
-        target: { kind: "behind" },
+        kind: AbilityTagKind.Ongoing,
+        target: { kind: TargetKind.Behind },
         effect: { extraOngoingApplications: 1 },
       },
     ],
@@ -569,8 +569,8 @@ export const creatures: CreatureRecord[] = [
     baseCooldownSeconds: 7,
     abilityText: "+80 Damage and +80 Shield for this battle.",
     abilityTags: [
-      { kind: "buffOnCast", target: { kind: "self" }, effect: { statChange: { stat: StatChangeStat.Damage, amount: 80 } } },
-      { kind: "buffOnCast", target: { kind: "self" }, effect: { statusGrant: { type: StatusEffectType.Shield, amount: 80 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statChange: { stat: StatChangeStat.Damage, amount: 80 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statusGrant: { type: StatusEffectType.Shield, amount: 80 } } },
     ],
     unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "bonshell.png",
@@ -609,10 +609,10 @@ export const creatures: CreatureRecord[] = [
     abilityText: "This and Common allies gain +10 Damage permanently.",
     abilityTags: [
       {
-        kind: "manualTrigger",
+        kind: AbilityTagKind.ManualTrigger,
         trigger: AbilityTrigger.OnVictory,
         effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 10 }],
-        target: { kind: "allAllies", rarityFilter: Rarity.Common },
+        target: { kind: TargetKind.AllAllies, rarityFilter: Rarity.Common },
         includeSelf: true,
       },
     ],
@@ -689,7 +689,7 @@ export const creatures: CreatureRecord[] = [
     abilityText: "On Knockout of any monster, this gains +60 Damage permanently.",
     abilityTrigger: AbilityTrigger.OnKnockout,
     abilityTags: [
-      { kind: "manualTrigger", trigger: AbilityTrigger.OnKnockout, effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 60 }] },
+      { kind: AbilityTagKind.ManualTrigger, trigger: AbilityTrigger.OnKnockout, effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 60 }] },
     ],
     unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "cawnushi.png",
@@ -827,7 +827,7 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Whenever an ally inflicts Poison, Charge this by 1 second(s).",
     // 2026-10-06 round 9 (T201 / WI-009). "Charge" is a first-class game stat -- patch 1.1.0
     // lists "Clawnetic - Charge: 1/2/3 seconds -> 1 second at every level" (research.md K6).
-    abilityTags: [{ kind: "chargeOnAllyStatus", status: StatusEffectType.Poison, seconds: 1 }],
+    abilityTags: [{ kind: AbilityTagKind.ChargeOnAllyStatus, status: StatusEffectType.Poison, seconds: 1 }],
     spriteFile: "cobrex.png",
     sourceRefs: [communityDex, demoTierCostTable, batodexPage("cobrex", "Cobrex"), batodexExtracted("cobrex", "Cobrex")],
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
@@ -880,7 +880,7 @@ export const creatures: CreatureRecord[] = [
     abilityText: "When you use an item, this gains +20 Damage and Shield.",
     abilityTrigger: AbilityTrigger.OnItemUsed,
     abilityTags: [
-      { kind: "manualTrigger", trigger: AbilityTrigger.OnItemUsed, effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 20 }, { stat: ModifierStat.ShieldAmountAdd, amount: 20 }] },
+      { kind: AbilityTagKind.ManualTrigger, trigger: AbilityTrigger.OnItemUsed, effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 20 }, { stat: ModifierStat.ShieldAmountAdd, amount: 20 }] },
     ],
     unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "alpinine.png",
@@ -933,7 +933,7 @@ export const creatures: CreatureRecord[] = [
     baseCooldownSeconds: 6,
     abilityText: "+50 Damage permanently.",
     abilityTags: [
-      { kind: "manualTrigger", trigger: AbilityTrigger.OnTrinketGained, effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 50 }] },
+      { kind: AbilityTagKind.ManualTrigger, trigger: AbilityTrigger.OnTrinketGained, effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 50 }] },
     ],
     unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "dollhime.png",
@@ -1044,7 +1044,7 @@ export const creatures: CreatureRecord[] = [
     abilityText: "When a Toxic ally casts, give it +5% Cooldown Speed for this battle.",
     // 2026-10-06 round 9 (T201). Recorded structurally; the resolver does not yet apply a
     // cumulative per-cast grant, so this creature is still reported as uncovered.
-    abilityTags: [{ kind: "cooldownSpeedOnAllyCast", typeFilter: CreatureType.Toxic, amount: 0.05 }],
+    abilityTags: [{ kind: AbilityTagKind.CooldownSpeedOnAllyCast, typeFilter: CreatureType.Toxic, amount: 0.05 }],
     unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "drumire.png",
     sourceRefs: [communityDex, batodexPage("drumire", "Drumire")],
@@ -1115,7 +1115,7 @@ export const creatures: CreatureRecord[] = [
     abilityText: "On Knockout of this or an ally, this gains +3 Burn permanently.",
     abilityTrigger: AbilityTrigger.OnKnockout,
     abilityTags: [
-      { kind: "manualTrigger", trigger: AbilityTrigger.OnKnockout, effects: [{ stat: ModifierStat.BurnAmountAdd, amount: 3 }] },
+      { kind: AbilityTagKind.ManualTrigger, trigger: AbilityTrigger.OnKnockout, effects: [{ stat: ModifierStat.BurnAmountAdd, amount: 3 }] },
     ],
     unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "emburn.png",
@@ -1231,7 +1231,7 @@ export const creatures: CreatureRecord[] = [
     appliesStatus: [{ type: StatusEffectType.Poison, amount: 6 }],
     abilityText: "Has additional Damage equal to 100% of the Poison stacks on the enemy.",
     abilityTags: [
-      { kind: "statFromTargetStatus", status: StatusEffectType.Poison, multiplier: 1 },
+      { kind: AbilityTagKind.StatFromTargetStatus, status: StatusEffectType.Poison, multiplier: 1 },
     ],
     spriteFile: "fumungus.png",
     abilityTrigger: AbilityTrigger.Ongoing,
@@ -1406,7 +1406,7 @@ export const creatures: CreatureRecord[] = [
     abilityText: "After you buy a Bug monster, this gains +8 Damage.",
     abilityTrigger: AbilityTrigger.OnBought,
     abilityTags: [
-      { kind: "manualTrigger", trigger: AbilityTrigger.OnBought, effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 8 }] },
+      { kind: AbilityTagKind.ManualTrigger, trigger: AbilityTrigger.OnBought, effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 8 }] },
     ],
     spriteFile: "guardiant.png",
     sourceRefs: [communityDex, demoTierCostTable, batodexPage("guardiant", "Guardiant")],
@@ -1514,10 +1514,10 @@ export const creatures: CreatureRecord[] = [
     abilityText: "This and all your allies gain +20 Damage permanently.",
     abilityTags: [
       {
-        kind: "manualTrigger",
+        kind: AbilityTagKind.ManualTrigger,
         trigger: AbilityTrigger.OnVictory,
         effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 20 }],
-        target: { kind: "allAllies" },
+        target: { kind: TargetKind.AllAllies },
         includeSelf: true,
       },
     ],
@@ -1626,7 +1626,7 @@ export const creatures: CreatureRecord[] = [
     baseCooldownSeconds: 9,
     abilityText: "Give the ally above +2 Burn permanently.",
     abilityTags: [
-      { kind: "buffOnCast", target: { kind: "above" }, effect: { statusGrant: { type: StatusEffectType.Burn, amount: 2 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Above }, effect: { statusGrant: { type: StatusEffectType.Burn, amount: 2 } } },
     ],
     spriteFile: "magmalith.png",
     abilityTrigger: AbilityTrigger.OnCast,
@@ -1697,7 +1697,7 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Gain Poison for this battle equal to 1x the total Poison of your allies. (Except other Miasmaw)",
     // 2026-10-06 round 9 (T201): structured so the resolver can act on it. "1x" is the
     // multiplier; "(Except other Miasmaw)" is handled by the resolver excluding same-species allies.
-    abilityTags: [{ kind: "battleStartStatusFromAllies", status: StatusEffectType.Poison, multiplier: 1 }],
+    abilityTags: [{ kind: AbilityTagKind.BattleStartStatusFromAllies, status: StatusEffectType.Poison, multiplier: 1 }],
     unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "miasmaw.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
@@ -1734,7 +1734,7 @@ export const creatures: CreatureRecord[] = [
     healAmount: 30,
     abilityText: "+20 Damage for this battle.",
     abilityTags: [
-      { kind: "buffOnCast", target: { kind: "self" }, effect: { statChange: { stat: StatChangeStat.Damage, amount: 20 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statChange: { stat: StatChangeStat.Damage, amount: 20 } } },
     ],
     spriteFile: "mosslug.png",
     abilityTrigger: AbilityTrigger.OnCast,
@@ -1802,7 +1802,7 @@ export const creatures: CreatureRecord[] = [
     baseCooldownSeconds: 7,
     abilityText: "Give the ally above +3 Poison permanently.",
     abilityTags: [
-      { kind: "buffOnCast", target: { kind: "above" }, effect: { statusGrant: { type: StatusEffectType.Poison, amount: 3 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Above }, effect: { statusGrant: { type: StatusEffectType.Poison, amount: 3 } } },
     ],
     spriteFile: "noxalith.png",
     abilityTrigger: AbilityTrigger.OnCast,
@@ -1836,7 +1836,7 @@ export const creatures: CreatureRecord[] = [
     appliesStatus: [{ type: StatusEffectType.Poison, amount: 1 }],
     abilityText: "Adjacent Toxic allies gain +3 Poison for this battle.",
     abilityTags: [
-      { kind: "buffOnCast", target: { kind: "adjacent", typeFilter: CreatureType.Toxic }, effect: { statusGrant: { type: StatusEffectType.Poison, amount: 3 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Adjacent, typeFilter: CreatureType.Toxic }, effect: { statusGrant: { type: StatusEffectType.Poison, amount: 3 } } },
     ],
     spriteFile: "noxnimbus.png",
     abilityTrigger: AbilityTrigger.OnCast,
@@ -2064,7 +2064,7 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 50, channel: DamageChannel.Direct },
     abilityText: "Knockout adjacent allies and gain +20 Shield permanently for each ally Knockout.",
     abilityTags: [
-      { kind: "knockoutAlliesOnBattleStart", target: { kind: "adjacent" }, effectPerKnockout: { statusGrant: { type: StatusEffectType.Shield, amount: 20 } } },
+      { kind: AbilityTagKind.KnockoutAlliesOnBattleStart, target: { kind: TargetKind.Adjacent }, effectPerKnockout: { statusGrant: { type: StatusEffectType.Shield, amount: 20 } } },
     ],
     unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "petrirex.png",
@@ -2172,7 +2172,7 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 100, channel: DamageChannel.Direct },
     abilityText: "+10 Damage permanently for each unique type on your team.",
     abilityTags: [
-      { kind: "statFromUniqueTypes", target: { kind: "self" }, effect: { statChange: { stat: StatChangeStat.Damage, amount: 10 } } },
+      { kind: AbilityTagKind.StatFromUniqueTypes, target: { kind: TargetKind.Self }, effect: { statChange: { stat: StatChangeStat.Damage, amount: 10 } } },
     ],
     spriteFile: "prismagon.png",
     abilityTrigger: AbilityTrigger.OnCast,
@@ -2192,7 +2192,7 @@ export const creatures: CreatureRecord[] = [
     healAmount: 10,
     abilityText: "Trigger this when adjacent Toxic allies trigger. (Except other Puffloon)",
     abilityTags: [
-      { kind: "triggerOnAllyTrigger", target: { kind: "adjacent", typeFilter: CreatureType.Toxic } },
+      { kind: AbilityTagKind.TriggerOnAllyTrigger, target: { kind: TargetKind.Adjacent, typeFilter: CreatureType.Toxic } },
     ],
     spriteFile: "puffloon.png",
     sourceRefs: [communityDex, demoTierCostTable, batodexPage("puffloon", "Puffloon"), batodexExtracted("puffloon", "Puffloon")],
@@ -2247,7 +2247,7 @@ export const creatures: CreatureRecord[] = [
     appliesStatus: [{ type: StatusEffectType.Burn, amount: 5 }],
     abilityText: "+10 Burn for this battle.",
     abilityTags: [
-      { kind: "buffOnCast", target: { kind: "self" }, effect: { statusGrant: { type: StatusEffectType.Burn, amount: 10 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statusGrant: { type: StatusEffectType.Burn, amount: 10 } } },
     ],
     unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "pyrokami.png",
@@ -2302,7 +2302,7 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 20, channel: DamageChannel.Direct },
     abilityText: "+1 Multicast permanently.",
     abilityTags: [
-      { kind: "manualTrigger", trigger: AbilityTrigger.OnKnockedOut, effects: [{ stat: ModifierStat.MulticastAdd, amount: 1 }] },
+      { kind: AbilityTagKind.ManualTrigger, trigger: AbilityTrigger.OnKnockedOut, effects: [{ stat: ModifierStat.MulticastAdd, amount: 1 }] },
     ],
     spriteFile: "ratacomb.png",
     abilityTrigger: AbilityTrigger.OnKnockedOut,
@@ -2440,8 +2440,8 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 100, channel: DamageChannel.Direct },
     abilityText: "Give the ally in front +1 Multicast and increase this monster's Cooldown by 8 seconds for this battle.",
     abilityTags: [
-      { kind: "buffOnCast", target: { kind: "inFront" }, effect: { statChange: { stat: StatChangeStat.Multicast, amount: 1 } } },
-      { kind: "buffOnCast", target: { kind: "self" }, effect: { statChange: { stat: StatChangeStat.CooldownFlatSeconds, amount: 8 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.InFront }, effect: { statChange: { stat: StatChangeStat.Multicast, amount: 1 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statChange: { stat: StatChangeStat.CooldownFlatSeconds, amount: 8 } } },
     ],
     spriteFile: "saberhorn.png",
     abilityTrigger: AbilityTrigger.OnCast,
@@ -2810,7 +2810,7 @@ export const creatures: CreatureRecord[] = [
     abilityText: "When allies inflict Poison, this gains +8 Damage permanently.",
     abilityTrigger: AbilityTrigger.OnCast,
     abilityTags: [
-      { kind: "gainOnAllyStatus", status: StatusEffectType.Poison, stat: StatChangeStat.Damage, amount: 8 },
+      { kind: AbilityTagKind.GainOnAllyStatus, status: StatusEffectType.Poison, stat: StatChangeStat.Damage, amount: 8 },
     ],
     spriteFile: "thorntail.png",
         appliesStatus: [{ type: StatusEffectType.Poison, amount: 1 }],
@@ -2916,7 +2916,7 @@ export const creatures: CreatureRecord[] = [
     baseCooldownSeconds: 6.5,
     abilityText: "+4 Poison permanently.",
     abilityTags: [
-      { kind: "manualTrigger", trigger: AbilityTrigger.OnTrinketGained, effects: [{ stat: ModifierStat.PoisonAmountAdd, amount: 4 }] },
+      { kind: AbilityTagKind.ManualTrigger, trigger: AbilityTrigger.OnTrinketGained, effects: [{ stat: ModifierStat.PoisonAmountAdd, amount: 4 }] },
     ],
     unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "vipair.png",
@@ -2936,7 +2936,7 @@ export const creatures: CreatureRecord[] = [
     baseCooldownSeconds: 8,
     abilityText: "Give the ally above +2 Shock permanently.",
     abilityTags: [
-      { kind: "buffOnCast", target: { kind: "above" }, effect: { statusGrant: { type: StatusEffectType.Shock, amount: 2 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Above }, effect: { statusGrant: { type: StatusEffectType.Shock, amount: 2 } } },
     ],
     spriteFile: "voltalith.png",
     abilityTrigger: AbilityTrigger.OnCast,
@@ -2973,7 +2973,7 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 100, channel: DamageChannel.Direct },
     abilityText: "Give the Flying ally in front +1 Multicast permanently. (Zephyrex can't have Multicast)",
     abilityTags: [
-      { kind: "buffOnCast", target: { kind: "inFront" }, effect: { statChange: { stat: StatChangeStat.Multicast, amount: 1 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.InFront }, effect: { statChange: { stat: StatChangeStat.Multicast, amount: 1 } } },
     ],
     spriteFile: "zephyrex.png",
     abilityTrigger: AbilityTrigger.OnCast,
@@ -3142,11 +3142,11 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Adjacent Common allies have +50% Cooldown Speed.",
     abilityTags: [
       {
-        kind: "ongoing",
-        target: { kind: "adjacent", sameTeamOnly: true },
+        kind: AbilityTagKind.Ongoing,
+        target: { kind: TargetKind.Adjacent, sameTeamOnly: true },
         effect: { statChange: { stat: StatChangeStat.CooldownSpeed, amount: 0.5 } },
       },
-      { kind: "cooldownSpeedModifier", target: { kind: "adjacent", sameTeamOnly: true }, amount: 0.5 },
+      { kind: AbilityTagKind.CooldownSpeedModifier, target: { kind: TargetKind.Adjacent, sameTeamOnly: true }, amount: 0.5 },
     ],
     spriteFile: "formiqueen.png",
     abilityTrigger: AbilityTrigger.Ongoing,
@@ -3166,11 +3166,11 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Adjacent Common allies have +75% Cooldown Speed.",
     abilityTags: [
       {
-        kind: "ongoing",
-        target: { kind: "adjacent", sameTeamOnly: true },
+        kind: AbilityTagKind.Ongoing,
+        target: { kind: TargetKind.Adjacent, sameTeamOnly: true },
         effect: { statChange: { stat: StatChangeStat.CooldownSpeed, amount: 0.75 } },
       },
-      { kind: "cooldownSpeedModifier", target: { kind: "adjacent", sameTeamOnly: true }, amount: 0.75 },
+      { kind: AbilityTagKind.CooldownSpeedModifier, target: { kind: TargetKind.Adjacent, sameTeamOnly: true }, amount: 0.75 },
     ],
     spriteFile: "formiqueen.png",
     abilityTrigger: AbilityTrigger.Ongoing,
@@ -3190,11 +3190,11 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Adjacent Common allies have +225% Cooldown Speed.",
     abilityTags: [
       {
-        kind: "ongoing",
-        target: { kind: "adjacent", sameTeamOnly: true },
+        kind: AbilityTagKind.Ongoing,
+        target: { kind: TargetKind.Adjacent, sameTeamOnly: true },
         effect: { statChange: { stat: StatChangeStat.CooldownSpeed, amount: 2.25 } },
       },
-      { kind: "cooldownSpeedModifier", target: { kind: "adjacent", sameTeamOnly: true }, amount: 2.25 },
+      { kind: AbilityTagKind.CooldownSpeedModifier, target: { kind: TargetKind.Adjacent, sameTeamOnly: true }, amount: 2.25 },
     ],
     spriteFile: "formiqueen.png",
     abilityTrigger: AbilityTrigger.Ongoing,
@@ -3318,7 +3318,7 @@ export const creatures: CreatureRecord[] = [
     appliesStatus: [{ type: StatusEffectType.Shield, amount: 40 }],
     abilityText: "+30 Shield for this battle.",
     abilityTags: [
-      { kind: "buffOnCast", target: { kind: "self" }, effect: { statusGrant: { type: StatusEffectType.Shield, amount: 30 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statusGrant: { type: StatusEffectType.Shield, amount: 30 } } },
     ],
     spriteFile: "pebbler.png",
     abilityTrigger: AbilityTrigger.OnCast,
@@ -3337,7 +3337,7 @@ export const creatures: CreatureRecord[] = [
     appliesStatus: [{ type: StatusEffectType.Shield, amount: 60 }],
     abilityText: "+45 Shield for this battle.",
     abilityTags: [
-      { kind: "buffOnCast", target: { kind: "self" }, effect: { statusGrant: { type: StatusEffectType.Shield, amount: 45 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statusGrant: { type: StatusEffectType.Shield, amount: 45 } } },
     ],
     spriteFile: "pebbler.png",
     abilityTrigger: AbilityTrigger.OnCast,
@@ -3356,7 +3356,7 @@ export const creatures: CreatureRecord[] = [
     appliesStatus: [{ type: StatusEffectType.Shield, amount: 120 }],
     abilityText: "+90 Shield for this battle.",
     abilityTags: [
-      { kind: "buffOnCast", target: { kind: "self" }, effect: { statusGrant: { type: StatusEffectType.Shield, amount: 90 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statusGrant: { type: StatusEffectType.Shield, amount: 90 } } },
     ],
     spriteFile: "pebbler.png",
     abilityTrigger: AbilityTrigger.OnCast,
@@ -3376,8 +3376,8 @@ export const creatures: CreatureRecord[] = [
     abilityText: "The ally behind applies its Ongoing abilities 2 additional time(s).",
     abilityTags: [
       {
-        kind: "ongoing",
-        target: { kind: "behind" },
+        kind: AbilityTagKind.Ongoing,
+        target: { kind: TargetKind.Behind },
         effect: { extraOngoingApplications: 2 },
       },
     ],
@@ -3398,8 +3398,8 @@ export const creatures: CreatureRecord[] = [
     abilityText: "The ally behind applies its Ongoing abilities 3 additional time(s).",
     abilityTags: [
       {
-        kind: "ongoing",
-        target: { kind: "behind" },
+        kind: AbilityTagKind.Ongoing,
+        target: { kind: TargetKind.Behind },
         effect: { extraOngoingApplications: 3 },
       },
     ],
@@ -3420,8 +3420,8 @@ export const creatures: CreatureRecord[] = [
     abilityText: "The ally behind applies its Ongoing abilities 24 additional time(s).",
     abilityTags: [
       {
-        kind: "ongoing",
-        target: { kind: "behind" },
+        kind: AbilityTagKind.Ongoing,
+        target: { kind: TargetKind.Behind },
         effect: { extraOngoingApplications: 24 },
       },
     ],
@@ -3993,8 +3993,8 @@ export const creatures: CreatureRecord[] = [
     appliesStatus: [{ type: StatusEffectType.Shield, amount: 200 }],
     abilityText: "+160 Damage and +160 Shield for this battle.",
     abilityTags: [
-      { kind: "buffOnCast", target: { kind: "self" }, effect: { statChange: { stat: StatChangeStat.Damage, amount: 160 } } },
-      { kind: "buffOnCast", target: { kind: "self" }, effect: { statusGrant: { type: StatusEffectType.Shield, amount: 160 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statChange: { stat: StatChangeStat.Damage, amount: 160 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statusGrant: { type: StatusEffectType.Shield, amount: 160 } } },
     ],
     spriteFile: "bonshell.png",
     abilityTrigger: AbilityTrigger.OnCast,
@@ -4013,8 +4013,8 @@ export const creatures: CreatureRecord[] = [
     appliesStatus: [{ type: StatusEffectType.Shield, amount: 300 }],
     abilityText: "+240 Damage and +240 Shield for this battle.",
     abilityTags: [
-      { kind: "buffOnCast", target: { kind: "self" }, effect: { statChange: { stat: StatChangeStat.Damage, amount: 240 } } },
-      { kind: "buffOnCast", target: { kind: "self" }, effect: { statusGrant: { type: StatusEffectType.Shield, amount: 240 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statChange: { stat: StatChangeStat.Damage, amount: 240 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statusGrant: { type: StatusEffectType.Shield, amount: 240 } } },
     ],
     spriteFile: "bonshell.png",
     abilityTrigger: AbilityTrigger.OnCast,
@@ -4033,8 +4033,8 @@ export const creatures: CreatureRecord[] = [
     appliesStatus: [{ type: StatusEffectType.Shield, amount: 600 }],
     abilityText: "+480 Damage and +480 Shield for this battle.",
     abilityTags: [
-      { kind: "buffOnCast", target: { kind: "self" }, effect: { statChange: { stat: StatChangeStat.Damage, amount: 480 } } },
-      { kind: "buffOnCast", target: { kind: "self" }, effect: { statusGrant: { type: StatusEffectType.Shield, amount: 480 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statChange: { stat: StatChangeStat.Damage, amount: 480 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statusGrant: { type: StatusEffectType.Shield, amount: 480 } } },
     ],
     spriteFile: "bonshell.png",
     abilityTrigger: AbilityTrigger.OnCast,
@@ -4105,10 +4105,10 @@ export const creatures: CreatureRecord[] = [
     abilityText: "This and Common allies gain +20 Damage permanently.",
     abilityTags: [
       {
-        kind: "manualTrigger",
+        kind: AbilityTagKind.ManualTrigger,
         trigger: AbilityTrigger.OnVictory,
         effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 20 }],
-        target: { kind: "allAllies", rarityFilter: Rarity.Common },
+        target: { kind: TargetKind.AllAllies, rarityFilter: Rarity.Common },
         includeSelf: true,
       },
     ],
@@ -4130,10 +4130,10 @@ export const creatures: CreatureRecord[] = [
     abilityText: "This and Common allies gain +30 Damage permanently.",
     abilityTags: [
       {
-        kind: "manualTrigger",
+        kind: AbilityTagKind.ManualTrigger,
         trigger: AbilityTrigger.OnVictory,
         effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 30 }],
-        target: { kind: "allAllies", rarityFilter: Rarity.Common },
+        target: { kind: TargetKind.AllAllies, rarityFilter: Rarity.Common },
         includeSelf: true,
       },
     ],
@@ -4155,10 +4155,10 @@ export const creatures: CreatureRecord[] = [
     abilityText: "This and Common allies gain +60 Damage permanently.",
     abilityTags: [
       {
-        kind: "manualTrigger",
+        kind: AbilityTagKind.ManualTrigger,
         trigger: AbilityTrigger.OnVictory,
         effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 60 }],
-        target: { kind: "allAllies", rarityFilter: Rarity.Common },
+        target: { kind: TargetKind.AllAllies, rarityFilter: Rarity.Common },
         includeSelf: true,
       },
     ],
@@ -4333,7 +4333,7 @@ export const creatures: CreatureRecord[] = [
     abilityText: "On Knockout of any monster, this gains +120 Damage permanently.",
     abilityTrigger: AbilityTrigger.OnKnockout,
     abilityTags: [
-      { kind: "manualTrigger", trigger: AbilityTrigger.OnKnockout, effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 120 }] },
+      { kind: AbilityTagKind.ManualTrigger, trigger: AbilityTrigger.OnKnockout, effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 120 }] },
     ],
     spriteFile: "cawnushi.png",
     sourceRefs: [batodexExtracted("cawnushi", "Cawnushi")],
@@ -4352,7 +4352,7 @@ export const creatures: CreatureRecord[] = [
     abilityText: "On Knockout of any monster, this gains +180 Damage permanently.",
     abilityTrigger: AbilityTrigger.OnKnockout,
     abilityTags: [
-      { kind: "manualTrigger", trigger: AbilityTrigger.OnKnockout, effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 180 }] },
+      { kind: AbilityTagKind.ManualTrigger, trigger: AbilityTrigger.OnKnockout, effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 180 }] },
     ],
     spriteFile: "cawnushi.png",
     sourceRefs: [batodexExtracted("cawnushi", "Cawnushi")],
@@ -4371,7 +4371,7 @@ export const creatures: CreatureRecord[] = [
     abilityText: "On Knockout of any monster, this gains +1440 Damage permanently.",
     abilityTrigger: AbilityTrigger.OnKnockout,
     abilityTags: [
-      { kind: "manualTrigger", trigger: AbilityTrigger.OnKnockout, effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 1440 }] },
+      { kind: AbilityTagKind.ManualTrigger, trigger: AbilityTrigger.OnKnockout, effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 1440 }] },
     ],
     spriteFile: "cawnushi.png",
     sourceRefs: [batodexExtracted("cawnushi", "Cawnushi")],
@@ -4739,7 +4739,7 @@ export const creatures: CreatureRecord[] = [
     baseCooldownSeconds: 15,
     appliesStatus: [{ type: StatusEffectType.Poison, amount: 600 }],
     abilityText: "Whenever an ally inflicts Poison, Charge this by 1 second(s).",
-    abilityTags: [{ kind: "chargeOnAllyStatus", status: StatusEffectType.Poison, seconds: 1 }],
+    abilityTags: [{ kind: AbilityTagKind.ChargeOnAllyStatus, status: StatusEffectType.Poison, seconds: 1 }],
     spriteFile: "cobrex.png",
     sourceRefs: [batodexExtracted("cobrex", "Cobrex")],
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
@@ -4755,7 +4755,7 @@ export const creatures: CreatureRecord[] = [
     baseCooldownSeconds: 15,
     appliesStatus: [{ type: StatusEffectType.Poison, amount: 900 }],
     abilityText: "Whenever an ally inflicts Poison, Charge this by 1 second(s).",
-    abilityTags: [{ kind: "chargeOnAllyStatus", status: StatusEffectType.Poison, seconds: 1 }],
+    abilityTags: [{ kind: AbilityTagKind.ChargeOnAllyStatus, status: StatusEffectType.Poison, seconds: 1 }],
     spriteFile: "cobrex.png",
     sourceRefs: [batodexExtracted("cobrex", "Cobrex")],
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
@@ -4771,7 +4771,7 @@ export const creatures: CreatureRecord[] = [
     baseCooldownSeconds: 2,
     appliesStatus: [{ type: StatusEffectType.Poison, amount: 900 }],
     abilityText: "Whenever an ally inflicts Poison, Charge this by 1 second(s).",
-    abilityTags: [{ kind: "chargeOnAllyStatus", status: StatusEffectType.Poison, seconds: 1 }],
+    abilityTags: [{ kind: AbilityTagKind.ChargeOnAllyStatus, status: StatusEffectType.Poison, seconds: 1 }],
     spriteFile: "cobrex.png",
     sourceRefs: [batodexExtracted("cobrex", "Cobrex")],
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
@@ -4889,7 +4889,7 @@ export const creatures: CreatureRecord[] = [
     abilityText: "When you use an item, this gains +40 Damage and Shield.",
     abilityTrigger: AbilityTrigger.OnItemUsed,
     abilityTags: [
-      { kind: "manualTrigger", trigger: AbilityTrigger.OnItemUsed, effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 40 }, { stat: ModifierStat.ShieldAmountAdd, amount: 40 }] },
+      { kind: AbilityTagKind.ManualTrigger, trigger: AbilityTrigger.OnItemUsed, effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 40 }, { stat: ModifierStat.ShieldAmountAdd, amount: 40 }] },
     ],
     spriteFile: "alpinine.png",
     sourceRefs: [batodexExtracted("alpinine", "Craghorn")],
@@ -4909,7 +4909,7 @@ export const creatures: CreatureRecord[] = [
     abilityText: "When you use an item, this gains +60 Damage and Shield.",
     abilityTrigger: AbilityTrigger.OnItemUsed,
     abilityTags: [
-      { kind: "manualTrigger", trigger: AbilityTrigger.OnItemUsed, effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 60 }, { stat: ModifierStat.ShieldAmountAdd, amount: 60 }] },
+      { kind: AbilityTagKind.ManualTrigger, trigger: AbilityTrigger.OnItemUsed, effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 60 }, { stat: ModifierStat.ShieldAmountAdd, amount: 60 }] },
     ],
     spriteFile: "alpinine.png",
     sourceRefs: [batodexExtracted("alpinine", "Craghorn")],
@@ -4929,7 +4929,7 @@ export const creatures: CreatureRecord[] = [
     abilityText: "When you use an item, this gains +120 Damage and Shield.",
     abilityTrigger: AbilityTrigger.OnItemUsed,
     abilityTags: [
-      { kind: "manualTrigger", trigger: AbilityTrigger.OnItemUsed, effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 120 }, { stat: ModifierStat.ShieldAmountAdd, amount: 120 }] },
+      { kind: AbilityTagKind.ManualTrigger, trigger: AbilityTrigger.OnItemUsed, effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 120 }, { stat: ModifierStat.ShieldAmountAdd, amount: 120 }] },
     ],
     spriteFile: "alpinine.png",
     sourceRefs: [batodexExtracted("alpinine", "Craghorn")],
@@ -5048,7 +5048,7 @@ export const creatures: CreatureRecord[] = [
     baseCooldownSeconds: 6,
     abilityText: "+100 Damage permanently.",
     abilityTags: [
-      { kind: "manualTrigger", trigger: AbilityTrigger.OnTrinketGained, effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 100 }] },
+      { kind: AbilityTagKind.ManualTrigger, trigger: AbilityTrigger.OnTrinketGained, effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 100 }] },
     ],
     spriteFile: "dollhime.png",
     abilityTrigger: AbilityTrigger.OnTrinketGained,
@@ -5066,7 +5066,7 @@ export const creatures: CreatureRecord[] = [
     baseCooldownSeconds: 6,
     abilityText: "+150 Damage permanently.",
     abilityTags: [
-      { kind: "manualTrigger", trigger: AbilityTrigger.OnTrinketGained, effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 150 }] },
+      { kind: AbilityTagKind.ManualTrigger, trigger: AbilityTrigger.OnTrinketGained, effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 150 }] },
     ],
     spriteFile: "dollhime.png",
     abilityTrigger: AbilityTrigger.OnTrinketGained,
@@ -5084,7 +5084,7 @@ export const creatures: CreatureRecord[] = [
     baseCooldownSeconds: 6,
     abilityText: "+600 Damage permanently.",
     abilityTags: [
-      { kind: "manualTrigger", trigger: AbilityTrigger.OnTrinketGained, effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 600 }] },
+      { kind: AbilityTagKind.ManualTrigger, trigger: AbilityTrigger.OnTrinketGained, effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 600 }] },
     ],
     spriteFile: "dollhime.png",
     abilityTrigger: AbilityTrigger.OnTrinketGained,
@@ -5306,7 +5306,7 @@ export const creatures: CreatureRecord[] = [
     baseCooldownSeconds: 8,
     appliesStatus: [{ type: StatusEffectType.Poison, amount: 40 }],
     abilityText: "When a Toxic ally casts, give it +10% Cooldown Speed for this battle.",
-    abilityTags: [{ kind: "cooldownSpeedOnAllyCast", typeFilter: CreatureType.Toxic, amount: 0.1 }],
+    abilityTags: [{ kind: AbilityTagKind.CooldownSpeedOnAllyCast, typeFilter: CreatureType.Toxic, amount: 0.1 }],
     spriteFile: "drumire.png",
     sourceRefs: [batodexExtracted("drumire", "Drumire")],
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
@@ -5322,7 +5322,7 @@ export const creatures: CreatureRecord[] = [
     baseCooldownSeconds: 8,
     appliesStatus: [{ type: StatusEffectType.Poison, amount: 60 }],
     abilityText: "When a Toxic ally casts, give it +15% Cooldown Speed for this battle.",
-    abilityTags: [{ kind: "cooldownSpeedOnAllyCast", typeFilter: CreatureType.Toxic, amount: 0.15 }],
+    abilityTags: [{ kind: AbilityTagKind.CooldownSpeedOnAllyCast, typeFilter: CreatureType.Toxic, amount: 0.15 }],
     spriteFile: "drumire.png",
     sourceRefs: [batodexExtracted("drumire", "Drumire")],
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
@@ -5338,7 +5338,7 @@ export const creatures: CreatureRecord[] = [
     baseCooldownSeconds: 8,
     appliesStatus: [{ type: StatusEffectType.Poison, amount: 480 }],
     abilityText: "When a Toxic ally casts, give it +120% Cooldown Speed for this battle.",
-    abilityTags: [{ kind: "cooldownSpeedOnAllyCast", typeFilter: CreatureType.Toxic, amount: 1.2 }],
+    abilityTags: [{ kind: AbilityTagKind.CooldownSpeedOnAllyCast, typeFilter: CreatureType.Toxic, amount: 1.2 }],
     spriteFile: "drumire.png",
     sourceRefs: [batodexExtracted("drumire", "Drumire")],
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
@@ -5512,7 +5512,7 @@ export const creatures: CreatureRecord[] = [
     abilityText: "On Knockout of this or an ally, this gains +6 Burn permanently.",
     abilityTrigger: AbilityTrigger.OnKnockout,
     abilityTags: [
-      { kind: "manualTrigger", trigger: AbilityTrigger.OnKnockout, effects: [{ stat: ModifierStat.BurnAmountAdd, amount: 6 }] },
+      { kind: AbilityTagKind.ManualTrigger, trigger: AbilityTrigger.OnKnockout, effects: [{ stat: ModifierStat.BurnAmountAdd, amount: 6 }] },
     ],
     spriteFile: "emburn.png",
     sourceRefs: [batodexExtracted("emburn", "Emburn")],
@@ -5531,7 +5531,7 @@ export const creatures: CreatureRecord[] = [
     abilityText: "On Knockout of this or an ally, this gains +9 Burn permanently.",
     abilityTrigger: AbilityTrigger.OnKnockout,
     abilityTags: [
-      { kind: "manualTrigger", trigger: AbilityTrigger.OnKnockout, effects: [{ stat: ModifierStat.BurnAmountAdd, amount: 9 }] },
+      { kind: AbilityTagKind.ManualTrigger, trigger: AbilityTrigger.OnKnockout, effects: [{ stat: ModifierStat.BurnAmountAdd, amount: 9 }] },
     ],
     spriteFile: "emburn.png",
     sourceRefs: [batodexExtracted("emburn", "Emburn")],
@@ -5550,7 +5550,7 @@ export const creatures: CreatureRecord[] = [
     abilityText: "On Knockout of this or an ally, this gains +18 Burn permanently.",
     abilityTrigger: AbilityTrigger.OnKnockout,
     abilityTags: [
-      { kind: "manualTrigger", trigger: AbilityTrigger.OnKnockout, effects: [{ stat: ModifierStat.BurnAmountAdd, amount: 18 }] },
+      { kind: AbilityTagKind.ManualTrigger, trigger: AbilityTrigger.OnKnockout, effects: [{ stat: ModifierStat.BurnAmountAdd, amount: 18 }] },
     ],
     spriteFile: "emburn.png",
     sourceRefs: [batodexExtracted("emburn", "Emburn")],
@@ -5832,7 +5832,7 @@ export const creatures: CreatureRecord[] = [
     appliesStatus: [{ type: StatusEffectType.Poison, amount: 6 }],
     abilityText: "Has additional Damage equal to 200% of the Poison stacks on the enemy.",
     abilityTags: [
-      { kind: "statFromTargetStatus", status: StatusEffectType.Poison, multiplier: 2 },
+      { kind: AbilityTagKind.StatFromTargetStatus, status: StatusEffectType.Poison, multiplier: 2 },
     ],
     spriteFile: "fumungus.png",
     abilityTrigger: AbilityTrigger.Ongoing,
@@ -5851,7 +5851,7 @@ export const creatures: CreatureRecord[] = [
     appliesStatus: [{ type: StatusEffectType.Poison, amount: 6 }],
     abilityText: "Has additional Damage equal to 300% of the Poison stacks on the enemy.",
     abilityTags: [
-      { kind: "statFromTargetStatus", status: StatusEffectType.Poison, multiplier: 3 },
+      { kind: AbilityTagKind.StatFromTargetStatus, status: StatusEffectType.Poison, multiplier: 3 },
     ],
     spriteFile: "fumungus.png",
     abilityTrigger: AbilityTrigger.Ongoing,
@@ -5870,7 +5870,7 @@ export const creatures: CreatureRecord[] = [
     appliesStatus: [{ type: StatusEffectType.Poison, amount: 12 }],
     abilityText: "Has additional Damage equal to 1200% of the Poison stacks on the enemy.",
     abilityTags: [
-      { kind: "statFromTargetStatus", status: StatusEffectType.Poison, multiplier: 12 },
+      { kind: AbilityTagKind.StatFromTargetStatus, status: StatusEffectType.Poison, multiplier: 12 },
     ],
     spriteFile: "fumungus.png",
     abilityTrigger: AbilityTrigger.Ongoing,
@@ -6343,7 +6343,7 @@ export const creatures: CreatureRecord[] = [
     abilityText: "After you buy a Bug monster, this gains +16 Damage.",
     abilityTrigger: AbilityTrigger.OnBought,
     abilityTags: [
-      { kind: "manualTrigger", trigger: AbilityTrigger.OnBought, effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 16 }] },
+      { kind: AbilityTagKind.ManualTrigger, trigger: AbilityTrigger.OnBought, effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 16 }] },
     ],
     spriteFile: "guardiant.png",
     sourceRefs: [batodexExtracted("guardiant", "Guardiant")],
@@ -6362,7 +6362,7 @@ export const creatures: CreatureRecord[] = [
     abilityText: "After you buy a Bug monster, this gains +24 Damage.",
     abilityTrigger: AbilityTrigger.OnBought,
     abilityTags: [
-      { kind: "manualTrigger", trigger: AbilityTrigger.OnBought, effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 24 }] },
+      { kind: AbilityTagKind.ManualTrigger, trigger: AbilityTrigger.OnBought, effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 24 }] },
     ],
     spriteFile: "guardiant.png",
     sourceRefs: [batodexExtracted("guardiant", "Guardiant")],
@@ -6381,7 +6381,7 @@ export const creatures: CreatureRecord[] = [
     abilityText: "After you buy a Bug monster, this gains +48 Damage.",
     abilityTrigger: AbilityTrigger.OnBought,
     abilityTags: [
-      { kind: "manualTrigger", trigger: AbilityTrigger.OnBought, effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 48 }] },
+      { kind: AbilityTagKind.ManualTrigger, trigger: AbilityTrigger.OnBought, effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 48 }] },
     ],
     spriteFile: "guardiant.png",
     sourceRefs: [batodexExtracted("guardiant", "Guardiant")],
@@ -6658,10 +6658,10 @@ export const creatures: CreatureRecord[] = [
     abilityText: "This and all your allies gain +40 Damage permanently.",
     abilityTags: [
       {
-        kind: "manualTrigger",
+        kind: AbilityTagKind.ManualTrigger,
         trigger: AbilityTrigger.OnVictory,
         effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 40 }],
-        target: { kind: "allAllies" },
+        target: { kind: TargetKind.AllAllies },
         includeSelf: true,
       },
     ],
@@ -6683,10 +6683,10 @@ export const creatures: CreatureRecord[] = [
     abilityText: "This and all your allies gain +60 Damage permanently.",
     abilityTags: [
       {
-        kind: "manualTrigger",
+        kind: AbilityTagKind.ManualTrigger,
         trigger: AbilityTrigger.OnVictory,
         effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 60 }],
-        target: { kind: "allAllies" },
+        target: { kind: TargetKind.AllAllies },
         includeSelf: true,
       },
     ],
@@ -6708,10 +6708,10 @@ export const creatures: CreatureRecord[] = [
     abilityText: "This and all your allies gain +240 Damage permanently.",
     abilityTags: [
       {
-        kind: "manualTrigger",
+        kind: AbilityTagKind.ManualTrigger,
         trigger: AbilityTrigger.OnVictory,
         effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 240 }],
-        target: { kind: "allAllies" },
+        target: { kind: TargetKind.AllAllies },
         includeSelf: true,
       },
     ],
@@ -6987,7 +6987,7 @@ export const creatures: CreatureRecord[] = [
     appliesStatus: [{ type: StatusEffectType.Burn, amount: 10 }],
     abilityText: "Give the ally above +4 Burn permanently.",
     abilityTags: [
-      { kind: "buffOnCast", target: { kind: "above" }, effect: { statusGrant: { type: StatusEffectType.Burn, amount: 4 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Above }, effect: { statusGrant: { type: StatusEffectType.Burn, amount: 4 } } },
     ],
     spriteFile: "magmalith.png",
     abilityTrigger: AbilityTrigger.OnCast,
@@ -7006,7 +7006,7 @@ export const creatures: CreatureRecord[] = [
     appliesStatus: [{ type: StatusEffectType.Burn, amount: 15 }],
     abilityText: "Give the ally above +6 Burn permanently.",
     abilityTags: [
-      { kind: "buffOnCast", target: { kind: "above" }, effect: { statusGrant: { type: StatusEffectType.Burn, amount: 6 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Above }, effect: { statusGrant: { type: StatusEffectType.Burn, amount: 6 } } },
     ],
     spriteFile: "magmalith.png",
     abilityTrigger: AbilityTrigger.OnCast,
@@ -7025,7 +7025,7 @@ export const creatures: CreatureRecord[] = [
     appliesStatus: [{ type: StatusEffectType.Burn, amount: 30 }],
     abilityText: "Give the ally above +24 Burn permanently.",
     abilityTags: [
-      { kind: "buffOnCast", target: { kind: "above" }, effect: { statusGrant: { type: StatusEffectType.Burn, amount: 24 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Above }, effect: { statusGrant: { type: StatusEffectType.Burn, amount: 24 } } },
     ],
     spriteFile: "magmalith.png",
     abilityTrigger: AbilityTrigger.OnCast,
@@ -7145,7 +7145,7 @@ export const creatures: CreatureRecord[] = [
     baseCooldownSeconds: 3,
     appliesStatus: [{ type: StatusEffectType.Poison, amount: 10 }],
     abilityText: "Gain Poison for this battle equal to 2x the total Poison of your allies.\n(Except other Miasmaw)",
-    abilityTags: [{ kind: "battleStartStatusFromAllies", status: StatusEffectType.Poison, multiplier: 2 }],
+    abilityTags: [{ kind: AbilityTagKind.BattleStartStatusFromAllies, status: StatusEffectType.Poison, multiplier: 2 }],
     spriteFile: "miasmaw.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
     sourceRefs: [batodexExtracted("miasmaw", "Miasmaw")],
@@ -7162,7 +7162,7 @@ export const creatures: CreatureRecord[] = [
     baseCooldownSeconds: 3,
     appliesStatus: [{ type: StatusEffectType.Poison, amount: 10 }],
     abilityText: "Gain Poison for this battle equal to 3x the total Poison of your allies.\n(Except other Miasmaw)",
-    abilityTags: [{ kind: "battleStartStatusFromAllies", status: StatusEffectType.Poison, multiplier: 3 }],
+    abilityTags: [{ kind: AbilityTagKind.BattleStartStatusFromAllies, status: StatusEffectType.Poison, multiplier: 3 }],
     spriteFile: "miasmaw.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
     sourceRefs: [batodexExtracted("miasmaw", "Miasmaw")],
@@ -7179,7 +7179,7 @@ export const creatures: CreatureRecord[] = [
     baseCooldownSeconds: 3,
     appliesStatus: [{ type: StatusEffectType.Poison, amount: 10 }],
     abilityText: "Gain Poison for this battle equal to 24x the total Poison of your allies.\n(Except other Miasmaw)",
-    abilityTags: [{ kind: "battleStartStatusFromAllies", status: StatusEffectType.Poison, multiplier: 24 }],
+    abilityTags: [{ kind: AbilityTagKind.BattleStartStatusFromAllies, status: StatusEffectType.Poison, multiplier: 24 }],
     spriteFile: "miasmaw.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
     sourceRefs: [batodexExtracted("miasmaw", "Miasmaw")],
@@ -7248,7 +7248,7 @@ export const creatures: CreatureRecord[] = [
     healAmount: 60,
     abilityText: "+40 Damage for this battle.",
     abilityTags: [
-      { kind: "buffOnCast", target: { kind: "self" }, effect: { statChange: { stat: StatChangeStat.Damage, amount: 40 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statChange: { stat: StatChangeStat.Damage, amount: 40 } } },
     ],
     spriteFile: "mosslug.png",
     abilityTrigger: AbilityTrigger.OnCast,
@@ -7267,7 +7267,7 @@ export const creatures: CreatureRecord[] = [
     healAmount: 90,
     abilityText: "+60 Damage for this battle.",
     abilityTags: [
-      { kind: "buffOnCast", target: { kind: "self" }, effect: { statChange: { stat: StatChangeStat.Damage, amount: 60 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statChange: { stat: StatChangeStat.Damage, amount: 60 } } },
     ],
     spriteFile: "mosslug.png",
     abilityTrigger: AbilityTrigger.OnCast,
@@ -7286,7 +7286,7 @@ export const creatures: CreatureRecord[] = [
     healAmount: 90,
     abilityText: "+120 Damage for this battle.",
     abilityTags: [
-      { kind: "buffOnCast", target: { kind: "self" }, effect: { statChange: { stat: StatChangeStat.Damage, amount: 120 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statChange: { stat: StatChangeStat.Damage, amount: 120 } } },
     ],
     spriteFile: "mosslug.png",
     abilityTrigger: AbilityTrigger.OnCast,
@@ -7407,7 +7407,7 @@ export const creatures: CreatureRecord[] = [
     appliesStatus: [{ type: StatusEffectType.Poison, amount: 10 }],
     abilityText: "Give the ally above +6 Poison permanently.",
     abilityTags: [
-      { kind: "buffOnCast", target: { kind: "above" }, effect: { statusGrant: { type: StatusEffectType.Poison, amount: 6 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Above }, effect: { statusGrant: { type: StatusEffectType.Poison, amount: 6 } } },
     ],
     spriteFile: "noxalith.png",
     abilityTrigger: AbilityTrigger.OnCast,
@@ -7426,7 +7426,7 @@ export const creatures: CreatureRecord[] = [
     appliesStatus: [{ type: StatusEffectType.Poison, amount: 15 }],
     abilityText: "Give the ally above +9 Poison permanently.",
     abilityTags: [
-      { kind: "buffOnCast", target: { kind: "above" }, effect: { statusGrant: { type: StatusEffectType.Poison, amount: 9 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Above }, effect: { statusGrant: { type: StatusEffectType.Poison, amount: 9 } } },
     ],
     spriteFile: "noxalith.png",
     abilityTrigger: AbilityTrigger.OnCast,
@@ -7445,7 +7445,7 @@ export const creatures: CreatureRecord[] = [
     appliesStatus: [{ type: StatusEffectType.Poison, amount: 30 }],
     abilityText: "Give the ally above +36 Poison permanently.",
     abilityTags: [
-      { kind: "buffOnCast", target: { kind: "above" }, effect: { statusGrant: { type: StatusEffectType.Poison, amount: 36 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Above }, effect: { statusGrant: { type: StatusEffectType.Poison, amount: 36 } } },
     ],
     spriteFile: "noxalith.png",
     abilityTrigger: AbilityTrigger.OnCast,
@@ -7464,7 +7464,7 @@ export const creatures: CreatureRecord[] = [
     appliesStatus: [{ type: StatusEffectType.Poison, amount: 1 }],
     abilityText: "Adjacent Toxic allies gain +6 Poison for this battle.",
     abilityTags: [
-      { kind: "buffOnCast", target: { kind: "adjacent", typeFilter: CreatureType.Toxic }, effect: { statusGrant: { type: StatusEffectType.Poison, amount: 6 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Adjacent, typeFilter: CreatureType.Toxic }, effect: { statusGrant: { type: StatusEffectType.Poison, amount: 6 } } },
     ],
     spriteFile: "noxnimbus.png",
     abilityTrigger: AbilityTrigger.OnCast,
@@ -7483,7 +7483,7 @@ export const creatures: CreatureRecord[] = [
     appliesStatus: [{ type: StatusEffectType.Poison, amount: 1 }],
     abilityText: "Adjacent Toxic allies gain +9 Poison for this battle.",
     abilityTags: [
-      { kind: "buffOnCast", target: { kind: "adjacent", typeFilter: CreatureType.Toxic }, effect: { statusGrant: { type: StatusEffectType.Poison, amount: 9 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Adjacent, typeFilter: CreatureType.Toxic }, effect: { statusGrant: { type: StatusEffectType.Poison, amount: 9 } } },
     ],
     spriteFile: "noxnimbus.png",
     abilityTrigger: AbilityTrigger.OnCast,
@@ -7502,7 +7502,7 @@ export const creatures: CreatureRecord[] = [
     appliesStatus: [{ type: StatusEffectType.Poison, amount: 1 }],
     abilityText: "Adjacent Toxic allies gain +18 Poison for this battle.",
     abilityTags: [
-      { kind: "buffOnCast", target: { kind: "adjacent", typeFilter: CreatureType.Toxic }, effect: { statusGrant: { type: StatusEffectType.Poison, amount: 18 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Adjacent, typeFilter: CreatureType.Toxic }, effect: { statusGrant: { type: StatusEffectType.Poison, amount: 18 } } },
     ],
     spriteFile: "noxnimbus.png",
     abilityTrigger: AbilityTrigger.OnCast,
@@ -8034,7 +8034,7 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 100, channel: DamageChannel.Direct },
     abilityText: "Knockout adjacent allies and gain +40 Shield permanently for each ally Knockout.",
     abilityTags: [
-      { kind: "knockoutAlliesOnBattleStart", target: { kind: "adjacent" }, effectPerKnockout: { statusGrant: { type: StatusEffectType.Shield, amount: 40 } } },
+      { kind: AbilityTagKind.KnockoutAlliesOnBattleStart, target: { kind: TargetKind.Adjacent }, effectPerKnockout: { statusGrant: { type: StatusEffectType.Shield, amount: 40 } } },
     ],
     spriteFile: "petrirex.png",
     abilityTrigger: AbilityTrigger.OnCast,
@@ -8053,7 +8053,7 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 150, channel: DamageChannel.Direct },
     abilityText: "Knockout adjacent allies and gain +60 Shield permanently for each ally Knockout.",
     abilityTags: [
-      { kind: "knockoutAlliesOnBattleStart", target: { kind: "adjacent" }, effectPerKnockout: { statusGrant: { type: StatusEffectType.Shield, amount: 60 } } },
+      { kind: AbilityTagKind.KnockoutAlliesOnBattleStart, target: { kind: TargetKind.Adjacent }, effectPerKnockout: { statusGrant: { type: StatusEffectType.Shield, amount: 60 } } },
     ],
     spriteFile: "petrirex.png",
     abilityTrigger: AbilityTrigger.OnCast,
@@ -8072,7 +8072,7 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 600, channel: DamageChannel.Direct },
     abilityText: "Knockout adjacent allies and gain +240 Shield permanently for each ally Knockout.",
     abilityTags: [
-      { kind: "knockoutAlliesOnBattleStart", target: { kind: "adjacent" }, effectPerKnockout: { statusGrant: { type: StatusEffectType.Shield, amount: 240 } } },
+      { kind: AbilityTagKind.KnockoutAlliesOnBattleStart, target: { kind: TargetKind.Adjacent }, effectPerKnockout: { statusGrant: { type: StatusEffectType.Shield, amount: 240 } } },
     ],
     spriteFile: "petrirex.png",
     abilityTrigger: AbilityTrigger.OnCast,
@@ -8247,7 +8247,7 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 100, channel: DamageChannel.Direct },
     abilityText: "+20 Damage permanently for each unique type on your team.",
     abilityTags: [
-      { kind: "statFromUniqueTypes", target: { kind: "self" }, effect: { statChange: { stat: StatChangeStat.Damage, amount: 20 } } },
+      { kind: AbilityTagKind.StatFromUniqueTypes, target: { kind: TargetKind.Self }, effect: { statChange: { stat: StatChangeStat.Damage, amount: 20 } } },
     ],
     spriteFile: "prismagon.png",
     abilityTrigger: AbilityTrigger.OnCast,
@@ -8266,7 +8266,7 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 100, channel: DamageChannel.Direct },
     abilityText: "+30 Damage permanently for each unique type on your team.",
     abilityTags: [
-      { kind: "statFromUniqueTypes", target: { kind: "self" }, effect: { statChange: { stat: StatChangeStat.Damage, amount: 30 } } },
+      { kind: AbilityTagKind.StatFromUniqueTypes, target: { kind: TargetKind.Self }, effect: { statChange: { stat: StatChangeStat.Damage, amount: 30 } } },
     ],
     spriteFile: "prismagon.png",
     abilityTrigger: AbilityTrigger.OnCast,
@@ -8285,7 +8285,7 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 100, channel: DamageChannel.Direct },
     abilityText: "+240 Damage permanently for each unique type on your team.",
     abilityTags: [
-      { kind: "statFromUniqueTypes", target: { kind: "self" }, effect: { statChange: { stat: StatChangeStat.Damage, amount: 240 } } },
+      { kind: AbilityTagKind.StatFromUniqueTypes, target: { kind: TargetKind.Self }, effect: { statChange: { stat: StatChangeStat.Damage, amount: 240 } } },
     ],
     spriteFile: "prismagon.png",
     abilityTrigger: AbilityTrigger.OnCast,
@@ -8305,7 +8305,7 @@ export const creatures: CreatureRecord[] = [
     healAmount: 10,
     abilityText: "Trigger this when adjacent Toxic allies trigger.\n(Except other Puffloon)",
     abilityTags: [
-      { kind: "triggerOnAllyTrigger", target: { kind: "adjacent", typeFilter: CreatureType.Toxic } },
+      { kind: AbilityTagKind.TriggerOnAllyTrigger, target: { kind: TargetKind.Adjacent, typeFilter: CreatureType.Toxic } },
     ],
     spriteFile: "puffloon.png",
     sourceRefs: [batodexExtracted("puffloon", "Puffloon")],
@@ -8324,7 +8324,7 @@ export const creatures: CreatureRecord[] = [
     healAmount: 10,
     abilityText: "Trigger this when adjacent Toxic allies trigger.\n(Except other Puffloon)",
     abilityTags: [
-      { kind: "triggerOnAllyTrigger", target: { kind: "adjacent", typeFilter: CreatureType.Toxic } },
+      { kind: AbilityTagKind.TriggerOnAllyTrigger, target: { kind: TargetKind.Adjacent, typeFilter: CreatureType.Toxic } },
     ],
     spriteFile: "puffloon.png",
     sourceRefs: [batodexExtracted("puffloon", "Puffloon")],
@@ -8343,7 +8343,7 @@ export const creatures: CreatureRecord[] = [
     healAmount: 10,
     abilityText: "Trigger this when adjacent Toxic allies trigger.\n(Except other Puffloon)",
     abilityTags: [
-      { kind: "triggerOnAllyTrigger", target: { kind: "adjacent", typeFilter: CreatureType.Toxic } },
+      { kind: AbilityTagKind.TriggerOnAllyTrigger, target: { kind: TargetKind.Adjacent, typeFilter: CreatureType.Toxic } },
     ],
     spriteFile: "puffloon.png",
     sourceRefs: [batodexExtracted("puffloon", "Puffloon")],
@@ -8472,7 +8472,7 @@ export const creatures: CreatureRecord[] = [
     appliesStatus: [{ type: StatusEffectType.Burn, amount: 10 }],
     abilityText: "+20 Burn for this battle.",
     abilityTags: [
-      { kind: "buffOnCast", target: { kind: "self" }, effect: { statusGrant: { type: StatusEffectType.Burn, amount: 20 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statusGrant: { type: StatusEffectType.Burn, amount: 20 } } },
     ],
     spriteFile: "pyrokami.png",
     abilityTrigger: AbilityTrigger.OnCast,
@@ -8491,7 +8491,7 @@ export const creatures: CreatureRecord[] = [
     appliesStatus: [{ type: StatusEffectType.Burn, amount: 15 }],
     abilityText: "+30 Burn for this battle.",
     abilityTags: [
-      { kind: "buffOnCast", target: { kind: "self" }, effect: { statusGrant: { type: StatusEffectType.Burn, amount: 30 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statusGrant: { type: StatusEffectType.Burn, amount: 30 } } },
     ],
     spriteFile: "pyrokami.png",
     abilityTrigger: AbilityTrigger.OnCast,
@@ -8510,7 +8510,7 @@ export const creatures: CreatureRecord[] = [
     appliesStatus: [{ type: StatusEffectType.Burn, amount: 30 }],
     abilityText: "+60 Burn for this battle.",
     abilityTags: [
-      { kind: "buffOnCast", target: { kind: "self" }, effect: { statusGrant: { type: StatusEffectType.Burn, amount: 60 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statusGrant: { type: StatusEffectType.Burn, amount: 60 } } },
     ],
     spriteFile: "pyrokami.png",
     abilityTrigger: AbilityTrigger.OnCast,
@@ -8631,7 +8631,7 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 40, channel: DamageChannel.Direct },
     abilityText: "+2 Multicast permanently.",
     abilityTags: [
-      { kind: "manualTrigger", trigger: AbilityTrigger.OnKnockedOut, effects: [{ stat: ModifierStat.MulticastAdd, amount: 2 }] },
+      { kind: AbilityTagKind.ManualTrigger, trigger: AbilityTrigger.OnKnockedOut, effects: [{ stat: ModifierStat.MulticastAdd, amount: 2 }] },
     ],
     spriteFile: "ratacomb.png",
     abilityTrigger: AbilityTrigger.OnKnockedOut,
@@ -8650,7 +8650,7 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 60, channel: DamageChannel.Direct },
     abilityText: "+3 Multicast permanently.",
     abilityTags: [
-      { kind: "manualTrigger", trigger: AbilityTrigger.OnKnockedOut, effects: [{ stat: ModifierStat.MulticastAdd, amount: 3 }] },
+      { kind: AbilityTagKind.ManualTrigger, trigger: AbilityTrigger.OnKnockedOut, effects: [{ stat: ModifierStat.MulticastAdd, amount: 3 }] },
     ],
     spriteFile: "ratacomb.png",
     abilityTrigger: AbilityTrigger.OnKnockedOut,
@@ -8669,7 +8669,7 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 120, channel: DamageChannel.Direct },
     abilityText: "+6 Multicast permanently.",
     abilityTags: [
-      { kind: "manualTrigger", trigger: AbilityTrigger.OnKnockedOut, effects: [{ stat: ModifierStat.MulticastAdd, amount: 6 }] },
+      { kind: AbilityTagKind.ManualTrigger, trigger: AbilityTrigger.OnKnockedOut, effects: [{ stat: ModifierStat.MulticastAdd, amount: 6 }] },
     ],
     spriteFile: "ratacomb.png",
     abilityTrigger: AbilityTrigger.OnKnockedOut,
@@ -9042,8 +9042,8 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 100, channel: DamageChannel.Direct },
     abilityText: "Give the ally in front +2 Multicast and increase this monster's Cooldown by 8 seconds for this battle.",
     abilityTags: [
-      { kind: "buffOnCast", target: { kind: "inFront" }, effect: { statChange: { stat: StatChangeStat.Multicast, amount: 2 } } },
-      { kind: "buffOnCast", target: { kind: "self" }, effect: { statChange: { stat: StatChangeStat.CooldownFlatSeconds, amount: 8 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.InFront }, effect: { statChange: { stat: StatChangeStat.Multicast, amount: 2 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statChange: { stat: StatChangeStat.CooldownFlatSeconds, amount: 8 } } },
     ],
     spriteFile: "saberhorn.png",
     abilityTrigger: AbilityTrigger.OnCast,
@@ -9062,8 +9062,8 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 100, channel: DamageChannel.Direct },
     abilityText: "Give the ally in front +3 Multicast and increase this monster's Cooldown by 8 seconds for this battle.",
     abilityTags: [
-      { kind: "buffOnCast", target: { kind: "inFront" }, effect: { statChange: { stat: StatChangeStat.Multicast, amount: 3 } } },
-      { kind: "buffOnCast", target: { kind: "self" }, effect: { statChange: { stat: StatChangeStat.CooldownFlatSeconds, amount: 8 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.InFront }, effect: { statChange: { stat: StatChangeStat.Multicast, amount: 3 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statChange: { stat: StatChangeStat.CooldownFlatSeconds, amount: 8 } } },
     ],
     spriteFile: "saberhorn.png",
     abilityTrigger: AbilityTrigger.OnCast,
@@ -9082,8 +9082,8 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 100, channel: DamageChannel.Direct },
     abilityText: "Give the ally in front +24 Multicast and increase this monster's Cooldown by 8 seconds for this battle.",
     abilityTags: [
-      { kind: "buffOnCast", target: { kind: "inFront" }, effect: { statChange: { stat: StatChangeStat.Multicast, amount: 24 } } },
-      { kind: "buffOnCast", target: { kind: "self" }, effect: { statChange: { stat: StatChangeStat.CooldownFlatSeconds, amount: 8 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.InFront }, effect: { statChange: { stat: StatChangeStat.Multicast, amount: 24 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statChange: { stat: StatChangeStat.CooldownFlatSeconds, amount: 8 } } },
     ],
     spriteFile: "saberhorn.png",
     abilityTrigger: AbilityTrigger.OnCast,
@@ -10112,7 +10112,7 @@ export const creatures: CreatureRecord[] = [
     abilityText: "When allies inflict Poison, this gains +16 Damage permanently.",
     abilityTrigger: AbilityTrigger.OnCast,
     abilityTags: [
-      { kind: "gainOnAllyStatus", status: StatusEffectType.Poison, stat: StatChangeStat.Damage, amount: 16 },
+      { kind: AbilityTagKind.GainOnAllyStatus, status: StatusEffectType.Poison, stat: StatChangeStat.Damage, amount: 16 },
     ],
     spriteFile: "thorntail.png",
     sourceRefs: [batodexExtracted("thorntail", "Thorntail")],
@@ -10132,7 +10132,7 @@ export const creatures: CreatureRecord[] = [
     abilityText: "When allies inflict Poison, this gains +24 Damage permanently.",
     abilityTrigger: AbilityTrigger.OnCast,
     abilityTags: [
-      { kind: "gainOnAllyStatus", status: StatusEffectType.Poison, stat: StatChangeStat.Damage, amount: 24 },
+      { kind: AbilityTagKind.GainOnAllyStatus, status: StatusEffectType.Poison, stat: StatChangeStat.Damage, amount: 24 },
     ],
     spriteFile: "thorntail.png",
     sourceRefs: [batodexExtracted("thorntail", "Thorntail")],
@@ -10152,7 +10152,7 @@ export const creatures: CreatureRecord[] = [
     abilityText: "When allies inflict Poison, this gains +96 Damage permanently.",
     abilityTrigger: AbilityTrigger.OnCast,
     abilityTags: [
-      { kind: "gainOnAllyStatus", status: StatusEffectType.Poison, stat: StatChangeStat.Damage, amount: 96 },
+      { kind: AbilityTagKind.GainOnAllyStatus, status: StatusEffectType.Poison, stat: StatChangeStat.Damage, amount: 96 },
     ],
     spriteFile: "thorntail.png",
     sourceRefs: [batodexExtracted("thorntail", "Thorntail")],
@@ -10422,7 +10422,7 @@ export const creatures: CreatureRecord[] = [
     appliesStatus: [{ type: StatusEffectType.Poison, amount: 10 }],
     abilityText: "+8 Poison permanently.",
     abilityTags: [
-      { kind: "manualTrigger", trigger: AbilityTrigger.OnTrinketGained, effects: [{ stat: ModifierStat.PoisonAmountAdd, amount: 8 }] },
+      { kind: AbilityTagKind.ManualTrigger, trigger: AbilityTrigger.OnTrinketGained, effects: [{ stat: ModifierStat.PoisonAmountAdd, amount: 8 }] },
     ],
     spriteFile: "vipair.png",
     abilityTrigger: AbilityTrigger.OnTrinketGained,
@@ -10441,7 +10441,7 @@ export const creatures: CreatureRecord[] = [
     appliesStatus: [{ type: StatusEffectType.Poison, amount: 15 }],
     abilityText: "+12 Poison permanently.",
     abilityTags: [
-      { kind: "manualTrigger", trigger: AbilityTrigger.OnTrinketGained, effects: [{ stat: ModifierStat.PoisonAmountAdd, amount: 12 }] },
+      { kind: AbilityTagKind.ManualTrigger, trigger: AbilityTrigger.OnTrinketGained, effects: [{ stat: ModifierStat.PoisonAmountAdd, amount: 12 }] },
     ],
     spriteFile: "vipair.png",
     abilityTrigger: AbilityTrigger.OnTrinketGained,
@@ -10460,7 +10460,7 @@ export const creatures: CreatureRecord[] = [
     appliesStatus: [{ type: StatusEffectType.Poison, amount: 30 }],
     abilityText: "+48 Poison permanently.",
     abilityTags: [
-      { kind: "manualTrigger", trigger: AbilityTrigger.OnTrinketGained, effects: [{ stat: ModifierStat.PoisonAmountAdd, amount: 48 }] },
+      { kind: AbilityTagKind.ManualTrigger, trigger: AbilityTrigger.OnTrinketGained, effects: [{ stat: ModifierStat.PoisonAmountAdd, amount: 48 }] },
     ],
     spriteFile: "vipair.png",
     abilityTrigger: AbilityTrigger.OnTrinketGained,
@@ -10479,7 +10479,7 @@ export const creatures: CreatureRecord[] = [
     appliesStatus: [{ type: StatusEffectType.Shock, amount: 10 }],
     abilityText: "Give the ally above +4 Shock permanently.",
     abilityTags: [
-      { kind: "buffOnCast", target: { kind: "above" }, effect: { statusGrant: { type: StatusEffectType.Shock, amount: 4 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Above }, effect: { statusGrant: { type: StatusEffectType.Shock, amount: 4 } } },
     ],
     spriteFile: "voltalith.png",
     abilityTrigger: AbilityTrigger.OnCast,
@@ -10498,7 +10498,7 @@ export const creatures: CreatureRecord[] = [
     appliesStatus: [{ type: StatusEffectType.Shock, amount: 15 }],
     abilityText: "Give the ally above +6 Shock permanently.",
     abilityTags: [
-      { kind: "buffOnCast", target: { kind: "above" }, effect: { statusGrant: { type: StatusEffectType.Shock, amount: 6 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Above }, effect: { statusGrant: { type: StatusEffectType.Shock, amount: 6 } } },
     ],
     spriteFile: "voltalith.png",
     abilityTrigger: AbilityTrigger.OnCast,
@@ -10517,7 +10517,7 @@ export const creatures: CreatureRecord[] = [
     appliesStatus: [{ type: StatusEffectType.Shock, amount: 30 }],
     abilityText: "Give the ally above +24 Shock permanently.",
     abilityTags: [
-      { kind: "buffOnCast", target: { kind: "above" }, effect: { statusGrant: { type: StatusEffectType.Shock, amount: 24 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Above }, effect: { statusGrant: { type: StatusEffectType.Shock, amount: 24 } } },
     ],
     spriteFile: "voltalith.png",
     abilityTrigger: AbilityTrigger.OnCast,
@@ -10587,7 +10587,7 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 100, channel: DamageChannel.Direct },
     abilityText: "Give the Flying ally in front +2 Multicast permanently.\n(Zephyrex can't have Multicast)",
     abilityTags: [
-      { kind: "buffOnCast", target: { kind: "inFront" }, effect: { statChange: { stat: StatChangeStat.Multicast, amount: 2 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.InFront }, effect: { statChange: { stat: StatChangeStat.Multicast, amount: 2 } } },
     ],
     spriteFile: "zephyrex.png",
     abilityTrigger: AbilityTrigger.OnCast,
@@ -10606,7 +10606,7 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 100, channel: DamageChannel.Direct },
     abilityText: "Give the Flying ally in front +3 Multicast permanently.\n(Zephyrex can't have Multicast)",
     abilityTags: [
-      { kind: "buffOnCast", target: { kind: "inFront" }, effect: { statChange: { stat: StatChangeStat.Multicast, amount: 3 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.InFront }, effect: { statChange: { stat: StatChangeStat.Multicast, amount: 3 } } },
     ],
     spriteFile: "zephyrex.png",
     abilityTrigger: AbilityTrigger.OnCast,
@@ -10625,7 +10625,7 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 800, channel: DamageChannel.Direct },
     abilityText: "Give the Flying ally in front +12 Multicast permanently.\n(Zephyrex can't have Multicast)",
     abilityTags: [
-      { kind: "buffOnCast", target: { kind: "inFront" }, effect: { statChange: { stat: StatChangeStat.Multicast, amount: 12 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.InFront }, effect: { statChange: { stat: StatChangeStat.Multicast, amount: 12 } } },
     ],
     spriteFile: "zephyrex.png",
     abilityTrigger: AbilityTrigger.OnCast,
@@ -10644,7 +10644,7 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 75, channel: DamageChannel.Direct },
     abilityText: "+35 Damage permanently.",
     abilityTags: [
-      { kind: "buffOnCast", target: { kind: "self" }, effect: { statChange: { stat: StatChangeStat.Damage, amount: 35 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statChange: { stat: StatChangeStat.Damage, amount: 35 } } },
     ],
     spriteFile: "bambudo.png",
     abilityTrigger: AbilityTrigger.OnCast,
@@ -10663,7 +10663,7 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 75, channel: DamageChannel.Direct },
     abilityText: "+35 Damage permanently.",
     abilityTags: [
-      { kind: "buffOnCast", target: { kind: "self" }, effect: { statChange: { stat: StatChangeStat.Damage, amount: 35 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statChange: { stat: StatChangeStat.Damage, amount: 35 } } },
     ],
     spriteFile: "bambudo.png",
     abilityTrigger: AbilityTrigger.OnCast,
@@ -10682,7 +10682,7 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 150, channel: DamageChannel.Direct },
     abilityText: "+70 Damage permanently.",
     abilityTags: [
-      { kind: "buffOnCast", target: { kind: "self" }, effect: { statChange: { stat: StatChangeStat.Damage, amount: 70 } } },
+      { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statChange: { stat: StatChangeStat.Damage, amount: 70 } } },
     ],
     spriteFile: "bambudo.png",
     abilityTrigger: AbilityTrigger.OnCast,

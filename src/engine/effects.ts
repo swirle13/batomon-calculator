@@ -15,8 +15,7 @@ import { isWildcardType } from "../data/vocabularies";
 import { hasAbilityText } from "../data/display";
 import { addFlat, addPostMultiplier, applyMultiplier, readRounded, statValue, type StatValue } from "./statValue";
 import { TYPE_COLORS } from "../data/typeColors";
-import { EventLabel, GridRow } from "../data/enums";
-import { StatChangeStat } from "../data/enums";
+import { AbilityTagKind, EventLabel, GridRow, StatChangeStat } from "../data/enums";
 
 /**
  * Effect resolution (FR-073/FR-074, 2026-10-06 round 9).
@@ -273,7 +272,7 @@ export function resolveEffects(config: TeamConfiguration, corpus: Corpus): Resol
   // then sums the 1027.
   for (const source of base) {
     for (const tag of source.creature.abilityTags) {
-      if (tag.kind !== "statMultiplier") continue;
+      if (tag.kind !== AbilityTagKind.StatMultiplier) continue;
       for (const target of selectTargets(tag.target, source, base, config)) {
         if (tag.stat === "damage" || tag.stat === "all") applyMultiplier(target.stats.damage, tag.factor);
         if (tag.stat === "status" || tag.stat === "all") {
@@ -288,7 +287,7 @@ export function resolveEffects(config: TeamConfiguration, corpus: Corpus): Resol
   // --- PHASE 2/3: battle-start grants, now summing allies' POST-MULTIPLIER totals ---
   for (const resolved of base) {
     for (const tag of resolved.creature.abilityTags) {
-      if (tag.kind !== "battleStartStatusFromAllies") continue;
+      if (tag.kind !== AbilityTagKind.BattleStartStatusFromAllies) continue;
       const allyTotal = base
         .filter((other) => other.key !== resolved.key)
         // "(Except other Miasmaw)" — same-species allies are excluded too, per the ability text.
@@ -325,7 +324,7 @@ export function resolveEffects(config: TeamConfiguration, corpus: Corpus): Resol
   const knockedOut = new Set<string>();
   for (const source of base) {
     for (const tag of source.creature.abilityTags) {
-      if (tag.kind !== "knockoutAlliesOnBattleStart") continue;
+      if (tag.kind !== AbilityTagKind.KnockoutAlliesOnBattleStart) continue;
       const victims = selectTargets(tag.target, source, base, config);
       for (const v of victims) knockedOut.add(v.key);
       if (victims.length > 0) {
@@ -507,7 +506,7 @@ export function resolveEffects(config: TeamConfiguration, corpus: Corpus): Resol
   // from the second cast onward.
   for (const resolved of base) {
     for (const tag of resolved.creature.abilityTags) {
-      if (tag.kind === "statFromTargetStatus") {
+      if (tag.kind === AbilityTagKind.StatFromTargetStatus) {
         resolved.targetStatusScaling.push({ status: tag.status, multiplier: tag.multiplier });
       }
     }
@@ -516,7 +515,7 @@ export function resolveEffects(config: TeamConfiguration, corpus: Corpus): Resol
   // --- Pass 3: collect charge rules and record what we could NOT model ---
   for (const resolved of base) {
     for (const tag of resolved.creature.abilityTags) {
-      if (tag.kind === "chargeOnAllyStatus") {
+      if (tag.kind === AbilityTagKind.ChargeOnAllyStatus) {
         resolved.chargeRules.push({ status: tag.status, seconds: tag.seconds });
       }
     }

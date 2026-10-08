@@ -7,7 +7,7 @@ import type {
   TargetSelector,
 } from "./types";
 import { ABILITY_TRIGGER, CREATURE_TYPE, RARITY } from "./vocabularies";
-import { ModifierStat, StatChangeStat, StatusEffectType } from "./enums";
+import { AbilityTagKind, ModifierStat, StatChangeStat, StatusEffectType, TargetKind } from "./enums";
 
 /**
  * Ability tags DERIVED from a creature's own published text (2026-10-07, round 7 WI-002 / FR-113).
@@ -153,7 +153,7 @@ function manualTrigger(
    */
   if (ABILITY_TRIGGER[record.abilityTrigger].enginePropagated) return null;
 
-  return { kind: "manualTrigger", trigger: record.abilityTrigger, effects, target, includeSelf };
+  return { kind: AbilityTagKind.ManualTrigger, trigger: record.abilityTrigger, effects, target, includeSelf };
 }
 
 /**
@@ -182,12 +182,12 @@ function ongoingGrant(
   const word = targetWord.toLowerCase();
   const filters = filtersFrom(filterWords);
   const target: TargetSelector | null =
-    word === "adjacent"
-      ? { kind: "adjacent", ...filters }
+    word === TargetKind.Adjacent
+      ? { kind: TargetKind.Adjacent, ...filters }
       : word === "ally behind"
-        ? { kind: "behind" }
+        ? { kind: TargetKind.Behind }
         : word === "allies"
-          ? { kind: "allAllies", ...filters }
+          ? { kind: TargetKind.AllAllies, ...filters }
           : null;
   if (!target) return null;
 
@@ -195,7 +195,7 @@ function ongoingGrant(
   // this and a manual button. Round 6's guard asserts it; this makes it true by construction.
   if (record.abilityTags.length > 0) return null;
 
-  return { kind: "ongoing", target, effect: descriptor };
+  return { kind: AbilityTagKind.Ongoing, target, effect: descriptor };
 }
 
 /** How a `ModifierStat` grant maps onto an `EffectDescriptor`. Absent = no slot in the vocabulary. */
@@ -234,7 +234,7 @@ const RULES: DerivationRule[] = [
       "i",
     ),
     build: (m, r) =>
-      manualTrigger(r, allEffects(m[2]!), { kind: "allAllies", ...filtersFrom(m[1]) }, true),
+      manualTrigger(r, allEffects(m[2]!), { kind: TargetKind.AllAllies, ...filtersFrom(m[1]) }, true),
   },
 
   // "Adjacent Water allies gain +25 Heal permanently." — Aster, Ginsage. Self NOT included: the text
@@ -245,7 +245,7 @@ const RULES: DerivationRule[] = [
       String.raw`^(?:Give )?Adjacent ((?:\w+ )*?)all(?:y|ies) (?:gain )?((?:${AMOUNT}\s*(?:${STAT_NAMES})(?:,? and )?)+) permanently\.$`,
       "i",
     ),
-    build: (m, r) => manualTrigger(r, allEffects(m[2]!), { kind: "adjacent", ...filtersFrom(m[1]) }, false),
+    build: (m, r) => manualTrigger(r, allEffects(m[2]!), { kind: TargetKind.Adjacent, ...filtersFrom(m[1]) }, false),
   },
 
   // "Give adjacent allies +1 Multicast permanently." — the imperative word order.
@@ -255,7 +255,7 @@ const RULES: DerivationRule[] = [
       String.raw`^Give adjacent ((?:\w+ )*?)all(?:y|ies) ((?:${AMOUNT}\s*(?:${STAT_NAMES})(?:,? and )?)+) permanently\.$`,
       "i",
     ),
-    build: (m, r) => manualTrigger(r, allEffects(m[2]!), { kind: "adjacent", ...filtersFrom(m[1]) }, false),
+    build: (m, r) => manualTrigger(r, allEffects(m[2]!), { kind: TargetKind.Adjacent, ...filtersFrom(m[1]) }, false),
   },
 
   // "Give the ally behind +3% Cooldown Speed permanently." — Boomagon.
@@ -265,7 +265,7 @@ const RULES: DerivationRule[] = [
       String.raw`^Give the ally behind ((?:${AMOUNT}\s*(?:${STAT_NAMES})(?:,? and )?)+) permanently\.$`,
       "i",
     ),
-    build: (m, r) => manualTrigger(r, allEffects(m[1]!), { kind: "behind" }, false),
+    build: (m, r) => manualTrigger(r, allEffects(m[1]!), { kind: TargetKind.Behind }, false),
   },
 
   // "Allies of level 3 or above gain +15 Damage and +15 Heal permanently." — Lumijel.
@@ -276,7 +276,7 @@ const RULES: DerivationRule[] = [
       "i",
     ),
     build: (m, r) =>
-      manualTrigger(r, allEffects(m[2]!), { kind: "allAllies", minLevelFilter: Number(m[1]) }, false),
+      manualTrigger(r, allEffects(m[2]!), { kind: TargetKind.AllAllies, minLevelFilter: Number(m[1]) }, false),
   },
 
   // "When you use an item, this gains +20 Damage and Shield." — Craghorn, Guardiant, Cawnushi,
@@ -288,7 +288,7 @@ const RULES: DerivationRule[] = [
     build: (m, r) => {
       const clause = m[1]!;
       const effects = sharedAmountEffects(clause);
-      return manualTrigger(r, effects.length > 0 ? effects : allEffects(clause), { kind: "self" }, false);
+      return manualTrigger(r, effects.length > 0 ? effects : allEffects(clause), { kind: TargetKind.Self }, false);
     },
   },
 
@@ -322,7 +322,7 @@ const RULES: DerivationRule[] = [
       String.raw`^((?:${AMOUNT}\s*(?:${STAT_NAMES})(?:,? and )?)+) permanently\.$`,
       "i",
     ),
-    build: (m, r) => manualTrigger(r, allEffects(m[1]!), { kind: "self" }, false),
+    build: (m, r) => manualTrigger(r, allEffects(m[1]!), { kind: TargetKind.Self }, false),
   },
 ];
 

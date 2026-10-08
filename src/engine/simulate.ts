@@ -9,7 +9,7 @@ import { applyShinyOverlay } from "../data/corpus";
 import { InvalidTeamConfigurationError } from "./errors";
 
 import { damageChannelOf } from "../data/vocabularies";
-import { DamageChannel, ModifierStat, StatChangeStat, StatusEffectType, TimelineEventKind } from "../data/enums";
+import { AbilityTagKind, DamageChannel, ModifierStat, StatChangeStat, StatusEffectType, TargetKind, TimelineEventKind } from "../data/enums";
 
 /**
  * The statuses that tick for damage: the `StatusEffectType` members that have a `DamageChannel`.
@@ -111,19 +111,19 @@ function resolveCooldownSpeedTotal(
   for (const member of teamMembers) {
     if (slotsEqual(member.slot, targetSlot)) continue; // a creature's own aura doesn't buff itself twice here
     for (const tag of member.creature.abilityTags) {
-      if (tag.kind !== "cooldownSpeedModifier") continue;
+      if (tag.kind !== AbilityTagKind.CooldownSpeedModifier) continue;
       const target = tag.target;
       let reaches = false;
-      if (target.kind === "adjacent") {
+      if (target.kind === TargetKind.Adjacent) {
         reaches = isAdjacent(member.slot, targetSlot);
-      } else if (target.kind === "allAllies") {
+      } else if (target.kind === TargetKind.AllAllies) {
         reaches = true;
       }
       if (!reaches) continue;
-      if (target.kind === "adjacent" && target.typeFilter && !creatureHasType(targetCreature, target.typeFilter, config)) {
+      if (target.kind === TargetKind.Adjacent && target.typeFilter && !creatureHasType(targetCreature, target.typeFilter, config)) {
         continue;
       }
-      if (target.kind === "allAllies" && target.typeFilter && !creatureHasType(targetCreature, target.typeFilter, config)) {
+      if (target.kind === TargetKind.AllAllies && target.typeFilter && !creatureHasType(targetCreature, target.typeFilter, config)) {
         continue;
       }
       total += tag.amount;
@@ -779,7 +779,7 @@ export function simulate(
       const sourceResolved = resolvedByKey.get(sourceKey);
       if (!sourceResolved) continue;
       for (const tag of entry.creature.abilityTags) {
-        if (tag.kind !== "buffOnCast") continue;
+        if (tag.kind !== AbilityTagKind.BuffOnCast) continue;
         for (const target of selectTargets(tag.target, sourceResolved, resolved)) {
           const b = buffFor(target.key);
           if (tag.effect.statChange?.stat === "damage") b.damage += tag.effect.statChange.amount;
@@ -816,7 +816,7 @@ export function simulate(
       for (const listener of resolved) {
         if (listener.key === casterKey) continue; // "an ALLY casts" — never yourself
         for (const tag of listener.creature.abilityTags) {
-          if (tag.kind === "cooldownSpeedOnAllyCast") {
+          if (tag.kind === AbilityTagKind.CooldownSpeedOnAllyCast) {
             if (tag.typeFilter && !creatureHasType(caster.creature, tag.typeFilter, config)) continue;
             // Compounds: every qualifying ally cast adds again, for the rest of the battle.
             allyCastSpeedBonus.set(casterKey, (allyCastSpeedBonus.get(casterKey) ?? 0) + tag.amount);
@@ -825,7 +825,7 @@ export function simulate(
               const speed = 1 + (allyCastSpeedBonus.get(casterKey) ?? 0);
               entry.cooldown = roundTime(entry.baseCooldown / speed);
             }
-          } else if (tag.kind === "triggerOnAllyTrigger" || tag.kind === "triggerOnAllyCast") {
+          } else if (tag.kind === AbilityTagKind.TriggerOnAllyTrigger || tag.kind === AbilityTagKind.TriggerOnAllyCast) {
             if (!selectTargets(tag.target, listener, resolved, config).some((t) => t.key === casterKey)) continue;
             if (chainDepth >= MAX_CHAIN_DEPTH) {
               chainCapHits++;
@@ -864,7 +864,7 @@ export function simulate(
     // so the gain is never scaled, which is what the capture shows: every step was exactly +24
     // despite Thorntail carrying modifiers worth ~140x.
     for (const entry of schedule) {
-      const gains = entry.creature.abilityTags.filter((t) => t.kind === "gainOnAllyStatus");
+      const gains = entry.creature.abilityTags.filter((t) => t.kind === AbilityTagKind.GainOnAllyStatus);
       if (gains.length === 0) continue;
       for (const application of appliedThisInstant) {
         // "when ALLIES inflict" — a creature's own infliction does not count. The capture has one
@@ -872,7 +872,7 @@ export function simulate(
         // on that evidence, and the Cobrex charge data supports exclusion.
         if (application.sourceKey === entry.key) continue;
         for (const g of gains) {
-          if (g.kind !== "gainOnAllyStatus" || g.status !== application.type) continue;
+          if (g.kind !== AbilityTagKind.GainOnAllyStatus || g.status !== application.type) continue;
           buffFor(entry.key).damage += g.amount;
         }
       }

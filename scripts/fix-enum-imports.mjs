@@ -21,7 +21,7 @@ import { join, relative, dirname } from "node:path";
 const ENUMS = [
   "Rarity", "CreatureType", "DamageChannel", "StatusEffectType", "AbilityTrigger",
   "RegionId", "GridRow", "ModifierStat", "EventLabel", "TimelineEventKind",
-  "StatChangeStat", "MultiplierScope", "StatColorKey", "ConfirmableField",
+  "StatChangeStat", "MultiplierScope", "StatColorKey", "ConfirmableField", "TargetKind", "AbilityTagKind",
 ];
 
 function files(dir) {

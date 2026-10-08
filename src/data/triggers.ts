@@ -6,6 +6,7 @@ import type {
   TargetSelector,
 } from "./types";
 import { ABILITY_TRIGGER, ABILITY_TRIGGERS } from "./vocabularies";
+import { AbilityTagKind, TargetKind } from "./enums";
 
 /**
  * The trigger registry: one entry per `AbilityTrigger`, describing how that trigger behaves and
@@ -17,7 +18,7 @@ import { ABILITY_TRIGGER, ABILITY_TRIGGERS } from "./vocabularies";
  * on using an item, Guardiant on buying a Bug, Dollhime on gaining a trinket, and so on. Handling
  * them one at a time would mean sixteen places to update and sixteen chances to miss one.
  *
- * Instead the *trigger* is the unit. A creature declares `{ kind: "manualTrigger", trigger,
+ * Instead the *trigger* is the unit. A creature declares `{ kind: AbilityTagKind.ManualTrigger, trigger,
  * effects }` in its data; this table says what that trigger is called and whether the engine owns
  * it. Adding a creature is a data change with no code; adding a trigger is one entry here.
  *
@@ -71,14 +72,14 @@ export interface ManualTrigger {
  */
 export function manualTriggersFor(creature: CreatureRecord): ManualTrigger[] {
   return creature.abilityTags
-    .filter((tag): tag is Extract<typeof tag, { kind: "manualTrigger" }> => tag.kind === "manualTrigger")
+    .filter((tag): tag is Extract<typeof tag, { kind: AbilityTagKind.ManualTrigger }> => tag.kind === AbilityTagKind.ManualTrigger)
     .map((tag) => ({
       trigger: tag.trigger,
       definition: TRIGGER_DEFINITIONS[tag.trigger],
       effects: tag.effects,
       // Defaulted here rather than at each read, so no caller can forget and silently bank an
       // ally-wide bonus on the presser alone — the bug these two fields exist to fix.
-      target: tag.target ?? { kind: "self" },
+      target: tag.target ?? { kind: TargetKind.Self },
       includeSelf: tag.includeSelf ?? false,
     }));
 }

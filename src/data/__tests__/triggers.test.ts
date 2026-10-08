@@ -4,7 +4,7 @@ import { TRIGGER_DEFINITIONS, manualTriggersFor, modifiersForPress } from "../tr
 import { isResolvableTag } from "../../engine/effects";
 import { recipientsOfPress } from "../../engine/manualTriggers";
 import type { CreatureRecord, GridSlot } from "../types";
-import { AbilityTrigger, GridRow, ModifierStat, Rarity } from "../enums";
+import { AbilityTrigger, GridRow, ModifierStat, Rarity, TargetKind } from "../enums";
 
 describe("manual trigger framework", () => {
   it("Craghorn offers its item trigger with the right per-level amounts", () => {
@@ -124,7 +124,7 @@ describe("manual trigger recipients", () => {
     for (const level of [1, 2, 3, 4]) {
       const c = corpus.creatures.find((x) => x.id === "brawlmantis" && x.level === level)!;
       const [trigger] = manualTriggersFor(c);
-      expect(trigger!.target, `brawlmantis L${level}`).toEqual({ kind: "allAllies", rarityFilter: Rarity.Common });
+      expect(trigger!.target, `brawlmantis L${level}`).toEqual({ kind: TargetKind.AllAllies, rarityFilter: Rarity.Common });
       expect(trigger!.includeSelf).toBe(true);
     }
 
@@ -163,7 +163,7 @@ describe("manual trigger recipients", () => {
     // is legal in the schema but none exists yet, so this states the corpus fact rather than a rule.
     for (const c of corpus.creatures) {
       for (const t of manualTriggersFor(c)) {
-        if (t.target.kind === "self") continue;
+        if (t.target.kind === TargetKind.Self) continue;
         expect(t.includeSelf, `${c.id} L${c.level} targets allies but excludes itself`).toBe(true);
       }
     }
@@ -181,7 +181,7 @@ describe("manual trigger recipients", () => {
     for (const c of corpus.creatures) {
       for (const t of manualTriggersFor(c)) {
         expect(
-          t.target.kind !== "self",
+          t.target.kind !== TargetKind.Self,
           `${c.id} L${c.level}: "${c.abilityText}" vs target ${JSON.stringify(t.target)}`,
         ).toBe(/allies gain/i.test(c.abilityText));
       }
