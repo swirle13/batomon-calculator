@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useDeferredValue, useMemo, useState } from "react";
 import { TeamConfigProvider } from "./context/TeamConfigContext";
 import { useTeamConfig } from "./context/teamConfig";
 import { GridPicker } from "./ui/GridPicker/GridPicker";
@@ -38,6 +38,31 @@ type View = "calculator" | "corpus";
 function CalculatorView() {
   const { config, setSimulationWindowSeconds } = useTeamConfig();
   const result = useMemo(() => simulate(config, corpus), [config]);
+  /*
+   * THE CHARTS RENDER A PASS LATE, ON PURPOSE (2026-10-08, performance).
+   *
+   * Dragging a Batomon onto an occupied slot measured an INP of 256ms. The engine was never the
+   * problem — `simulate()` on a full board is 0.22ms, and the placement search that costs 66ms
+   * already runs on a worker. It was the three Recharts trees: they are memoized on `result`, so a
+   * drop correctly invalidates all three and rebuilds every axis, tick and path SYNCHRONOUSLY, in
+   * the same commit that moves the card. Deleting the charts and re-measuring put the number
+   * beyond doubt: `mouseup` processing fell from 78ms to 17ms at a 4x CPU throttle, and every
+   * long task disappeared.
+   *
+   * `useDeferredValue` keeps the charts without keeping them in the gesture's way. The urgent
+   * render — the one the user is waiting on, which moves the two cards — sees the PREVIOUS result
+   * here, so all three charts hit their `memo` bail-out and cost nothing. React then re-renders
+   * them at background priority, yielding to the browser so the swap paints first.
+   *
+   * Only the charts are deferred. `PlacedCreatureDetails`, `TotalDps` and `TeamSummary` read the
+   * live `result` and stay exact, because they are cheap and because a stale number in a table is
+   * much easier to misread than a chart that redraws a frame late.
+   *
+   * No "recalculating…" marker, unlike `PlacementAdvisor`. That one can lag by seconds and is
+   * genuinely a board behind; this lags by one render pass, and a badge that flickered on every
+   * drop would cost more attention than the staleness it reports.
+   */
+  const deferredResult = useDeferredValue(result);
   // 2026-10-05 round 3 (FR-021 / data-model.md's "Persistent side-panel... is UI state, not
   // team data" amendment): transient, lifted here (not TeamConfigContext) because it's purely
   // a display concern, never read by simulate() or persisted with the team configuration.
@@ -87,9 +112,9 @@ function CalculatorView() {
           />
         </Field>
       </div>
-      <CumulativeChart result={result} />
-      <DpsRateChart result={result} />
-      <StatusStackChart result={result} />
+      <CumulativeChart result={deferredResult} />
+      <DpsRateChart result={deferredResult} />
+      <StatusStackChart result={deferredResult} />
       {/* Fixed to the viewport, so its position in this tree is immaterial to the layout — it is
           last because it is last in reading order for anyone tabbing through the page, and the
           board and its readouts should come first. */}
