@@ -339,7 +339,7 @@ export function simulate(
         // here regardless: the band shows what this creature does THIS battle, and omitting a stat
         // because nothing modified it is how 9 healers ended up reading "No published per-cast
         // output" beside a card showing their heal.
-        heal: creature.healAmount ?? null,
+        heal: member.resolved.healAmount,
       },
       { damageFlatAdd, multicastAdd, healAmountAdd, status: statusAmountAdd },
     );

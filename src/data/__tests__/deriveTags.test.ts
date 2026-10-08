@@ -66,6 +66,23 @@ describe("the rule table reads targets, not just self-grants", () => {
       | { target: unknown; includeSelf: boolean; effects: unknown[] }
       | undefined;
 
+  it("derives a HEAL grant, which had no slot in the vocabulary until round 7", () => {
+    /*
+     * `EffectDescriptor.statChange` covered damage, multicast and the two cooldown stats and had NO
+     * slot for Heal -- even though Heal is a published output stat with its own colour and card
+     * line. So Aster's "Adjacent Water allies gain +25 Heal permanently" had nowhere to be written
+     * however the text was matched, and Lumijel, Emperooze and Dewlotl were blocked identically.
+     * Refusing to derive them was correct while the slot was missing; adding `StatChangeStat.Heal`
+     * took the aura family from 4 records to 8.
+     */
+    const [tag] = deriveAbilityTags(rawById("aster", 1));
+    expect(tag).toEqual({
+      kind: "ongoing",
+      target: { kind: "adjacent", typeFilter: CreatureType.Water },
+      effect: { statChange: { stat: "heal", amount: 25 } },
+    });
+  });
+
   it("reads an adjacent + type-filtered grant (Aster)", () => {
     // "Adjacent Water allies gain +25 Heal permanently." Self NOT included: the text does not name
     // it, and `adjacent` already excludes the source.
@@ -126,10 +143,7 @@ describe("GUARD: the exception list cannot quietly regrow", () => {
     // table reads them correctly, but their triggers (On Battle Start / On Cast) are ones the engine
     // already fires, so a manual "bank it once" button would double a bonus the engine computes.
     // These want a RESOLVABLE tag instead -- outstanding work, not a modelling dead end.
-    aster: "On Battle Start is engine-propagated; wants a resolvable tag, not a button",
-    lumijel: "On Battle Start is engine-propagated; wants a resolvable tag, not a button",
     brimtoad: "On Battle Start is engine-propagated; wants a resolvable tag, not a button",
-    emperooze: "On Battle Start is engine-propagated; wants a resolvable tag, not a button",
     boomagon: "On Cast is engine-propagated; wants a resolvable tag, not a button",
   };
 
@@ -268,12 +282,12 @@ describe("WI-002 coverage — reported, not implied", () => {
      * residue. 16 of research.md L1's 17 families are still hand-tagged.
      */
     expect(untagged.length).toBe(423);
-    expect(newlyDerived.length).toBe(11);
-    expect(untagged.length - newlyDerived.length).toBe(412);
+    expect(newlyDerived.length).toBe(15);
+    expect(untagged.length - newlyDerived.length).toBe(408);
 
     expect(Object.fromEntries([...byFamily].sort())).toEqual({
       // Engine-resolved: the counter rises by these, correctly (see the FR-114 test above).
-      "ongoing/aura-grant": 4,
+      "ongoing/aura-grant": 8,
       // Manual buttons: outside RESOLVED_TAG_KINDS, so they move no coverage figure.
       "manualTrigger/self": 3,
       "manualTrigger/this-and-allies": 4,

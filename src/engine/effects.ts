@@ -16,6 +16,7 @@ import { hasAbilityText } from "../data/display";
 import { addFlat, addPostMultiplier, applyMultiplier, readRounded, statValue, type StatValue } from "./statValue";
 import { TYPE_COLORS } from "../data/typeColors";
 import { EventLabel, GridRow } from "../data/enums";
+import { StatChangeStat } from "../data/enums";
 
 /**
  * Effect resolution (FR-073/FR-074, 2026-10-06 round 9).
@@ -60,6 +61,13 @@ export interface ResolvedPlacement {
   appliesStatus: { type: StatusEffectType; amount: number }[];
   /** Effective direct damage per hit. */
   baseDamage: number | null;
+  /**
+   * Effective heal per cast, after ally grants (2026-10-07). Previously `simulate()` read
+   * `creature.healAmount` directly, which meant a granted heal could not exist -- the resolver had
+   * no slot to put one in, so Aster's "Adjacent Water allies gain +25 Heal" was unmodellable by
+   * construction rather than by choice.
+   */
+  healAmount: number | null;
   /** Base cooldown before modifiers; charge rules shorten it dynamically during the battle. */
   cooldownSeconds: number | null;
   multicast: number;
@@ -242,6 +250,7 @@ export function resolveEffects(config: TeamConfiguration, corpus: Corpus): Resol
     creature,
     appliesStatus: (creature.appliesStatus ?? []).map((s) => ({ ...s })),
     baseDamage: creature.publishedCast?.damage ?? null,
+    healAmount: creature.healAmount ?? null,
     cooldownSeconds: creature.baseCooldownSeconds,
     multicast: creature.baseMulticast,
     chargeRules: [] as { status: StatusEffectType; seconds: number }[],
@@ -345,6 +354,7 @@ export function resolveEffects(config: TeamConfiguration, corpus: Corpus): Resol
       {
         damage: 0,
         multicast: 0,
+        heal: 0,
         extraOngoing: 0,
         status: new Map<StatusEffectType, number>(),
       },
@@ -362,9 +372,10 @@ export function resolveEffects(config: TeamConfiguration, corpus: Corpus): Resol
     if (!d) return;
     if (effect.statChange) {
       const amount = effect.statChange.amount * scale;
-      // "cooldownSpeed" is intentionally absent — see the double-counting note above.
-      if (effect.statChange.stat === "damage") d.damage += amount;
-      else if (effect.statChange.stat === "multicast") d.multicast += amount;
+      // `CooldownSpeed` is intentionally absent — see the double-counting note above.
+      if (effect.statChange.stat === StatChangeStat.Damage) d.damage += amount;
+      else if (effect.statChange.stat === StatChangeStat.Multicast) d.multicast += amount;
+      else if (effect.statChange.stat === StatChangeStat.Heal) d.heal += amount;
     }
     if (effect.statusGrant) {
       addStatus(targetKey, effect.statusGrant.type, effect.statusGrant.amount * scale);

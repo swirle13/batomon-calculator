@@ -209,6 +209,14 @@ export enum StatChangeStat {
   Damage = "damage",
   Multicast = "multicast",
   CooldownFlatSeconds = "cooldownFlatSeconds",
+  /**
+   * 2026-10-07. Added because its absence was a hard ceiling on ability derivation, not a
+   * nice-to-have: Heal is a published output stat with its own colour and card line, but it had no
+   * `EffectDescriptor` slot, so "Adjacent Water allies gain +25 Heal permanently" (Aster) had
+   * nowhere to be written however the text was matched. Lumijel, Emperooze and Dewlotl were blocked
+   * identically. Refusing to derive them was correct while this was missing; now they can be.
+   */
+  Heal = "heal",
 }
 
 /** What a `statMultiplier` tag scales. */

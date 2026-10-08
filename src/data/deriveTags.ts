@@ -209,9 +209,10 @@ const EFFECT_FOR_STAT: Partial<Record<ModifierStat, (amount: number) => EffectDe
   [ModifierStat.PoisonAmountAdd]: (amount) => ({ statusGrant: { type: StatusEffectType.Poison, amount } }),
   [ModifierStat.ShockAmountAdd]: (amount) => ({ statusGrant: { type: StatusEffectType.Shock, amount } }),
   [ModifierStat.ShieldAmountAdd]: (amount) => ({ statusGrant: { type: StatusEffectType.Shield, amount } }),
-  // Deliberately absent: `healAmountAdd` and `cooldownFlatAddSeconds`. Heal is a published output
-  // stat with no `EffectDescriptor` slot at all, which is why Aster, Lumijel, Emperooze and Dewlotl
-  // cannot be derived into this family however the text is matched.
+  [ModifierStat.HealAmountAdd]: (amount) => ({ statChange: { stat: StatChangeStat.Heal, amount } }),
+  // Still absent: `cooldownFlatAddSeconds`. `CooldownSpeedAdd` IS carried, but `effects.ts`
+  // deliberately does not resolve it -- `simulate()` already sums it in `resolveCooldownSpeedTotal`
+  // and resolving it twice would double-count.
 };
 
 // ---------------------------------------------------------------------------
