@@ -495,7 +495,7 @@ describe("round 9: total DPS and grid sizing", () => {
     const result = simulate(poisonTeam, corpus);
     render(<TotalDps config={poisonTeam} result={result} />);
     // The old counter rendered "1 of 4 abilities not yet modelled" here. It was wrong.
-    expect(screen.queryByText(/abilities not yet modelled/)).toBeNull();
+    expect(screen.queryByText(/Not in this figure/)).toBeNull();
   });
 
   it("reports a REAL gap, counted from what the engine resolves", () => {
@@ -503,13 +503,17 @@ describe("round 9: total DPS and grid sizing", () => {
       ...poisonTeam,
       placements: [
         { slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Miasmaw, level: 1 },
-        { slot: { row: GridRow.Back, col: 1 }, creatureId: Species.Shikitsune, level: 1 },
+        // "Knockout the enemy opposite of this" — there is no enemy board to pick an opposite
+        // from, so this is a genuine gap rather than a timing or input problem.
+        { slot: { row: GridRow.Back, col: 1 }, creatureId: Species.Reapra, level: 1 },
         { slot: { row: GridRow.Back, col: 2 }, creatureId: Species.Pebbler, level: 1 },
       ],
     };
     render(<TotalDps config={team} result={simulate(team, corpus)} />);
-    // Shikitsune's revive-and-buff needs a death model; Miasmaw and Pebbler are both computed.
-    expect(screen.getByText("1 of 3 abilities not yet modelled")).toBeTruthy();
+    // 2026-10-08: the NAME, not a count. "1 of 3 abilities not yet modelled" told the user a gap
+    // existed and hid which creature it was behind a tooltip.
+    expect(screen.getByText("Reapra")).toBeTruthy();
+    expect(screen.getByText(/the engine does not compute this ability yet/)).toBeTruthy();
   });
 
   it("separates abilities that fire OUTSIDE the battle from ones it cannot model", () => {
@@ -522,10 +526,33 @@ describe("round 9: total DPS and grid sizing", () => {
       ],
     };
     render(<TotalDps config={team} result={simulate(team, corpus)} />);
-    // All three bank through a button on the card, so "not modelled" is the wrong thing to say:
-    // the ability is fully representable, it just needs the user's input.
+    // All three are fully representable — the engine just has no occurrence of their trigger to
+    // count — so "not modelled" is the wrong thing to say about them.
+    expect(screen.queryByText(/does not compute/)).toBeNull();
+    expect(screen.getByText("Ninflora, Brawlmantis, Craghorn")).toBeTruthy();
+    expect(screen.getByText(/these abilities trigger between battles, not during one/)).toBeTruthy();
+  });
+
+  /**
+   * The user's actual complaint (2026-10-08): the only useful part of either caveat — WHICH
+   * creatures — was reachable only by hovering, which they discovered by accident. A tooltip is
+   * not where a line's content belongs, and the second line spent its visible text on an
+   * instruction ("bank them on the card") the user already knew.
+   */
+  it("names the creatures in the text rather than in a tooltip", () => {
+    const team: TeamConfiguration = {
+      ...poisonTeam,
+      placements: [
+        { slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Reapra, level: 1 },
+        { slot: { row: GridRow.Back, col: 1 }, creatureId: Species.Craghorn, level: 1 },
+      ],
+    };
+    const { container } = render(<TotalDps config={team} result={simulate(team, corpus)} />);
+    expect(screen.queryByText(/bank them on the card/)).toBeNull();
     expect(screen.queryByText(/abilities not yet modelled/)).toBeNull();
-    expect(screen.getByText("3 fire outside the battle — bank them on the card")).toBeTruthy();
+    for (const line of container.querySelectorAll("p")) {
+      expect(line.getAttribute("title")).toBeNull();
+    }
   });
 
   it("reads 'DPS average' until the scrubber is moved (WI-R11-003)", () => {

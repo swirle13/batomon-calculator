@@ -92,6 +92,24 @@ export interface ResolvedPlacement {
   };
   /** "Damage equal to N% of <status> on the enemy" — recomputed per cast, never persisted (T244). */
   targetStatusScaling: { status: StatusEffectType; multiplier: number }[];
+  /**
+   * Set when a teammate's battle-start knockout killed this creature and a Shikitsune-style revive
+   * brought it back: the key of the reviver, whose FIRST CAST is when this creature re-enters the
+   * battle (2026-10-08).
+   *
+   * `null` covers both "never died" and "died and stayed dead" — but the two are distinguishable,
+   * because a creature that stayed dead is not in the returned array at all.
+   */
+  revivedBy: PlacementKey | null;
+  /**
+   * Cooldown Speed granted by effects resolved HERE, as a fraction. Currently only the revive
+   * bonus.
+   *
+   * Deliberately NOT folded into a `cooldownSpeedModifier` tag: `simulate()` sums those itself in
+   * `resolveCooldownSpeedTotal`, so writing one here would be counted twice. A separate field is
+   * the same reason `applyEffect` refuses `StatChangeStat.CooldownSpeed`.
+   */
+  cooldownSpeedGrant: number;
   /** Abilities recorded on this creature that the engine cannot act on, for honest reporting. */
   unmodelledAbilities: string[];
 }
@@ -120,6 +138,8 @@ export const RESOLVED_TAG_KINDS = [
   // Round 4 orchestration (T220).
   "statFromUniqueTypes",
   "knockoutAlliesOnBattleStart",
+  // 2026-10-08: the revive half of the knockout family, resolved here and scheduled by `simulate()`.
+  "reviveKnockedOutAllies",
   // T213/T214: resolved by `simulate()`'s ally-cast hook, not by the static resolver.
   "cooldownSpeedOnAllyCast",
   "triggerOnAllyCast",
@@ -265,6 +285,8 @@ export function resolveEffects(config: TeamConfiguration, corpus: Corpus): Resol
     targetStatusScaling: [] as { status: StatusEffectType; multiplier: number }[],
     /** Filled by the knockout pass, applied with the other deltas so ordering stays uniform. */
     pendingKnockoutGrants: [] as { effect: EffectDescriptor; count: number }[],
+    revivedBy: null as PlacementKey | null,
+    cooldownSpeedGrant: 0,
     unmodelledAbilities: [] as string[],
   }));
 
@@ -316,9 +338,10 @@ export function resolveEffects(config: TeamConfiguration, corpus: Corpus): Resol
 
   // --- Pass 2a: self-inflicted battle-start knockouts (T220, Petrirex) ---
   //
-  // Runs FIRST and physically removes the victims from `base`, because a knocked-out ally must not
-  // then contribute to adjacency auras, unique-type counts or ally totals. Resolving it after those
-  // would let a creature Petrirex just removed still buff the team.
+  // Runs FIRST and physically removes the victims from `base` (unless pass 2a' revives them),
+  // because a knocked-out ally must not then contribute to adjacency auras, unique-type counts or
+  // ally totals. Resolving it after those would let a creature Petrirex just removed still buff
+  // the team.
   //
   // Petrirex's "+20 Shield permanently for each ally Knockout" is the SELF-inflicted case, which is
   // decidable before the battle starts because the victims are chosen by position. Deaths caused by
@@ -332,6 +355,59 @@ export function resolveEffects(config: TeamConfiguration, corpus: Corpus): Resol
       if (victims.length > 0) {
         source.pendingKnockoutGrants.push({ effect: tag.effectPerKnockout, count: victims.length });
       }
+    }
+  }
+  /*
+   * --- Pass 2a': the revive half (2026-10-08, Shikitsune) ---
+   *
+   * "Knocked-out allies are revived and gain +15% Cooldown Speed for this battle" is dead text on
+   * its own board — nothing in this engine kills anybody. It only means something next to the pass
+   * above, which is why the two resolve together: the victims a reviver can reach are exactly the
+   * ones a teammate's positional knockout produced.
+   *
+   * A reviver that is ITSELF among the victims does not revive anyone. Its ability fires on cast
+   * and a knocked-out creature never casts, so a Shikitsune standing adjacent to Petrirex is just
+   * another corpse. Filtering here rather than after the splice is what makes that true.
+   *
+   * The knockout still HAPPENED: `pendingKnockoutGrants` was filled above from `victims.length` and
+   * is untouched by any of this, so Petrirex keeps its Shield per kill. That double payout is the
+   * whole point of the pairing, and silently cancelling it would be the obvious way to get this
+   * wrong.
+   *
+   * Revived allies are NOT spliced out, so they resume buffing the team. That is right for an ally
+   * who is standing on the board again by the time the fight is under way, and it is the same
+   * simplification the engine already makes everywhere else: auras are resolved once, at battle
+   * start, not re-resolved as the board changes. The timing cost is carried instead by
+   * `revivedBy`, which `simulate()` turns into a delayed first cast.
+   */
+  const revivers =
+    knockedOut.size > 0
+      ? base.filter(
+          (m) =>
+            !knockedOut.has(m.key) &&
+            m.creature.abilityTags.some((t) => t.kind === AbilityTagKind.ReviveKnockedOutAllies),
+        )
+      : [];
+  if (revivers.length > 0) {
+    // Two revivers stack their bonuses but not their revivals — a creature is alive or it is not.
+    const bonus = revivers.reduce(
+      (sum, r) =>
+        sum +
+        r.creature.abilityTags.reduce(
+          (s, t) => (t.kind === AbilityTagKind.ReviveKnockedOutAllies ? s + t.cooldownSpeedBonus : s),
+          0,
+        ),
+      0,
+    );
+    // Timing is attributed to the first PLACED reviver. With two of them the earliest cast might
+    // be the other one, which would revive marginally sooner; two Shikitsune on one board is not
+    // worth a cross-module cast-time comparison to resolve.
+    const reviver = revivers[0]!;
+    for (const m of base) {
+      if (!knockedOut.has(m.key)) continue;
+      m.revivedBy = reviver.key;
+      m.cooldownSpeedGrant += bonus;
+      knockedOut.delete(m.key);
     }
   }
   if (knockedOut.size > 0) {

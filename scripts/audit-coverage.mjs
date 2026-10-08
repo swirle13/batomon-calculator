@@ -13,7 +13,7 @@
  */
 import { corpus } from "../src/data/corpus.ts";
 import { isResolvableTag } from "../src/engine/effects.ts";
-import { hasAbilityText } from "../src/data/display.ts";
+import { abilityNeedsModelling, hasAbilityText } from "../src/data/display.ts";
 
 // Shared with the engine and the card, so "does this creature have an ability?" is answered the
 // same way in the coverage denominator, the resolver and the UI.
@@ -60,4 +60,25 @@ if (inert.length) {
   console.log(`\nINERT TAGS (recorded but read by NOTHING): ${inert.map((c) => c.name).join(", ")}`);
 } else {
   console.log(`\nINERT TAGS: none — every recorded tag is read by the engine or the UI.`);
+}
+
+/*
+ * The GAP ITSELF, one line per creature, with the trigger and the published text (2026-10-08).
+ *
+ * The counts above say how big the gap is; they say nothing about what is in it, and the gap is
+ * the only part anyone acts on. `specs/.../ability-coverage-audit.md` groups these lines into
+ * families by hand — that grouping is judgement and belongs in prose — but the LIST it groups is
+ * generated here, so the audit can be re-checked against the corpus instead of being trusted.
+ *
+ * `abilityNeedsModelling` rather than `hasRealAbility` is the filter: the same denominator the UI
+ * puts next to the DPS figure, so the audit and the user see one gap, not two.
+ */
+const gap = battle
+  .filter((c) => abilityNeedsModelling(c))
+  .filter((c) => !c.abilityTags.some(isResolvableTag) && !c.abilityTags.some((t) => t.kind === "manualTrigger"))
+  .sort((a, b) => a.name.localeCompare(b.name));
+
+console.log(`\nTHE GAP (${gap.length}) — neither resolved nor banked by a button:`);
+for (const c of gap) {
+  console.log(`  ${c.name}\t[${c.abilityTrigger ?? "no trigger"}]\t${c.abilityText.replace(/\n/g, " ")}`);
 }

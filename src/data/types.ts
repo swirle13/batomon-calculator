@@ -319,6 +319,19 @@ export type AbilityTag =
       target: TargetSelector;
       effectPerKnockout: EffectDescriptor;
     }
+  /**
+   * 2026-10-08. "Knocked-out allies are revived and gain +N% Cooldown Speed for this battle" —
+   * Shikitsune. The other half of `KnockoutAlliesOnBattleStart`, and only meaningful beside it.
+   *
+   * The victims it can reach are exactly the ones that tag produces: allies knocked out by a
+   * teammate's own battle-start ability, where who dies is decided by POSITION and so is known
+   * before the first cast. A creature that dies to incoming damage is still outside this engine,
+   * because there is no HP model to kill it with.
+   *
+   * `cooldownSpeedBonus` is a FRACTION (`0.15` for +15%), matching every other cooldown-speed
+   * amount in the vocabulary.
+   */
+  | { kind: AbilityTagKind.ReviveKnockedOutAllies; cooldownSpeedBonus: number }
   | {
       kind: AbilityTagKind.StatFromStat;
       sourceSelector: TargetSelector;

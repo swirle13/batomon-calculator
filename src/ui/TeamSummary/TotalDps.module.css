@@ -59,6 +59,11 @@
    centred row reads as an afterthought. */
 .scrubLabel input { width: 24rem; max-width: 60vw; }
 
+/*
+ * The coverage caveats (2026-10-08). One block with a heading rather than two free-floating
+ * sentences: the lines beneath it only mean anything once you know they are a list of what the
+ * figure above LEAVES OUT, and the previous wording had to carry that framing inside each line.
+ */
 .coverage {
   text-align: center;
   font-size: var(--font-xs);
@@ -67,6 +72,26 @@
   padding-top: var(--space-xs);
   margin: var(--space-sm) 0 0;
   line-height: 1.4;
+}
+
+.coverageHeading {
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  font-size: var(--font-2xs);
+  color: var(--text-muted);
+}
+
+.coverageLine {
+  margin: var(--space-2xs) 0 0;
+  color: var(--text-secondary);
+}
+
+/* The names are the content of the line; the explanation after them is the qualifier. */
+.coverageNames {
+  color: var(--text-warn);
+  font-weight: 600;
 }
 
 /*

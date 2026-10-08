@@ -1,4 +1,4 @@
-import type { PerCastOutput, Corpus, CreatureRecord, GridSlot, StatModifier, StatusEffectInstance, TeamConfiguration, TimelineEvent } from "../data/types";
+import type { PerCastOutput, Corpus, CreatureRecord, GridSlot, PlacementKey, StatModifier, StatusEffectInstance, TeamConfiguration, TimelineEvent } from "../data/types";
 import { applyModifiers } from "./modifiers";
 import { effectiveCooldown } from "./cooldown";
 import { applyStatusTick, applyShockProc } from "./status";
@@ -270,7 +270,7 @@ export function simulate(
     sourceSlot: GridSlot;
     creature: CreatureRecord;
     modifiers: Cast["modifiers"];
-    key: string;
+    key: PlacementKey;
     chargeRules: { status: StatusEffectType; seconds: number }[];
   }
   const schedule: Scheduled[] = [];
@@ -299,6 +299,10 @@ export function simulate(
     };
     const cooldownSpeedTotal =
       resolveCooldownSpeedTotal(slot, creature, teamMembers, config) +
+      // Cooldown Speed the RESOLVER granted (Shikitsune's revive bonus). It is kept out of
+      // `resolveCooldownSpeedTotal` because that function reads `cooldownSpeedModifier` tags and
+      // this is not one — it is a property of having been revived, not an aura anyone emits.
+      member.resolved.cooldownSpeedGrant +
       sumModifier(ModifierStat.CooldownSpeedAdd, teamModifiers, placementModifiers);
     const cooldownFlatAdd = sumModifier(ModifierStat.CooldownFlatAddSeconds, teamModifiers, placementModifiers);
 
@@ -364,6 +368,30 @@ export function simulate(
       key: placementKey(creature.id, slot),
       chargeRules: member.resolved.chargeRules,
     });
+  }
+
+  /*
+   * --- Revived allies start their clock at the reviver's first cast (2026-10-08) ---
+   *
+   * Shikitsune's ability fires ON CAST, so a teammate Petrirex knocked out at battle start is a
+   * corpse until Shikitsune's first cast lands. Scheduling it from t=0 like everyone else would
+   * credit a dead creature with the opening seconds of the fight — on a 3s reviver that is a free
+   * cast for every revived ally, which is more output than the +15% Cooldown Speed the combo is
+   * actually played for.
+   *
+   * Done here rather than in `resolveEffects` because the reviver's first cast is a COOLDOWN, and
+   * cooldowns are this function's to compute — the resolver deliberately does not know them.
+   */
+  for (const entry of schedule) {
+    const revivedBy = resolvedByKey.get(entry.key)?.revivedBy;
+    if (!revivedBy) continue;
+    const reviveAt = schedule.find((s) => s.key === revivedBy)?.nextAt;
+    // A reviver with no cast cycle never revives anybody, so the ally stays down. `-1` marks it
+    // for removal rather than leaving it scheduled at t=0, which is the state this guards against.
+    entry.nextAt = reviveAt === undefined ? -1 : roundTime(reviveAt + entry.cooldown);
+  }
+  for (let i = schedule.length - 1; i >= 0; i--) {
+    if (schedule[i]!.nextAt < 0) schedule.splice(i, 1);
   }
 
   // --- Phase B: walk casts in order, interleaving Burn/Poison ticks, tracking Shock layers ---

@@ -148,34 +148,44 @@ export function TotalDps({ config, result }: TotalDpsProps) {
 
       {/*
         FR-075: a DPS figure reads as authoritative, so a real coverage gap stays beside it.
-        But the counter now measures abilities that NEED modelling. It previously used every placed
-        creature as the denominator, so a team of Venopuff, Magmite and Dribblet read "0 of 3
-        modelled" — implying the figure was untrustworthy — when none of the three has an ability to
-        model and the DPS was entirely correct. With nothing outstanding it says nothing at all,
-        because a counter reading 0/0 is noise.
+
+        2026-10-08, user-reported: both lines used to be COUNTS ("1 of 4 abilities not yet
+        modelled", "2 fire outside the battle — bank them on the card") with the names of the
+        creatures only in a `title` tooltip. A count tells you a gap exists and nothing about
+        whether it matters to you; the names are the whole content, and the user found them by
+        accident. They are in the text now, and the tooltips are gone rather than demoted — there
+        was nothing left in them worth a second discovery.
+
+        The second line also used to end "bank them on the card", which the user correctly called
+        out as an instruction they did not need. What they do need is WHY these abilities are
+        absent from the figure, which is the clause that replaced it.
+
+        Both lines say nothing at all when there is nothing outstanding: a counter reading 0/0, or
+        a caveat naming nobody, is noise next to a number.
       */}
-      {unmodelled > 0 && (
-        <p
-          className={styles.coverage}
-          title={`${unmodelled} of the ${coverage.needsModelling.length} placed Batomon with a battle ability have one this engine does not yet compute: ${coverage.unmodelled.join(", ")}. Creatures with no ability, evolution-only text, or text that just restates their stats are not counted — there is nothing to model.`}
-        >
-          {unmodelled} of {coverage.needsModelling.length} abilities not yet modelled
-        </p>
-      )}
-      {/*
-        A SEPARATE line, because this is a different fact and the old counter told the wrong story
-        about it. These abilities fire outside the battle being simulated — winning a round, buying
-        a monster, using an item — so the engine cannot fire them, but the card offers a button that
-        banks each occurrence. Calling them "not modelled" both overstated the gap and hid the
-        feature that closes it.
-      */}
-      {manuallyBanked > 0 && (
-        <p
-          className={styles.coverage}
-          title={`${coverage.manuallyBanked.join(", ")}: the trigger happens outside the battle this engine simulates, so there is a button on the creature's card to bank each occurrence.`}
-        >
-          {manuallyBanked} fire outside the battle — bank them on the card
-        </p>
+      {(unmodelled > 0 || manuallyBanked > 0) && (
+        <div className={styles.coverage}>
+          <p className={styles.coverageHeading}>Not in this figure</p>
+          {unmodelled > 0 && (
+            <p className={styles.coverageLine}>
+              <span className={styles.coverageNames}>{coverage.unmodelled.join(", ")}</span> — the engine does not
+              compute {unmodelled === 1 ? "this ability" : "these abilities"} yet
+            </p>
+          )}
+          {/*
+            A SEPARATE line, because this is a different fact and the old counter told the wrong
+            story about it: the ability is fully representable, it just fires on something outside
+            the battle — winning a round, buying a monster, using an item — so the engine has no
+            occurrence to count. Calling them "not modelled" overstated the gap.
+          */}
+          {manuallyBanked > 0 && (
+            <p className={styles.coverageLine}>
+              <span className={styles.coverageNames}>{coverage.manuallyBanked.join(", ")}</span> —{" "}
+              {manuallyBanked === 1 ? "this ability triggers" : "these abilities trigger"} between battles, not
+              during one
+            </p>
+          )}
+        </div>
       )}
     </section>
   );

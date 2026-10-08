@@ -384,5 +384,6 @@ export enum AbilityTagKind {
   GainOnAllyStatus = "gainOnAllyStatus",
   StatFromUniqueTypes = "statFromUniqueTypes",
   KnockoutAlliesOnBattleStart = "knockoutAlliesOnBattleStart",
+  ReviveKnockedOutAllies = "reviveKnockedOutAllies",
   StatFromStat = "statFromStat",
 }
