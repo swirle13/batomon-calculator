@@ -202,7 +202,7 @@
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	justify-content: center;
+	justify-content: flex-start;
 	text-align: center;
 }
 .abilityTrigger {
@@ -228,7 +228,7 @@
 	color: var(--text-muted);
 	display: flex;
 	flex-wrap: wrap;
-	gap: var(--space-2xs) var(--space-md);
+	gap: var(--space-xs) var(--space-md);
 	/* A wrapping flex container is multi-line even when it holds ONE line, so `align-content`
 	   defaults to `stretch` and the band's `min-height` is handed to whatever is in it. That made
 	   the level/shiny strip 31.4px tall on a card with nothing else in this band and 28.8px on a
