@@ -7,6 +7,9 @@ import {
   TIME_WEIGHT_HALF_LIFE_SECONDS,
 } from "../../engine/optimize";
 import { getCreatureById } from "../../data/corpus";
+import { simulate, windowAverageDps } from "../../engine/simulate";
+import { slotKey } from "../../engine/grid";
+import { formatRate } from "../../data/format";
 import { Button, Disclosure } from "../primitives";
 import { GridRow } from "../../data/enums";
 
@@ -25,15 +28,24 @@ const rowLabel = (row: GridRow) => (row === GridRow.Back ? "top" : "bottom");
  * could act on.
  */
 export function PlacementAdvisor() {
-  const { config, movePlacement } = useTeamConfig();
+  const { config, replaceConfig } = useTeamConfig();
 
-  const { suggestion, coverage } = useMemo(
-    () => ({
-      suggestion: suggestPlacement(config, corpus),
+  const { suggestion, coverage, currentDps, suggestedDps, moves } = useMemo(() => {
+    const suggestion = suggestPlacement(config, corpus);
+    // Only the creatures that actually change slot. Listing the ones already in place made a
+    // six-line list of which two lines were instructions, and the user read the no-op lines as the
+    // advisor contradicting itself.
+    const currentBySlot = new Map(config.placements.map((p) => [slotKey(p.slot), p.creatureId]));
+    return {
+      suggestion,
       coverage: analyzePositionalCoverage(config, corpus),
-    }),
-    [config],
-  );
+      currentDps: windowAverageDps(simulate(config, corpus)),
+      suggestedDps: suggestion.placements
+        ? windowAverageDps(simulate({ ...config, placements: suggestion.placements }, corpus))
+        : null,
+      moves: (suggestion.placements ?? []).filter((p) => currentBySlot.get(slotKey(p.slot)) !== p.creatureId),
+    };
+  }, [config]);
 
   if (config.placements.length < 2) return null;
 
@@ -63,7 +75,7 @@ export function PlacementAdvisor() {
   return (
     <Disclosure
       label="Placement suggestion"
-      hint={`(+${gainPercent.toFixed(1)}% weighted output available)`}
+      hint={`(${formatRate(currentDps)} → ${formatRate(suggestedDps ?? currentDps)} DPS average)`}
     >
       <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", lineHeight: 1.45 }}>
         Searched <strong>{suggestion.evaluated}</strong> arrangements of your placed Batomon, scoring
@@ -72,33 +84,42 @@ export function PlacementAdvisor() {
         already dead.
       </p>
 
-      {(
-        <div style={{ fontSize: "0.85rem" }}>
-          <p>
-            A different arrangement scores <strong>{gainPercent.toFixed(1)}% higher</strong>:
-          </p>
-          <ul>
-            {suggestion.placements.map((p) => (
-              <li key={`${p.creatureId}-${p.slot.row}${p.slot.col}`}>
-                {getCreatureById(p.creatureId)?.name ?? p.creatureId} → {rowLabel(p.slot.row)} row,
-                slot {p.slot.col + 1}
-              </li>
-            ))}
-          </ul>
-          <Button
-            variant="primary"
-            onClick={() => {
-              // Apply by moving each creature to its suggested slot, in order.
-              for (const target of suggestion.placements ?? []) {
-                const from = config.placements.find((p) => p.creatureId === target.creatureId)?.slot;
-                if (from) movePlacement(from, target.slot);
-              }
-            }}
-          >
-            Apply this arrangement
-          </Button>
-        </div>
-      )}
+      <div style={{ fontSize: "0.85rem" }}>
+        <p>
+          Moving {moves.length === 1 ? "one Batomon" : `these ${moves.length} Batomon`} takes your{" "}
+          DPS average from <strong>{formatRate(currentDps)}</strong> to{" "}
+          <strong>{formatRate(suggestedDps ?? currentDps)}</strong> ({gainPercent.toFixed(1)}% more
+          weighted output):
+        </p>
+        <ul>
+          {moves.map((p) => (
+            <li key={`${p.creatureId}-${p.slot.row}${p.slot.col}`}>
+              {getCreatureById(p.creatureId)?.name ?? p.creatureId} → {rowLabel(p.slot.row)} row,
+              slot {p.slot.col + 1}
+            </li>
+          ))}
+        </ul>
+        <Button
+          variant="primary"
+          onClick={() => {
+            /*
+             * Applied as ONE atomic replacement of the whole board.
+             *
+             * 2026-10-08, user-reported: this used to walk the suggestion calling
+             * `movePlacement(from, to)` per creature, reading `from` out of the pre-click `config`
+             * every time. `movePlacement` SWAPS when the destination is occupied, and every
+             * destination here is occupied, so each call undid part of the previous one while the
+             * `from` slots it was reading went stale. A six-creature cycle came out as a single
+             * pairwise swap. The board then differed from the suggestion that was just applied, so
+             * the advisor immediately proposed another rearrangement — the "it keeps flip-flopping
+             * between two suggestions" loop. The search itself was fine; only this was wrong.
+             */
+            if (suggestion.placements) replaceConfig({ ...config, placements: suggestion.placements });
+          }}
+        >
+          Apply this arrangement
+        </Button>
+      </div>
 
       {/* The blind-spot disclosure. This is mandatory, not a nicety (FR-069). */}
       <p

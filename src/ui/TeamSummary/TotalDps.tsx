@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { SimulationResult, TeamConfiguration } from "../../data/types";
 import { corpus } from "../../data/corpus";
 import { analyzePositionalCoverage } from "../../engine/optimize";
+import { windowAverageDps } from "../../engine/simulate";
 import { formatRate } from "../../data/format";
 import { MAX_RECORDED_DAY, enemyHpForDay, timeToKill } from "../../data/enemyHealth";
 import { Range, Select } from "../primitives";
@@ -37,9 +38,7 @@ export function TotalDps({ config, result }: TotalDpsProps) {
   const [scrubIndex, setScrubIndex] = useState(0);
   const [day, setDay] = useState(1);
 
-  const directTotal = Object.values(result.perCreatureDps).reduce((a, b) => a + b, 0);
-  const facilitatedTotal = Object.values(result.perCreatureFacilitatedDps).reduce((a, b) => a + b, 0);
-  const windowAverage = directTotal + facilitatedTotal;
+  const windowAverage = windowAverageDps(result);
 
   // The scrubbed value comes from `dpsRateSeries` itself, so this figure and the DPS-over-time
   // chart agree by construction rather than via a second computation.

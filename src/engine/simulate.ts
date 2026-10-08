@@ -195,6 +195,20 @@ interface StatusPool {
   sourceSlot: GridSlot;
 }
 
+/**
+ * The headline "DPS average" figure: direct damage plus facilitated (status-tick and Shock-proc)
+ * damage, which together partition all damage with no overlap and no remainder.
+ *
+ * Shared so the headline readout and the placement advisor's before/after figures cannot disagree
+ * — the advisor quoting a differently-derived DPS than the number above it would be worse than
+ * quoting none.
+ */
+export function windowAverageDps(result: { perCreatureDps: Record<string, number>; perCreatureFacilitatedDps: Record<string, number> }): number {
+  const direct = Object.values(result.perCreatureDps).reduce((a, b) => a + b, 0);
+  const facilitated = Object.values(result.perCreatureFacilitatedDps).reduce((a, b) => a + b, 0);
+  return direct + facilitated;
+}
+
 export function simulate(
   config: TeamConfiguration,
   corpus: Corpus,
