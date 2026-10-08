@@ -1012,8 +1012,14 @@ the round changed three user-visible behaviours while recording no requirement t
 against — every prior round recorded FRs and this one had not.
 
 - **FR-111**: Each closed vocabulary describing a creature — rarity, creature type, damage channel,
-  status effect, ability trigger — MUST be declared **exactly once**, as a registry carrying every
-  member's rendered label, canonical ordering and colour together. No list of a vocabulary's members
+  status effect, ability trigger — MUST be declared **exactly once**, and a bare string MUST NOT be
+  assignable to it. Per-member data (rendered label, canonical ordering, colour) MUST live in one
+  companion structure keyed by that vocabulary, so a member cannot be added to one and missed in the
+  other.
+  **Amended 2026-10-07**: the nominality clause is the operative half and was not in the first
+  draft. A closed literal union satisfies "declared once" but still accepts a bare string, which is
+  how two spellings of one tier coexisted; string enums satisfy both (research.md R8). The
+  requirement is on the guarantee, not on the construct. No list of a vocabulary's members
   may be hand-written anywhere else in the codebase. Adding a member MUST be one edit, and omitting its
   label, order or colour MUST be a compile error.
   Rationale: this repo has shipped two user-visible defects from hand-written restatements — three

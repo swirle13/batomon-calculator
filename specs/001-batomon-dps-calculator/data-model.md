@@ -1128,9 +1128,17 @@ it today.
 ## Vocabulary registries (2026-10-07, round 7 WI-001/003/004/005/006)
 
 The five closed vocabularies describing a creature — `Rarity`, `CreatureType`, `DamageChannel`,
-`StatusEffectType` and `AbilityTrigger` — move from bare literal unions to **one const-object registry
-each**, with the union derived from the registry's keys. Reasoning and the rejection of TypeScript's
-`enum` are in research.md R1/R2; this records the resulting schema.
+`StatusEffectType` and `AbilityTrigger` — are **string enums** in `src/data/enums.ts`, with a
+companion registry in `vocabularies.ts` holding each member's label, ordering and colour.
+
+> **Amended 2026-10-07.** This section first described a const-object registry *instead of* enums,
+> on the reasoning in research.md R2. That conclusion was overturned — see **research.md R8** for why
+> R2's argument was wrong and what `erasableSyntaxOnly` had to do with it. The registries survive;
+> what changed is that the enum, not an object key, is now a member's identity.
+>
+> The property that matters: the enums are **nominal**. `takesRarity("SuperRare")` is a compile error
+> rather than a pass, which is what three rounds of literal unions could not give and why two
+> spellings of one tier were able to coexist long enough to ship a bug (research.md Q3).
 
 The user's asks name four of the five; `StatusEffectType` joins them so that the one remaining closed
 vocabulary in the file is not left as a bare union beside four registered ones (research.md R3a).
@@ -1282,15 +1290,25 @@ direction, so the field encodes nothing that `baseDamage` does not. The recommen
 illegal state unrepresentable:
 
 ```ts
-// PROPOSED, DEFERRED: two nullable fields that must agree -> one optional field that cannot disagree.
+// IMPLEMENTED 2026-10-07: two nullable fields that must agree -> one optional field that cannot disagree.
 publishedCast?: { damage: number; channel: DamageChannel };
 ```
 
-Deferred because it reaches `ModifiableBase`, `PerCastOutput`, `perCreatureEffectiveStats`,
-`BatomonCard`'s output band and ~15 engine fixtures — a hot-path refactor landing beside this round's
-most behavioural change. **A test pins the 596/596 correlation in the meantime**, so the two fields
-cannot begin to disagree while the deferral stands; if one ever does, the suite fails and the
-restructure has evidence behind it.
+**DONE 2026-10-07.** 356 records collapsed to one optional field, 240 had both lines removed, zero
+orphans — 356 + 240 = 596. The correlation test written while this was deferred is what made the
+migration safe to automate, and it has been retired: an assertion that two fields agree cannot be
+written against a shape with one field. The illegal state is now unrepresentable rather than
+unobserved.
+
+The strongest argument for doing it surfaced during the work: `ShinyStatLine` publishes a damage
+number and **no channel**, so under the old pair a shiny could set one without the other — precisely
+the state the pair was meant to exclude, held together only because the UI read `damage` and ignored
+`damageType`. The invariant was true *by luck* on that path.
+
+Scope line: `ResolvedPlacement` and `PerCastOutput` keep their damage/channel pair deliberately.
+Those are COMPUTED values where damage legitimately exists without a published channel, because a
+modifier or ability grant can create a cast (T232). **Stored data must not have illegal states;
+derived values are built in one place that already enforces the invariant.**
 
 ### `AbilityTrigger` (WI-001)
 

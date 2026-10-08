@@ -604,7 +604,10 @@ to fix the cause, and WI-006 and WI-002 fall out of it almost for free.
 
 ### Decisions
 
-1. **The registry is one shared helper, not five bespoke objects.** `defineVocabulary` +
+1. **SUPERSEDED — enums, not a const-object registry.** This decision and the Complexity Tracking
+   note below described `defineVocabulary`; the codebase uses string enums in `src/data/enums.ts`
+   with registries in `vocabularies.ts` keyed by enum member. See research.md R8 for why R2's
+   argument against enums was wrong. Original wording: `defineVocabulary` +
    `VocabularyKey<T>` in `src/data/vocabulary.ts`, used by all five. Five hand-rolled shapes would
    be the same duplication this round exists to remove, one level up.
 2. **Stored keys never change, for any of the five vocabularies.** This is the decision that makes
@@ -644,7 +647,9 @@ to fix the cause, and WI-006 and WI-002 fall out of it almost for free.
    `scripts/tag-shiny-abilities.mjs` is the precedent for that and carries the staleness flaw
    (correct only as of the last manual run). Runtime derivation cannot drift from its text; a
    per-species snapshot test recovers the reviewability that codegen's git diff would have given.
-9. **WI-004(b) is deferred, not dropped, and pinned while deferred.** The `publishedCast` value object
+9. **SUPERSEDED — WI-004(b) is DONE** (2026-10-07). It was deferred and pinned by an invariant test;
+   the user then chose to land it, and that test is what made the 596-record migration safe to
+   automate. Original wording: The `publishedCast` value object
    reaches `ModifiableBase`, `PerCastOutput`, `perCreatureEffectiveStats` and ~15 engine fixtures.
    Attempting it alongside WI-002 would be the largest-blast-radius change of the round landing beside
    the most behavioural one. The invariant test makes the deferral safe rather than merely stated.
@@ -678,10 +683,14 @@ to fix the cause, and WI-006 and WI-002 fall out of it almost for free.
 | III. Test-first for the engine | **Partially applicable, and honoured where it is.** No mechanic changes. WI-002 does change what the engine receives, so Ninflora's derived tag gets a failing test first; the `damageType` invariant (R3) is likewise a test written before the deferral it protects. |
 | IV. Cited, versioned corpus | **Pass, and improved.** No stored value changes, so every `sourceRefs`/`patch` stays accurate and the cited batodex fixture stays byte-identical. WI-006 *restores* the published "Super Rare" spelling this corpus had compressed (R5). |
 | V. Zero-backend | **Pass.** |
-| VI. Simplicity & incremental delivery | **The binding constraint, twice.** It is why WI-002 derives two families rather than all seventeen (deriving 424 records at once would be a generic rule engine built ahead of the evidence, which this principle names explicitly) and why WI-004(b) is deferred. The rule table itself clears the "at least two concrete cases" bar with five target shapes inside the first family alone (R4). Each deferral is recorded as outstanding with a measured figure rather than left implied. |
+| VI. Simplicity & incremental delivery | **The binding constraint, twice.** It is why WI-002 derives two families rather than all seventeen (deriving 424 records at once would be a generic rule engine built ahead of the evidence, which this principle names explicitly) and why WI-004(b) was *initially* deferred (it has since landed). The rule table itself clears the "at least two concrete cases" bar with five target shapes inside the first family alone (R4). Each deferral is recorded as outstanding with a measured figure rather than left implied. |
 | VII. Shared design language & DRY UI | **Pass.** WI-007's colours come from the existing `STAT_COLORS` layer rather than a second palette; the highlighter is one shared component, so the card, the panel and any future surface cannot disagree. |
 
 ### Complexity Tracking
+
+**Amended 2026-10-07:** `defineVocabulary` no longer exists — see decision 1. What remains is 18
+string enums plus their registries, which is one construct repeated rather than an abstraction, so
+this deviation no longer applies. Original wording follows.
 
 One deviation worth naming: `defineVocabulary` is an abstraction introduced for **five** concrete
 call sites that need it, which clears Principle VI's "at least two" bar. It is deliberately the

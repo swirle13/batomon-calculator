@@ -2536,7 +2536,15 @@ evidence from this repo's own history:
 `Record<Rarity, X>` does give compiler-checked exhaustiveness and must be preserved — the problem is
 that there are three such records instead of one.
 
-### R2. DECISION: a const-object vocabulary registry, NOT TypeScript's `enum`
+### R2. SUPERSEDED by R8 — read R8 first
+
+> **This section's conclusion was overturned by the user on 2026-10-07 and the code now does the
+> opposite of what it recommends.** It argued for a const-object registry *instead of* TypeScript's
+> `enum`; the codebase uses string enums. The reasoning is kept verbatim below because one of its
+> four arguments was simply wrong and it is more useful to see which, than to see a tidied record.
+> See **R8** for what was wrong and what replaced it.
+
+### R2 (superseded). A const-object vocabulary registry, NOT TypeScript's `enum`
 
 The construct adopted for all four vocabularies the asks name — and for `StatusEffectType`, which R3a
 brings in so the file is not left with one bare union beside four registered ones: **one frozen const
@@ -2631,7 +2639,9 @@ read as a creature property while being typed as a hit property.
   This is "make illegal states unrepresentable" — the pair `(baseDamage, damageType)` has four
   combinations of which the corpus uses two and the code trusts without checking.
 
-**(b) is proposed but DEFERRED, with the reason recorded** rather than attempted this round. It
+**(b) was deferred and is now DONE** (2026-10-07; see the implementation note at the end of this
+section). The deferral reasoning is kept because the invariant test it motivated is what later made
+the migration safe to automate. Original wording follows. It
 reaches `ModifiableBase` (`modifiers.ts`), `PerCastOutput`, `SimulationResult.perCreatureEffectiveStats`,
 `BatomonCard`'s output band and roughly fifteen engine test fixtures that spell `baseDamage`/
 `damageType` literally — a wide refactor of the engine's hot path, in a round that already carries
@@ -2921,3 +2931,57 @@ and it is testable without rendering.
    so it is inside WI-002's 424 and WI-007's 543, and T294 will render it on a card as though it were an
    ability. Same class as R7.1's `purpleegg` placeholders and likewise not caught by
    `scrubber.test.tsx`'s placeholder-prose guard. Found in validation pass 2; recorded, not fixed.
+
+### R8. The enum decision, and what R2 got wrong
+
+The user asked three times for the vocabularies to be enums. R2 argued against it on four grounds;
+on the fourth attempt the premise was actually checked, and the picture changed.
+
+**What R2 got wrong.** Its load-bearing argument was that `src/data/__tests__/fixtures/batodex-monsters.json`
+"cannot express an enum member at all", so a construct that cannot represent cited source data is
+disqualified. That is a bad argument and the user named it: a test fixture is parsed at a boundary,
+and letting it dictate the domain model is backwards. A string enum's initialiser IS its serialized
+value, so the fixture round-trips unchanged — the objection did not even apply.
+
+**What was actually blocking it, and nobody had looked.** `tsconfig.app.json` set
+`"erasableSyntaxOnly": true`, which makes `enum` a hard compile error (TS1294). It arrived as a Vite
+`react-ts` scaffold default in the **initial commit** — nobody on this project chose it — and it sat
+inside the template's `/* Linting */` block looking like a decision. It bans `enum`, `namespace`,
+parameter properties and TS import aliases, because those need code generation rather than type
+erasure.
+
+**Measured before removing it.** The flag protects runtimes that only strip types (Node's native TS
+support, Bun, Deno). Nothing in this repo does that: `tsc -b`, `vitest`, `vite build` and `tsx` all
+handle enums, verified by writing one and running each. So it was guarding a capability with zero
+consumers while shaping the data model.
+
+**Decision: removed, and the guardrail half kept deliberately.** Every enum is a STRING enum with an
+explicit initialiser. The real `enum` footguns are numeric enums (reverse mappings, arbitrary numbers
+assignable) and `const enum` (inlined, bundler-hostile); neither is used. Most "enums are bad in
+TypeScript" folklore is about those, not about string enums.
+
+**What enums give that the R2 registry could not.** Nominality. `takesRarity("SuperRare")` is a
+compile error rather than a pass. Three rounds of literal unions could not provide that, and it is
+why two spellings of one tier were able to coexist long enough to ship a bug (Q3). The registries did
+not go away — they moved to `vocabularies.ts`, keyed by enum member, holding label/order/colour.
+Identity is the enum; everything else about a member is the registry.
+
+**Scope.** 18 enums covering ~1,115 literals across 47 files: the five vocabularies, the two union
+discriminant sets, `ModifierStat`, `EventLabel`, `TimelineEventKind`, `StatChangeStat`,
+`MultiplierScope`, `StatColorKey`, `ConfirmableField`, `TypeKind`, `AffectedSpeciesKind`, and the
+generated id enums (`Species`, `TrainerId`, `TrinketId`, `ItemId`).
+
+### R9. The string-keyed hazards, which the enums did NOT fix
+
+Worth separating, because the user's actual requirement was "no logic keyed upon string matching"
+and swapping unions for enums addresses none of these:
+
+| Hazard | Status |
+|---|---|
+| `unconfirmedFields: string[]` with `isUnconfirmed(creature, "baseDamage")` | **Fixed** (`ConfirmableField`). This went live: the `publishedCast` rename left that string pointing at a removed field, so the "unknown" badge would have stopped appearing with no compile error and no failing test. |
+| `Record<string, number>` keyed by an inline `${id}@${slotKey}` at twelve sites | **Fixed** (branded `PlacementKey`, one builder). `TeamSummary` built it BY HAND as `${id}@${row}${col}`, matching only because `slotKey` happens to have that format. |
+| Ids as bare strings; `SHINY_STATS`/`CREATURE_REGIONS` keyed by them | **Fixed** (generated id enums, template-literal `ShinyKey`). |
+| `<select>` values cast with `as Rarity`/`as RegionId` | **Fixed** — parsed at the boundary via `parseRarity`/`parseRegionId`/`parseTrainerId`. |
+| `RegionId` was an OPEN union (`\| (string & {})`) | **Fixed** — closed, so a typo'd region fails instead of matching no creature. |
+| `Object.entries` erasing the key type in `TeamSummary`'s status rows | **Fixed** — iterates the vocabulary, which also makes display order the declared order. |
+| `toLowerCase()` matching in `deriveTags.ts` and corpus search | **Open.** Inherent to parsing prose; the parsers emit typed values, but their internal word lookup is still case-insensitive string matching. |

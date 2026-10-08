@@ -845,6 +845,11 @@ research.md R1-R7.
 
 ### Scenario 49 — one declaration per vocabulary (WI-001, WI-003, WI-005)
 
+> **Amended 2026-10-07.** The vocabularies are STRING ENUMS in `src/data/enums.ts`, not the
+> const-object registry this scenario first described (research.md R8). The checks below still hold;
+> `npm test -- vocabulary` additionally asserts that no data file writes a bare vocabulary literal
+> and that ability text survived the migration byte-identical.
+
 ```bash
 npm test -- vocabulary
 ```
@@ -1034,3 +1039,43 @@ Protect/HP/Trigger/Ongoing; **173** carry only mechanic nouns (`level` 36, `Evol
 
 If the final figure is not 543 of 543, the report says so plainly rather than implying "all mon's
 ability text" was met.
+
+### Scenario 60 — a bare string cannot reach a vocabulary (R8)
+
+The property the whole representation change exists for. Add this to any file and typecheck:
+
+```ts
+import { Rarity } from "./src/data/enums";
+function takesRarity(r: Rarity) { return r; }
+takesRarity("SuperRare"); // expected: error TS2345
+```
+
+Expected: `Argument of type '"SuperRare"' is not assignable to parameter of type 'Rarity'`. A literal
+union accepted this; that is why two spellings of one tier coexisted long enough to ship the round-6
+chip bug. Delete the probe afterwards.
+
+```bash
+npm test -- vocabulary
+```
+
+Expected: the data files contain no bare vocabulary literal (`rarity: "`, `types: ["`, `kind: "` …),
+and `corpus.creatures.find(c => c.id === Species.Brawlmantis)!.abilityText` is still exactly
+`"This and Common allies gain +10 Damage permanently."` — a blind find-and-replace of `"Common"`
+during the migration would have mangled that sentence and 148 others.
+
+### Scenario 61 — ids and result keys are not strings either (R9)
+
+```bash
+npx tsc -b
+```
+
+Expected: `creatureId: "ninflorra"` is a compile error, not a silent empty slot;
+`SHINY_STATS["ninflorra|1"]` likewise. And `perCreatureDps` is keyed by a branded `PlacementKey` that
+only `engine/grid.ts`'s `placementKey()` can produce, so the twelve inline constructions — one of
+which (`TeamSummary`) built the key by hand and matched only by coincidence — cannot come back.
+
+```bash
+rg -n '@\$\{slotKey' src/ --glob '!**/grid.ts'
+```
+
+Expected: no matches outside the single definition and explanatory comments.

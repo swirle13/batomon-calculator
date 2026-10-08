@@ -159,6 +159,10 @@ channel, which is what these two functions take, and a *creature's* published ca
 `CreatureRecord.damageType` and is redundant with `baseDamage` (596/596 correlated). Only the first is
 an engine concept, so only the first keeps a vocabulary here.
 
-`CreatureRecord.damageType`'s proposed replacement — a single optional `publishedCast` value object —
-is **deferred**, so no engine entry point changes shape this round. See data-model.md for the deferral
+`CreatureRecord.damageType`'s replacement — a single optional `publishedCast` value object — **has
+since landed** (2026-10-07). No engine *entry point* changed shape even so: `applyShieldReduction`,
+`applyShockProc` and `isDirectDamage` keep their signatures, because `publishedCast` is a property of
+a stored record rather than a parameter of a hit. What changed is that `ResolvedPlacement` gained a
+`healAmount` field, so a GRANTED heal can exist at all — previously `simulate()` read
+`creature.healAmount` straight off the record and the resolver had nowhere to put one. See data-model.md for the deferral
 and the invariant test that guards it.
