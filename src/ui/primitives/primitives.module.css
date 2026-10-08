@@ -73,16 +73,28 @@
 
 /* ---------- StatBadge: the ONE colour-coded stat pill ---------- */
 /*
- * FIXED WIDTH, not `min-width` (2026-10-08). See `--stat-chip-width` for the sizing and why the
- * font size has to be declared here rather than inherited: the width is stated in `ch`, so it is
- * only three characters wide if the font it is measured against is the font that paints the digits.
+ * FIXED WIDTH, not `min-width` (2026-10-08). The content box holds exactly four characters — see
+ * `--stat-chip-width` — so a three-character value sits with room around it and the four-character
+ * one `formatBadgeValue` can produce fills the chip to its padding.
  *
- * The inline padding is the same term the token adds, so the content box is exactly 3ch and a
- * fourth character spends the padding instead of widening the chip.
+ * A FLEX box, which is what actually centres the value. As an inline box the declared width did not
+ * apply at all, and the text sat against the left padding and ran off the right edge once it
+ * outgrew the chip.
  */
 .statBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: var(--stat-chip-width);
-  padding: var(--space-3xs) var(--space-2xs);
+  /*
+   * Without this the width is a suggestion. These chips are laid out INSIDE a flex container, where
+   * `min-width: auto` floors every item at its own min-content size — so a wide value widened the
+   * chip instead of filling it, and the row that budgets four of them fit only three.
+   */
+  min-width: 0;
+  /* Symmetric, and the same term `--stat-chip-width` adds, so the four characters the box is sized
+     for sit exactly inside the padding. */
+  padding: var(--space-3xs);
   border-radius: var(--radius-sm);
   font-size: var(--font-2xs);
   font-weight: 700;
@@ -92,8 +104,7 @@
   /* Proportional digits are narrower for `1` than for `0`, which would make a fixed-width chip
      hold a different number of characters depending on which digits it held. */
   font-variant-numeric: tabular-nums;
-  text-align: center;
-  /* A fourth character reaches the chip's edge by design; it must not wrap or be clipped there. */
+  /* A fourth character reaches the chip's padding by design; it must not wrap there. */
   white-space: nowrap;
   color: #fff;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);

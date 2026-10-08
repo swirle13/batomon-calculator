@@ -176,14 +176,18 @@
    * slot and the next, and a one-digit value read as a different KIND of thing from a three-digit
    * one. They are now FIXED WIDTH, like the type chips above and for the same reason.
    *
-   * Sized for three characters. `ch` is the advance of a digit, and the chip sets
-   * `font-variant-numeric: tabular-nums` so every digit is exactly that wide — which means an
-   * element reading this token MUST also carry the chip's font size, or `ch` resolves against a
-   * different font and the width comes out wrong. A fourth character still fits, filling the chip
-   * edge to edge; that is the bound `formatBadgeValue` keeps values inside by writing 10,000 and
-   * up as "10K" / "123K".
+   * Sized for FOUR characters, which is the most `formatBadgeValue` produces — 10,000 and up are
+   * written "10K" / "123K" precisely so nothing longer reaches a chip. Three characters is what the
+   * chip is sized to hold COMFORTABLY: they sit with half a digit of air on either side, while a
+   * fourth fills the box right up to the padding.
+   *
+   * `ch` is the advance of a `0` in the font of the element reading it, which makes this exact at
+   * the chip and a trap everywhere else: anything that budgets several chips has to be reading the
+   * token in the chip's own font. Font SIZE is not sufficient — a bold digit is wider than a
+   * regular one. See `.badges` in GridPicker.module.css, where that mismatch cost a row its fourth
+   * chip.
    */
-  --stat-chip-width: calc(3ch + 2 * var(--space-2xs));
+  --stat-chip-width: calc(4ch + 2 * var(--space-3xs));
   --stat-chip-gap: var(--space-3xs);
   /*
    * Derived from the three declarations that make up the chip's box, rather than measured: the

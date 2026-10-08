@@ -144,23 +144,42 @@ describe("stat chips hold one width and one row height", () => {
   const primitives = read("ui/primitives/primitives.module.css");
   const grid = read("ui/GridPicker/GridPicker.module.css");
 
-  it("gives the chip a fixed width, not a minimum", () => {
-    // `min-width: 1.4rem` was the bug: it set a floor and then let the content widen the chip past
-    // it, which is the one thing a column of aligned pills must not do.
-    const badge = /\.statBadge \{([^}]*)\}/.exec(primitives.replace(/\s+/g, " "))?.[1] ?? "";
+  const badge = /\.statBadge \{([^}]*)\}/.exec(primitives.replace(/\s+/g, " "))?.[1] ?? "";
+  const badges = /\.badges \{([^}]*)\}/.exec(grid.replace(/\s+/g, " "))?.[1] ?? "";
+
+  it("gives the chip a width that binds, inside a flex container", () => {
     expect(badge).toMatch(/width: var\(--stat-chip-width\)/);
-    expect(badge).not.toMatch(/min-width:/);
-    // Both are load-bearing for "three characters": proportional digits are narrower for 1 than for
-    // 0, and the inherited 145% line-height would untie the height from --stat-chip-height.
+    // `min-width: auto` is the flex default and it floors an item at its own min-content size, so
+    // the declared width was only ever a minimum: a four-character value widened the chip, and the
+    // row sized for four of them fit three. The chips are flex items wherever they are used.
+    expect(badge).toMatch(/min-width: 0/);
+    // Both are load-bearing for a fixed character count: proportional digits are narrower for 1
+    // than for 0, and the inherited 145% line-height would untie the height from the token below.
     expect(badge).toMatch(/font-variant-numeric: tabular-nums/);
     expect(badge).toMatch(/line-height: 1\.3/);
   });
 
-  it("sizes the chip for three characters at the chip's own font size", () => {
-    // `ch` resolves against the font of whichever element reads the token, so a container that
-    // budgets four chips has to carry the chip's font size or its sum comes out wrong.
-    expect(tokens).toMatch(/--stat-chip-width: calc\(3ch \+ 2 \* var\(--space-2xs\)\)/);
-    expect(grid.replace(/\s+/g, " ")).toMatch(/\.badges \{[^}]*font-size: var\(--font-2xs\)/);
+  it("centres the value rather than letting it run off one edge", () => {
+    // As an inline box the chip ignored `width` entirely and the value sat against the left padding,
+    // overflowing to the right. Flex centring is symmetric however long the value is.
+    expect(badge).toMatch(/display: inline-flex/);
+    expect(badge).toMatch(/justify-content: center/);
+  });
+
+  it("sizes the chip for four characters, the longest label the formatter produces", () => {
+    expect(tokens).toMatch(/--stat-chip-width: calc\(4ch \+ 2 \* var\(--space-3xs\)\)/);
+    // Symmetric, and the same term the token adds, so four characters land exactly inside it.
+    expect(badge).toMatch(/padding: var\(--space-3xs\);/);
+  });
+
+  it("reads the chip width in the chip's own font wherever it budgets several", () => {
+    // `ch` is the advance of a `0` in the READING element's font. Matching only the font size left
+    // this cap measured in regular digits against chips painted in bold ones, which is narrower —
+    // so the row wrapped after three chips instead of four.
+    for (const declaration of [/font-size: var\(--font-2xs\)/, /font-weight: 700/, /font-variant-numeric: tabular-nums/]) {
+      expect(badges).toMatch(declaration);
+      expect(badge).toMatch(declaration);
+    }
   });
 
   it("caps a row at four chips by width, which is the only thing that caps it", () => {
@@ -169,7 +188,6 @@ describe("stat chips hold one width and one row height", () => {
     expect(tokens.replace(/\s+/g, " ")).toMatch(
       /--stat-chip-row-width: calc\( var\(--stat-chips-per-row\) \* var\(--stat-chip-width\) \+ \(var\(--stat-chips-per-row\) - 1\) \* var\(--stat-chip-gap\) \)/,
     );
-    const badges = /\.badges \{([^}]*)\}/.exec(grid.replace(/\s+/g, " "))?.[1] ?? "";
     expect(badges).toMatch(/max-width: var\(--stat-chip-row-width\)/);
     // The overflow row goes ABOVE the row already there, centred like it.
     expect(badges).toMatch(/flex-wrap: wrap-reverse/);
@@ -179,9 +197,8 @@ describe("stat chips hold one width and one row height", () => {
   it("reserves the chip band in the pane, since the chips are out of flow", () => {
     // The pair that keeps a pane square however many chips it holds: the chips are positioned
     // against its bottom edge, and the height they occupy is reserved as padding. Reserve without
-    // the positioning and a second row grows the pane; position without the reserve and the name
-    // sits underneath the chips.
-    const badges = /\.badges \{([^}]*)\}/.exec(grid.replace(/\s+/g, " "))?.[1] ?? "";
+    // the positioning and a second row grows the pane; position without the reserve and the sprite
+    // centres itself over the top of the chips.
     expect(badges).toMatch(/position: absolute/);
     expect(grid.replace(/\s+/g, " ")).toMatch(
       /\.card \{[^}]*padding-bottom: calc\(0\.3rem \+ var\(--stat-chip-height\)\)/,

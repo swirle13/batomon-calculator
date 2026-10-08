@@ -204,9 +204,16 @@
   gap: var(--stat-chip-gap);
   max-width: var(--stat-chip-row-width);
   margin-inline: auto;
-  /* `--stat-chip-width` is stated in `ch`, which resolves against the font of whichever element
-     reads it — so the container that budgets four of them must carry the chip's font size. */
+  /*
+   * `--stat-chip-width` is stated in `ch` — the advance of a `0` in the font of whichever element
+   * reads it — so the container budgeting four of them has to read it in the chip's font, not just
+   * at the chip's size. A bold digit is wider than a regular one, and inheriting the regular weight
+   * here made this cap narrower than the four chips it was supposed to fit: the row wrapped after
+   * three. These three declarations must stay in step with `.statBadge`.
+   */
   font-size: var(--font-2xs);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
 /* --- FR-033: per-slot clear control --- */
