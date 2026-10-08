@@ -16,9 +16,16 @@ export function formatCooldown(seconds: number | null | undefined): string {
   return seconds.toFixed(1);
 }
 
-/** A per-second rate (DPS, status output). Two decimals. */
+/**
+ * A per-second rate (DPS, status output). One decimal below 100, whole numbers at or above it —
+ * hundredths of a point of DPS are noise next to a three-digit figure, and dropping them keeps
+ * these to four characters so the slider readout and the table columns stay narrow.
+ *
+ * The bound is 99.95 rather than 100 because `toFixed(1)` rounds: 99.99 would otherwise render as
+ * "100.0", the five characters this avoids.
+ */
 export function formatRate(value: number): string {
-  return value.toFixed(2);
+  return Math.abs(value) < 99.95 ? value.toFixed(1) : String(Math.round(value));
 }
 
 /**

@@ -475,7 +475,8 @@ describe("round 9: total DPS and grid sizing", () => {
     // 2026-10-06 (global tick grid): ticks now run on a clock anchored to battle start rather than
     // to first application, and a tick sharing a cast's instant reads the PRE-cast stack. Both are
     // from frame-by-frame play (research.md B2a); for this board they net back to 1774.40.
-    expect(screen.getByText("1774.40")).toBeTruthy();
+    // Rates are shown whole at three digits and up, so 1774.40 reads as "1774".
+    expect(screen.getByText("1774")).toBeTruthy();
   });
 
   /**

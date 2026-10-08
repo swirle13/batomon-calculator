@@ -85,9 +85,9 @@ export function TeamSummary({ config, result }: TeamSummaryProps) {
             {dpsRows.map((row) => (
               <tr key={row.key}>
                 <td>{row.name}</td>
-                <td className={styles.numeric}>{row.dps.toFixed(2)}</td>
+                <td className={styles.numeric}>{formatRate(row.dps)}</td>
                 <td className={styles.numeric}>
-                  {row.facilitatedDps > 0 ? row.facilitatedDps.toFixed(2) : "—"}
+                  {row.facilitatedDps > 0 ? formatRate(row.facilitatedDps) : "—"}
                 </td>
               </tr>
             ))}
@@ -98,10 +98,10 @@ export function TeamSummary({ config, result }: TeamSummaryProps) {
               <tr className={styles.totalRow}>
                 <th scope="row">Total</th>
                 <th className={styles.numeric}>
-                  {dpsRows.reduce((sum, r) => sum + r.dps, 0).toFixed(2)}
+                  {formatRate(dpsRows.reduce((sum, r) => sum + r.dps, 0))}
                 </th>
                 <th className={styles.numeric}>
-                  {dpsRows.reduce((sum, r) => sum + r.facilitatedDps, 0).toFixed(2)}
+                  {formatRate(dpsRows.reduce((sum, r) => sum + r.facilitatedDps, 0))}
                 </th>
               </tr>
             )}

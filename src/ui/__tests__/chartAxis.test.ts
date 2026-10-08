@@ -18,11 +18,11 @@ describe("yAxisWidthFor", () => {
   });
 
   it("accounts for the formatter, not just the raw magnitude", () => {
-    // The rate chart formats to 2dp, so 24 occupies "24.00" — five characters, not two. Sizing from
-    // the number instead of its rendered text is what made the DPS chart overlap.
+    // The rate chart keeps a decimal below 100, so 24 occupies "24.0" — four characters, not two.
+    // Sizing from the number instead of its rendered text is what made the DPS chart overlap.
     const raw = yAxisWidthFor([{ values: [24] }], toFixed0);
     const formatted = yAxisWidthFor([{ values: [24] }], formatRate);
-    expect(formatRate(24)).toBe("24.00");
+    expect(formatRate(24)).toBe("24.0");
     expect(formatted).toBeGreaterThan(raw);
   });
 
