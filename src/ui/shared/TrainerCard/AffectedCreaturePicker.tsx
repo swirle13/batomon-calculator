@@ -16,6 +16,7 @@ import {
   TextField,
 } from "../../primitives";
 import styles from "./TrainerCard.module.css";
+import type { AffectedSpeciesKind } from "../../../data/enums";
 
 /**
  * Picks the species a set-designating trainer affects (T235 / FR-090).
@@ -76,7 +77,7 @@ const PAINTER_RARITY_SHAPE: Partial<Record<Rarity, number>> = {
 };
 
 interface AffectedCreaturePickerProps {
-  kind: "painted" | "smuggled";
+  kind: AffectedSpeciesKind;
   onClose: () => void;
 }
 

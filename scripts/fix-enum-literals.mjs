@@ -27,6 +27,8 @@ const MEMBERS = {
   },
   TargetKind: {self: "Self", adjacent: "Adjacent", row: "Row", behind: "Behind", above: "Above", inFront: "InFront", allAllies: "AllAllies"},
   AbilityTagKind: {ongoing: "Ongoing", trigger: "Trigger", onEvent: "OnEvent", cooldownSpeedModifier: "CooldownSpeedModifier", statusGrant: "StatusGrant", battleStartStatusFromAllies: "BattleStartStatusFromAllies", chargeOnAllyStatus: "ChargeOnAllyStatus", cooldownSpeedOnAllyCast: "CooldownSpeedOnAllyCast", statFromCount: "StatFromCount", buffOnCast: "BuffOnCast", triggerOnAllyCast: "TriggerOnAllyCast", statMultiplier: "StatMultiplier", statFromTargetStatus: "StatFromTargetStatus", triggerOnAllyTrigger: "TriggerOnAllyTrigger", manualTrigger: "ManualTrigger", gainOnAllyStatus: "GainOnAllyStatus", statFromUniqueTypes: "StatFromUniqueTypes", knockoutAlliesOnBattleStart: "KnockoutAlliesOnBattleStart", statFromStat: "StatFromStat"},
+  TypeKind: { element: "Element", wildcard: "Wildcard", placeholder: "Placeholder" },
+  AffectedSpeciesKind: { painted: "Painted", smuggled: "Smuggled" },
   Rarity: { Common: "Common", Uncommon: "Uncommon", Rare: "Rare", SuperRare: "SuperRare", Legendary: "Legendary", Mythical: "Mythical" },
   CreatureType: Object.fromEntries(
     ["Fire", "Water", "Electric", "Toxic", "Flying", "Rock", "Grass", "Bug", "Steel", "Dragon", "Ghost", "Fighting", "Curio", "NULL", "All"].map((v) => [v, v]),

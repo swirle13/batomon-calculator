@@ -6,7 +6,8 @@ import { items } from "./items";
 import { SHINY_STATS } from "./shiny";
 import { creatureHasType } from "./typing";
 import { deriveAbilityTags } from "./deriveTags";
-import { CreatureType, DamageChannel } from "./enums";
+import { CreatureType } from "./enums";
+import { DamageChannel } from "./enums";
 
 /**
  * The single assembled corpus lookup object. UI and engine code should import `corpus` from

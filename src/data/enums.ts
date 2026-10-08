@@ -299,6 +299,26 @@ export enum ConfirmableField {
  *
  * Board geometry lives in `engine/grid.ts`; these only name the relationships.
  */
+/**
+ * Why a `CreatureType` member exists, which is NOT the same question as what it is.
+ *
+ * `Wildcard` is the load-bearing one: `All` matches EVERY type, and comparing it as though it were
+ * an element is what caused round 10's Omnichrome bug. `Placeholder` marks `Curio` and `NULL` --
+ * real published values that name no element, and which stay filterable; only the wildcard is
+ * withheld from filter lists.
+ */
+export enum TypeKind {
+  Element = "element",
+  Wildcard = "wildcard",
+  Placeholder = "placeholder",
+}
+
+/** The two affected-species sets a trainer ability can own (FR-087/FR-088). */
+export enum AffectedSpeciesKind {
+  Painted = "painted",
+  Smuggled = "smuggled",
+}
+
 export enum TargetKind {
   Self = "self",
   Adjacent = "adjacent",

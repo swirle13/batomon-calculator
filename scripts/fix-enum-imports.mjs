@@ -21,7 +21,7 @@ import { join, relative, dirname } from "node:path";
 const ENUMS = [
   "Rarity", "CreatureType", "DamageChannel", "StatusEffectType", "AbilityTrigger",
   "RegionId", "GridRow", "ModifierStat", "EventLabel", "TimelineEventKind",
-  "StatChangeStat", "MultiplierScope", "StatColorKey", "ConfirmableField", "TargetKind", "AbilityTagKind",
+  "StatChangeStat", "MultiplierScope", "StatColorKey", "ConfirmableField", "TargetKind", "AbilityTagKind", "TypeKind", "AffectedSpeciesKind",
 ];
 
 function files(dir) {
@@ -43,8 +43,13 @@ for (const file of files("src")) {
   let t = readFileSync(file, "utf8");
   const before = t;
 
-  // Which enums are used as VALUES, i.e. `Enum.Member`.
-  const used = ENUMS.filter((e) => new RegExp(String.raw`\b${e}\.[A-Z]`).test(t));
+  /*
+   * Which enums are used as VALUES, i.e. `Enum.Member` -- measured against the file with COMMENTS
+   * STRIPPED. A doc comment quoting `DamageChannel.Direct` while explaining why the code no longer
+   * compares it is not a usage, and treating it as one re-added an unused import on every run.
+   */
+  const codeOnly = t.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
+  const used = ENUMS.filter((e) => new RegExp(String.raw`\b${e}\.[A-Z]`).test(codeOnly));
 
   // Drop every value-used enum from every type-only import in the file.
   t = t.replace(/import type \{([^}]*)\} from ("[^"]+");/g, (whole, names, from) => {

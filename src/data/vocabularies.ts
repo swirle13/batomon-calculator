@@ -1,5 +1,5 @@
 import { RegionId } from "./enums";
-import { AbilityTrigger, CreatureType, DamageChannel, Rarity, StatColorKey, StatusEffectType } from "./enums";
+import { AbilityTrigger, CreatureType, DamageChannel, Rarity, StatColorKey, StatusEffectType, TypeKind } from "./enums";
 
 /**
  * Per-member data for the closed vocabularies (2026-10-07, round 7).
@@ -80,28 +80,28 @@ export const RARITIES_DESC: Rarity[] = [...RARITIES_ASC].reverse();
  */
 interface CreatureTypeMember extends VocabularyMember {
   readonly color: string;
-  readonly kind: "element" | "wildcard" | "placeholder";
+  readonly kind: TypeKind;
 }
 
 /** Colours are an original design choice for this app's dark background — no official palette is
  * published to cite (unlike the rarity and stat colours, which are the game's own). */
 export const CREATURE_TYPE: Readonly<Record<CreatureType, CreatureTypeMember>> = Object.freeze({
-  [CreatureType.Fire]: { label: "Fire", order: 0, color: "#e05a2b", kind: "element" },
-  [CreatureType.Water]: { label: "Water", order: 1, color: "#2e86de", kind: "element" },
-  [CreatureType.Electric]: { label: "Electric", order: 2, color: "#d4b106", kind: "element" },
-  [CreatureType.Toxic]: { label: "Toxic", order: 3, color: "#8e44ad", kind: "element" },
-  [CreatureType.Flying]: { label: "Flying", order: 4, color: "#70a1d7", kind: "element" },
-  [CreatureType.Rock]: { label: "Rock", order: 5, color: "#8d6e63", kind: "element" },
-  [CreatureType.Grass]: { label: "Grass", order: 6, color: "#4caf50", kind: "element" },
-  [CreatureType.Bug]: { label: "Bug", order: 7, color: "#8bc34a", kind: "element" },
-  [CreatureType.Steel]: { label: "Steel", order: 8, color: "#90a4ae", kind: "element" },
-  [CreatureType.Dragon]: { label: "Dragon", order: 9, color: "#5c6bc0", kind: "element" },
-  [CreatureType.Ghost]: { label: "Ghost", order: 10, color: "#512da8", kind: "element" },
-  [CreatureType.Fighting]: { label: "Fighting", order: 11, color: "#c0392b", kind: "element" },
-  [CreatureType.Curio]: { label: "Curio", order: 12, color: "#26a69a", kind: "placeholder" },
-  [CreatureType.NULL]: { label: "NULL", order: 13, color: "#37474f", kind: "placeholder" },
+  [CreatureType.Fire]: { label: "Fire", order: 0, color: "#e05a2b", kind: TypeKind.Element },
+  [CreatureType.Water]: { label: "Water", order: 1, color: "#2e86de", kind: TypeKind.Element },
+  [CreatureType.Electric]: { label: "Electric", order: 2, color: "#d4b106", kind: TypeKind.Element },
+  [CreatureType.Toxic]: { label: "Toxic", order: 3, color: "#8e44ad", kind: TypeKind.Element },
+  [CreatureType.Flying]: { label: "Flying", order: 4, color: "#70a1d7", kind: TypeKind.Element },
+  [CreatureType.Rock]: { label: "Rock", order: 5, color: "#8d6e63", kind: TypeKind.Element },
+  [CreatureType.Grass]: { label: "Grass", order: 6, color: "#4caf50", kind: TypeKind.Element },
+  [CreatureType.Bug]: { label: "Bug", order: 7, color: "#8bc34a", kind: TypeKind.Element },
+  [CreatureType.Steel]: { label: "Steel", order: 8, color: "#90a4ae", kind: TypeKind.Element },
+  [CreatureType.Dragon]: { label: "Dragon", order: 9, color: "#5c6bc0", kind: TypeKind.Element },
+  [CreatureType.Ghost]: { label: "Ghost", order: 10, color: "#512da8", kind: TypeKind.Element },
+  [CreatureType.Fighting]: { label: "Fighting", order: 11, color: "#c0392b", kind: TypeKind.Element },
+  [CreatureType.Curio]: { label: "Curio", order: 12, color: "#26a69a", kind: TypeKind.Placeholder },
+  [CreatureType.NULL]: { label: "NULL", order: 13, color: "#37474f", kind: TypeKind.Placeholder },
   // No single real-world analog; a distinct accent flags it as the special case it is.
-  [CreatureType.All]: { label: "All", order: 14, color: "#d81b60", kind: "wildcard" },
+  [CreatureType.All]: { label: "All", order: 14, color: "#d81b60", kind: TypeKind.Wildcard },
 });
 
 export const CREATURE_TYPES_ASC: CreatureType[] = membersInOrder(
@@ -111,12 +111,12 @@ export const CREATURE_TYPES_ASC: CreatureType[] = membersInOrder(
 
 /** The types a filter UI may offer: everything except the wildcard. */
 export const FILTERABLE_CREATURE_TYPES: CreatureType[] = CREATURE_TYPES_ASC.filter(
-  (t) => CREATURE_TYPE[t].kind !== "wildcard",
+  (t) => CREATURE_TYPE[t].kind !== TypeKind.Wildcard,
 );
 
 /** True when `type` matches every other type. One place, so no call site compares a literal. */
 export function isWildcardType(type: CreatureType): boolean {
-  return CREATURE_TYPE[type].kind === "wildcard";
+  return CREATURE_TYPE[type].kind === TypeKind.Wildcard;
 }
 
 // ---------------------------------------------------------------------------

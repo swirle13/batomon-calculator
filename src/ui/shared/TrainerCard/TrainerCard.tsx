@@ -4,6 +4,7 @@ import { Button, Surface } from "../../primitives";
 import { Sprite } from "../Sprite";
 import { AffectedCreaturePicker } from "./AffectedCreaturePicker";
 import styles from "./TrainerCard.module.css";
+import { AffectedSpeciesKind } from "../../../data/enums";
 
 /**
  * The trainer card (T233 / FR-089), replacing the bare `<select>` that was the entire trainer UI.
@@ -26,12 +27,12 @@ export const SET_DESIGNATING_TRAINERS = {
   painter: {
     label: "Painted species",
     hint: "9 species painted with every type",
-    kind: "painted" as const,
+    kind: AffectedSpeciesKind.Painted,
   },
   smuggler: {
     label: "Smuggled species",
     hint: "9 species from the opposite region",
-    kind: "smuggled" as const,
+    kind: AffectedSpeciesKind.Smuggled,
   },
 };
 

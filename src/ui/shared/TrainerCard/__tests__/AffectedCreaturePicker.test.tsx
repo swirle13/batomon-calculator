@@ -5,7 +5,7 @@ import { TeamConfigProvider } from "../../../../context/TeamConfigContext";
 import { distinctCreatures } from "../../../../data/corpus";
 import { isInOppositeRegion } from "../../../../data/typing";
 import type { TeamConfiguration } from "../../../../data/types";
-import { RegionId } from "../../../../data/enums";
+import { AffectedSpeciesKind, RegionId } from "../../../../data/enums";
 
 /**
  * The affected-species picker (WI-001, WI-002 — orchestration round 6).
@@ -30,7 +30,7 @@ function configWith(overrides: Partial<TeamConfiguration> = {}): TeamConfigurati
 function openPainted(overrides: Partial<TeamConfiguration> = {}) {
   render(
     <TeamConfigProvider initialConfig={configWith({ trainerId: "painter", ...overrides })}>
-      <AffectedCreaturePicker kind="painted" onClose={() => {}} />
+      <AffectedCreaturePicker kind={AffectedSpeciesKind.Painted} onClose={() => {}} />
     </TeamConfigProvider>,
   );
   return screen.getByRole("dialog", { name: /painted species/i });
@@ -115,7 +115,7 @@ describe("AffectedCreaturePicker — Smuggler's pool (FR-088)", () => {
   it("offers only opposite-region species, never the set complement", () => {
     render(
       <TeamConfigProvider initialConfig={configWith({ trainerId: "smuggler", selectedRegion: RegionId.Pantra })}>
-        <AffectedCreaturePicker kind="smuggled" onClose={() => {}} />
+        <AffectedCreaturePicker kind={AffectedSpeciesKind.Smuggled} onClose={() => {}} />
       </TeamConfigProvider>,
     );
     const dialog = screen.getByRole("dialog", { name: /smuggled species/i });
@@ -135,7 +135,7 @@ describe("AffectedCreaturePicker — Smuggler's pool (FR-088)", () => {
   it("says a region is needed rather than offering an arbitrary pool", () => {
     render(
       <TeamConfigProvider initialConfig={configWith({ trainerId: "smuggler" })}>
-        <AffectedCreaturePicker kind="smuggled" onClose={() => {}} />
+        <AffectedCreaturePicker kind={AffectedSpeciesKind.Smuggled} onClose={() => {}} />
       </TeamConfigProvider>,
     );
     expect(screen.getByText(/choose a region first/i)).toBeTruthy();

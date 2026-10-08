@@ -26,7 +26,8 @@
  * bare `export … from` does not bring the names into local scope.
  */
 import { AbilityTrigger, ConfirmableField, CreatureType, DamageChannel, EventLabel, GridRow, ModifierStat, MultiplierScope, RegionId, StatusEffectType, TimelineEventKind } from "./enums";
-import { AbilityTagKind, Rarity, StatChangeStat, TargetKind } from "./enums";
+import { Rarity } from "./enums";
+import { AbilityTagKind, StatChangeStat, TargetKind } from "./enums";
 
 // Re-exports the LOCAL bindings above rather than a second `export … from "./enums"`, which would
 // be a duplicate declaration of each name.
