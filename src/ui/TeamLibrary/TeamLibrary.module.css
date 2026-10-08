@@ -191,6 +191,14 @@
   font-size: var(--font-sm);
 }
 
+/* Matches a `Field`'s own hint, since that is what it is — it is only rendered outside the field
+   so that the button beside the select stays level with it. */
+.runHint {
+  margin: 0;
+  font-size: var(--font-2xs);
+  color: var(--text-muted);
+}
+
 .duplicate {
   margin: 0;
   font-size: var(--font-sm);
@@ -221,6 +229,16 @@
   border-left: 3px solid var(--line-strong);
   border-radius: var(--radius-md);
   background: var(--surface-3);
+}
+
+/*
+ * A board saved outside a run: the same frame as a run, minus the rail colour and the heading.
+ * It sits at the same level in the list because that is what it is — one entry, not a group with
+ * one thing in it — and the neutral rail is what says "this has no run" without a label claiming
+ * it is filed somewhere.
+ */
+.standalone .cards {
+  padding-top: var(--space-sm);
 }
 
 .inProgress {

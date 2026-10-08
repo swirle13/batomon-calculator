@@ -85,8 +85,18 @@ export function TeamLibrary() {
     setOpened(true);
   }
 
-  const runs = [...library.runs].reverse();
-  const looseTeams = teamsForRun(library, undefined);
+  /**
+   * Runs and run-less teams in ONE list, newest first.
+   *
+   * A team saved outside a run is an entry in its own right, not a resident of a leftovers group:
+   * grouping it would name a state the user never chose, and would file the thing they just saved
+   * one level deeper than the runs they can see. Sorting both kinds by the same recency key is
+   * what puts a save — of either kind — at the top, where it was just made.
+   */
+  const entries: ({ at: string } & ({ run: Run } | { team: SavedTeam }))[] = [
+    ...library.runs.map((run) => ({ at: run.createdAt, run })),
+    ...teamsForRun(library, undefined).map((team) => ({ at: team.savedAt, team })),
+  ].sort((a, b) => b.at.localeCompare(a.at));
 
   return (
     <>
@@ -130,35 +140,28 @@ export function TeamLibrary() {
             <SaveForm library={library} commit={commit} config={config} />
 
             <div className={styles.groups}>
-              {runs.map((run) => (
-                <RunGroup
-                  key={run.id}
-                  run={run}
-                  library={library}
-                  commit={commit}
-                  onLoad={handleLoad}
-                  defaultOpen={run.id === library.activeRunId}
-                />
-              ))}
-
-              {/* Rendered only when it holds something: an empty "No run" heading sitting under
-                  every run would imply a group the user failed to fill. */}
-              {looseTeams.length > 0 && (
-                <section className={styles.group}>
-                  <details open={runs.length === 0}>
-                    <summary className={styles.groupSummary}>
-                      {/* "Unfiled", not "No run", which is what the save form's RUN SELECT calls
-                          the same state — two controls a few inches apart, and only one of them
-                          is naming a group you can look things up in. */}
-                      <span className={styles.groupName}>Unfiled</span>
-                      <span className={styles.groupCount}>{looseTeams.length}</span>
-                    </summary>
-                    <TeamList teams={looseTeams} commit={commit} library={library} onLoad={handleLoad} />
-                  </details>
-                </section>
+              {entries.map((entry) =>
+                "run" in entry ? (
+                  <RunGroup
+                    key={entry.run.id}
+                    run={entry.run}
+                    library={library}
+                    commit={commit}
+                    onLoad={handleLoad}
+                    defaultOpen={entry.run.id === library.activeRunId}
+                  />
+                ) : (
+                  // The same card a run holds, in the same frame a run gets, with no heading above
+                  // it — it is one board, and there is nothing to expand or collapse.
+                  <section key={entry.team.id} className={`${styles.group} ${styles.standalone}`}>
+                    <TeamList teams={[entry.team]} library={library} commit={commit} onLoad={handleLoad} />
+                  </section>
+                ),
               )}
 
-              {library.teams.length === 0 && (
+              {/* `entries`, not `teams`: a run created but not yet saved into is something in the
+                  list, and "nothing saved yet" underneath it would be contradicting it. */}
+              {entries.length === 0 && (
                 <p className={styles.empty}>
                   Nothing saved yet. Build a board, then save it here — start a run first if you want the
                   day-by-day boards kept together.
@@ -243,14 +246,22 @@ function SaveForm({
       </Field>
 
       <div className={styles.runRow}>
-        <Field label="Run" className={styles.runField}>
+        {/*
+          Says "optional" in the label and says what choosing nothing DOES in the hint. A run is
+          the default and most saves belong in one, so the field cannot simply be quiet about the
+          other case: without the hint, "— not part of a run —" reads as a board that will go
+          somewhere unspecified rather than one that sits in the list on its own.
+        */}
+        {/* The hint is NOT the Field's own, which would put it inside the row and drop the New
+            run button a line below the select it sits beside. */}
+        <Field label="Run (optional)" className={styles.runField}>
           <Select
             block
             size="sm"
             value={activeRunId ?? ""}
             onChange={(e) => commit(setActiveRun(library, e.target.value === "" ? undefined : e.target.value))}
           >
-            <option value="">No run</option>
+            <option value="">— not part of a run —</option>
             {library.runs.map((run) => (
               <option key={run.id} value={run.id}>
                 {run.name}
@@ -262,6 +273,8 @@ function SaveForm({
           {newRunName === null ? "New run" : "Cancel"}
         </Button>
       </div>
+
+      {!activeRunId && <p className={styles.runHint}>This board will sit in the list on its own.</p>}
 
       {newRunName !== null && (
         <div className={styles.runRow}>

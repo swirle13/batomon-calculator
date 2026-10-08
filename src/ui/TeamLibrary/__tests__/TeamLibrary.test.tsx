@@ -113,6 +113,20 @@ describe("saving and loading", () => {
     expect(screen.getAllByRole("button", { name: "Load" })).toHaveLength(2);
   });
 
+  it("lists a run-less board as an entry of its own, not inside a group", () => {
+    setup();
+    fireEvent.click(screen.getByRole("button", { name: "set A" }));
+    fireEvent.change(screen.getByLabelText(/^Run/), { target: { value: "" } });
+    fireEvent.change(screen.getByLabelText("Team name"), { target: { value: "One-off" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save this board" }));
+
+    expect(screen.getByText("One-off")).toBeInTheDocument();
+    // No disclosure anywhere: there is no group, so there is nothing to expand.
+    expect(document.querySelectorAll("summary")).toHaveLength(0);
+    // And no round/day badge, which only means something inside a run.
+    expect(screen.queryByText(/^R\d+·D\d+$/)).not.toBeInTheDocument();
+  });
+
   it("deletes only on the second press", () => {
     setup();
     fireEvent.click(screen.getByRole("button", { name: "set A" }));
@@ -158,7 +172,8 @@ describe("runs", () => {
     fireEvent.click(screen.getByRole("button", { name: "Delete run" }));
     fireEvent.click(screen.getByRole("button", { name: "Delete run, keep teams" }));
 
-    expect(screen.getByText("Unfiled")).toBeInTheDocument();
+    // The board survives as a top-level entry, with no group heading left standing over it.
     expect(screen.getByRole("button", { name: "Load" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Delete run" })).not.toBeInTheDocument();
   });
 });
