@@ -8,6 +8,10 @@ import {
 } from "../../engine/optimize";
 import { getCreatureById } from "../../data/corpus";
 import { Button, Disclosure } from "../primitives";
+import { GridRow } from "../../data/enums";
+
+/** The grid renders `Back` above `Front`, so name the rows the way the user sees them. */
+const rowLabel = (row: GridRow) => (row === GridRow.Back ? "top" : "bottom");
 
 /**
  * FR-069 (WI-018): suggests a rearrangement of the placed creatures with higher time-weighted
@@ -76,8 +80,8 @@ export function PlacementAdvisor() {
           <ul>
             {suggestion.placements.map((p) => (
               <li key={`${p.creatureId}-${p.slot.row}${p.slot.col}`}>
-                {getCreatureById(p.creatureId)?.name ?? p.creatureId} → {p.slot.row} row, slot{" "}
-                {p.slot.col + 1}
+                {getCreatureById(p.creatureId)?.name ?? p.creatureId} → {rowLabel(p.slot.row)} row,
+                slot {p.slot.col + 1}
               </li>
             ))}
           </ul>
