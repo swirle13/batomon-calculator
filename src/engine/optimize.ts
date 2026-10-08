@@ -214,10 +214,22 @@ export function suggestPlacement(config: TeamConfiguration, corpus: Corpus): Pla
   let best: TeamPlacement[] | null = null;
   let evaluated = 0;
 
+  /**
+   * Who currently sits in each slot. "Is this the arrangement the user already has?" has to be
+   * asked of the creature-to-slot assignment, by placement identity.
+   *
+   * 2026-10-08: it used to be asked of the SLOTS — `candidate[i].slot` vs `config.placements[i].slot`
+   * — which compares nothing at all. `candidate[i]` is always given `occupied[i]`, so whenever
+   * `config.placements` happened to already be in stable slot order (which is exactly how a board
+   * decoded from a share link arrives) every one of the 720 permutations looked "unchanged" and
+   * was skipped, and the advisor reported "(none)" for every shared build. It started working the
+   * moment the user dragged anything, because a drag leaves the array out of slot order.
+   */
+  const currentBySlot = new Map(config.placements.map((p) => [slotKey(p.slot), p]));
+
   for (const order of permutations(config.placements)) {
     const candidate = order.map((placement, i) => ({ ...placement, slot: occupied[i]! }));
-    // Skip the arrangement the user already has.
-    const unchanged = candidate.every((p, i) => slotKey(p.slot) === slotKey(config.placements[i]?.slot ?? p.slot));
+    const unchanged = order.every((p, i) => currentBySlot.get(slotKey(occupied[i]!)) === p);
     evaluated++;
     if (unchanged) continue;
     const score = scoreConfiguration({ ...config, placements: candidate }, corpus);

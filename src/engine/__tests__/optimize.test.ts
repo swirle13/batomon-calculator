@@ -74,6 +74,30 @@ describe("placement optimiser (FR-069)", () => {
     if (result.placements === null) expect(result.bestScore).toBeCloseTo(result.currentScore, 9);
   });
 
+  /**
+   * 2026-10-08 regression. The "skip the arrangement the user already has" guard compared slots to
+   * slots rather than creature-to-slot assignments, so for any board whose `placements` array was
+   * already in stable slot order — i.e. every board decoded from a share link — all 720
+   * permutations were skipped and the advisor always said "(none)". It only woke up once a drag
+   * left the array out of slot order.
+   */
+  it("finds an improvement even when placements arrive in stable slot order", () => {
+    const inSlotOrder: TeamConfiguration = {
+      ...adjacent,
+      placements: [
+        { slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Formiqueen, level: 1 },
+        { slot: { row: GridRow.Back, col: 1 }, creatureId: Species.Aristobat, level: 1 },
+        { slot: { row: GridRow.Back, col: 2 }, creatureId: Species.Bumblebolt, level: 1 },
+      ],
+    };
+    // Formiqueen's aura only reaches an ADJACENT Common ally. Aristobat is Rare, so it wastes the
+    // one adjacent slot while Bumblebolt sits out of reach at back-2 — swapping the two is
+    // strictly better, and the search must see it.
+    const result = suggestPlacement(inSlotOrder, corpus);
+    expect(result.placements).not.toBeNull();
+    expect(result.bestScore).toBeGreaterThan(result.currentScore);
+  });
+
   it("is a no-op for a team too small to rearrange", () => {
     const solo: TeamConfiguration = {
       ...adjacent,
