@@ -6,6 +6,7 @@ import { TeamSummary } from "../TeamSummary/TeamSummary";
 import { CorpusBrowser } from "../CorpusBrowser/CorpusBrowser";
 import App from "../../App";
 import { TotalDps } from "../TeamSummary/TotalDps";
+import { PlacementAdvisor } from "../TeamSummary/PlacementAdvisor";
 import { TeamConfigProvider } from "../../context/TeamConfigContext";
 import { PlacedCreatureDetails } from "../TeamSummary/PlacedCreatureDetails";
 import { ModifierEditor } from "../Modifiers/ModifierEditor";
@@ -480,24 +481,43 @@ describe("round 9: total DPS and grid sizing", () => {
   });
 
   /**
-   * FR-075's counter, and the bug it shipped with (2026-10-07).
+   * FR-075's coverage caveats, which moved out of `TotalDps` on 2026-10-08 (user-reported).
    *
-   * It derived the figure as `needsModelling` minus `actionable` — and `actionable` only ever counts
-   * POSITIONAL tags, because it belongs to the placement optimiser (FR-069). So every creature whose
-   * ability the engine resolves NON-positionally was reported as unmodelled, and the number beside
-   * the DPS figure was simply false.
+   * They render in the placement section now — "which of my abilities are doing nothing" is that
+   * section's subject, where beside the DPS figures they read as disclaimers on a number — so
+   * these render the advisor, but every claim asserted is the same one they asserted before.
    *
-   * `poisonTeam` is the proof: all four of Miasmaw, Cobrex, Drumire and Fumungus have abilities the
-   * engine computes, and the old counter claimed one of them did not. The previous version of this
-   * test asserted only that SOME "N of M" line existed, which the wrong number satisfied — so the
-   * test passed on a false claim. These assert the claim itself, on three boards chosen to cover all
-   * three states.
+   * The bug they were written for (2026-10-07) is still what they guard: the figure was derived as
+   * `needsModelling` minus `actionable`, and `actionable` only ever counts POSITIONAL tags, so
+   * every creature whose ability the engine resolves NON-positionally was reported as unmodelled.
+   * `poisonTeam` is the proof — all four of Miasmaw, Cobrex, Drumire and Fumungus have abilities
+   * the engine computes, and the old counter claimed one of them did not.
    */
+  const renderAdvisor = (team: TeamConfiguration) =>
+    render(
+      <TeamConfigProvider initialConfig={team}>
+        <PlacementAdvisor result={simulate(team, corpus)} />
+      </TeamConfigProvider>,
+    );
+
   it("says NOTHING when every placed ability is actually modelled (FR-075)", () => {
-    const result = simulate(poisonTeam, corpus);
-    render(<TotalDps config={poisonTeam} result={result} />);
+    renderAdvisor(poisonTeam);
     // The old counter rendered "1 of 4 abilities not yet modelled" here. It was wrong.
-    expect(screen.queryByText(/Not in this figure/)).toBeNull();
+    expect(screen.queryByText(/Not counted in this calculation/)).toBeNull();
+  });
+
+  it("keeps the caveats out of the headline DPS figures", () => {
+    const team: TeamConfiguration = {
+      ...poisonTeam,
+      placements: [
+        { slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Reapra, level: 1 },
+        { slot: { row: GridRow.Back, col: 1 }, creatureId: Species.Craghorn, level: 1 },
+      ],
+    };
+    render(<TotalDps config={team} result={simulate(team, corpus)} />);
+    expect(screen.queryByText(/Not counted in this calculation/)).toBeNull();
+    expect(screen.queryByText(/does not compute/)).toBeNull();
+    expect(screen.queryByText(/between battles/)).toBeNull();
   });
 
   it("reports a REAL gap, counted from what the engine resolves", () => {
@@ -511,11 +531,12 @@ describe("round 9: total DPS and grid sizing", () => {
         { slot: { row: GridRow.Back, col: 2 }, creatureId: Species.Pebbler, level: 1 },
       ],
     };
-    render(<TotalDps config={team} result={simulate(team, corpus)} />);
+    renderAdvisor(team);
     // 2026-10-08: the NAME, not a count. "1 of 3 abilities not yet modelled" told the user a gap
     // existed and hid which creature it was behind a tooltip.
-    expect(screen.getByText("Reapra")).toBeTruthy();
-    expect(screen.getByText(/the engine does not compute this ability yet/)).toBeTruthy();
+    expect(screen.getByText(/the engine does not compute this ability yet/).textContent).toContain(
+      "Reapra",
+    );
   });
 
   it("separates abilities that fire OUTSIDE the battle from ones it cannot model", () => {
@@ -527,7 +548,7 @@ describe("round 9: total DPS and grid sizing", () => {
         { slot: { row: GridRow.Back, col: 2 }, creatureId: Species.Craghorn, level: 1 },
       ],
     };
-    render(<TotalDps config={team} result={simulate(team, corpus)} />);
+    renderAdvisor(team);
     // All three are fully representable — the engine just has no occurrence of their trigger to
     // count — so "not modelled" is the wrong thing to say about them.
     expect(screen.queryByText(/does not compute/)).toBeNull();
@@ -549,12 +570,29 @@ describe("round 9: total DPS and grid sizing", () => {
         { slot: { row: GridRow.Back, col: 1 }, creatureId: Species.Craghorn, level: 1 },
       ],
     };
-    const { container } = render(<TotalDps config={team} result={simulate(team, corpus)} />);
+    const { container } = renderAdvisor(team);
     expect(screen.queryByText(/bank them on the card/)).toBeNull();
     expect(screen.queryByText(/abilities not yet modelled/)).toBeNull();
     for (const line of container.querySelectorAll("p")) {
       expect(line.getAttribute("title")).toBeNull();
     }
+  });
+
+  /**
+   * The move itself (2026-10-08). A Rattleghast knocks its neighbours out at battle start, and the
+   * user wanted that stated where they reason about abilities rather than under the DPS number.
+   */
+  it("names the knocked-out allies and their killer in the placement section", () => {
+    const team: TeamConfiguration = {
+      ...poisonTeam,
+      placements: [
+        { slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Shikitsune, level: 1 },
+        { slot: { row: GridRow.Back, col: 1 }, creatureId: Species.Rattleghast, level: 1 },
+        { slot: { row: GridRow.Back, col: 2 }, creatureId: Species.Brawlmantis, level: 1 },
+      ],
+    };
+    renderAdvisor(team);
+    expect(screen.getByText(/knocked out at battle start by Rattleghast/)).toBeTruthy();
   });
 
   it("reads 'DPS average' until the scrubber is moved (WI-R11-003)", () => {

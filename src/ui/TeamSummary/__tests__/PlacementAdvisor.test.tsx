@@ -5,6 +5,7 @@ import { TeamConfigProvider } from "../../../context/TeamConfigContext";
 import { useTeamConfig } from "../../../context/teamConfig";
 import { corpus } from "../../../data/corpus";
 import { suggestPlacement } from "../../../engine/optimize";
+import { simulate } from "../../../engine/simulate";
 import { slotKey } from "../../../engine/grid";
 import { GridRow } from "../../../data/enums";
 import { Species } from "../../../data/ids";
@@ -47,10 +48,20 @@ function Board() {
   );
 }
 
+/**
+ * The advisor reads the board from context but takes the simulation result as a prop, because the
+ * Calculator view already has one and nothing in this app simulates the same board twice. Follows
+ * the live config so the exclusions it renders describe the board after an apply, not before it.
+ */
+function Advisor() {
+  const { config } = useTeamConfig();
+  return <PlacementAdvisor result={simulate(config, corpus)} />;
+}
+
 function renderAdvisor() {
   render(
     <TeamConfigProvider initialConfig={CONFIG}>
-      <PlacementAdvisor />
+      <Advisor />
       <Board />
     </TeamConfigProvider>,
   );

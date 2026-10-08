@@ -879,8 +879,11 @@ The honest fix is to model the missing effects (`cooldownSpeedAdd` is already a 
 `effectTags` stat, so Speed Whistle is wireable); the dishonest half-measure was the badge.
 
 `effectTags` and the engine path that reads them are untouched — this removes a UI claim, not a
-capability. `TotalDps`'s existing "N abilities not yet modelled" line remains the place coverage is
-stated, because it is a statement about the whole board rather than a label on one card.
+capability. The board-level coverage lines remain the place coverage is stated, because it is a
+statement about the whole board rather than a label on one card. They sat under `TotalDps`'s
+headline figures until 2026-10-08 and now render in `PlacementAdvisor`, at the user's request:
+"which of my abilities are doing nothing" is the placement section's subject, and beside a DPS
+number the same sentences read as disclaimers on the number.
 
 ### FR-058 EXTENDED (2026-10-07) — the primitives layer gains form controls
 
@@ -964,8 +967,8 @@ Worth recording, because fixing the wrong thing here would have introduced a rea
 the user's own two modifiers under the old convention: 4.5 / 1.2 = 3.75, plus the +1 second they had
 entered = 4.75. The same two entries now produce 2.75s.
 
-Positional trinkets remain unmodelled, and that gap is reported by `TotalDps`'s coverage line rather
-than by a per-trinket badge (see the retired "★ affects DPS" marker).
+Positional trinkets remain unmodelled, and that gap is reported by `PlacementAdvisor`'s coverage
+lines rather than by a per-trinket badge (see the retired "★ affects DPS" marker).
 
 ### Two layout corrections (2026-10-07)
 

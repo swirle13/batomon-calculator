@@ -72,7 +72,7 @@ function CalculatorView() {
           <PlacedCreatureDetails result={result} highlightedSlot={highlightedSlot} />
         </div>
       </div>
-      <PlacementAdvisor />
+      <PlacementAdvisor result={result} />
       <TotalDps config={config} result={result} />
       <TeamSummary config={config} result={result} />
       {/* FR-037: the simulation window governs the chart's time axis, not the per-second summary

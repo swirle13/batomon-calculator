@@ -1,7 +1,5 @@
 import { memo, useState } from "react";
 import type { SimulationResult, TeamConfiguration } from "../../data/types";
-import { corpus } from "../../data/corpus";
-import { analyzePositionalCoverage } from "../../engine/optimize";
 import { windowAverageDps } from "../../engine/simulate";
 import { formatRate } from "../../data/format";
 import { MAX_RECORDED_DAY, enemyHpForDay, timeToKill } from "../../data/enemyHealth";
@@ -32,6 +30,14 @@ interface TotalDpsProps {
  *
  * `perStatusPerSecond` must NOT be summed for this purpose: its `Shield` entry is Shield *granted*,
  * never damage, and never enters `facilitatedDamage` — so that route would inflate any Shield team.
+ *
+ * ## What is NOT here
+ *
+ * The "not in this figure" caveats — creatures a teammate knocked out at battle start, abilities
+ * the engine cannot compute, abilities that fire between battles — lived under these numbers until
+ * 2026-10-08 and now live in `PlacementAdvisor`. They are statements about which abilities the
+ * board is and is not getting value from, which is that section's subject; here they were
+ * footnotes to a number.
  */
 /** Memoized for the same reason as `CumulativeChart` — see the note there. */
 export const TotalDps = memo(function TotalDps({ config, result }: TotalDpsProps) {
@@ -65,34 +71,6 @@ export const TotalDps = memo(function TotalDps({ config, result }: TotalDpsProps
    * rather than a missing one, so it renders as "> <window>s" instead of a dash.
    */
   const ttkSeconds = timeToKill(result.cumulativeSeries, day);
-
-  const coverage = analyzePositionalCoverage(config, corpus);
-  /*
-   * 2026-10-07: this read `needsModelling.filter((n) => !actionable.includes(n))`, and `actionable`
-   * only ever counts POSITIONAL tags — it belongs to the placement optimiser (FR-069). So any
-   * creature whose ability the engine resolves NON-positionally was reported as unmodelled, and the
-   * figure was simply false: a board of Ninflora, Mosslug, Thorntail, Drumire, Cobrex and Miasmaw
-   * claimed "3 of 6 abilities not yet modelled" when the true answer was 1 of 6.
-   *
-   * `coverage.unmodelled` is computed from `isResolvableTag`, the same predicate the engine uses to
-   * decide what it acts on, so the claim and the behaviour cannot disagree.
-   */
-  const casualties = result.knockedOutAtBattleStart;
-  /*
-   * A creature a teammate knocked out is reported ONCE, on the casualty line.
-   *
-   * `analyzePositionalCoverage` walks `config.placements`, which still contains the corpses — it
-   * is a report about the board the user built, not about who survived battle start. Without this
-   * filter a knocked-out creature with an unresolved ability would be listed under "the engine
-   * does not compute this ability yet" as well, which is true in the abstract and useless here:
-   * its ability is not missing from the figure because of an engine gap, it is missing because
-   * the creature is dead.
-   */
-  const dead = new Set(casualties.map((c) => c.name));
-  const unmodelledNames = coverage.unmodelled.filter((n) => !dead.has(n));
-  const bankedNames = coverage.manuallyBanked.filter((n) => !dead.has(n));
-  const unmodelled = unmodelledNames.length;
-  const manuallyBanked = bankedNames.length;
 
   return (
     <section className={styles.wrap}>
@@ -160,62 +138,6 @@ export const TotalDps = memo(function TotalDps({ config, result }: TotalDpsProps
         </div>
       )}
 
-      {/*
-        FR-075: a DPS figure reads as authoritative, so a real coverage gap stays beside it.
-
-        2026-10-08, user-reported: both lines used to be COUNTS ("1 of 4 abilities not yet
-        modelled", "2 fire outside the battle — bank them on the card") with the names of the
-        creatures only in a `title` tooltip. A count tells you a gap exists and nothing about
-        whether it matters to you; the names are the whole content, and the user found them by
-        accident. They are in the text now, and the tooltips are gone rather than demoted — there
-        was nothing left in them worth a second discovery.
-
-        The second line also used to end "bank them on the card", which the user correctly called
-        out as an instruction they did not need. What they do need is WHY these abilities are
-        absent from the figure, which is the clause that replaced it.
-
-        Both lines say nothing at all when there is nothing outstanding: a counter reading 0/0, or
-        a caveat naming nobody, is noise next to a number.
-      */}
-      {(unmodelled > 0 || manuallyBanked > 0 || casualties.length > 0) && (
-        <div className={styles.coverage}>
-          <p className={styles.coverageHeading}>Not in this figure</p>
-          {/*
-            2026-10-08, user-reported. Placing a Rattleghast beside two allies removed both from
-            the simulation — correctly, that is what its ability does — but removed them SILENTLY,
-            which reads as the tool losing track of half the board. Naming the creature that
-            killed them is the part that makes it legible rather than alarming.
-
-            This line comes FIRST because it is the one that changes what the user should do: the
-            other two describe a limit of the engine, this describes a consequence of their board.
-          */}
-          {casualties.length > 0 && (
-            <p className={styles.coverageLine}>
-              <span className={styles.coverageNames}>{casualties.map((c) => c.name).join(", ")}</span> — knocked
-              out at battle start by {[...new Set(casualties.map((c) => c.knockedOutBy))].join(" and ")}
-            </p>
-          )}
-          {unmodelled > 0 && (
-            <p className={styles.coverageLine}>
-              <span className={styles.coverageNames}>{unmodelledNames.join(", ")}</span> — the engine does not
-              compute {unmodelled === 1 ? "this ability" : "these abilities"} yet
-            </p>
-          )}
-          {/*
-            A SEPARATE line, because this is a different fact and the old counter told the wrong
-            story about it: the ability is fully representable, it just fires on something outside
-            the battle — winning a round, buying a monster, using an item — so the engine has no
-            occurrence to count. Calling them "not modelled" overstated the gap.
-          */}
-          {manuallyBanked > 0 && (
-            <p className={styles.coverageLine}>
-              <span className={styles.coverageNames}>{bankedNames.join(", ")}</span> —{" "}
-              {manuallyBanked === 1 ? "this ability triggers" : "these abilities trigger"} between battles, not
-              during one
-            </p>
-          )}
-        </div>
-      )}
     </section>
   );
 });

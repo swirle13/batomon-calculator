@@ -4,9 +4,11 @@ import { computePlacementAdvice, type PlacementAdvice } from "../../engine/place
 import type { TeamConfiguration } from "../../data/types";
 
 /**
- * Below this the advisor renders nothing at all (`suggestPlacement` has nothing to permute), so
- * there is no reason to spin up a thread or ship its bundle. Keeping the two in step is what
- * makes the worker genuinely lazy: a visitor who never places a second creature never fetches it.
+ * Below this there is nothing to permute, so `suggestPlacement` has no answer to give and there is
+ * no reason to spin up a thread or ship its bundle. Keeping the two in step is what makes the
+ * worker genuinely lazy: a visitor who never places a second creature never fetches it. (The
+ * advisor may still render on a one-creature board — see `renderNotCounted` — but nothing it shows
+ * there comes from a search.)
  */
 const MIN_PLACEMENTS = 2;
 

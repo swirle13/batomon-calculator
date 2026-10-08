@@ -1,0 +1,37 @@
+/*
+ * The exclusions block, moved here from `TotalDps` (2026-10-08, user-reported).
+ *
+ * It sat under the headline DPS figures, which is where it was READ but not where it was wanted:
+ * a creature a teammate knocked out, or an ability that fires between battles, is a fact about
+ * what the board does with its abilities, and that is what the placement section is for. The
+ * rules are otherwise the ones it had there, minus the centring — the advisor's body is a
+ * left-aligned column, not a centred panel.
+ */
+.coverage {
+  font-size: var(--font-xs);
+  color: var(--text-warn);
+  border-top: 1px solid var(--line-subtle);
+  padding-top: var(--space-xs);
+  margin: var(--space-sm) 0 0;
+  line-height: 1.4;
+}
+
+.coverageHeading {
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  font-size: var(--font-2xs);
+  color: var(--text-muted);
+}
+
+.coverageLine {
+  margin: var(--space-2xs) 0 0;
+  color: var(--text-secondary);
+}
+
+/* The names are the content of the line; the explanation after them is the qualifier. */
+.coverageNames {
+  color: var(--text-warn);
+  font-weight: 600;
+}

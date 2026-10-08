@@ -1,14 +1,102 @@
 import { memo } from "react";
 import { useTeamConfig } from "../../context/teamConfig";
-import { TIME_WEIGHT_HALF_LIFE_SECONDS } from "../../engine/optimize";
-import { getCreatureById } from "../../data/corpus";
+import { TIME_WEIGHT_HALF_LIFE_SECONDS, analyzePositionalCoverage } from "../../engine/optimize";
+import { corpus, getCreatureById } from "../../data/corpus";
 import { formatRate } from "../../data/format";
 import { Button, Disclosure } from "../primitives";
 import { GridRow } from "../../data/enums";
+import type { SimulationResult, TeamConfiguration } from "../../data/types";
 import { usePlacementAdvice } from "./usePlacementAdvice";
+import styles from "./PlacementAdvisor.module.css";
 
 /** The grid renders `Back` above `Front`, so name the rows the way the user sees them. */
 const rowLabel = (row: GridRow) => (row === GridRow.Back ? "top" : "bottom");
+
+/**
+ * The creatures and abilities contributing nothing to the simulated battle, moved here from under
+ * the headline DPS figures on 2026-10-08 at the user's request.
+ *
+ * The figures were where this was *noticed*, but not what it is *about*: "Rattleghast knocked your
+ * Shikitsune out" and "Craghorn's ability fires between battles" are both answers to "which of my
+ * abilities are actually doing something on this board", which is the question this whole section
+ * exists to answer. Beside a DPS number they read as disclaimers on the number.
+ *
+ * ## Derived from the LIVE board, not from `advice.coverage`
+ *
+ * `PlacementAdvice` already carries a `PositionalCoverage`, but it is a board behind whenever the
+ * worker is catching up, and the casualty list only exists on the `SimulationResult`. Mixing a
+ * stale roster with live casualties would let the two lines name creatures from different boards.
+ * `analyzePositionalCoverage` is a walk over the placements with no simulation in it, so running
+ * it again here against the live config costs nothing and cannot disagree with what is on screen.
+ *
+ * A plain function rather than a component because the caller has to know whether it produced
+ * anything: with one creature placed there is no search to report, so the section is worth showing
+ * only if this has something to say.
+ */
+function renderNotCounted(config: TeamConfiguration, result: SimulationResult) {
+  const coverage = analyzePositionalCoverage(config, corpus);
+  const casualties = result.knockedOutAtBattleStart;
+  /*
+   * A creature a teammate knocked out is reported ONCE, on the casualty line.
+   *
+   * `analyzePositionalCoverage` walks `config.placements`, which still contains the corpses — it
+   * is a report about the board the user built, not about who survived battle start. Without this
+   * filter a knocked-out creature with an unresolved ability would be listed under "the engine
+   * does not compute this ability yet" as well, which is true in the abstract and useless here:
+   * its ability is not missing because of an engine gap, it is missing because the creature is
+   * dead.
+   */
+  const dead = new Set(casualties.map((c) => c.name));
+  const unmodelled = coverage.unmodelled.filter((n) => !dead.has(n));
+  const banked = coverage.manuallyBanked.filter((n) => !dead.has(n));
+
+  // Says nothing at all when there is nothing outstanding: a caveat naming nobody is noise.
+  if (casualties.length === 0 && unmodelled.length === 0 && banked.length === 0) return null;
+
+  return (
+    <div className={styles.coverage}>
+      <p className={styles.coverageHeading}>Not counted in this calculation</p>
+      {/*
+        2026-10-08, user-reported. Placing a Rattleghast beside two allies removed both from the
+        simulation — correctly, that is what its ability does — but removed them SILENTLY, which
+        reads as the tool losing track of half the board. Naming the creature that killed them is
+        the part that makes it legible rather than alarming.
+
+        This line comes FIRST because it is the one that changes what the user should do: the
+        other two describe a limit of the engine, this describes a consequence of their board.
+      */}
+      {casualties.length > 0 && (
+        <p className={styles.coverageLine}>
+          <span className={styles.coverageNames}>{casualties.map((c) => c.name).join(", ")}</span> — knocked
+          out at battle start by {[...new Set(casualties.map((c) => c.knockedOutBy))].join(" and ")}
+        </p>
+      )}
+      {unmodelled.length > 0 && (
+        <p className={styles.coverageLine}>
+          <span className={styles.coverageNames}>{unmodelled.join(", ")}</span> — the engine does not
+          compute {unmodelled.length === 1 ? "this ability" : "these abilities"} yet
+        </p>
+      )}
+      {/*
+        A SEPARATE line, because this is a different fact: the ability is fully representable, it
+        just fires on something outside the battle — winning a round, buying a monster, using an
+        item — so the engine has no occurrence to count. Calling them "not modelled" overstates it.
+      */}
+      {banked.length > 0 && (
+        <p className={styles.coverageLine}>
+          <span className={styles.coverageNames}>{banked.join(", ")}</span> —{" "}
+          {banked.length === 1 ? "this ability triggers" : "these abilities trigger"} between battles, not
+          during one
+        </p>
+      )}
+    </div>
+  );
+}
+
+interface PlacementAdvisorProps {
+  /** The Calculator view's one `simulate()` result — never recomputed here. */
+  result: SimulationResult;
+}
 
 /**
  * FR-069 (WI-018): suggests a rearrangement of the placed creatures with higher time-weighted
@@ -21,7 +109,7 @@ const rowLabel = (row: GridRow) => (row === GridRow.Back ? "top" : "bottom");
  * position matter" — and presenting that as "your placement is optimal" would be a lie the user
  * could act on.
  */
-export const PlacementAdvisor = memo(function PlacementAdvisor() {
+export const PlacementAdvisor = memo(function PlacementAdvisor({ result }: PlacementAdvisorProps) {
   const { config: liveConfig, replaceConfig } = useTeamConfig();
 
   /*
@@ -36,11 +124,32 @@ export const PlacementAdvisor = memo(function PlacementAdvisor() {
    */
   const { advice, isStale } = usePlacementAdvice(liveConfig);
 
-  // Read off the LIVE config: an advisor that lingers after the board drops below two creatures
-  // is showing advice about a board that no longer exists, which no amount of labelling fixes.
-  if (liveConfig.placements.length < 2) return null;
-  // Before the worker's first reply there is nothing to show but the fact that it is coming.
-  if (!advice) return <Disclosure label="Placement suggestion" hint="(calculating…)" />;
+  /*
+   * Read off the LIVE config and the LIVE result, so it is never a board behind — and so it
+   * survives every state the search itself can be in. `Disclosure` renders a flat, non-expandable
+   * row when its children are `null`, which is exactly the no-suggestion-and-nothing-excluded
+   * case, so the same expression serves all three returns below.
+   */
+  const notCounted = renderNotCounted(liveConfig, result);
+
+  // A single placed creature has nothing to permute, so there is no suggestion to make — but it
+  // can still have an ability the engine skips, and that is the half of this section that does
+  // not need a second creature to be true.
+  if (liveConfig.placements.length < 2) {
+    return notCounted ? (
+      <Disclosure label="Placement suggestion" hint="(place a second Batomon to search)">
+        {notCounted}
+      </Disclosure>
+    ) : null;
+  }
+  // Before the worker's first reply there is no suggestion to show, only the fact that it is coming.
+  if (!advice) {
+    return (
+      <Disclosure label="Placement suggestion" hint="(calculating…)">
+        {notCounted}
+      </Disclosure>
+    );
+  }
 
   const { suggestion, coverage, currentDps, suggestedDps, moves, placementCount } = advice;
   const blindTags = coverage.withPositionalTag.filter((n) => !coverage.actionable.includes(n));
@@ -58,10 +167,18 @@ export const PlacementAdvisor = memo(function PlacementAdvisor() {
   // so the caveat is now harder to miss than it was buried at the bottom of an expanded panel.
   // While the worker catches up the figures below describe the previous board, so the hint says
   // "recalculating…" rather than quietly presenting last board's numbers as this one's.
+  //
+  // 2026-10-08: "no body at all" now means no body about the SEARCH. The exclusions below are not
+  // prose about an absence — they name creatures on the board that are contributing nothing — and
+  // a board with no better arrangement is exactly where the user wants to know why.
   if (!suggestion.placements) {
     const seen = coverage.actionable.length;
     const hint = seen === 0 ? "(none)" : `(none — ${seen}/${placementCount} positional abilities modelled)`;
-    return <Disclosure label="Placement suggestion" hint={isStale ? "(recalculating…)" : hint} />;
+    return (
+      <Disclosure label="Placement suggestion" hint={isStale ? "(recalculating…)" : hint}>
+        {notCounted}
+      </Disclosure>
+    );
   }
 
   return (
@@ -123,6 +240,10 @@ export const PlacementAdvisor = memo(function PlacementAdvisor() {
           Apply this arrangement
         </Button>
       </div>
+
+      {/* Before the engine's own blind spots, because this describes the user's board rather than
+          a limit of the tool — and it is the part they can act on. */}
+      {notCounted}
 
       {/* The blind-spot disclosure. This is mandatory, not a nicety (FR-069). */}
       <p
