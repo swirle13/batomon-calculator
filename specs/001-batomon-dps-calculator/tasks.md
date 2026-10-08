@@ -249,6 +249,12 @@ and confirm a known conflicting entry shows both values with their sources.
       (Constitution Principle II)
 - [ ] T054 [P] Accessibility pass on `GridPicker`/`TeamSummary`/`CumulativeChart` (keyboard
       navigation, `aria-*` labels)
+      **Partially done, still open (swept 2026-10-08).** `GridPicker`, `CreatureSearchModal`,
+      `TrinketPicker` and `SeriesChart` carry `aria-*`/`role`, and T091 added the modal's focus
+      trap. Outstanding: `TeamSummary.tsx` and `PlacedCreatureDetails.tsx` have no `aria-*` or
+      `role` at all; there is no test or recorded walkthrough covering keyboard navigation; and
+      per T056's closing note, the `<select>` fallback input path was removed (T098/T126) without
+      a non-modal replacement.
 - [x] T055 Create the public GitHub repository (per the earlier decision: `swirle13/batomon-
       calculator`-style public repo), push initial history, and confirm the `deploy.yml` workflow
       from T006 publishes successfully to `gh-pages`
@@ -341,17 +347,20 @@ plus the latent `(id, level)` lookup bug data-model.md surfaced along the way.
 
 ### Corpus completeness (US3 — tracked, explicitly large/ongoing, not closeable in one pass)
 
-- [ ] T075 [US3] Research and record confirmed `baseDamage`/`baseCooldownSeconds`/per-level (2–4)
+- [x] T075 [US3] Research and record confirmed `baseDamage`/`baseCooldownSeconds`/per-level (2–4)
       stats for `src/data/creatures.ts` entries, one cited batch at a time (same pattern as T043's
       caveat) — target SC-003's ≥90% bar; log progress against the research.md D5 baseline
       (5/149 confirmed) in `quickstart.md`'s Validation results section after each batch rather
       than claiming completion prematurely
-      **In progress, 2026-10-05 round 2**: first batch done — `brawlmantis`/`dracana`/`frizzly`
-      confirmed via individual batodex.com detail pages (the exact three the user originally
-      reported as "0 DPS"), bringing the corpus to 8/149 (~5.4%) confirmed. Confirmed
-      batodex.com has an individual page per creature (`batodex.com/monsters/<slug>`), so the
-      remaining ~141 are mechanically the same kind of lookup, just not yet done — still far
-      short of SC-003's ≥90% bar and intentionally left open, not re-closed here.
+      **Done, closed 2026-10-08.** The batch-at-a-time approach this task described was overtaken
+      by the bulk extraction in T104/T108 and the level-1 reconciliation in T100/T133, so the
+      progress log it asked for (which last read 8/149, ~5.4%) never advanced past round 2 and is
+      superseded by the corpus itself. As of this sweep `src/data/creatures.ts` holds 596 records
+      (149 species × levels 1–4); every one has a `baseCooldownSeconds`, and no record carries
+      `unconfirmedFields`. 356 records have a `publishedCast`; the 240 that do not are the 60
+      non-damaging support species (healers, shield-granters, status-appliers such as Aster and
+      Blixie) across their four levels — an absent cast is the correct value for them, not a gap.
+      SC-003's ≥90% bar is met.
 
 **Checkpoint**: Trainer roster complete and positioned per FR-015; per-creature effective-stat
 breakdown live per FR-016; chart X-axis consistent per FR-017; level/Multicast data-model gaps
@@ -614,11 +623,20 @@ like a manual `StatModifier` would.
 ## Future Enhancements (user-requested 2026-10-05, explicitly deferred: "once we get all of the
 ## mechanics working" — not scheduled into a phase yet)
 
-- [ ] T056 Replace/augment the `<select>`-based `GridPicker` with a big vertical, scrollable
+- [x] T056 Replace/augment the `<select>`-based `GridPicker` with a big vertical, scrollable
       creature browser alongside the calculator (showing each Banto's base stats + ability
       inline, same info as `PlacedCreatureDetails`/`CorpusBrowser` already render) that supports
       drag-and-drop onto the 2x3 grid. Keep the existing dropdown as a fallback/accessible
       alternative input method rather than removing it outright (keyboard/screen-reader users).
+      **Superseded, closed 2026-10-08.** The picking experience this asked for shipped as a
+      different shape: T082/T083 built `CreatureSearchModal` (searchable, scrollable, stats and
+      ability inline, sprites since T129) instead of a browser pinned beside the grid, and T084
+      added drag-and-drop between slots. What did *not* survive is this task's second sentence —
+      T098 removed the "Choose…"/"Change…" button and T126 deleted the per-slot `<select>`, so
+      the dropdown fallback is gone rather than kept. Slot cards carry `role="button"` plus an
+      `aria-label` (`GridPicker.tsx`), so the modal is reachable from the keyboard, but the
+      non-modal alternative input path this task wanted no longer exists. That residue belongs to
+      the still-open T054 accessibility pass, not here.
 
 ---
 
