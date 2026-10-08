@@ -179,6 +179,34 @@ export enum ModifierStat {
   HealAmountAdd = "healAmountAdd",
 }
 
+/**
+ * Who a USED item's effect lands on (2026-10-08, T046).
+ *
+ * Items are the first corpus entity whose effects are not uniformly team-wide, which is why they
+ * need a vocabulary a trinket's `effectTags` did not: Feast gives "your monsters" +5 Damage, Pom
+ * Berry gives "the bottom right monster" +8, and Cake gives "2 random monsters" +5 each. Those are
+ * three genuinely different recipient rules and no single shape covers them.
+ *
+ * Deliberately NOT `TargetSelector`, which creatures use. That selector is relative to a SOURCE
+ * creature ("adjacent", "behind", "in front"), and an item has no source on the board — it is used
+ * from the shop screen. Every item target here is absolute: the whole team, one named slot, or
+ * whoever the user says.
+ */
+export enum ItemTargetKind {
+  /** "Give your monsters ..." — every placed monster, optionally narrowed by a filter. */
+  Team = "team",
+  /** "Give the bottom right monster ..." — one slot, named by the item itself. */
+  FixedSlot = "fixedSlot",
+  /**
+   * "Give 2 random monsters ..." — the game rolls, the USER picks.
+   *
+   * Rolling here would be useless for the same reason `AffectedCreaturePicker` gives: the player
+   * is reconciling a run that has already rolled, and a second independent roll produces a board
+   * they cannot match against their screen.
+   */
+  Chosen = "chosen",
+}
+
 /** The event names `onEvent` tags fire on. Distinct spelling from `AbilityTrigger` by design:
  * these are engine-internal labels, while `AbilityTrigger` carries the published wording. */
 export enum EventLabel {

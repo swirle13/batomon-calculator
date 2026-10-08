@@ -221,7 +221,10 @@ and confirm a known conflicting entry shows both values with their sources.
 - [x] T044 [P] [US3] Widen `src/data/trainers.ts` to the full cited Trainer corpus — **done via
       T070 below** (2026-10-05 round 2), with the exact 23-Trainer roster + citations
       research.md D1 found during round-2 planning
-- [ ] T045 [P] [US3] Populate `src/data/trinkets.ts` with the full cited Trinket corpus
+- [x] T045 [P] [US3] Populate `src/data/trinkets.ts` with the full cited Trinket corpus — **done
+      via T109 below** (2026-10-06 round 5): all 93 `TrinketRecord` entries with
+      `name`/`effectText`/`rarity` and per-trinket batodex.com citations; the file's own header
+      records that it supersedes this task's empty stub
 - [ ] T046 [P] [US3] Populate `src/data/items.ts` with the full cited Item corpus
 - [x] T047 [US3] Build `CorpusBrowser` in `src/ui/CorpusBrowser/CorpusBrowser.tsx`: name search +
       type/rarity filter controls (FR-013), wired to T042's helpers

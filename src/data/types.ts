@@ -491,11 +491,71 @@ export interface TrinketRecord extends Provenance {
   spriteFile?: string;
 }
 
+/**
+ * Who one USE of an item grants its stats to (2026-10-08, T046).
+ *
+ * `Team` carries its own narrowing rather than deferring to `SelectorFilters`, because the two
+ * filters items actually need are not the ones creatures need. Seven items read "your <Type>
+ * monsters" and one reads "your monsters with no abilities"; none reads "allies of rarity X" or
+ * "allies of level 3+", which is most of what `SelectorFilters` offers.
+ */
+export type ItemTarget =
+  | {
+      kind: ItemTargetKind.Team;
+      /** "Give your Electric monsters +1 Shock" — Battery Pack. */
+      typeFilter?: CreatureType;
+      /**
+       * "Your monsters with no abilities gain +15% Cooldown Speed" — Focus Pill, the only item
+       * with this condition. A flag rather than a general predicate: one case does not justify a
+       * filter language, and a boolean says exactly what the card says.
+       */
+      abilitylessOnly?: boolean;
+    }
+  | { kind: ItemTargetKind.FixedSlot; slot: GridSlot }
+  | { kind: ItemTargetKind.Chosen; count: number };
+
+/**
+ * The flat, permanent stat grant a used item makes, and who receives it.
+ *
+ * Shaped like `TrinketRecord.effectTags` — a flat `{ stat, amount }[]`, not the creature
+ * `AbilityTag`/`EffectDescriptor` machinery — for the same reason that one is: an item grants a
+ * fixed quantity, unconditionally, once. There is no trigger, no scaling and no duration to
+ * encode. What it adds over trinkets is `target`, because an item's recipients vary and a
+ * trinket's never do.
+ *
+ * Only 11 of the 40 items have one. The other 29 are shop/economy mechanics (rerolls, shop rank,
+ * gifts, gold), run-state changes the battle engine has no model for (level-ups, turning a
+ * monster SHINY, copying an enemy), or `Coffee`'s "On Battle Start abilities activate an
+ * additional time" — real effects, all of them, but not flat stat grants. They stay cited and
+ * browsable with no `effect`, exactly how 87 of the 93 trinkets are treated.
+ */
+export interface ItemEffect {
+  target: ItemTarget;
+  /** Applied once per recipient, per use. */
+  stats: { stat: ModifierStat; amount: number }[];
+}
+
 export interface ItemRecord extends Provenance {
   id: ItemId;
   name: string;
   effectText: string;
   abilityTags: AbilityTag[];
+  /** batodex publishes a tier per item, which maps 1:1 onto the same `Rarity` everything else uses. */
+  rarity?: Rarity;
+  /** Gold cost in the shop. `0` is a real, common price here — 21 of 40 items are free. */
+  cost?: number;
+  /** Whether only one may be used per round. Published per item; not simulated. */
+  uniquePerRound?: boolean;
+  /**
+   * What USING this item does, when that is a flat stat grant this engine can apply. Absent =
+   * browsable corpus data only, and the UI offers no Use button rather than a dead one.
+   */
+  effect?: ItemEffect;
+  /**
+   * Vendored sprite filename, resolved against `${import.meta.env.BASE_URL}sprites/item/` —
+   * see `src/ui/shared/Sprite.tsx`. Absent = render the text-only presentation.
+   */
+  spriteFile?: string;
 }
 
 export interface Corpus {
