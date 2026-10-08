@@ -50,7 +50,7 @@ const STAT_KEY: Partial<Record<ModifierStat, StatColorKey>> = {
   shieldAmountAdd: StatColorKey.Shield,
   multicastAdd: StatColorKey.Multicast,
   healAmountAdd: StatColorKey.Heal,
-  cooldownSpeedAdd: StatColorKey.Multicast,
+  cooldownSpeedAdd: StatColorKey.Cooldown,
 };
 
 const STAT_LABEL: Partial<Record<ModifierStat, string>> = {

@@ -117,7 +117,7 @@ describe("derived lists are key-complete against their registry", () => {
   it("the trigger list covers exactly the trigger enum's members", () => {
     // Replaces a hand-written ten-value array in `triggers.test.ts`, which could not see a value
     // added to the union and omitted from itself — the exact drift its own guard existed to catch.
-    expect([...ABILITY_TRIGGERS].sort()).toEqual([...Object.values(AbilityTrigger)].sort());
+    expect([...ABILITY_TRIGGERS].sort()).toEqual(Object.values(AbilityTrigger).sort());
     for (const t of ABILITY_TRIGGERS) {
       expect(TRIGGER_DEFINITIONS[t].actionLabel.length, `no actionLabel for ${t}`).toBeGreaterThan(0);
     }

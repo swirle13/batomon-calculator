@@ -2208,9 +2208,11 @@ export const creatures: CreatureRecord[] = [
     shopCost: 0,
     baseCooldownSeconds: 10,
     publishedCast: { damage: 1, channel: DamageChannel.Direct },
-    abilityText: "Hatches a level 2 {monster_name} in {amount} day(s).",
+    abilityText: "Hatches a level 2 monster after a number of days.",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost, ConfirmableField.Types],
+    // Paraphrased: the extracted text carried unresolved `{monster_name}`/`{amount}`
+    // substitution tokens (research.md R7.1), so the specific monster and day count are not known.
+    unconfirmedFields: [ConfirmableField.AbilityText, ConfirmableField.ShopCost, ConfirmableField.Types],
     spriteFile: "purple_egg.png",
     sourceRefs: [communityDex],
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
@@ -3063,7 +3065,13 @@ export const creatures: CreatureRecord[] = [
     baseCooldownSeconds: 4,
     publishedCast: { damage: 30, channel: DamageChannel.Direct },
     healAmount: 30,
-    abilityText: "Named on batomon.com's 149-entry navigation list but not present in the 144-row community dex table or the demo tier/cost table reviewed; identity otherwise unconfirmed.",
+    // 2026-10-07 (research.md R7.4): this field held a SOURCING DISCLAIMER -- "Named on
+    // batomon.com's 149-entry navigation list but not present in the 144-row community dex table
+    // or the demo tier/cost table reviewed" -- which `hasAbilityText` accepted, so the card
+    // rendered a provenance note as though it were the creature's ability. The disclaimer belongs
+    // in `patch`/`sourceRefs`, where it already is. Empty string, not prose: that is the corpus's
+    // established spelling for "no ability", enforced by scrubber.test.tsx's guard.
+    abilityText: "",
     abilityTags: [],
     unconfirmedFields: [ConfirmableField.Rarity, ConfirmableField.Types, ConfirmableField.ShopCost, ConfirmableField.AbilityText],
     spriteFile: "dewlotl.png",
@@ -8351,8 +8359,11 @@ export const creatures: CreatureRecord[] = [
     shopCost: 0,
     baseCooldownSeconds: 10,
     publishedCast: { damage: 1, channel: DamageChannel.Direct },
-    abilityText: "Hatches a level 3 {monster_name} in {amount} day(s).",
+    abilityText: "Hatches a level 3 monster after a number of days.",
     abilityTags: [],
+    // Paraphrased: the extracted text carried unresolved `{monster_name}`/`{amount}`
+    // substitution tokens (research.md R7.1), so the specific monster and day count are not known.
+    unconfirmedFields: [ConfirmableField.AbilityText],
     spriteFile: "purple_egg.png",
     sourceRefs: [batodexExtracted("purple_egg", "Purple Egg")],
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
@@ -8367,8 +8378,11 @@ export const creatures: CreatureRecord[] = [
     shopCost: 0,
     baseCooldownSeconds: 10,
     publishedCast: { damage: 1, channel: DamageChannel.Direct },
-    abilityText: "Hatches a level 4 {monster_name} in {amount} day(s).",
+    abilityText: "Hatches a level 4 monster after a number of days.",
     abilityTags: [],
+    // Paraphrased: the extracted text carried unresolved `{monster_name}`/`{amount}`
+    // substitution tokens (research.md R7.1), so the specific monster and day count are not known.
+    unconfirmedFields: [ConfirmableField.AbilityText],
     spriteFile: "purple_egg.png",
     sourceRefs: [batodexExtracted("purple_egg", "Purple Egg")],
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
@@ -8383,8 +8397,11 @@ export const creatures: CreatureRecord[] = [
     shopCost: 0,
     baseCooldownSeconds: 10,
     publishedCast: { damage: 1, channel: DamageChannel.Direct },
-    abilityText: "Hatches a level 4 {monster_name} in {amount} day(s).",
+    abilityText: "Hatches a level 4 monster after a number of days.",
     abilityTags: [],
+    // Paraphrased: the extracted text carried unresolved `{monster_name}`/`{amount}`
+    // substitution tokens (research.md R7.1), so the specific monster and day count are not known.
+    unconfirmedFields: [ConfirmableField.AbilityText],
     spriteFile: "purple_egg.png",
     sourceRefs: [batodexExtracted("purple_egg", "Purple Egg")],
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",

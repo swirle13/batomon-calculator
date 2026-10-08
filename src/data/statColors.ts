@@ -37,6 +37,8 @@ export const STAT_COLORS: Record<StatColorKey, string> = {
   [StatColorKey.Shield]: "#9aa1b8",
   [StatColorKey.Heal]: "#578ac9",
   [StatColorKey.Multicast]: "#7b93c3",
+  // Original choice, not a published value -- see `StatColorKey.Cooldown`.
+  [StatColorKey.Cooldown]: "#49b6c8",
 };
 
 /**

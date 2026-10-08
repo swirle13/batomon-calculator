@@ -235,6 +235,17 @@ export enum StatColorKey {
   Shield = "shield",
   Heal = "heal",
   Multicast = "multicast",
+  /**
+   * 2026-10-07. The one key here that is NOT a published game value.
+   *
+   * The other seven are the game's own extracted colours and must never be adjusted to taste. This
+   * one exists because Cooldown Speed had no entry at all, so the trigger-button preview and the
+   * ability-text highlighter were borrowing `Multicast`'s blue -- rendering Ninflora's "+10%
+   * Cooldown Speed" in a colour that means a different stat. A distinct hue is less wrong than a
+   * borrowed one; it is flagged as an original choice so a future published value replaces it
+   * rather than being argued with.
+   */
+  Cooldown = "cooldown",
 }
 
 // ---------------------------------------------------------------------------

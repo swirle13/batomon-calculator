@@ -57,6 +57,21 @@ describe("placeholder ability text never reaches the UI (2026-10-06)", () => {
     expect(hasAbilityText("Deals 3 direct damage every 2.5 seconds.")).toBe(true);
   });
 
+  it("GUARD: no record ships unresolved template syntax as ability text", () => {
+    /*
+     * Added 2026-10-07 (research.md R7.1). `purpleegg` shipped "Hatches a level 2 {monster_name} in
+     * {amount} day(s)." to the card -- literal substitution tokens from the extracted database,
+     * rendered to the user as though they were the ability.
+     *
+     * The guard below catches placeholder PROSE ("unknown", "n/a"); it could not see template
+     * syntax, which is a different shape of the same mistake. Both are checked now.
+     */
+    const templated = corpus.creatures
+      .filter((c) => /\{[a-z_]+\}|%[sd]\b|\$\{/i.test(c.abilityText ?? ""))
+      .map((c) => `${c.id} L${c.level}: ${c.abilityText}`);
+    expect(templated).toEqual([]);
+  });
+
   it("GUARD: the corpus spells 'no ability' as an empty string, never as prose", () => {
     // Prose placeholders are indistinguishable from real abilities to anything but this predicate,
     // so a newly-introduced phrasing would silently render as an ability called e.g. "Unknown".

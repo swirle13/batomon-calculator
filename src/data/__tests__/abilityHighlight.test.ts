@@ -24,7 +24,7 @@ describe("tokenizeAbilityText — the reference cards from the ask", () => {
   it("colours Shikitsune's '+15% Cooldown Speed' as ONE run, sign and percent included", () => {
     const c = corpus.creatures.find((x) => x.id === "shikitsune" && x.level === 1)!;
     expect(render(c.abilityText)).toBe(
-      "Knocked-out allies are revived and gain [+15% Cooldown Speed|multicast] for this battle.",
+      "Knocked-out allies are revived and gain [+15% Cooldown Speed|cooldown] for this battle.",
     );
   });
 
@@ -97,21 +97,23 @@ describe("tokenizeAbilityText — it must not change the text", () => {
 });
 
 describe("WI-007 coverage — stated, not implied", () => {
-  it("colours at least one keyword in 542 of the 543 records with ability text", () => {
+  it("colours at least one keyword in EVERY record with ability text", () => {
     const bare = withText.filter((c) => coloured(tokenizeAbilityText(c.abilityText)).length === 0);
-    expect(withText.length).toBe(543);
 
     /*
-     * The ask says "all mon's ability text". This reaches 542 of 543, and the single exception is
-     * not an ability at all: `dewlotl`'s `abilityText` is a sourcing disclaimer — "Named on
-     * batomon.com's 149-entry navigation list but not present in the 144-row community dex table…"
-     * — recorded as research.md R7.4. So every record that actually states an ability is covered,
-     * and the one that does not is a corpus bug this round found rather than a highlighting gap.
+     * 542 of 542 — the ask ("for all mon's ability text") is now literally met.
      *
-     * Pinned as an exact list rather than a count so that fixing dewlotl's record makes this test
-     * fail loudly and become 543 of 543, instead of quietly staying true of a different creature.
+     * It read 542 of 543 until the holdout was investigated, and the holdout turned out not to be a
+     * highlighting gap at all: `dewlotl`'s `abilityText` held a sourcing disclaimer rather than an
+     * ability (research.md R7.4), which `hasAbilityText` accepted, so a provenance note was being
+     * rendered as a creature's ability. Fixing the record dropped the denominator to 542 and the
+     * exceptions to none.
+     *
+     * The previous version of this test pinned the holdout as an exact list precisely so that
+     * fixing it would fail loudly rather than quietly stay true of some other creature. It did.
      */
-    expect(bare.map((c) => c.id)).toEqual(["dewlotl"]);
+    expect(withText.length).toBe(542);
+    expect(bare.map((c) => c.id)).toEqual([]);
   });
 
   it("uses the stat badges' own palette, so text and badges cannot drift", () => {

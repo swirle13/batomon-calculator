@@ -1018,7 +1018,7 @@ export function simulate(
   // their x-quantum was the inconsistency the user reported.
   const BUCKET = 0.5;
   const bucketCount = Math.max(1, Math.ceil(windowSeconds / BUCKET));
-  const damageBuckets = new Array<number>(bucketCount).fill(0);
+  const damageBuckets: number[] = Array.from({ length: bucketCount }, () => 0);
   for (const event of timeline) {
     if (event.damage === undefined || event.damageType === undefined) continue;
     // Half-open `(k, k+BUCKET]`, preserved from the 1s version: a tick landing exactly on a

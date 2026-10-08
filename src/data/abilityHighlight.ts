@@ -53,7 +53,7 @@ const KEYWORDS: { pattern: string; colorKey: StatColorKey | "mechanic" }[] = [
   // --- tier 1: output stats, coloured as their badges are ---
   // "Cooldown Speed" must outrank any future "Cooldown" entry; the sort below guarantees it, but
   // the adjacency is called out because this is the pair that motivated rule 1.
-  { pattern: "Cooldown Speed", colorKey: StatColorKey.Multicast },
+  { pattern: "Cooldown Speed", colorKey: StatColorKey.Cooldown },
   { pattern: "Multicast", colorKey: StatColorKey.Multicast },
   { pattern: "Damage", colorKey: StatColorKey.Damage },
   // Lowercase "damage" appears in two records ("Deals 3 direct damage every 2.5 seconds"); matching
@@ -81,7 +81,7 @@ const KEYWORDS: { pattern: string; colorKey: StatColorKey | "mechanic" }[] = [
   // "Cooldown" alone is a real stat and appears without "Speed" ("increase this monster's Cooldown
   // by 6"). It MUST lose to "Cooldown Speed", which the length sort guarantees — this pair is the
   // whole reason rule 1 exists.
-  { pattern: "Cooldown", colorKey: "mechanic" },
+  { pattern: "Cooldown", colorKey: StatColorKey.Cooldown },
   { pattern: "debuffs?", colorKey: "mechanic" },
   { pattern: "stacks?", colorKey: "mechanic" },
 
