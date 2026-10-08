@@ -25,7 +25,7 @@
  * Imported for this file's own type positions AND re-exported for consumers. Both are needed: a
  * bare `export … from` does not bring the names into local scope.
  */
-import { AbilityTrigger, ConfirmableField, CreatureType, DamageChannel, EventLabel, GridRow, ItemTargetKind, ModifierStat, MultiplierScope, RegionId, StatusEffectType, TimelineEventKind } from "./enums";
+import { AbilityTrigger, CreatureType, DamageChannel, EventLabel, GridRow, ItemTargetKind, ModifierStat, MultiplierScope, RegionId, StatusEffectType, TimelineEventKind } from "./enums";
 import { ItemId, Species, TrainerId, TrinketId } from "./ids";
 import { Rarity } from "./enums";
 import { AbilityTagKind, StatChangeStat, TargetKind } from "./enums";
@@ -36,7 +36,6 @@ export { ItemId, Species, TrainerId, TrinketId };
 
 export {
   AbilityTrigger,
-  ConfirmableField,
   CreatureType,
   DamageChannel,
   EventLabel,
@@ -67,34 +66,6 @@ export { StatColorKey } from "./enums";
  * per Constitution Principle II. They are marked `placeholder` rather than `element` and remain
  * filterable; only the `wildcard` ("All") is withheld from filter lists.
  */
-
-export interface SourceRef {
-  url: string;
-  title: string;
-  retrievedAt: string; // ISO date, e.g. "2026-10-05"
-}
-
-export interface FieldConflict {
-  /** Dot-path into the record, e.g. "baseDamage" */
-  field: string;
-  values: { value: unknown; sourceRefs: SourceRef[] }[];
-  /** Which value the corpus adopted and why, if any; absent = unresolved */
-  resolution?: string;
-}
-
-export interface Provenance {
-  sourceRefs: SourceRef[];
-  /** e.g. "1.2.0", "Balance 24", "Build 25037381 Balance 14" — whatever the source states */
-  patch: string;
-  conflicts?: FieldConflict[];
-  /**
-   * Field names published nowhere with confidence; shown as "unknown" in the UI. Moved here
-   * from `CreatureRecord` (2026-10-05 round 2) so `TrainerRecord`/`TrinketRecord`/`ItemRecord`
-   * can flag a low-confidence field the same way creatures already do — see data-model.md's
-   * "`unconfirmedFields` promoted..." amendment.
-   */
-  unconfirmedFields?: ConfirmableField[];
-}
 
 // ---------------------------------------------------------------------------
 // Structured, closed-vocabulary ability hints
@@ -344,7 +315,7 @@ export type AbilityTag =
 // Corpus entities
 // ---------------------------------------------------------------------------
 
-export interface CreatureRecord extends Provenance {
+export interface CreatureRecord {
   /** Stable slug across levels, e.g. `Species.Bumblebolt` -> "bumblebolt". */
   id: Species;
   name: string;
@@ -467,11 +438,9 @@ export interface PerCastOutput {
   appliesStatus: { type: StatusEffectType; amount: number }[];
   heal: number | null;
   multicast: number;
-  /** True when `damage` is sourced but not confirmed, so it renders no line rather than a wrong one. */
-  damageUnconfirmed: boolean;
 }
 
-export interface TrainerRecord extends Provenance {
+export interface TrainerRecord {
   id: TrainerId;
   name: string;
   /** Vendored trainer sprite filename (T255/FR-102), under `public/sprites/trainer/`. */
@@ -480,7 +449,7 @@ export interface TrainerRecord extends Provenance {
   abilityTags: AbilityTag[];
 }
 
-export interface TrinketRecord extends Provenance {
+export interface TrinketRecord {
   id: TrinketId;
   name: string;
   effectText: string;
@@ -549,7 +518,7 @@ export interface ItemEffect {
   stats: { stat: ModifierStat; amount: number }[];
 }
 
-export interface ItemRecord extends Provenance {
+export interface ItemRecord {
   id: ItemId;
   name: string;
   effectText: string;

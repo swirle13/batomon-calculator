@@ -15,9 +15,6 @@ import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
-const RETRIEVED = "2026-10-08";
-const PATCH =
-  "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded items database, 2026-10-08 -- research.md G2)";
 
 /** The same member-name derivation `generate-ids.ts` uses, so the two cannot disagree. */
 const member = (id) =>
@@ -101,15 +98,13 @@ function record(item) {
       : null,
     `    abilityTags: [],`,
     item.sprite ? `    spriteFile: ${str(path.posix.basename(item.sprite))},` : null,
-    `    sourceRefs: [batodexItem(${str(item.id)}, ${str(item.name)})],`,
-    `    patch: PATCH,`,
   ].filter((l) => l !== null);
   return `  {\n${lines.join("\n")}\n  },`;
 }
 
 const withEffect = items.filter((i) => EFFECTS[i.id]).length;
 
-const out = `import type { ItemRecord, SourceRef } from "./types";
+const out = `import type { ItemRecord } from "./types";
 import { CreatureType, GridRow, ItemTargetKind, ModifierStat, Rarity } from "./enums";
 import { ItemId } from "./ids";
 
@@ -137,19 +132,6 @@ import { ItemId } from "./ids";
  * data with no Use button -- the same treatment 87 of the 93 trinkets already get, and the same
  * reason: this engine simulates one battle, and most of an item's job happens outside it.
  */
-function batodexItem(slug: string, name: string): SourceRef {
-  return {
-    // The listing page is the cited source: batodex publishes no per-item detail page, so this is
-    // where the record was actually read from.
-    url: \`https://batodex.com/items#\${encodeURIComponent(slug)}\`,
-    title: \`\${name} - Batodex (extracted from embedded page JSON)\`,
-    retrievedAt: "${RETRIEVED}",
-  };
-}
-
-const PATCH =
-  ${str(PATCH)};
-
 export const items: ItemRecord[] = [
 ${items.map(record).join("\n")}
 ];

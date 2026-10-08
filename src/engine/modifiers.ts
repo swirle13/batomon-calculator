@@ -86,6 +86,5 @@ export function applyModifiers(base: ModifiableBase, amounts: ModifierAmounts): 
           : null
         : base.heal + amounts.healAmountAdd,
     multicast: Math.max(1, base.baseMulticast + amounts.multicastAdd),
-    damageUnconfirmed: false,
   };
 }

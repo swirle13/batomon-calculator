@@ -278,8 +278,6 @@ describe("CorpusBrowser (FR-028/FR-030, items 1-3)", () => {
     render(<CorpusBrowser />);
     expect(screen.queryByText(/sources & patch/i)).toBeNull();
     expect(screen.queryByText(/recorded source conflicts/i)).toBeNull();
-    // ...while the data itself is untouched and still asserted by provenance.test.ts.
-    expect(corpus.creatures.every((c) => c.sourceRefs.length > 0)).toBe(true);
   });
 
   it("puts cooldown and damage on separate lines rather than one combined line", () => {
@@ -322,9 +320,8 @@ describe("round 7 presentation fixes", () => {
     //
     // Three independent refusals is the answer, so FR-014 is RETIRED rather than quietly unmet —
     // which is exactly what the comment in App.tsx instructed should happen on a third removal.
-    // Provenance survives per-record in each creature's `patch` field, and is strictly better
-    // there: v1.3.0 moved 15 of 149 creatures, so one app-wide label would have been wrong for the
-    // other 134 the moment a partial update landed.
+    // A single app-wide label would have been wrong anyway: v1.3.0 moved 15 of 149 creatures, so
+    // the label would have misdescribed the other 134 the moment a partial update landed.
     const { unmount } = render(<CorpusBrowser />);
     expect(screen.queryByText(/Corpus snapshot:/)).toBeNull();
     unmount();

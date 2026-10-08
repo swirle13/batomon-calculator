@@ -29,8 +29,6 @@ function evolutionCorpus(): Corpus {
     evolvesAtLevel: 3,
     abilityText: "Evolves at level 3.",
     abilityTags: [],
-    sourceRefs: [],
-    patch: "test",
   };
   const bambudoL3: CreatureRecord = {
     id: Species.Bambudo,
@@ -44,8 +42,6 @@ function evolutionCorpus(): Corpus {
     publishedCast: { damage: 60, channel: DamageChannel.Direct },
     abilityText: "test fixture",
     abilityTags: [],
-    sourceRefs: [],
-    patch: "test",
   };
   const nonEvolving: CreatureRecord = {
     id: syntheticSpecies("steadymon"),
@@ -59,8 +55,6 @@ function evolutionCorpus(): Corpus {
     publishedCast: { damage: 5, channel: DamageChannel.Direct },
     abilityText: "test fixture, no evolution",
     abilityTags: [],
-    sourceRefs: [],
-    patch: "test",
   };
   return { creatures: [panbudL1, bambudoL3, nonEvolving], trainers: [], trinkets: [], items: [] };
 }
@@ -123,8 +117,6 @@ describe("resolveLevelUp", () => {
       evolvesInto: syntheticSpecies("evolvedVictoryMon"), // no evolvesAtLevel -- victory-triggered, not level-based
       abilityText: "Evolve on victory.",
       abilityTags: [],
-      sourceRefs: [],
-      patch: "test",
     };
     const synthetic: Corpus = { creatures: [victoryTriggered], trainers: [], trinkets: [], items: [] };
     for (const level of [1, 2, 3, 4] as const) {

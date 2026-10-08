@@ -347,7 +347,6 @@ export enum ItemId {
  *
  * So this is the one sanctioned way to produce a non-corpus id, and it is a function rather than a
  * bare `as Species` cast at each site so that the intent is searchable and the exception is counted.
- * `provenance.test.ts` asserts no REAL corpus record uses it.
  */
 export function syntheticSpecies(name: string): Species {
   return name as Species;

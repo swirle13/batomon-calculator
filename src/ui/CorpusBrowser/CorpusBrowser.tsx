@@ -29,10 +29,8 @@ const TYPES: CreatureType[] = [...FILTERABLE_CREATURE_TYPES].sort((a, b) => a.lo
  * multi-column grid (FR-031).
  *
  * **Source citations, patch tags, and recorded source conflicts are deliberately NOT rendered
- * here** (FR-030, user-requested). That data is unchanged and still mandatory on every record —
- * what moved is only where it is enforced: `src/data/__tests__/provenance.test.ts` now asserts
- * every record is cited and every recorded conflict is well-formed, which is how SC-004 is met
- * without a disclosure widget a reader has to click past. See spec.md's round 6 Amendment.
+ * here** (FR-030, user-requested). The per-record fields that backed them were dropped from the
+ * data model entirely in a later pass — nothing read them. See spec.md's round 6 Amendment.
  *
  * Listings iterate `distinctCreatures` (one record per species), not `corpus.creatures` — since
  * round 5 the latter holds up to 4 level records per species and would show duplicate cards.

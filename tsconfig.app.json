@@ -4,7 +4,7 @@
     "target": "es2023",
     "lib": ["ES2023", "DOM"],
     "module": "esnext",
-    // "node" is needed only by src/data/__tests__/provenance.test.ts, which checks that every
+    // "node" is needed only by src/data/__tests__/corpusIntegrity.test.ts, which checks that every
     // record's `spriteFile` names a file that actually exists on disk (tasks.md T116/T118) --
     // a check that necessarily touches the filesystem. @types/node is already present
     // transitively; this only makes it visible to the type checker.

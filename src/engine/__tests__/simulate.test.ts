@@ -22,8 +22,6 @@ function syntheticCorpus(): Corpus {
     appliesStatus: [{ type: StatusEffectType.Shock, amount: 2 }],
     abilityText: "test fixture",
     abilityTags: [],
-    sourceRefs: [],
-    patch: "test",
   };
   const attacker: CreatureRecord = {
     id: syntheticSpecies("attacker"),
@@ -37,8 +35,6 @@ function syntheticCorpus(): Corpus {
     baseMulticast: 1,
     abilityText: "test fixture",
     abilityTags: [],
-    sourceRefs: [],
-    patch: "test",
   };
   return { creatures: [shockApplier, attacker], trainers: [], trinkets: [], items: [] };
 }
@@ -62,8 +58,6 @@ function multicastCorpus(): Corpus {
     appliesStatus: [{ type: StatusEffectType.Shock, amount: 1 }],
     abilityText: "test fixture",
     abilityTags: [],
-    sourceRefs: [],
-    patch: "test",
   };
   return { creatures: [multiCaster], trainers: [], trinkets: [], items: [] };
 }
@@ -81,8 +75,6 @@ function driftCorpus(): Corpus {
     baseMulticast: 1,
     abilityText: "test fixture",
     abilityTags: [],
-    sourceRefs: [],
-    patch: "test",
   };
   return { creatures: [driftCreature], trainers: [], trinkets: [], items: [] };
 }
@@ -100,8 +92,6 @@ function multiLevelCorpus(): Corpus {
     baseMulticast: 1,
     abilityText: "test fixture",
     abilityTags: [],
-    sourceRefs: [],
-    patch: "test",
   };
   const level2: CreatureRecord = { ...level1, level: 2, publishedCast: { damage: 10, channel: DamageChannel.Direct } };
   return { creatures: [level1, level2], trainers: [], trinkets: [], items: [] };
@@ -522,8 +512,6 @@ describe("simulate", () => {
       effectText: "Your team gains +10 Damage permanently.",
       effectTags: [{ stat: ModifierStat.DamageFlatAdd, amount: 10 }],
       abilityTags: [],
-      sourceRefs: [],
-      patch: "test",
     };
     const synthetic = { ...base, trinkets: [bonusTrinket] };
     const config: TeamConfiguration = {
@@ -549,8 +537,6 @@ describe("simulate", () => {
       effectText: "Your team gains +10 Damage permanently.",
       effectTags: [{ stat: ModifierStat.DamageFlatAdd, amount: 10 }],
       abilityTags: [],
-      sourceRefs: [],
-      patch: "test",
     };
     const synthetic = { ...base, trinkets: [bonusTrinket] };
     const config: TeamConfiguration = {
@@ -599,8 +585,6 @@ describe("slot-permutation invariance (FR-040)", () => {
       appliesStatus: [{ type: StatusEffectType.Shock, amount: 1 }],
       abilityText: "test fixture -- no positional ability",
       abilityTags: [],
-      sourceRefs: [],
-      patch: "test",
     };
     const bigHitter: CreatureRecord = {
       id: syntheticSpecies("bigHitter"),
@@ -614,8 +598,6 @@ describe("slot-permutation invariance (FR-040)", () => {
       baseMulticast: 1,
       abilityText: "test fixture -- no positional ability",
       abilityTags: [],
-      sourceRefs: [],
-      patch: "test",
     };
     return { creatures: [shockHitter, bigHitter], trainers: [], trinkets: [], items: [] };
   }

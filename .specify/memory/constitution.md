@@ -40,13 +40,16 @@ implemented, and the test MUST cite the wiki source or worked example it is deri
 comment. Rationale: timing and stacking math is the part most likely to silently drift from the
 real game's behavior, and it is the part the whole calculator's credibility depends on.
 
-### IV. Cited, Versioned Corpus Data
-Every creature/trainer/trinket/item record MUST carry a `sourceRefs` field citing the wiki page(s)
-and retrieval date it was transcribed from, and a `patch` field recording the game version/balance
-patch the numbers reflect. When sources disagree, the conflict MUST be recorded in the record (e.g.
-a `conflicts` array) rather than silently resolved by picking one value. Rationale: no single
-canonical datasheet exists for this game; honesty about provenance and disagreement is what makes
-the corpus trustworthy and refreshable as new patches land.
+### IV. Sourced Corpus Data
+No single canonical datasheet exists for this game, so where a value was adjudicated between
+disagreeing fan wikis, the sources and the reasoning MUST be written up in `research.md` and the
+corpus record's numbers MUST match that write-up.
+
+**Amended (2026-10-08):** this principle originally required per-record `sourceRefs`, `patch` and
+`conflicts` fields. They were carried on all 596 creature records plus every trainer, trinket and
+item, and nothing in the app or the engine ever read them — the UI that rendered them was removed
+in round 6, leaving a test asserting the fields existed as their only consumer. The obligation to
+source a number is kept; the obligation to repeat that sourcing inline on every record is not.
 
 ### V. Zero-Backend, Static Hosting
 The application MUST ship as a fully static single-page app with no server-side component,
@@ -99,8 +102,8 @@ outstanding rather than left implied.
 
 ## Development Workflow
 
-- Corpus data changes (new/updated creatures, trainers, trinkets, items) are reviewed for the
-  presence of `sourceRefs`, `patch`, and (if applicable) `conflicts` before merging.
+- Corpus data changes (new/updated creatures, trainers, trinkets, items) are reviewed against the
+  sources and reasoning recorded in `research.md` before merging.
 - Engine changes require the failing-test-first evidence described in Principle III to be visible
   in the change (test added/updated alongside the implementation).
 - UI changes that affect the DPS/status-per-second summary or the cumulative damage/status chart

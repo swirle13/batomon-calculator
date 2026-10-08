@@ -1,8 +1,7 @@
 import type { CreatureRecord, PerCastOutput, StatModifier, StatusEffectType } from "../../../data/types";
 import { STATUS_COLOR_KEY } from "../../../data/format";
-import { isUnconfirmed } from "../../../data/display";
 import { applyModifiers } from "../../../engine/modifiers";
-import { ConfirmableField, ModifierStat, StatColorKey } from "../../../data/enums";
+import { ModifierStat, StatColorKey } from "../../../data/enums";
 
 /**
  * Band 3's arithmetic, split out of `BatomonCard.tsx` (2026-10-08).
@@ -67,7 +66,7 @@ export function perCastOutputOf(creature: CreatureRecord, modifiers?: StatModifi
     },
   );
 
-  return { ...output, damageUnconfirmed: isUnconfirmed(creature, ConfirmableField.PublishedCast) };
+  return output;
 }
 
 /**
@@ -80,7 +79,7 @@ export function buildStatLines(input: PerCastOutput): StatLine[] {
   // An unknown damage value renders no line at all rather than "0" or "unknown damage" -- 62 of
   // 149 species still have `baseDamage: null`, so this is the common path, not an edge case
   // (research.md H9).
-  if (input.damage !== null && !input.damageUnconfirmed) {
+  if (input.damage !== null) {
     // 2026-10-07 (round 7 WI-004): this read `input.damageType === DamageChannel.Direct ? "Deal" : "Deal"` --
     // a branch whose two arms were the same string, so the field was consulted for a decision that
     // could not have an outcome. It is the clearest evidence that `damageType` on a record carries

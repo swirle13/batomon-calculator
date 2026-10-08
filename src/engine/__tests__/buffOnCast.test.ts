@@ -27,8 +27,6 @@ const base: Omit<CreatureRecord, "id" | "name"> = {
   abilityTags: [
     { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statChange: { stat: StatChangeStat.Damage, amount: 10 } } },
   ],
-  sourceRefs: [],
-  patch: "test",
 };
 
 const grower: CreatureRecord = { ...base, id: syntheticSpecies(syntheticSpecies("grower")), name: "Grower" };

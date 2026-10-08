@@ -52,7 +52,7 @@ import type { Species } from "../../../data/ids";
  * `MAX_AFFECTED_SPECIES` is one constant for both trainers, and the place to split if Smuggler's
  * nine is ever disproved: **Painter's nine is published** ("Nine random species are painted with
  * every type") and **Smuggler's is this project's assumption** — its published text states no count
- * at all, and is itself in `unconfirmedFields`. See research.md Q1.
+ * at all. See research.md Q1.
  */
 export const MAX_AFFECTED_SPECIES = 9;
 

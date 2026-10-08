@@ -1,8 +1,6 @@
-import type { TrinketRecord, SourceRef } from "./types";
+import type { TrinketRecord } from "./types";
 import { ModifierStat, Rarity } from "./enums";
 import { TrinketId } from "./ids";
-
-const RETRIEVED = "2026-10-06";
 
 /**
  * Full Trinket corpus (tasks.md T109, round 5, 2026-10-06) -- all 93 entries extracted from
@@ -16,14 +14,6 @@ const RETRIEVED = "2026-10-06";
  * engine does not simulate, same treatment as most Trainer abilities (research.md B6). They
  * remain real, cited, browsable corpus data via the Corpus Browser.
  */
-function batodexTrinket(slug: string, name: string): SourceRef {
-  return {
-    url: `https://batodex.com/trinkets/${slug}`,
-    title: `${name} - Batodex (extracted from embedded page JSON)`,
-    retrievedAt: RETRIEVED,
-  };
-}
-
 export const trinkets: TrinketRecord[] = [
   {
     id: TrinketId.BargainBin,
@@ -32,8 +22,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Common,
     abilityTags: [],
     spriteFile: "bargain_bin.png",
-    sourceRefs: [batodexTrinket("bargain_bin", "Bargain Bin")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.BoxingGlove,
@@ -43,8 +31,6 @@ export const trinkets: TrinketRecord[] = [
     effectTags: [{ stat: ModifierStat.DamageFlatAdd, amount: 5 }],
     abilityTags: [],
     spriteFile: "boxing_glove.png",
-    sourceRefs: [batodexTrinket("boxing_glove", "Boxing Glove")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.GoldBracelet,
@@ -53,8 +39,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Common,
     abilityTags: [],
     spriteFile: "gold_bracelet.png",
-    sourceRefs: [batodexTrinket("gold_bracelet", "Gold Bracelet")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.GoldNugget,
@@ -63,8 +47,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Common,
     abilityTags: [],
     spriteFile: "gold_nugget.png",
-    sourceRefs: [batodexTrinket("gold_nugget", "Gold Nugget")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.GoldTrophy,
@@ -73,8 +55,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Common,
     abilityTags: [],
     spriteFile: "gold_trophy.png",
-    sourceRefs: [batodexTrinket("gold_trophy", "Gold Trophy")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.Junk,
@@ -83,8 +63,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Common,
     abilityTags: [],
     spriteFile: "junk.png",
-    sourceRefs: [batodexTrinket("junk", "Junk")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.LockedBox,
@@ -93,8 +71,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Common,
     abilityTags: [],
     spriteFile: "locked_box.png",
-    sourceRefs: [batodexTrinket("locked_box", "Locked Box")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.MiniDuplicator,
@@ -103,8 +79,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Common,
     abilityTags: [],
     spriteFile: "mini_duplicator.png",
-    sourceRefs: [batodexTrinket("mini_duplicator", "Mini Duplicator")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.PowerPouch,
@@ -113,8 +87,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Common,
     abilityTags: [],
     spriteFile: "power_pouch.png",
-    sourceRefs: [batodexTrinket("power_pouch", "Power Pouch")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.QuickBell,
@@ -123,8 +95,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Common,
     abilityTags: [],
     spriteFile: "quick_bell.png",
-    sourceRefs: [batodexTrinket("quick_bell", "Quick Bell")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.QuickFlag,
@@ -133,8 +103,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Common,
     abilityTags: [],
     spriteFile: "quick_flag.png",
-    sourceRefs: [batodexTrinket("quick_flag", "Quick Flag")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.RainbowBerry,
@@ -143,8 +111,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Common,
     abilityTags: [],
     spriteFile: "rainbow_berry.png",
-    sourceRefs: [batodexTrinket("rainbow_berry", "Rainbow Berry")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.SapphireRing,
@@ -153,8 +119,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Common,
     abilityTags: [],
     spriteFile: "sapphire_ring.png",
-    sourceRefs: [batodexTrinket("sapphire_ring", "Sapphire Ring")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.SpeedWhistle,
@@ -163,8 +127,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Common,
     abilityTags: [],
     spriteFile: "speed_whistle.png",
-    sourceRefs: [batodexTrinket("speed_whistle", "Speed Whistle")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.TempoCharm,
@@ -173,8 +135,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Common,
     abilityTags: [],
     spriteFile: "tempo_charm.png",
-    sourceRefs: [batodexTrinket("tempo_charm", "Tempo Charm")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.TopazRing,
@@ -183,8 +143,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Common,
     abilityTags: [],
     spriteFile: "topaz_ring.png",
-    sourceRefs: [batodexTrinket("topaz_ring", "Topaz Ring")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.TrainingWeights,
@@ -193,8 +151,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Common,
     abilityTags: [],
     spriteFile: "training_weights.png",
-    sourceRefs: [batodexTrinket("training_weights", "Training Weights")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.TreasureMap,
@@ -203,8 +159,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Common,
     abilityTags: [],
     spriteFile: "treasure_map.png",
-    sourceRefs: [batodexTrinket("treasure_map", "Treasure Map")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.WoodSword,
@@ -214,8 +168,6 @@ export const trinkets: TrinketRecord[] = [
     effectTags: [{ stat: ModifierStat.DamageFlatAdd, amount: 5 }],
     abilityTags: [],
     spriteFile: "wood_sword.png",
-    sourceRefs: [batodexTrinket("wood_sword", "Wood Sword")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.BugNet,
@@ -224,8 +176,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Uncommon,
     abilityTags: [],
     spriteFile: "bug_net.png",
-    sourceRefs: [batodexTrinket("bug_net", "Bug Net")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.EarthCrest,
@@ -234,8 +184,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Uncommon,
     abilityTags: [],
     spriteFile: "earth_crest.png",
-    sourceRefs: [batodexTrinket("earth_crest", "Earth Crest")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.EchoCharm,
@@ -244,8 +192,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Uncommon,
     abilityTags: [],
     spriteFile: "echo_charm.png",
-    sourceRefs: [batodexTrinket("echo_charm", "Echo Charm")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.FireBell,
@@ -254,8 +200,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Uncommon,
     abilityTags: [],
     spriteFile: "fire_bell.png",
-    sourceRefs: [batodexTrinket("fire_bell", "Fire Bell")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.FireOrb,
@@ -264,8 +208,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Uncommon,
     abilityTags: [],
     spriteFile: "fire_orb.png",
-    sourceRefs: [batodexTrinket("fire_orb", "Fire Orb")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.GreedyGloves,
@@ -274,8 +216,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Uncommon,
     abilityTags: [],
     spriteFile: "greedy_gloves.png",
-    sourceRefs: [batodexTrinket("greedy_gloves", "Greedy Gloves")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.MarketLicense,
@@ -284,8 +224,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Uncommon,
     abilityTags: [],
     spriteFile: "market_license.png",
-    sourceRefs: [batodexTrinket("market_license", "Market License")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.MembershipCard,
@@ -294,8 +232,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Uncommon,
     abilityTags: [],
     spriteFile: "membership_card.png",
-    sourceRefs: [batodexTrinket("membership_card", "Membership Card")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.PiggyBank,
@@ -304,8 +240,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Uncommon,
     abilityTags: [],
     spriteFile: "piggy_bank.png",
-    sourceRefs: [batodexTrinket("piggy_bank", "Piggy Bank")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.PoisonBell,
@@ -314,8 +248,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Uncommon,
     abilityTags: [],
     spriteFile: "poison_bell.png",
-    sourceRefs: [batodexTrinket("poison_bell", "Poison Bell")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.PoisonOrb,
@@ -324,8 +256,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Uncommon,
     abilityTags: [],
     spriteFile: "poison_orb.png",
-    sourceRefs: [batodexTrinket("poison_orb", "Poison Orb")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.PowerBand,
@@ -334,8 +264,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Uncommon,
     abilityTags: [],
     spriteFile: "power_band.png",
-    sourceRefs: [batodexTrinket("power_band", "Power Band")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.PowerCrown,
@@ -344,8 +272,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Uncommon,
     abilityTags: [],
     spriteFile: "power_crown.png",
-    sourceRefs: [batodexTrinket("power_crown", "Power Crown")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.RallyFlag,
@@ -354,8 +280,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Uncommon,
     abilityTags: [],
     spriteFile: "rally_flag.png",
-    sourceRefs: [batodexTrinket("rally_flag", "Rally Flag")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.SeaCrest,
@@ -364,8 +288,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Uncommon,
     abilityTags: [],
     spriteFile: "sea_crest.png",
-    sourceRefs: [batodexTrinket("sea_crest", "Sea Crest")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.SmallClub,
@@ -374,8 +296,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Uncommon,
     abilityTags: [],
     spriteFile: "small_club.png",
-    sourceRefs: [batodexTrinket("small_club", "Small Club")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.WingedFossil,
@@ -384,8 +304,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Uncommon,
     abilityTags: [],
     spriteFile: "winged_fossil.png",
-    sourceRefs: [batodexTrinket("winged_fossil", "Winged Fossil")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.AncientPlume,
@@ -394,8 +312,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Rare,
     abilityTags: [],
     spriteFile: "ancient_plume.png",
-    sourceRefs: [batodexTrinket("ancient_plume", "Ancient Plume")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.ArcadeCoins,
@@ -404,8 +320,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Rare,
     abilityTags: [],
     spriteFile: "arcade_coins.png",
-    sourceRefs: [batodexTrinket("arcade_coins", "Arcade Coins")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.BlueIncense,
@@ -414,8 +328,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Rare,
     abilityTags: [],
     spriteFile: "blue_incense.png",
-    sourceRefs: [batodexTrinket("blue_incense", "Blue Incense")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.FakeDiamond,
@@ -424,8 +336,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Rare,
     abilityTags: [],
     spriteFile: "fake_diamond.png",
-    sourceRefs: [batodexTrinket("fake_diamond", "Fake Diamond")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.FoolsGold,
@@ -434,8 +344,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Rare,
     abilityTags: [],
     spriteFile: "fools_gold.png",
-    sourceRefs: [batodexTrinket("fools_gold", "Fool's Gold")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.GoldBar,
@@ -444,8 +352,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Rare,
     abilityTags: [],
     spriteFile: "gold_bar.png",
-    sourceRefs: [batodexTrinket("gold_bar", "Gold Bar")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.HerosSword,
@@ -455,8 +361,6 @@ export const trinkets: TrinketRecord[] = [
     effectTags: [{ stat: ModifierStat.DamageFlatAdd, amount: 12 }],
     abilityTags: [],
     spriteFile: "heros_sword.png",
-    sourceRefs: [batodexTrinket("heros_sword", "Hero's Sword")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.Kaleidoscope,
@@ -465,8 +369,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Rare,
     abilityTags: [],
     spriteFile: "kaleidoscope.png",
-    sourceRefs: [batodexTrinket("kaleidoscope", "Kaleidoscope")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.LinkCable,
@@ -475,8 +377,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Rare,
     abilityTags: [],
     spriteFile: "link_cable.png",
-    sourceRefs: [batodexTrinket("link_cable", "Link Cable")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.MegaDuplicator,
@@ -485,8 +385,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Rare,
     abilityTags: [],
     spriteFile: "mega_duplicator.png",
-    sourceRefs: [batodexTrinket("mega_duplicator", "Mega Duplicator")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.MetalBat,
@@ -495,8 +393,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Rare,
     abilityTags: [],
     spriteFile: "metal_bat.png",
-    sourceRefs: [batodexTrinket("metal_bat", "Metal Bat")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.Meteorite,
@@ -505,8 +401,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Rare,
     abilityTags: [],
     spriteFile: "meteorite.png",
-    sourceRefs: [batodexTrinket("meteorite", "Meteorite")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.PowerBell,
@@ -515,8 +409,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Rare,
     abilityTags: [],
     spriteFile: "power_bell.png",
-    sourceRefs: [batodexTrinket("power_bell", "Power Bell")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.RiggedDice,
@@ -525,8 +417,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Rare,
     abilityTags: [],
     spriteFile: "rigged_dice.png",
-    sourceRefs: [batodexTrinket("rigged_dice", "Rigged Dice")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.SapphireAmulet,
@@ -535,8 +425,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Rare,
     abilityTags: [],
     spriteFile: "sapphire_amulet.png",
-    sourceRefs: [batodexTrinket("sapphire_amulet", "Sapphire Amulet")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.ScrapSword,
@@ -545,8 +433,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Rare,
     abilityTags: [],
     spriteFile: "scrap_sword.png",
-    sourceRefs: [batodexTrinket("scrap_sword", "Scrap Sword")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.SilverWatch,
@@ -555,8 +441,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Rare,
     abilityTags: [],
     spriteFile: "silver_watch.png",
-    sourceRefs: [batodexTrinket("silver_watch", "Silver Watch")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.SpeedCrest,
@@ -565,8 +449,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Rare,
     abilityTags: [],
     spriteFile: "speed_crest.png",
-    sourceRefs: [batodexTrinket("speed_crest", "Speed Crest")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.Terrarium,
@@ -575,8 +457,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Rare,
     abilityTags: [],
     spriteFile: "terrarium.png",
-    sourceRefs: [batodexTrinket("terrarium", "Terrarium")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.TopazAmulet,
@@ -585,8 +465,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Rare,
     abilityTags: [],
     spriteFile: "topaz_amulet.png",
-    sourceRefs: [batodexTrinket("topaz_amulet", "Topaz Amulet")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.Warhorn,
@@ -596,8 +474,6 @@ export const trinkets: TrinketRecord[] = [
     effectTags: [{ stat: ModifierStat.DamageFlatAdd, amount: 10 }],
     abilityTags: [],
     spriteFile: "warhorn.png",
-    sourceRefs: [batodexTrinket("warhorn", "Warhorn")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.BlitzBell,
@@ -606,8 +482,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.SuperRare,
     abilityTags: [],
     spriteFile: "blitz_bell.png",
-    sourceRefs: [batodexTrinket("blitz_bell", "Blitz Bell")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.EchoBell,
@@ -616,8 +490,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.SuperRare,
     abilityTags: [],
     spriteFile: "echo_bell.png",
-    sourceRefs: [batodexTrinket("echo_bell", "Echo Bell")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.GrowLamp,
@@ -626,8 +498,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.SuperRare,
     abilityTags: [],
     spriteFile: "grow_lamp.png",
-    sourceRefs: [batodexTrinket("grow_lamp", "Grow Lamp")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.HasteCrown,
@@ -636,8 +506,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.SuperRare,
     abilityTags: [],
     spriteFile: "haste_crown.png",
-    sourceRefs: [batodexTrinket("haste_crown", "Haste Crown")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.HasteOrb,
@@ -647,8 +515,6 @@ export const trinkets: TrinketRecord[] = [
     effectTags: [{ stat: ModifierStat.CooldownSpeedAdd, amount: 0.1 }],
     abilityTags: [],
     spriteFile: "haste_orb.png",
-    sourceRefs: [batodexTrinket("haste_orb", "Haste Orb")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.MomentumFlag,
@@ -657,8 +523,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.SuperRare,
     abilityTags: [],
     spriteFile: "momentum_flag.png",
-    sourceRefs: [batodexTrinket("momentum_flag", "Momentum Flag")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.MysteriousCharm,
@@ -667,8 +531,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.SuperRare,
     abilityTags: [],
     spriteFile: "mysterious_charm.png",
-    sourceRefs: [batodexTrinket("mysterious_charm", "Mysterious Charm")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.MysteriousMask,
@@ -677,8 +539,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.SuperRare,
     abilityTags: [],
     spriteFile: "mysterious_mask.png",
-    sourceRefs: [batodexTrinket("mysterious_mask", "Mysterious Mask")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.PurpleIncense,
@@ -687,8 +547,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.SuperRare,
     abilityTags: [],
     spriteFile: "purple_incense.png",
-    sourceRefs: [batodexTrinket("purple_incense", "Purple Incense")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.RazorBeak,
@@ -697,8 +555,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.SuperRare,
     abilityTags: [],
     spriteFile: "razor_beak.png",
-    sourceRefs: [batodexTrinket("razor_beak", "Razor Beak")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.RepeaterCharm,
@@ -707,8 +563,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.SuperRare,
     abilityTags: [],
     spriteFile: "repeater_charm.png",
-    sourceRefs: [batodexTrinket("repeater_charm", "Repeater Charm")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.RocketBoots,
@@ -717,8 +571,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.SuperRare,
     abilityTags: [],
     spriteFile: "rocket_boots.png",
-    sourceRefs: [batodexTrinket("rocket_boots", "Rocket Boots")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.UpgradeDisc,
@@ -727,8 +579,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.SuperRare,
     abilityTags: [],
     spriteFile: "upgrade_disc.png",
-    sourceRefs: [batodexTrinket("upgrade_disc", "Upgrade Disc")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.VipPass,
@@ -737,8 +587,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.SuperRare,
     abilityTags: [],
     spriteFile: "vip_pass.png",
-    sourceRefs: [batodexTrinket("vip_pass", "VIP Pass")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.Barbell,
@@ -747,8 +595,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Legendary,
     abilityTags: [],
     spriteFile: "barbell.png",
-    sourceRefs: [batodexTrinket("barbell", "Barbell")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.CandyJar,
@@ -757,8 +603,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Legendary,
     abilityTags: [],
     spriteFile: "candy_jar.png",
-    sourceRefs: [batodexTrinket("candy_jar", "Candy Jar")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.DryadsCharm,
@@ -767,8 +611,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Legendary,
     abilityTags: [],
     spriteFile: "dryads_charm.png",
-    sourceRefs: [batodexTrinket("dryads_charm", "Dryad's Charm")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.FancySword,
@@ -777,8 +619,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Legendary,
     abilityTags: [],
     spriteFile: "fancy_sword.png",
-    sourceRefs: [batodexTrinket("fancy_sword", "Fancy Sword")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.GiantClub,
@@ -787,8 +627,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Legendary,
     abilityTags: [],
     spriteFile: "giant_club.png",
-    sourceRefs: [batodexTrinket("giant_club", "Giant Club")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.GoldIncense,
@@ -797,8 +635,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Legendary,
     abilityTags: [],
     spriteFile: "gold_incense.png",
-    sourceRefs: [batodexTrinket("gold_incense", "Gold Incense")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.GoldOMatic,
@@ -807,8 +643,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Legendary,
     abilityTags: [],
     spriteFile: "gold_o_matic.png",
-    sourceRefs: [batodexTrinket("gold_o_matic", "Gold-o-matic")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.Metronome,
@@ -817,8 +651,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Legendary,
     abilityTags: [],
     spriteFile: "metronome.png",
-    sourceRefs: [batodexTrinket("metronome", "Metronome")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.MightyBell,
@@ -827,8 +659,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Legendary,
     abilityTags: [],
     spriteFile: "mighty_bell.png",
-    sourceRefs: [batodexTrinket("mighty_bell", "Mighty Bell")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.MysteriousChest,
@@ -837,8 +667,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Legendary,
     abilityTags: [],
     spriteFile: "mysterious_chest.png",
-    sourceRefs: [batodexTrinket("mysterious_chest", "Mysterious Chest")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.MysteriousGem,
@@ -847,8 +675,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Legendary,
     abilityTags: [],
     spriteFile: "mysterious_gem.png",
-    sourceRefs: [batodexTrinket("mysterious_gem", "Mysterious Gem")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.ResearchNotes,
@@ -857,8 +683,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Legendary,
     abilityTags: [],
     spriteFile: "research_notes.png",
-    sourceRefs: [batodexTrinket("research_notes", "Research Notes")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.WingedCrown,
@@ -867,8 +691,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Legendary,
     abilityTags: [],
     spriteFile: "winged_crown.png",
-    sourceRefs: [batodexTrinket("winged_crown", "Winged Crown")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.ZenithStone,
@@ -877,8 +699,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Legendary,
     abilityTags: [],
     spriteFile: "zenith_stone.png",
-    sourceRefs: [batodexTrinket("zenith_stone", "Zenith Stone")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.AlphasCrown,
@@ -887,8 +707,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Mythical,
     abilityTags: [],
     spriteFile: "alphas_crown.png",
-    sourceRefs: [batodexTrinket("alphas_crown", "Alpha Crown")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.Excalibur,
@@ -898,8 +716,6 @@ export const trinkets: TrinketRecord[] = [
     effectTags: [{ stat: ModifierStat.DamageFlatAdd, amount: 350 }],
     abilityTags: [],
     spriteFile: "excalibur.png",
-    sourceRefs: [batodexTrinket("excalibur", "Excalibur")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.HolyGrail,
@@ -908,8 +724,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Mythical,
     abilityTags: [],
     spriteFile: "holy_grail.png",
-    sourceRefs: [batodexTrinket("holy_grail", "Holy Grail")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.MasterCrown,
@@ -918,8 +732,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Mythical,
     abilityTags: [],
     spriteFile: "master_crown.png",
-    sourceRefs: [batodexTrinket("master_crown", "Master Crown")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.MegaUpgradeDisc,
@@ -928,8 +740,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Mythical,
     abilityTags: [],
     spriteFile: "mega_upgrade_disc.png",
-    sourceRefs: [batodexTrinket("mega_upgrade_disc", "Mega Upgrade Disc")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.MysticIncense,
@@ -938,8 +748,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Mythical,
     abilityTags: [],
     spriteFile: "mystic_incense.png",
-    sourceRefs: [batodexTrinket("mystic_incense", "Mystic Incense")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.RainbowPearl,
@@ -948,8 +756,6 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Mythical,
     abilityTags: [],
     spriteFile: "rainbow_pearl.png",
-    sourceRefs: [batodexTrinket("rainbow_pearl", "Rainbow Pearl")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
     id: TrinketId.UltraDuplicator,
@@ -958,7 +764,5 @@ export const trinkets: TrinketRecord[] = [
     rarity: Rarity.Mythical,
     abilityTags: [],
     spriteFile: "ultra_duplicator.png",
-    sourceRefs: [batodexTrinket("ultra_duplicator", "Ultra Duplicator")],
-    patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
 ];

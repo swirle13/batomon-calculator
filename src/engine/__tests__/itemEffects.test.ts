@@ -151,11 +151,10 @@ describe("which items this engine models", () => {
  * extraction — the RSC `$`-reference rarities and the 100x Cooldown Speed unit.
  */
 describe("the item corpus", () => {
-  it("holds all 40 published items, each cited and rarity-tagged", () => {
+  it("holds all 40 published items, each rarity-tagged and sprited", () => {
     expect(corpus.items).toHaveLength(40);
     for (const item of corpus.items) {
       expect(item.rarity, item.name).toBeDefined();
-      expect(item.sourceRefs.length, item.name).toBeGreaterThan(0);
       expect(item.spriteFile, item.name).toBeDefined();
     }
   });

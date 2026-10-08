@@ -1,33 +1,9 @@
-import type { CreatureRecord } from "./types";
-import { ConfirmableField } from "./enums";
-
-/**
- * Shared helper so every UI surface renders `unconfirmedFields` the same way (data-model.md:
- * "shown as 'unknown' in the UI") instead of a possibly-misleading raw `null`/`0`.
- */
-export function isUnconfirmed(
-  record: Pick<CreatureRecord, "unconfirmedFields">,
-  field: ConfirmableField,
-): boolean {
-  return (record.unconfirmedFields ?? []).includes(field);
-}
-
-export function displayField(
-  record: Pick<CreatureRecord, "unconfirmedFields">,
-  field: ConfirmableField,
-  value: string | number,
-): string | number {
-  return isUnconfirmed(record, field) ? "unknown" : value;
-}
-
 /**
  * Whether a record's ability text is real, as opposed to absent.
  *
  * The corpus spells "this creature has no ability" as an empty `abilityText`. It previously stored
  * two placeholder sentences instead — `"No ability text shown"` and `"No ability text transcribed
- * in sources reviewed."` — to distinguish "we looked and found nothing" from "nobody has looked",
- * but that distinction already lives in `unconfirmedFields` and `sourceRefs`, where the engine and
- * the UI can read it; as prose it only risked rendering as an ability named after the placeholder.
+ * in sources reviewed."` — which only risked rendering as an ability named after the placeholder.
  * Both phrasings are still rejected here, so a reverted record cannot reach the UI.
  *
  * Centralised because the same regex already existed in `effects.ts` (deciding what counts as an

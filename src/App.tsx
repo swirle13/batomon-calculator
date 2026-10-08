@@ -30,8 +30,7 @@ import "./App.css";
  *
  * It was shown in the app header (round 7), then the Corpus Browser summary (round 8), then a
  * footer line — and removal was requested each time. Three refusals is the answer: the version is
- * not something a user wants on screen. It remains recorded per-record in each creature's `patch`
- * field, which is where it is actually useful, and `spec.md` records the retirement.
+ * not something a user wants on screen. `spec.md` records the retirement.
  */
 
 type View = "calculator" | "corpus";

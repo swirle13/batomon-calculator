@@ -36,16 +36,15 @@ See [`specs/001-batomon-dps-calculator/quickstart.md`](./specs/001-batomon-dps-c
 for the manual validation scenarios (and their recorded results) that exercise each user story
 end-to-end.
 
-## Corpus & provenance
+## Corpus
 
 All game data (creatures, trainers, trinkets, items) lives in `src/data/*.ts`, typed per
 [`data-model.md`](./specs/001-batomon-dps-calculator/data-model.md). Batomon Showdown's own
-documentation is fragmented across multiple fan wikis that sometimes disagree, so **every
-record carries a `Provenance`** (`sourceRefs` with URL/title/retrieval date, and the game
-`patch` the figures are believed to apply to), and any inter-source disagreement is recorded as
-an explicit `FieldConflict` (both values, both sources, and an optional `resolution` note)
-rather than silently picked. The Corpus Browser view surfaces these conflicts directly instead
-of hiding them.
+documentation is fragmented across multiple fan wikis that sometimes disagree; where this project
+had to adjudicate a disagreement, the reasoning is written up in
+[`research.md`](./specs/001-batomon-dps-calculator/research.md) rather than carried on the records
+themselves. Per-record citation fields (`sourceRefs`, `patch`, `conflicts`, `unconfirmedFields`)
+were removed once nothing in the app or the engine read them.
 
 **Current status (round 6, 2026-10-06)**: `src/data/creatures.ts` covers all **149 named Batomon**
 across levels 1-4 — **596 `CreatureRecord` entries**, every one now verified value-for-value
@@ -93,16 +92,13 @@ them with `node scripts/vendor-sprites.mjs`.
 
 ### Refreshing the corpus for a new game patch
 
-1. For each changed entity, find the relevant fan wiki page(s) and record the new value(s) with
-   a `SourceRef` (`url`, `title`, `retrievedAt`).
-2. If multiple sources disagree, add a `FieldConflict` entry rather than overwriting — pick a
-   `resolution` only if you have a clear reason to prefer one source, and say why.
-3. Update the record's `patch` field to the new patch identifier.
-4. Update the "Corpus snapshot" label, which lives in the **Corpus Browser's** summary line
+1. For each changed entity, find the relevant fan wiki page(s) and update the value(s). If
+   multiple sources disagree, write the adjudication up in `research.md` and pick a value.
+2. Update the "Corpus snapshot" label, which lives in the **Corpus Browser's** summary line
    (`src/ui/CorpusBrowser/CorpusBrowser.tsx`, `CORPUS_PATCH_LABEL`). It used to sit in the app
    header on every view; round 7 moved it here when the header prose was removed (FR-050), and
    FR-014 was narrowed to "stated somewhere discoverable" rather than dropped.
-5. Re-run `npm run test` — engine tests pin exact numeric expectations (e.g. Bumblebolt's DPS)
+3. Re-run `npm run test` — engine tests pin exact numeric expectations (e.g. Bumblebolt's DPS)
    against today's seed values, so a real balance change should make the relevant test fail
    until you update its expected numbers too.
 

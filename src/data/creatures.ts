@@ -1,19 +1,19 @@
-import type { CreatureRecord, SourceRef } from "./types";
-import { AbilityTagKind, AbilityTrigger, ConfirmableField, CreatureType, DamageChannel, ModifierStat, Rarity, StatChangeStat, StatusEffectType, TargetKind } from "./enums";
+import type { CreatureRecord } from "./types";
+import { AbilityTagKind, AbilityTrigger, CreatureType, DamageChannel, ModifierStat, Rarity, StatChangeStat, StatusEffectType, TargetKind } from "./enums";
 import { Species } from "./ids";
 
 /**
  * Full-corpus widening pass (tasks.md T043, completed 2026-10-05). This file now covers 149
  * named Batomon — the full name list reconciled from berrymint's imported Balance 24 / 1.2.0
- * catalog (see `communityDexNameList` below) — rather than the original 6-entry seed slice.
+ * catalog — rather than the original 6-entry seed slice.
  *
  * The original 6 hand-authored entries below (Bumblebolt, Formiqueen, Venopuff, Scorchimp,
  * Pebbler, Onsetra) remain the richest records: each was individually researched and carries
  * baseCooldownSeconds/baseDamage/structured abilityTags. The remaining ~143 entries were
- * bulk-imported from two broad roster tables (`communityDex` for Rarity/Types/ability text,
- * `demoTierCostTable` for Cost) which do NOT publish per-creature cooldown/damage numbers —
- * those fields are therefore `null` and listed in `unconfirmedFields` for every bulk-imported
- * entry, exactly like the pre-existing Pebbler/Onsetra pattern. `abilityTags` is left `[]` for
+ * bulk-imported from two broad roster tables (batomon.net's community dex for Rarity/Types/
+ * ability text, batomonshowdown.wiki's demo tier/cost table for Cost) which do NOT publish
+ * per-creature cooldown/damage numbers — those fields are therefore `null` for every
+ * bulk-imported entry. `abilityTags` is left `[]` for
  * all bulk-imported entries too: encoding ~143 entries' widely varying mechanics (many
  * reference game concepts this corpus's AbilityTag/EffectDescriptor union does not model yet —
  * Multicast, HP, Heal, Protect, Charge, "On Bought"/"On Knockout" chains, etc.) into the closed
@@ -27,181 +27,8 @@ import { Species } from "./ids";
  * The sources themselves disagree on the total roster count (144 vs. 149 vs. 88 — see
  * batomon.net/batomon/'s own "Say which count you mean" table) because they're counting
  * different things (ordinary shop entries vs. all dex rows including events/placeholders vs.
- * species). This file reconciles them into one list; see individual entries' `sourceRefs`/
- * `patch` fields for which source(s) back each one.
+ * species). This file reconciles them into one list.
  */
-
-const RETRIEVED = "2026-10-05";
-
-const shockBuildGuide: SourceRef = {
-  url: "https://batomonshowdowngame.wiki/guides/shock-build/",
-  title: "Batomon Showdown Shock Builds Guide",
-  retrievedAt: RETRIEVED,
-};
-
-const combatMechanicsGuide: SourceRef = {
-  url: "https://batomonshowdowngame.wiki/guides/combat/",
-  title: "Batomon Showdown Combat Mechanics",
-  retrievedAt: RETRIEVED,
-};
-
-const communityDex: SourceRef = {
-  url: "https://batomon.net/batomon/",
-  title: "Batomon List – All 144 Community Dex Entries",
-  retrievedAt: RETRIEVED,
-};
-
-const batodexFormiqueen: SourceRef = {
-  url: "https://batodex.com/monsters/formiqueen",
-  title: "Formiqueen - Batodex",
-  retrievedAt: RETRIEVED,
-};
-
-const batodexVenopuff: SourceRef = {
-  url: "https://batodex.com/monsters/venopuff",
-  title: "Venopuff - Batodex",
-  retrievedAt: RETRIEVED,
-};
-
-const batodexScorchimp: SourceRef = {
-  url: "https://batodex.com/monsters/scorchimp",
-  title: "Scorchimp - Batodex",
-  retrievedAt: RETRIEVED,
-};
-
-/**
- * Round-2 corpus-completeness batch (tasks.md T075, 2026-10-05): batodex.com turns out to have
- * an individual detail page per creature (not just the original 6) — confirmed by directly
- * fetching these three, which the user happened to test and report as unexpectedly "0 DPS"
- * (research.md D5's diagnosis: they were simply unconfirmed, not a bug). Filling every
- * remaining creature this way is still a large, multi-session task (148 more individual pages
- * to check and cite), tracked as ongoing — this batch closes exactly the three the user
- * actually hit.
- */
-const batodexBrawlmantis: SourceRef = {
-  url: "https://batodex.com/monsters/brawlmantis",
-  title: "Brawlmantis - Batodex",
-  retrievedAt: RETRIEVED,
-};
-
-const batodexDracana: SourceRef = {
-  url: "https://batodex.com/monsters/dracana",
-  title: "Dracana - Batodex",
-  retrievedAt: RETRIEVED,
-};
-
-const batomonNetDracana: SourceRef = {
-  url: "https://batomon.net/batomon/dracana/",
-  title: "Dracana – Batomon Stats and Ability (1.2.0)",
-  retrievedAt: RETRIEVED,
-};
-
-const batodexFrizzly: SourceRef = {
-  url: "https://batodex.com/monsters/frizzly",
-  title: "Frizzly - Batodex",
-  retrievedAt: RETRIEVED,
-};
-
-/** Round-3 batch (tasks.md T081, 2026-10-05): Panbud, researched while adding its evolution
- * link to Bambudo (research.md E2.6). */
-const batodexPanbud: SourceRef = {
-  url: "https://batodex.com/monsters/panbud",
-  title: "Panbud - Batodex",
-  retrievedAt: RETRIEVED,
-};
-
-const batomonComPanbud: SourceRef = {
-  url: "https://batomon.com/batomon/panbud",
-  title: "Panbud — Common Grass Batomon | batomon.com",
-  retrievedAt: RETRIEVED,
-};
-
-const patchNotesGuideSep2026: SourceRef = {
-  url: "https://batomonshowdowngame.wiki/updates/patch-notes/",
-  title: "Batomon Showdown Patch Notes Guide | Batomon (Sep 2026)",
-  retrievedAt: RETRIEVED,
-};
-
-const poisonBuildGuide: SourceRef = {
-  url: "https://batomon-showdown-wiki.wiki/builds/batomon-showdown-poison-build",
-  title: "Batomon Showdown Poison Build: The Complete Meta Guide",
-  retrievedAt: RETRIEVED,
-};
-
-const patchNotesBreakdown: SourceRef = {
-  url: "https://batomon-showdown-wiki.wiki/updates/batomon-showdown-patch-notes",
-  title: "Batomon Showdown Patch Notes: Balance & Meta Breakdown",
-  retrievedAt: RETRIEVED,
-};
-
-const tierListGuide: SourceRef = {
-  url: "https://batomonshowdowngame.wiki/tier-list/batomon/",
-  title: "Batomon Showdown Batomon Tier List",
-  retrievedAt: RETRIEVED,
-};
-
-/** 81-entry Name/Tier/Cost/Type table from the Steam demo build. */
-const demoTierCostTable: SourceRef = {
-  url: "https://batomonshowdown.wiki/batomon/",
-  title: "Batomon Showdown Monsters | Types, Tiers & Costs (Steam Demo Build 25037381, Balance 14)",
-  retrievedAt: RETRIEVED,
-};
-
-/** 149-name master navigation index; used only to source names absent from the other tables. */
-const communityDexNameList: SourceRef = {
-  url: "https://batomon.com/wiki",
-  title: "Batomon Showdown Wiki | batomon.com (imported catalog name index, 149 entries)",
-  retrievedAt: RETRIEVED,
-};
-
-/** Homepage shows one tier-grouped roster plus a single fully-quoted example card at a time. */
-const batodexHomepage: SourceRef = {
-  url: "https://batodex.com/",
-  title: "Batomon - Batodex (homepage; tier-grouped roster + fully-quoted example card)",
-  retrievedAt: RETRIEVED,
-};
-
-/**
- * The authoritative per-level (1-4) stat series embedded in batodex.com's own listing pages
- * (research.md G1), cited as the source of record for level-1 values repaired in round 6
- * (tasks.md T133). Distinct from `batodexPage`/`batodexExtracted` because it is specifically the
- * *series* that adjudicated a disagreement, not just "a batodex page was read".
- */
-const batodexLevelSeries: SourceRef = {
-  url: "https://batodex.com/monsters",
-  title: "Batomon - Batodex (embedded per-level 1-4 stat series for the full roster)",
-  retrievedAt: RETRIEVED,
-};
-
-/**
- * Round-4 corpus-completeness batch (tasks.md T100, 2026-10-05): batodex.com's individual
- * per-creature detail pages, confirmed to publish level-1 Cooldown/Damage/status numbers for
- * every creature checked (unlike level 2-4, which are not statically accessible -- research.md
- * F5). This helper avoids declaring ~80 near-identical named `SourceRef` constants for this
- * single batch.
- */
-function batodexPage(slug: string, name: string): SourceRef {
-  return {
-    url: `https://batodex.com/monsters/${slug}`,
-    title: `${name} - Batodex`,
-    retrievedAt: RETRIEVED,
-  };
-}
-
-/**
- * Round-5 corpus-completeness pass (tasks.md T108, 2026-10-06): batodex.com's monster pages
- * embed the FULL per-level (1-4) stat/ability/evolution database for client-side hydration
- * (research.md G1) -- a single page fetch yields every creature's complete data, not just the
- * one creature the URL names. This citation records that extraction method rather than
- * pretending each creature was individually, separately researched.
- */
-function batodexExtracted(slug: string, name: string): SourceRef {
-  return {
-    url: `https://batodex.com/monsters/${slug}`,
-    title: `${name} - Batodex (full level 1-4 database, extracted from embedded page JSON)`,
-    retrievedAt: "2026-10-06",
-  };
-}
 
 export const creatures: CreatureRecord[] = [
   {
@@ -219,8 +46,6 @@ export const creatures: CreatureRecord[] = [
       "Deals 3 direct damage every 2.5 seconds and applies 1 Shock. \"The poster Common: 2.5s, Shock, cheap.\"",
     abilityTags: [],
     spriteFile: "bumblebolt.png",
-    sourceRefs: [shockBuildGuide, communityDex, tierListGuide],
-    patch: "Balance 24 / 1.2.0 (community-imported build)",
   },
   {
     id: Species.Formiqueen,
@@ -243,19 +68,10 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "formiqueen.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [batodexFormiqueen, combatMechanicsGuide, tierListGuide],
-    patch: "post-nerf value (25/50/75/225% by level, down from 33/67/100%); Balance 24 / 1.2.0 imported build",
-    // 2026-10-06 round 6 (tasks.md T141): a `conflicts` entry used to sit here, and it was
-    // misfiled -- it recorded a single value, and its own resolution text said there was "no
-    // disagreement on the Common-only filter itself". It was a placeholder for the per-level
-    // cooldown-speed progression (25/50/75%) that round 2's data model had nowhere to put, which
-    // is exactly what it said: "until the data model grows a per-level stat table". That blocker
-    // is now closed -- round 5 added real per-level records and T140 populated this species'
-    // per-level `cooldownSpeedModifier` amounts (0.25/0.5/0.75/2.25), so the progression is
-    // encoded as data the engine reads rather than prose in a conflict note. Removed rather than
-    // relaxing the "a conflict needs >= 2 values" rule in provenance.test.ts, since that rule is
-    // what SC-004 actually means. The post-nerf citation it shared a record with is preserved in
-    // `patch` above.
+    // 2026-10-06 round 6 (tasks.md T141): a note used to sit here standing in for the per-level
+    // cooldown-speed progression (25/50/75%) that round 2's data model had nowhere to put. Round 5
+    // added real per-level records and T140 populated this species' `cooldownSpeedModifier`
+    // amounts (0.25/0.5/0.75/2.25), so the progression is now data the engine reads.
   },
   {
     id: Species.Venopuff,
@@ -271,23 +87,6 @@ export const creatures: CreatureRecord[] = [
       "Applies 4 Poison per cast.",
     abilityTags: [],
     spriteFile: "venopuff.png",
-    sourceRefs: [batodexVenopuff, poisonBuildGuide, communityDex],
-    patch: "Balance 24 / 1.2.0 (community-imported build)",
-    conflicts: [
-      {
-        field: "shopCost",
-        values: [
-          { value: 15, sourceRefs: [batodexVenopuff] },
-          {
-            value: 10,
-            sourceRefs: [poisonBuildGuide],
-          },
-        ],
-        resolution:
-          "Adopted $15 (batodex.com, matches the community dex table's $15 figure); the Poison " +
-          "Build guide's $10 is recorded here as a conflicting value rather than silently dropped.",
-      },
-    ],
   },
   {
     id: Species.Scorchimp,
@@ -307,8 +106,6 @@ export const creatures: CreatureRecord[] = [
     // batodex.com and batomon.com's per-creature Scorchimp pages, both retrieved 2026-10-05.
     evolvesAtLevel: 3,
     spriteFile: "scorchimp.png",
-    sourceRefs: [batodexScorchimp, communityDex],
-    patch: "Balance 24 / 1.2.0 (community-imported build)",
   },
   {
     id: Species.Pebbler,
@@ -326,24 +123,6 @@ export const creatures: CreatureRecord[] = [
     spriteFile: "pebbler.png",
     abilityTrigger: AbilityTrigger.OnCast,
     appliesStatus: [{ type: StatusEffectType.Shield, amount: 20 }],
-    sourceRefs: [communityDex, patchNotesBreakdown],
-    patch:
-      "Cooldown shown is the current (post Hotfix 0.6.1) value — Demo Patch 0.6.0 had briefly " +
-      "lowered it from 5.5s to 4s alongside a cost drop to $10 that Hotfix 0.6.1 then reverted " +
-      "to $15; cooldown stayed at 4s. Shield amount from the Balance 24 / 1.2.0 imported dex.",
-    conflicts: [
-      {
-        field: "baseCooldownSeconds",
-        values: [
-          { value: 5.5, sourceRefs: [patchNotesBreakdown] },
-          { value: 4.0, sourceRefs: [patchNotesBreakdown] },
-        ],
-        resolution:
-          "Both values come from the same patch-notes page describing a change over time " +
-          "(5.5s pre-0.6.0 → 4s post-0.6.0), not a same-moment disagreement between two sources. " +
-          "Adopted 4.0s as the current value; 5.5s retained here as the historical pre-patch value.",
-      },
-    ],
   },
   {
     id: Species.Onsetra,
@@ -364,8 +143,6 @@ export const creatures: CreatureRecord[] = [
       },
     ],
     spriteFile: "onsetra.png",
-        sourceRefs: [communityDex, combatMechanicsGuide, tierListGuide, batodexExtracted("onsetra", "Onsetra")],
-    patch: "Balance 24 / 1.2.0 (community-imported build) — cooldown/damage not published in sources reviewed",
   },
   {
     id: Species.Aegistruct,
@@ -381,8 +158,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "aegistruct.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [communityDex, demoTierCostTable, batodexPage("aegistruct", "Aegistruct")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Aerophim,
@@ -398,8 +173,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "aerophim.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [communityDex, demoTierCostTable, batodexPage("aerophim", "Aerophim")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Aristobat,
@@ -413,10 +186,7 @@ export const creatures: CreatureRecord[] = [
     appliesStatus: [{ type: StatusEffectType.Poison, amount: 4 }],
     abilityText: "",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.AbilityText],
     spriteFile: "aristobat.png",
-    sourceRefs: [communityDex, demoTierCostTable, batodexPage("aristobat", "Aristobat")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Aster,
@@ -432,8 +202,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "aster.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [communityDex, demoTierCostTable, batodexPage("aster", "Aster")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Aviarab,
@@ -447,11 +215,8 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 15, channel: DamageChannel.Direct },
     abilityText: "Give the next Flying monster you buy +1 Multicast.",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "aviarab.png",
     abilityTrigger: AbilityTrigger.OnBought,
-    sourceRefs: [communityDex, batodexPage("aviarab", "Aviarab")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Basilord,
@@ -464,11 +229,8 @@ export const creatures: CreatureRecord[] = [
     baseCooldownSeconds: 8,
     abilityText: "",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.AbilityText],
     spriteFile: "basilord.png",
     appliesStatus: [{ type: StatusEffectType.Burn, amount: 170 }],
-    sourceRefs: [communityDex, demoTierCostTable, batodexPage("basilord", "Basilord")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Beetbud,
@@ -486,10 +248,7 @@ export const creatures: CreatureRecord[] = [
     // Confirmed level-3 threshold, round 3 (research.md E2.6) -- "Evolves at level 3" above
     // already stated the threshold; evolvesAtLevel just encodes it structurally for the engine.
     evolvesAtLevel: 3,
-    unconfirmedFields: [],
     spriteFile: "beetbud.png",
-    sourceRefs: [communityDex, batodexHomepage],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Berroon,
@@ -505,8 +264,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "berroon.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [communityDex, demoTierCostTable, batodexPage("berroon", "Berroon")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Blazewing,
@@ -520,10 +277,7 @@ export const creatures: CreatureRecord[] = [
     appliesStatus: [{ type: StatusEffectType.Burn, amount: 5 }],
     abilityText: "",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.AbilityText],
     spriteFile: "blazewing.png",
-    sourceRefs: [communityDex, demoTierCostTable, batodexPage("blazewing", "Blazewing")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Blessom,
@@ -537,10 +291,7 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 50, channel: DamageChannel.Direct },
     abilityText: "At the start of each day, monsters in your shop gain +50 Damage.",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "blessom.png",
-    sourceRefs: [communityDex, batodexPage("blessom", "Blessom")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Blixie,
@@ -556,8 +307,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "blixie.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [communityDex, demoTierCostTable, batodexPage("blixie", "Blixie"), batodexExtracted("blixie", "Blixie")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Bonshell,
@@ -573,12 +322,9 @@ export const creatures: CreatureRecord[] = [
       { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statChange: { stat: StatChangeStat.Damage, amount: 80 } } },
       { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statusGrant: { type: StatusEffectType.Shield, amount: 80 } } },
     ],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "bonshell.png",
     abilityTrigger: AbilityTrigger.OnCast,
     appliesStatus: [{ type: StatusEffectType.Shield, amount: 100 }],
-    sourceRefs: [communityDex],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Boomagon,
@@ -594,8 +340,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "boomagon.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [communityDex, demoTierCostTable, batodexPage("boomagon", "Boomagon")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Brawlmantis,
@@ -619,9 +363,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "brawlmantis.png",
     abilityTrigger: AbilityTrigger.OnVictory,
-    sourceRefs: [communityDex, demoTierCostTable, batodexBrawlmantis],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/" +
-      "damage confirmed via batodex.com 2026-10-05)",
   },
   {
     id: Species.Brimtoad,
@@ -634,12 +375,9 @@ export const creatures: CreatureRecord[] = [
     baseCooldownSeconds: 6,
     abilityText: "+4 Burn and +4 Poison permanently.",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "brimtoad.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
     appliesStatus: [{ type: StatusEffectType.Burn, amount: 1 }, { type: StatusEffectType.Poison, amount: 1 }],
-    sourceRefs: [communityDex, batodexPage("brimtoad", "Brimtoad")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Bunchop,
@@ -653,11 +391,8 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 50, channel: DamageChannel.Direct },
     abilityText: "Your team has +50 HP. On Victory Increase this ability's HP bonus by +50.",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "bunchop.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [communityDex, batodexPage("bunchop", "Bunchop")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Cairnage,
@@ -671,11 +406,8 @@ export const creatures: CreatureRecord[] = [
     appliesStatus: [{ type: StatusEffectType.Shield, amount: 500 }],
     abilityText: "Allies gain Damage for this battle equal to 0.8x their Shield.",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "cairnage.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [communityDex, batodexPage("cairnage", "Cairnage")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Cawnushi,
@@ -692,10 +424,7 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [
       { kind: AbilityTagKind.ManualTrigger, trigger: AbilityTrigger.OnKnockout, effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 60 }] },
     ],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "cawnushi.png",
-    sourceRefs: [communityDex, batodexPage("cawnushi", "Cawnushi")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Celestia,
@@ -711,8 +440,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "celestia.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [communityDex, demoTierCostTable, batodexPage("celestia", "Celestia")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Cherubble,
@@ -728,8 +455,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "cherubble.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [communityDex, demoTierCostTable, batodexPage("cherubble", "Cherubble")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Cicadence,
@@ -745,8 +470,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "cicadence.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [communityDex, demoTierCostTable, batodexPage("cicadence", "Cicadence")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Cinderfly,
@@ -761,8 +484,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "cinderfly.png",
     appliesStatus: [{ type: StatusEffectType.Burn, amount: 7 }],
-    sourceRefs: [communityDex, demoTierCostTable, batodexPage("cinderfly", "Cinderfly")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Cinnabark,
@@ -776,11 +497,8 @@ export const creatures: CreatureRecord[] = [
     appliesStatus: [{ type: StatusEffectType.Poison, amount: 5 }],
     abilityText: "Has additional Shield equal to 100% of the Poison stacks on the enemy.",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "cinnabark.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [communityDex, batodexPage("cinnabark", "Cinnabark")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Clawnetic,
@@ -795,8 +513,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Whenever an ally inflicts Shock, Charge this by 1 second(s).",
     abilityTags: [],
     spriteFile: "clawnetic.png",
-    sourceRefs: [communityDex, demoTierCostTable, batodexPage("clawnetic", "Clawnetic")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Coalem,
@@ -812,8 +528,6 @@ export const creatures: CreatureRecord[] = [
     spriteFile: "coalem.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
     appliesStatus: [{ type: StatusEffectType.Shield, amount: 550 }, { type: StatusEffectType.Burn, amount: 20 }],
-    sourceRefs: [communityDex, demoTierCostTable, batodexPage("coalem", "Coalem")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Cobrex,
@@ -830,8 +544,6 @@ export const creatures: CreatureRecord[] = [
     // lists "Clawnetic - Charge: 1/2/3 seconds -> 1 second at every level" (research.md K6).
     abilityTags: [{ kind: AbilityTagKind.ChargeOnAllyStatus, status: StatusEffectType.Poison, seconds: 1 }],
     spriteFile: "cobrex.png",
-    sourceRefs: [communityDex, demoTierCostTable, batodexPage("cobrex", "Cobrex"), batodexExtracted("cobrex", "Cobrex")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Cordycant,
@@ -844,12 +556,9 @@ export const creatures: CreatureRecord[] = [
     baseCooldownSeconds: 4,
     abilityText: "Give the next monster you buy Toxic typing and +8 Poison.",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "cordycant.png",
     abilityTrigger: AbilityTrigger.OnBought,
     appliesStatus: [{ type: StatusEffectType.Poison, amount: 8 }],
-    sourceRefs: [communityDex],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Cosmivore,
@@ -864,8 +573,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "When rerolling the shop, gain 20% of the total stats of the monsters remaining in the shop (excluding Multicast and Cooldown).",
     abilityTags: [],
     spriteFile: "cosmivore.png",
-    sourceRefs: [communityDex, demoTierCostTable, batodexPage("cosmivore", "Cosmivore")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Craghorn,
@@ -883,10 +590,7 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [
       { kind: AbilityTagKind.ManualTrigger, trigger: AbilityTrigger.OnItemUsed, effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 20 }, { stat: ModifierStat.ShieldAmountAdd, amount: 20 }] },
     ],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "alpinine.png",
-    sourceRefs: [communityDex, batodexPage("craghorn", "Craghorn")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Danuki,
@@ -900,10 +604,7 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 40, channel: DamageChannel.Direct },
     abilityText: "On ally knockout, this gains 70% of their Damage for this battle. (Except other Danuki)",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "danuki.png",
-    sourceRefs: [communityDex, batodexPage("danuki", "Danuki")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Dirgefin,
@@ -920,8 +621,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "dirgefin.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [communityDex, demoTierCostTable, batodexPage("dirgefin", "Dirgefin")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Dollhime,
@@ -936,11 +635,8 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [
       { kind: AbilityTagKind.ManualTrigger, trigger: AbilityTrigger.OnTrinketGained, effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 50 }] },
     ],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "dollhime.png",
     abilityTrigger: AbilityTrigger.OnTrinketGained,
-    sourceRefs: [communityDex, batodexPage("dollhime", "Dollhime")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Dracana,
@@ -960,9 +656,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "dracana.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [communityDex, demoTierCostTable, batodexDracana, batomonNetDracana],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/" +
-      "damage confirmed via batodex.com + batomon.net 2026-10-05)",
   },
   {
     id: Species.Draconarch,
@@ -978,8 +671,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "dragonarch.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [communityDex, demoTierCostTable, batodexPage("draconarch", "Draconarch"), batodexExtracted("dragonarch", "Draconarch")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Dragonegg,
@@ -993,10 +684,7 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 1, channel: DamageChannel.Direct },
     abilityText: "Hatches a Legendary Dragon monster in 2 days.",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost, ConfirmableField.Types],
     spriteFile: "dragon_egg_0.png",
-    sourceRefs: [communityDex],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Dribblet,
@@ -1015,22 +703,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "dribblet.png",
     healAmount: 15,
-    sourceRefs: [communityDex, demoTierCostTable, batodexPage("dribblet", "Dribblet")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
-    conflicts: [
-      {
-        field: "baseCooldownSeconds/baseDamage (level 1)",
-        values: [
-          { value: "cooldown 3s, damage none published", sourceRefs: [batodexLevelSeries] },
-          { value: "cooldown 3.5s, damage none published", sourceRefs: [communityDex] },
-        ],
-        resolution:
-          "Adopted the batodex per-level series value, because it is the same source levels 2-4 " +
-          "come from -- keeping the community-dex figure at level 1 would leave this species' own " +
-          "four records internally inconsistent. The community value is retained here rather than " +
-          "dropped (2026-10-06 round 6, tasks.md T133).",
-      },
-    ],
   },
   {
     id: Species.Drumire,
@@ -1046,10 +718,7 @@ export const creatures: CreatureRecord[] = [
     // 2026-10-06 round 9 (T201). Recorded structurally; the resolver does not yet apply a
     // cumulative per-cast grant, so this creature is still reported as uncovered.
     abilityTags: [{ kind: AbilityTagKind.CooldownSpeedOnAllyCast, typeFilter: CreatureType.Toxic, amount: 0.05 }],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "drumire.png",
-    sourceRefs: [communityDex, batodexPage("drumire", "Drumire")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Dryadell,
@@ -1065,8 +734,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "dryadell.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [communityDex, demoTierCostTable, batodexPage("dryadell", "Dryadell")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Electranade,
@@ -1082,8 +749,6 @@ export const creatures: CreatureRecord[] = [
     spriteFile: "galvanade.png",
     abilityTrigger: AbilityTrigger.OnCast,
     appliesStatus: [{ type: StatusEffectType.Shock, amount: 25 }],
-    sourceRefs: [communityDex, demoTierCostTable, batodexPage("electranade", "Electranade")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Emberpaw,
@@ -1098,10 +763,7 @@ export const creatures: CreatureRecord[] = [
     appliesStatus: [{ type: StatusEffectType.Burn, amount: 5 }],
     abilityText: "Evolve when your team inflicts Burn 25 times.",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost, ConfirmableField.EvolvesInto],
     spriteFile: "emberpaw.png",
-    sourceRefs: [communityDex, batodexPage("emberpaw", "Emberpaw")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Emburn,
@@ -1118,10 +780,7 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [
       { kind: AbilityTagKind.ManualTrigger, trigger: AbilityTrigger.OnKnockout, effects: [{ stat: ModifierStat.BurnAmountAdd, amount: 3 }] },
     ],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "emburn.png",
-    sourceRefs: [communityDex, batodexPage("emburn", "Emburn")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Faebloom,
@@ -1136,8 +795,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Mythical Item may appear in your shop. Ongoing Adjacent allies have +10% Damage per Mythical Item used. (currently +X% Damage)",
     abilityTags: [],
     spriteFile: "faebloom.png",
-    sourceRefs: [communityDex, demoTierCostTable, batodexPage("faebloom", "Faebloom")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Fernfowl,
@@ -1151,10 +808,7 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 100, channel: DamageChannel.Direct },
     abilityText: "Evolve after your team deals 15000 non-status Damage.(currently 0)",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost, ConfirmableField.EvolvesInto],
     spriteFile: "fernfowl.png",
-    sourceRefs: [communityDex, batodexPage("fernfowl", "Fernfowl")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Flarilisk,
@@ -1168,11 +822,8 @@ export const creatures: CreatureRecord[] = [
     appliesStatus: [{ type: StatusEffectType.Burn, amount: 10 }],
     abilityText: "Evolve.",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.EvolvesInto],
     spriteFile: "flarilisk.png",
     abilityTrigger: AbilityTrigger.OnVictory,
-    sourceRefs: [communityDex, demoTierCostTable, batodexPage("flarilisk", "Flarilisk")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Frillet,
@@ -1191,10 +842,7 @@ export const creatures: CreatureRecord[] = [
     evolvesAtLevel: 3,
     abilityText: "Evolves at level 3.",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "frillet.png",
-    sourceRefs: [communityDex, batodexPage("frillet", "Frillet")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Frizzly,
@@ -1216,9 +864,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "frizzly.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [communityDex, demoTierCostTable, batodexFrizzly],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/" +
-      "damage/Shock confirmed via batodex.com 2026-10-05)",
   },
   {
     id: Species.Fumungus,
@@ -1236,8 +881,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "fumungus.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [communityDex, demoTierCostTable, batodexPage("fumungus", "Fumungus")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Furnadon,
@@ -1251,11 +894,8 @@ export const creatures: CreatureRecord[] = [
     appliesStatus: [{ type: StatusEffectType.Burn, amount: 4 }],
     abilityText: "Has an additional +1 Burn for each Trinket that you own.",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "furnadon.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [communityDex, batodexPage("furnadon", "Furnadon")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Gachapod,
@@ -1269,10 +909,7 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 100, channel: DamageChannel.Direct },
     abilityText: "When this triggers,",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "gachapod.png",
-    sourceRefs: [communityDex, batodexPage("gachapod", "Gachapod")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Gaiadrasil,
@@ -1287,8 +924,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "gaiadrasil.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [communityDex, demoTierCostTable, batodexPage("gaiadrasil", "Gaiadrasil")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Galvanine,
@@ -1305,8 +940,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "galvanine.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [communityDex, demoTierCostTable, batodexPage("galvanine", "Galvanine")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Geminiss,
@@ -1322,8 +955,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "geminiss.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [communityDex, demoTierCostTable, batodexPage("geminiss", "Geminiss")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Gemwing,
@@ -1337,11 +968,8 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 150, channel: DamageChannel.Direct },
     abilityText: "Activate the On Bought ability of the ally above 1 time(s).",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "gemwing.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [communityDex, batodexPage("gemwing", "Gemwing")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Gildshell,
@@ -1357,8 +985,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "gildshell.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [communityDex, demoTierCostTable, batodexPage("gildshell", "Gildshell")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Ginsage,
@@ -1372,11 +998,8 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 150, channel: DamageChannel.Direct },
     abilityText: "Adjacent Grass allies gain +7% Cooldown Speed permanently.",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "ginsage.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [communityDex, batodexPage("ginsage", "Ginsage")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Goldora,
@@ -1391,8 +1014,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "On the first cast, gain 1 random non-unique Legendary Trinket(s) for each Legendary ally.",
     abilityTags: [],
     spriteFile: "goldora.png",
-    sourceRefs: [communityDex, demoTierCostTable, batodexPage("goldora", "Goldora")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Guardiant,
@@ -1410,8 +1031,6 @@ export const creatures: CreatureRecord[] = [
       { kind: AbilityTagKind.ManualTrigger, trigger: AbilityTrigger.OnBought, effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 8 }] },
     ],
     spriteFile: "guardiant.png",
-    sourceRefs: [communityDex, demoTierCostTable, batodexPage("guardiant", "Guardiant")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Humbolt,
@@ -1426,10 +1045,7 @@ export const creatures: CreatureRecord[] = [
     appliesStatus: [{ type: StatusEffectType.Shock, amount: 1 }],
     abilityText: "",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.AbilityText],
     spriteFile: "humbolt.png",
-    sourceRefs: [communityDex, demoTierCostTable, batodexPage("humbolt", "Humbolt"), batodexExtracted("humbolt", "Humbolt")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Ignit,
@@ -1442,12 +1058,9 @@ export const creatures: CreatureRecord[] = [
     baseCooldownSeconds: 8,
     abilityText: "Evolve.",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.EvolvesInto],
     spriteFile: "ignit.png",
     abilityTrigger: AbilityTrigger.OnVictory,
     appliesStatus: [{ type: StatusEffectType.Burn, amount: 1 }],
-    sourceRefs: [communityDex, demoTierCostTable],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Ironcore,
@@ -1463,8 +1076,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "ironcore.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [communityDex, demoTierCostTable, batodexPage("ironcore", "Ironcore")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Joltail,
@@ -1479,10 +1090,7 @@ export const creatures: CreatureRecord[] = [
     appliesStatus: [{ type: StatusEffectType.Shock, amount: 4 }],
     abilityText: "",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.AbilityText],
     spriteFile: "joltail.png",
-    sourceRefs: [communityDex, demoTierCostTable, batodexPage("joltail", "Joltail"), batodexExtracted("joltail", "Joltail")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Kappow,
@@ -1496,11 +1104,8 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 50, channel: DamageChannel.Direct },
     abilityText: "Level up. This can level up indefinitely.",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "kappow.png",
     abilityTrigger: AbilityTrigger.OnVictory,
-    sourceRefs: [communityDex],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Kickrane,
@@ -1522,11 +1127,8 @@ export const creatures: CreatureRecord[] = [
         includeSelf: true,
       },
     ],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "kickrane.png",
     abilityTrigger: AbilityTrigger.OnVictory,
-    sourceRefs: [communityDex, batodexPage("kickrane", "Kickrane")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Kindlepot,
@@ -1540,10 +1142,7 @@ export const creatures: CreatureRecord[] = [
     appliesStatus: [{ type: StatusEffectType.Burn, amount: 4 }],
     abilityText: "Evolve after collecting 5 more Trinkets.(5 left!)",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost, ConfirmableField.EvolvesInto],
     spriteFile: "kindlepot.png",
-    sourceRefs: [communityDex, batodexPage("kindlepot", "Kindlepot")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Lamplet,
@@ -1557,10 +1156,7 @@ export const creatures: CreatureRecord[] = [
     appliesStatus: [{ type: StatusEffectType.Burn, amount: 1 }],
     abilityText: "",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost, ConfirmableField.AbilityText],
     spriteFile: "lamplet.png",
-    sourceRefs: [communityDex, batodexPage("lamplet", "Lamplet")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Leafleap,
@@ -1574,11 +1170,8 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 40, channel: DamageChannel.Direct },
     abilityText: "Give all monsters in the shop +5 Damage for the rest of the run.",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "leafleap.png",
     abilityTrigger: AbilityTrigger.OnBought,
-    sourceRefs: [communityDex, batodexPage("leafleap", "Leafleap")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Lignite,
@@ -1594,8 +1187,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "lignite.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [communityDex, demoTierCostTable, batodexPage("lignite", "Lignite")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Lumijel,
@@ -1610,11 +1201,8 @@ export const creatures: CreatureRecord[] = [
     healAmount: 30,
     abilityText: "Allies of level 3 or above gain +15 Damage and +15 Heal permanently.",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "lumijel.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [communityDex, batodexPage("lumijel", "Lumijel")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Magmalith,
@@ -1632,22 +1220,6 @@ export const creatures: CreatureRecord[] = [
     spriteFile: "magmalith.png",
     abilityTrigger: AbilityTrigger.OnCast,
     appliesStatus: [{ type: StatusEffectType.Burn, amount: 5 }],
-    sourceRefs: [communityDex, demoTierCostTable, batodexPage("magmalith", "Magmalith")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
-    conflicts: [
-      {
-        field: "baseCooldownSeconds/baseDamage (level 1)",
-        values: [
-          { value: "cooldown 9s, damage none published", sourceRefs: [batodexLevelSeries] },
-          { value: "cooldown 10s, damage none published", sourceRefs: [communityDex] },
-        ],
-        resolution:
-          "Adopted the batodex per-level series value, because it is the same source levels 2-4 " +
-          "come from -- keeping the community-dex figure at level 1 would leave this species' own " +
-          "four records internally inconsistent. The community value is retained here rather than " +
-          "dropped (2026-10-06 round 6, tasks.md T133).",
-      },
-    ],
   },
   {
     id: Species.Magmite,
@@ -1661,10 +1233,7 @@ export const creatures: CreatureRecord[] = [
     appliesStatus: [{ type: StatusEffectType.Shield, amount: 40 }, { type: StatusEffectType.Burn, amount: 4 }],
     abilityText: "",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.AbilityText],
     spriteFile: "magmite.png",
-    sourceRefs: [communityDex, demoTierCostTable, batodexPage("magmite", "Magmite")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Mallogre,
@@ -1679,11 +1248,8 @@ export const creatures: CreatureRecord[] = [
     appliesStatus: [{ type: StatusEffectType.Shield, amount: 100 }],
     abilityText: "+4 Damage and +4 Shield permanently for each Trinket that you own.",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "mallogre.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [communityDex, batodexPage("mallogre", "Mallogre")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Miasmaw,
@@ -1699,11 +1265,8 @@ export const creatures: CreatureRecord[] = [
     // 2026-10-06 round 9 (T201): structured so the resolver can act on it. "1x" is the
     // multiplier; "(Except other Miasmaw)" is handled by the resolver excluding same-species allies.
     abilityTags: [{ kind: AbilityTagKind.BattleStartStatusFromAllies, status: StatusEffectType.Poison, multiplier: 1 }],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "miasmaw.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [communityDex, batodexPage("miasmaw", "Miasmaw"), batodexExtracted("miasmaw", "Miasmaw")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Missingn,
@@ -1717,11 +1280,8 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 1, channel: DamageChannel.Direct },
     abilityText: "For this battle, transform into a random monster 1 rarity above your shop's highest available rarity.",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "missing_no.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [communityDex],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Mosslug,
@@ -1739,8 +1299,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "mosslug.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [communityDex, demoTierCostTable, batodexPage("mosslug", "Mosslug")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Nekoffin,
@@ -1754,25 +1312,8 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 200, channel: DamageChannel.Direct },
     abilityText: "Gain a random non-unique Common Trinket.",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "nekoffin.png",
     abilityTrigger: AbilityTrigger.OnKnockedOut,
-    sourceRefs: [communityDex, batodexPage("nekoffin", "Nekoffin")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
-    conflicts: [
-      {
-        field: "baseCooldownSeconds/baseDamage (level 1)",
-        values: [
-          { value: "cooldown 13s, damage 200", sourceRefs: [batodexLevelSeries] },
-          { value: "cooldown 13s, damage 250", sourceRefs: [communityDex] },
-        ],
-        resolution:
-          "Adopted the batodex per-level series value, because it is the same source levels 2-4 " +
-          "come from -- keeping the community-dex figure at level 1 would leave this species' own " +
-          "four records internally inconsistent. The community value is retained here rather than " +
-          "dropped (2026-10-06 round 6, tasks.md T133).",
-      },
-    ],
   },
   {
     id: Species.Ninflora,
@@ -1786,11 +1327,8 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 50, channel: DamageChannel.Direct },
     abilityText: "This and your Grass allies gain +10% Cooldown Speed permanently.",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "ninflora.png",
     abilityTrigger: AbilityTrigger.OnVictory,
-    sourceRefs: [communityDex, batodexPage("ninflora", "Ninflora")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Noxalith,
@@ -1808,22 +1346,6 @@ export const creatures: CreatureRecord[] = [
     spriteFile: "noxalith.png",
     abilityTrigger: AbilityTrigger.OnCast,
     appliesStatus: [{ type: StatusEffectType.Poison, amount: 5 }],
-    sourceRefs: [communityDex, demoTierCostTable, batodexPage("noxalith", "Noxalith")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
-    conflicts: [
-      {
-        field: "baseCooldownSeconds/baseDamage (level 1)",
-        values: [
-          { value: "cooldown 7s, damage none published", sourceRefs: [batodexLevelSeries] },
-          { value: "cooldown 8s, damage none published", sourceRefs: [communityDex] },
-        ],
-        resolution:
-          "Adopted the batodex per-level series value, because it is the same source levels 2-4 " +
-          "come from -- keeping the community-dex figure at level 1 would leave this species' own " +
-          "four records internally inconsistent. The community value is retained here rather than " +
-          "dropped (2026-10-06 round 6, tasks.md T133).",
-      },
-    ],
   },
   {
     id: Species.Noxnimbus,
@@ -1841,8 +1363,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "noxnimbus.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [communityDex, demoTierCostTable, batodexPage("noxnimbus", "Noxnimbus"), batodexExtracted("noxnimbus", "Noxnimbus")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Null00,
@@ -1855,12 +1375,9 @@ export const creatures: CreatureRecord[] = [
     baseCooldownSeconds: 4,
     abilityText: "Allies and enemies in this row have +3 Cooldown.",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "null_00.png",
     abilityTrigger: AbilityTrigger.Ongoing,
     appliesStatus: [{ type: StatusEffectType.Shield, amount: 40 }],
-    sourceRefs: [communityDex, batodexExtracted("null_00", "NULL-00")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Null7f,
@@ -1874,11 +1391,8 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 180, channel: DamageChannel.Direct },
     abilityText: "Knockout a random enemy.",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "null_7f.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [communityDex, batodexExtracted("null_7f", "NULL-7F")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Nullff,
@@ -1892,11 +1406,8 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 99, channel: DamageChannel.Direct },
     abilityText: "Trigger this and allies in this row.",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "null_ff.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [communityDex, batodexExtracted("null_ff", "NULL-FF")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Omnichrome,
@@ -1912,8 +1423,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "omnichrome.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-        sourceRefs: [communityDex, demoTierCostTable],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Oniclaw,
@@ -1928,10 +1437,7 @@ export const creatures: CreatureRecord[] = [
     appliesStatus: [{ type: StatusEffectType.Burn, amount: 5 }],
     abilityText: "Whenever your team inflicts Burn, gain +50% Damage this battle.",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "oniclaw.png",
-    sourceRefs: [communityDex, batodexPage("oniclaw", "Oniclaw")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Opalion,
@@ -1944,26 +1450,9 @@ export const creatures: CreatureRecord[] = [
     baseCooldownSeconds: 6,
     abilityText: "Trigger 1 random Rock allies. (Except other Opalion)",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "opalion.png",
     abilityTrigger: AbilityTrigger.OnCast,
     appliesStatus: [{ type: StatusEffectType.Shield, amount: 90 }],
-    sourceRefs: [communityDex, batodexPage("opalion", "Opalion")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
-    conflicts: [
-      {
-        field: "baseCooldownSeconds/baseDamage (level 1)",
-        values: [
-          { value: "cooldown 9s, damage none published", sourceRefs: [batodexLevelSeries] },
-          { value: "cooldown 8s, damage none published", sourceRefs: [communityDex] },
-        ],
-        resolution:
-          "Adopted the batodex per-level series value, because it is the same source levels 2-4 " +
-          "come from -- keeping the community-dex figure at level 1 would leave this species' own " +
-          "four records internally inconsistent. The community value is retained here rather than " +
-          "dropped (2026-10-06 round 6, tasks.md T133).",
-      },
-    ],
   },
   {
     id: Species.Orcana,
@@ -1977,11 +1466,8 @@ export const creatures: CreatureRecord[] = [
     healAmount: 200,
     abilityText: "Has an additional +160 Damage and +160 Heal for each ally of level 3 or above.",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "orcana.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [communityDex, batodexPage("orcana", "Orcana")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Ouroblaze,
@@ -1995,11 +1481,8 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 400, channel: DamageChannel.Direct },
     abilityText: "Has additional Burn equal to 50% of the Burn stacks on the enemy.",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "ouroblaze.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [communityDex, batodexPage("ouroblaze", "Ouroblaze")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Panbud,
@@ -2016,20 +1499,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Evolves at level 3.",
     abilityTags: [],
     spriteFile: "panbud.png",
-    sourceRefs: [communityDex, demoTierCostTable, batodexPanbud, batomonComPanbud, patchNotesGuideSep2026],
-    conflicts: [
-      {
-        field: "baseCooldownSeconds",
-        values: [
-          { value: 5.5, sourceRefs: [batodexPanbud] },
-          { value: 5, sourceRefs: [batomonComPanbud, patchNotesGuideSep2026] },
-        ],
-        resolution:
-          "5 adopted as the current Patch 1.2.0 value (explicit changelog entry); 5.5 appears " +
-          "to be a pre-patch snapshot batodex.com hasn't refreshed.",
-      },
-    ],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Pawsperity,
@@ -2043,11 +1512,8 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 100, channel: DamageChannel.Direct },
     abilityText: "Gain a random non-unique Common Trinket.",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "pawsperity.png",
     abilityTrigger: AbilityTrigger.OnVictory,
-    sourceRefs: [communityDex, batodexPage("pawsperity", "Pawsperity")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Petrirex,
@@ -2067,46 +1533,8 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [
       { kind: AbilityTagKind.KnockoutAlliesOnBattleStart, target: { kind: TargetKind.Adjacent }, effectPerKnockout: { statusGrant: { type: StatusEffectType.Shield, amount: 20 } } },
     ],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "petrirex.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [
-      communityDex,
-      batodexPage("petrirex", "Petrirex"),
-      {
-        url: "https://batomon.net/batomon/petrirex/",
-        title: "Petrirex – Batomon Stats and Ability (1.2.0)",
-        retrievedAt: RETRIEVED,
-      },
-    ],
-    conflicts: [
-      {
-        field: "baseCooldownSeconds",
-        values: [
-          { value: 5.5, sourceRefs: [batodexPage("petrirex", "Petrirex")] },
-          {
-            value: 7.0,
-            sourceRefs: [
-              {
-                url: "https://batomon.net/batomon/petrirex/",
-                title: "Petrirex – Batomon Stats and Ability (1.2.0)",
-                retrievedAt: RETRIEVED,
-              },
-            ],
-          },
-        ],
-        resolution: "7.0 adopted as the explicit current-patch (1.2.0) value per batomon.net's own changelog note; 5.5 appears to be a pre-1.2.0 snapshot batodex.com hasn't refreshed.",
-      },
-      {
-        field: "abilityText",
-        values: [
-          { value: "Knockout adjacent allies and gain +50 Shield and +50 Damage permanently for each ally Knockout.", sourceRefs: [batodexPage("petrirex", "Petrirex")] },
-          { value: "Knockout adjacent allies and gain +20 Shield permanently for each ally Knockout.", sourceRefs: [{ url: "https://batomon.net/batomon/petrirex/", title: "Petrirex – Batomon Stats and Ability (1.2.0)", retrievedAt: RETRIEVED }] },
-        ],
-        resolution: "Same 1.2.0 patch supersession as the cooldown conflict above -- the Damage-gain half of the ability was removed and the Shield-gain amount reduced.",
-      },
-    ],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Pipskull,
@@ -2120,10 +1548,7 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 20, channel: DamageChannel.Direct },
     abilityText: "Evolve after this monster experiences Knockout 3 times.",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.EvolvesInto],
     spriteFile: "pipskull.png",
-    sourceRefs: [communityDex, demoTierCostTable, batodexExtracted("pipskull", "Pipskull")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Plunderbird,
@@ -2140,8 +1565,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "plunderbird.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [communityDex, demoTierCostTable, batodexPage("plunderbird", "Plunderbird")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Pompummel,
@@ -2155,11 +1578,8 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 300, channel: DamageChannel.Direct },
     abilityText: "Activate the On Victory ability of the ally above.",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "pompummel.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [communityDex, batodexPage("pompummel", "Pompummel")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Prismagon,
@@ -2177,8 +1597,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "prismagon.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [communityDex, demoTierCostTable, batodexPage("prismagon", "Prismagon")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Puffloon,
@@ -2196,8 +1614,6 @@ export const creatures: CreatureRecord[] = [
       { kind: AbilityTagKind.TriggerOnAllyTrigger, target: { kind: TargetKind.Adjacent, typeFilter: CreatureType.Toxic } },
     ],
     spriteFile: "puffloon.png",
-    sourceRefs: [communityDex, demoTierCostTable, batodexPage("puffloon", "Puffloon"), batodexExtracted("puffloon", "Puffloon")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Purpleegg,
@@ -2213,10 +1629,7 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     // Paraphrased: the extracted text carried unresolved `{monster_name}`/`{amount}`
     // substitution tokens (research.md R7.1), so the specific monster and day count are not known.
-    unconfirmedFields: [ConfirmableField.AbilityText, ConfirmableField.ShopCost, ConfirmableField.Types],
     spriteFile: "purple_egg.png",
-    sourceRefs: [communityDex],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Pylong,
@@ -2233,8 +1646,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "pylong.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [communityDex, demoTierCostTable, batodexPage("pylong", "Pylong")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Pyrokami,
@@ -2250,11 +1661,8 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [
       { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statusGrant: { type: StatusEffectType.Burn, amount: 10 } } },
     ],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "pyrokami.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [communityDex, batodexPage("pyrokami", "Pyrokami"), batodexExtracted("pyrokami", "Pyrokami")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Pyronade,
@@ -2270,8 +1678,6 @@ export const creatures: CreatureRecord[] = [
     spriteFile: "infernade.png",
     abilityTrigger: AbilityTrigger.OnCast,
         appliesStatus: [{ type: StatusEffectType.Burn, amount: 20 }],
-        sourceRefs: [communityDex, demoTierCostTable, batodexExtracted("infernade", "Pyronade")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Quillustrous,
@@ -2285,11 +1691,8 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 150, channel: DamageChannel.Direct },
     abilityText: "Has additional Damage equal to 50% of the total Damage of your allies. (Except other Quillustrous)",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "quillustrous.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [communityDex, batodexExtracted("quillustrous", "Quillustrous")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Ratacomb,
@@ -2307,8 +1710,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "ratacomb.png",
     abilityTrigger: AbilityTrigger.OnKnockedOut,
-        sourceRefs: [communityDex, demoTierCostTable, batodexExtracted("ratacomb", "Ratacomb")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Rattleghast,
@@ -2326,8 +1727,6 @@ export const creatures: CreatureRecord[] = [
     spriteFile: "rattleghast.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
         appliesStatus: [{ type: StatusEffectType.Poison, amount: 1 }],
-        sourceRefs: [communityDex, demoTierCostTable, batodexExtracted("rattleghast", "Rattleghast")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Reapra,
@@ -2343,8 +1742,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "reapra.png",
     abilityTrigger: AbilityTrigger.OnCast,
-        sourceRefs: [communityDex, demoTierCostTable, batodexExtracted("reapra", "Reapra")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Rhizuka,
@@ -2358,10 +1755,7 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 200, channel: DamageChannel.Direct },
     abilityText: "Trigger this when an ally applies Shield. (Except other Rhizuka)",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "rhizuka.png",
-    sourceRefs: [communityDex, batodexExtracted("rhizuka", "Rhizuka")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Rigalord,
@@ -2377,8 +1771,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "rigalord.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-        sourceRefs: [communityDex, demoTierCostTable],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Riglet,
@@ -2393,8 +1785,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "At the start of the next day, devour the ally in front and evolve into Rigalord.",
     abilityTags: [],
     spriteFile: "riglet.png",
-        sourceRefs: [communityDex, demoTierCostTable, communityDexNameList, batodexExtracted("riglet", "Riglet")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Rubbin,
@@ -2408,11 +1798,8 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 40, channel: DamageChannel.Direct },
     abilityText: "Gain a Junk Trinket.",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "rubbin.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [communityDex, batodexExtracted("rubbin", "Rubbin")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Runerock,
@@ -2428,8 +1815,6 @@ export const creatures: CreatureRecord[] = [
     spriteFile: "runerock.png",
     abilityTrigger: AbilityTrigger.OnCast,
         appliesStatus: [{ type: StatusEffectType.Shield, amount: 140 }],
-        sourceRefs: [communityDex, demoTierCostTable],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Saberhorn,
@@ -2448,8 +1833,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "saberhorn.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [communityDex, demoTierCostTable, batodexPage("saberhorn", "Saberhorn"), batodexExtracted("saberhorn", "Saberhorn")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
     id: Species.Sarudo,
@@ -2463,11 +1846,8 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 100, channel: DamageChannel.Direct },
     abilityText: "Activate the On Victory abilities of adjacent allies 1 time(s).",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "sarudo.png",
     abilityTrigger: AbilityTrigger.OnBattleLost,
-    sourceRefs: [communityDex, batodexExtracted("sarudo", "Sarudo")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Scorubble,
@@ -2480,11 +1860,8 @@ export const creatures: CreatureRecord[] = [
     baseCooldownSeconds: 5,
     abilityText: "",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost, ConfirmableField.AbilityText],
     spriteFile: "scorbble.png",
     appliesStatus: [{ type: StatusEffectType.Shield, amount: 30 }, { type: StatusEffectType.Poison, amount: 2 }],
-    sourceRefs: [communityDex, batodexExtracted("scorbble", "Scorubble")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Shelldra,
@@ -2500,8 +1877,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "shelldra.png",
         healAmount: 15,
-        sourceRefs: [communityDex, demoTierCostTable, batodexExtracted("shelldra", "Shelldra")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Shellter,
@@ -2514,12 +1889,9 @@ export const creatures: CreatureRecord[] = [
     baseCooldownSeconds: 6.5,
     abilityText: "-20 Shield for this battle.",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "shellter.png",
     abilityTrigger: AbilityTrigger.OnCast,
     appliesStatus: [{ type: StatusEffectType.Shield, amount: 120 }],
-    sourceRefs: [communityDex, batodexExtracted("shellter", "Shellter")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Shikitsune,
@@ -2533,11 +1905,8 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 50, channel: DamageChannel.Direct },
     abilityText: "Knocked-out allies are revived and gain +15% Cooldown Speed for this battle.",
     abilityTags: [{ kind: AbilityTagKind.ReviveKnockedOutAllies, cooldownSpeedBonus: 0.15 }],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "shikitsune.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [communityDex, batodexExtracted("shikitsune", "Shikitsune")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Shogapede,
@@ -2552,8 +1921,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "shogapede.png",
         appliesStatus: [{ type: StatusEffectType.Poison, amount: 6 }],
-        sourceRefs: [communityDex, demoTierCostTable, batodexExtracted("shogapede", "Shogapede")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Shrinell,
@@ -2567,11 +1934,8 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 160, channel: DamageChannel.Direct },
     abilityText: "Ally behind has +% Cooldown Speed for each Trinket that you own.",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "shrinell.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [communityDex, batodexExtracted("shrinell", "Shrinell")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Sirenade,
@@ -2587,8 +1951,6 @@ export const creatures: CreatureRecord[] = [
     spriteFile: "sirenade.png",
     abilityTrigger: AbilityTrigger.OnCast,
         healAmount: 100,
-        sourceRefs: [communityDex, demoTierCostTable, batodexExtracted("sirenade", "Sirenade")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Snapscald,
@@ -2601,12 +1963,9 @@ export const creatures: CreatureRecord[] = [
     baseCooldownSeconds: 9,
     abilityText: "Trigger this when an ally of level 3 or above casts. (Except other Snapscald)",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "snapscald.png",
     appliesStatus: [{ type: StatusEffectType.Burn, amount: 8 }],
     healAmount: 40,
-    sourceRefs: [communityDex, batodexExtracted("snapscald", "Snapscald")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Spinarai,
@@ -2620,11 +1979,8 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 3, channel: DamageChannel.Direct },
     abilityText: "",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.AbilityText],
     spriteFile: "spinarai.png",
     appliesStatus: [{ type: StatusEffectType.Poison, amount: 1 }],
-    sourceRefs: [communityDex, demoTierCostTable, batodexExtracted("spinarai", "Spinarai")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Sproach,
@@ -2637,11 +1993,8 @@ export const creatures: CreatureRecord[] = [
     baseCooldownSeconds: 5.5,
     abilityText: "+30 Damage permanently for each life lost this run.",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "sproach.png",
     abilityTrigger: AbilityTrigger.OnBought,
-    sourceRefs: [communityDex, batodexExtracted("sproach", "Sproach")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Sproutquill,
@@ -2655,10 +2008,7 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 50, channel: DamageChannel.Direct },
     abilityText: "Evolve after your team deals 10000 non-status Damage.(currently 0)",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost, ConfirmableField.EvolvesInto],
     spriteFile: "sproutquill.png",
-    sourceRefs: [communityDex, batodexExtracted("sproutquill", "Sproutquill")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Stalagrove,
@@ -2673,8 +2023,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "stalagrove.png",
         appliesStatus: [{ type: StatusEffectType.Shield, amount: 60 }],
-        sourceRefs: [communityDex, demoTierCostTable, batodexExtracted("stalagrove", "Stalagrove")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Steamscuttle,
@@ -2687,13 +2035,10 @@ export const creatures: CreatureRecord[] = [
     baseCooldownSeconds: 3.5,
     abilityText: "Charge adjacent Fire and Water allies by 1 second(s). (Steamscuttle can't receive charge)",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "steamscuttle.png",
     abilityTrigger: AbilityTrigger.OnCast,
     appliesStatus: [{ type: StatusEffectType.Burn, amount: 5 }],
     healAmount: 30,
-    sourceRefs: [communityDex, batodexExtracted("steamscuttle", "Steamscuttle")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Stellagon,
@@ -2709,8 +2054,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "stellagon.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-        sourceRefs: [communityDex, demoTierCostTable, batodexExtracted("stellagon", "Stellagon")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Stingarde,
@@ -2726,8 +2069,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "stingarde.png",
     abilityTrigger: AbilityTrigger.OnCast,
-        sourceRefs: [communityDex, demoTierCostTable, batodexExtracted("stingarde", "Stingarde")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Sukoi,
@@ -2740,11 +2081,8 @@ export const creatures: CreatureRecord[] = [
     baseCooldownSeconds: 9,
     abilityText: "",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost, ConfirmableField.AbilityText],
     spriteFile: "sukoi.png",
     healAmount: 80,
-    sourceRefs: [communityDex, batodexExtracted("sukoi", "Sukoi")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Swoonet,
@@ -2758,11 +2096,8 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 30, channel: DamageChannel.Direct },
     abilityText: "This only needs 2 copies to level up. This can level up indefinitely.",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "swoonet.png",
     healAmount: 30,
-    sourceRefs: [communityDex, batodexExtracted("swoonet", "Swoonet")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Talonite,
@@ -2776,11 +2111,8 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 30, channel: DamageChannel.Direct },
     abilityText: "+20 Shield permanently for each Rock ally and +1 Multicast permanently for each Flying ally.",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "talonite.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [communityDex, batodexExtracted("talonite", "Talonite")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Tengusto,
@@ -2794,11 +2126,8 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 50, channel: DamageChannel.Direct },
     abilityText: "Has an additional +60 Damage for each Badge that you have.",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "tengusto.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [communityDex, batodexExtracted("tengusto", "Tengusto")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Thorntail,
@@ -2817,8 +2146,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "thorntail.png",
         appliesStatus: [{ type: StatusEffectType.Poison, amount: 1 }],
-        sourceRefs: [communityDex, demoTierCostTable, batodexExtracted("thorntail", "Thorntail")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Torrantler,
@@ -2834,8 +2161,6 @@ export const creatures: CreatureRecord[] = [
     spriteFile: "torrantler.png",
     abilityTrigger: AbilityTrigger.OnCast,
         healAmount: 200,
-        sourceRefs: [communityDex, demoTierCostTable, batodexExtracted("torrantler", "Torrantler")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Toximoth,
@@ -2849,12 +2174,9 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 2, channel: DamageChannel.Direct },
     abilityText: "Give Toxic monsters in the shop +1 Poison for the rest of the run.",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "toximoth.png",
     abilityTrigger: AbilityTrigger.OnBought,
     appliesStatus: [{ type: StatusEffectType.Poison, amount: 2 }],
-    sourceRefs: [communityDex, batodexExtracted("toximoth", "Toximoth")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Tsunamere,
@@ -2867,12 +2189,9 @@ export const creatures: CreatureRecord[] = [
     baseCooldownSeconds: 7,
     abilityText: "Level up all adjacent allies for this battle (max level 3).",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "tsunamere.png",
     abilityTrigger: AbilityTrigger.OnCast,
     healAmount: 400,
-    sourceRefs: [communityDex, batodexExtracted("tsunamere", "Tsunamere")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Velocect,
@@ -2886,10 +2205,7 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 15, channel: DamageChannel.Direct },
     abilityText: "",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.AbilityText],
     spriteFile: "velocect.png",
-    sourceRefs: [communityDex, demoTierCostTable, batodexExtracted("velocect", "Velocect")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Vengrieve,
@@ -2902,11 +2218,8 @@ export const creatures: CreatureRecord[] = [
     baseCooldownSeconds: 7.5,
     abilityText: "Knockout the monster opposite of this and gain their stats for this battle (except Cooldown).",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "vengrieve.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [communityDex, batodexExtracted("vengrieve", "Vengrieve")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Vipair,
@@ -2921,12 +2234,9 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [
       { kind: AbilityTagKind.ManualTrigger, trigger: AbilityTrigger.OnTrinketGained, effects: [{ stat: ModifierStat.PoisonAmountAdd, amount: 4 }] },
     ],
-    unconfirmedFields: [ConfirmableField.ShopCost],
     spriteFile: "vipair.png",
     abilityTrigger: AbilityTrigger.OnTrinketGained,
     appliesStatus: [{ type: StatusEffectType.Poison, amount: 5 }],
-    sourceRefs: [communityDex, batodexExtracted("vipair", "Vipair")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Voltalith,
@@ -2944,8 +2254,6 @@ export const creatures: CreatureRecord[] = [
     spriteFile: "voltalith.png",
     abilityTrigger: AbilityTrigger.OnCast,
         appliesStatus: [{ type: StatusEffectType.Shock, amount: 5 }],
-        sourceRefs: [communityDex, demoTierCostTable, batodexExtracted("voltalith", "Voltalith")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Wishwash,
@@ -2961,8 +2269,6 @@ export const creatures: CreatureRecord[] = [
     spriteFile: "wishwash.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
         healAmount: 150,
-        sourceRefs: [communityDex, demoTierCostTable, batodexExtracted("wishwash", "Wishwash")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Zephyrex,
@@ -2980,8 +2286,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "zephyrex.png",
     abilityTrigger: AbilityTrigger.OnCast,
-        sourceRefs: [communityDex, demoTierCostTable, batodexExtracted("zephyrex", "Zephyrex")],
-    patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
     id: Species.Bambudo,
@@ -2995,11 +2299,8 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 75, channel: DamageChannel.Direct },
     abilityText: "",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.AbilityText, ConfirmableField.Rarity],
     spriteFile: "bambudo.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [demoTierCostTable],
-    patch: "Steam Demo Build 25037381 / Balance 14 (tier/cost table only; not present in the 144-row ability-text dex reviewed). Rarity inferred from this corpus's own empirically 1:1 Tier<->Rarity correlation across the 69 names present in both source tables, not independently stated by this source.",
   },
   {
     id: Species.Emperooze,
@@ -3014,11 +2315,8 @@ export const creatures: CreatureRecord[] = [
     healAmount: 45,
     abilityText: "",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.AbilityText, ConfirmableField.Rarity],
     spriteFile: "emperooze.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [demoTierCostTable, batodexExtracted("emperooze", "Emperooze")],
-    patch: "Steam Demo Build 25037381 / Balance 14 (tier/cost table only; not present in the 144-row ability-text dex reviewed). Rarity inferred from this corpus's own empirically 1:1 Tier<->Rarity correlation across the 69 names present in both source tables, not independently stated by this source.",
   },
   {
     id: Species.Sunsage,
@@ -3033,11 +2331,8 @@ export const creatures: CreatureRecord[] = [
     appliesStatus: [{ type: StatusEffectType.Burn, amount: 1 }],
     abilityText: "",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.AbilityText, ConfirmableField.Rarity],
     spriteFile: "sunsage.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [demoTierCostTable, batodexExtracted("sunsage", "Sunsage")],
-    patch: "Steam Demo Build 25037381 / Balance 14 (tier/cost table only; not present in the 144-row ability-text dex reviewed). Rarity inferred from this corpus's own empirically 1:1 Tier<->Rarity correlation across the 69 names present in both source tables, not independently stated by this source.",
   },
   {
     id: Species.Beetdown,
@@ -3051,11 +2346,8 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 35, channel: DamageChannel.Direct },
     abilityText: "Evolution result of Beetbud at level 3.",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.Rarity, ConfirmableField.Types, ConfirmableField.ShopCost, ConfirmableField.AbilityText],
     spriteFile: "beetdown.png",
     abilityTrigger: AbilityTrigger.OnVictory,
-    sourceRefs: [communityDexNameList, batodexExtracted("beetdown", "Beetdown")],
-    patch: "Patch 1.2.0 / Balance 24 (name-only; not independently confirmed)",
   },
   {
     id: Species.Dewlotl,
@@ -3071,15 +2363,11 @@ export const creatures: CreatureRecord[] = [
     // 2026-10-07 (research.md R7.4): this field held a SOURCING DISCLAIMER -- "Named on
     // batomon.com's 149-entry navigation list but not present in the 144-row community dex table
     // or the demo tier/cost table reviewed" -- which `hasAbilityText` accepted, so the card
-    // rendered a provenance note as though it were the creature's ability. The disclaimer belongs
-    // in `patch`/`sourceRefs`, where it already is. Empty string, not prose: that is the corpus's
-    // established spelling for "no ability", enforced by scrubber.test.tsx's guard.
+    // rendered that note as though it were the creature's ability. Empty string, not prose: that
+    // is the corpus's established spelling for "no ability", enforced by scrubber.test.tsx.
     abilityText: "",
     abilityTags: [],
-    unconfirmedFields: [ConfirmableField.Rarity, ConfirmableField.Types, ConfirmableField.ShopCost, ConfirmableField.AbilityText],
     spriteFile: "dewlotl.png",
-    sourceRefs: [communityDexNameList, batodexExtracted("dewlotl", "Dewlotl")],
-    patch: "Patch 1.2.0 / Balance 24 (name-only; not independently confirmed)",
   },
   {
     id: Species.Bumblebolt,
@@ -3095,8 +2383,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "",
     abilityTags: [],
     spriteFile: "bumblebolt.png",
-    sourceRefs: [batodexExtracted("bumblebolt", "Bumblebolt")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Bumblebolt,
@@ -3112,8 +2398,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "",
     abilityTags: [],
     spriteFile: "bumblebolt.png",
-    sourceRefs: [batodexExtracted("bumblebolt", "Bumblebolt")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Bumblebolt,
@@ -3129,8 +2413,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "",
     abilityTags: [],
     spriteFile: "bumblebolt.png",
-    sourceRefs: [batodexExtracted("bumblebolt", "Bumblebolt")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Formiqueen,
@@ -3153,8 +2435,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "formiqueen.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [batodexExtracted("formiqueen", "Formiqueen")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Formiqueen,
@@ -3177,8 +2457,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "formiqueen.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [batodexExtracted("formiqueen", "Formiqueen")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Formiqueen,
@@ -3201,8 +2479,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "formiqueen.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [batodexExtracted("formiqueen", "Formiqueen")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Venopuff,
@@ -3217,8 +2493,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "",
     abilityTags: [],
     spriteFile: "venopuff.png",
-    sourceRefs: [batodexExtracted("venopuff", "Venopuff")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Venopuff,
@@ -3233,8 +2507,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "",
     abilityTags: [],
     spriteFile: "venopuff.png",
-    sourceRefs: [batodexExtracted("venopuff", "Venopuff")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Venopuff,
@@ -3249,8 +2521,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "",
     abilityTags: [],
     spriteFile: "venopuff.png",
-    sourceRefs: [batodexExtracted("venopuff", "Venopuff")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Scorchimp,
@@ -3268,8 +2538,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Evolves at level 3.",
     abilityTags: [],
     spriteFile: "scorchimp.png",
-    sourceRefs: [batodexExtracted("scorchimp", "Scorchimp")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Scorchimp,
@@ -3287,8 +2555,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Evolves at level 3.",
     abilityTags: [],
     spriteFile: "scorchimp.png",
-    sourceRefs: [batodexExtracted("scorchimp", "Scorchimp")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Scorchimp,
@@ -3306,8 +2572,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Evolves at level 3.",
     abilityTags: [],
     spriteFile: "scorchimp.png",
-    sourceRefs: [batodexExtracted("scorchimp", "Scorchimp")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Pebbler,
@@ -3325,8 +2589,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "pebbler.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("pebbler", "Pebbler")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Pebbler,
@@ -3344,8 +2606,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "pebbler.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("pebbler", "Pebbler")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Pebbler,
@@ -3363,8 +2623,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "pebbler.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("pebbler", "Pebbler")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Onsetra,
@@ -3385,8 +2643,6 @@ export const creatures: CreatureRecord[] = [
       },
     ],
     spriteFile: "onsetra.png",
-    sourceRefs: [batodexExtracted("onsetra", "Onsetra")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Onsetra,
@@ -3407,8 +2663,6 @@ export const creatures: CreatureRecord[] = [
       },
     ],
     spriteFile: "onsetra.png",
-    sourceRefs: [batodexExtracted("onsetra", "Onsetra")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Onsetra,
@@ -3429,8 +2683,6 @@ export const creatures: CreatureRecord[] = [
       },
     ],
     spriteFile: "onsetra.png",
-    sourceRefs: [batodexExtracted("onsetra", "Onsetra")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Aegistruct,
@@ -3446,8 +2698,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "aegistruct.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("aegistruct", "Aegistruct")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Aegistruct,
@@ -3463,8 +2713,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "aegistruct.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("aegistruct", "Aegistruct")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Aegistruct,
@@ -3480,8 +2728,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "aegistruct.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("aegistruct", "Aegistruct")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Aerophim,
@@ -3497,8 +2743,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "aerophim.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("aerophim", "Aerophim")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Aerophim,
@@ -3514,8 +2758,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "aerophim.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("aerophim", "Aerophim")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Aerophim,
@@ -3531,8 +2773,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "aerophim.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("aerophim", "Aerophim")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Aristobat,
@@ -3547,8 +2787,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "",
     abilityTags: [],
     spriteFile: "aristobat.png",
-    sourceRefs: [batodexExtracted("aristobat", "Aristobat")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Aristobat,
@@ -3563,8 +2801,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "",
     abilityTags: [],
     spriteFile: "aristobat.png",
-    sourceRefs: [batodexExtracted("aristobat", "Aristobat")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Aristobat,
@@ -3579,8 +2815,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "",
     abilityTags: [],
     spriteFile: "aristobat.png",
-    sourceRefs: [batodexExtracted("aristobat", "Aristobat")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Aster,
@@ -3596,8 +2830,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "aster.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("aster", "Aster")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Aster,
@@ -3613,8 +2845,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "aster.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("aster", "Aster")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Aster,
@@ -3630,8 +2860,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "aster.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("aster", "Aster")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Aviarab,
@@ -3647,8 +2875,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "aviarab.png",
     abilityTrigger: AbilityTrigger.OnBought,
-    sourceRefs: [batodexExtracted("aviarab", "Aviarab")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Aviarab,
@@ -3664,8 +2890,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "aviarab.png",
     abilityTrigger: AbilityTrigger.OnBought,
-    sourceRefs: [batodexExtracted("aviarab", "Aviarab")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Aviarab,
@@ -3681,8 +2905,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "aviarab.png",
     abilityTrigger: AbilityTrigger.OnBought,
-    sourceRefs: [batodexExtracted("aviarab", "Aviarab")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Basilord,
@@ -3697,8 +2919,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "",
     abilityTags: [],
     spriteFile: "basilord.png",
-    sourceRefs: [batodexExtracted("basilord", "Basilord")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Basilord,
@@ -3713,8 +2933,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "",
     abilityTags: [],
     spriteFile: "basilord.png",
-    sourceRefs: [batodexExtracted("basilord", "Basilord")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Basilord,
@@ -3729,8 +2947,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "",
     abilityTags: [],
     spriteFile: "basilord.png",
-    sourceRefs: [batodexExtracted("basilord", "Basilord")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Beetbud,
@@ -3747,8 +2963,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Evolves at level 3.",
     abilityTags: [],
     spriteFile: "beetbud.png",
-    sourceRefs: [batodexExtracted("beetbud", "Beetbud")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Beetbud,
@@ -3765,8 +2979,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Evolves at level 3.",
     abilityTags: [],
     spriteFile: "beetbud.png",
-    sourceRefs: [batodexExtracted("beetbud", "Beetbud")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Beetbud,
@@ -3783,8 +2995,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Evolves at level 3.",
     abilityTags: [],
     spriteFile: "beetbud.png",
-    sourceRefs: [batodexExtracted("beetbud", "Beetbud")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Berroon,
@@ -3800,8 +3010,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "berroon.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("berroon", "Berroon")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Berroon,
@@ -3817,8 +3025,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "berroon.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("berroon", "Berroon")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Berroon,
@@ -3834,8 +3040,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "berroon.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("berroon", "Berroon")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Blazewing,
@@ -3850,8 +3054,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "",
     abilityTags: [],
     spriteFile: "blazewing.png",
-    sourceRefs: [batodexExtracted("blazewing", "Blazewing")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Blazewing,
@@ -3866,8 +3068,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "",
     abilityTags: [],
     spriteFile: "blazewing.png",
-    sourceRefs: [batodexExtracted("blazewing", "Blazewing")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Blazewing,
@@ -3882,8 +3082,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "",
     abilityTags: [],
     spriteFile: "blazewing.png",
-    sourceRefs: [batodexExtracted("blazewing", "Blazewing")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Blessom,
@@ -3898,8 +3096,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "At the start of each day, monsters in your shop gain +100 Damage.",
     abilityTags: [],
     spriteFile: "blessom.png",
-    sourceRefs: [batodexExtracted("blessom", "Blessom")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Blessom,
@@ -3914,8 +3110,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "At the start of each day, monsters in your shop gain +150 Damage.",
     abilityTags: [],
     spriteFile: "blessom.png",
-    sourceRefs: [batodexExtracted("blessom", "Blessom")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Blessom,
@@ -3930,8 +3124,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "At the start of each day, monsters in your shop gain +300 Damage.",
     abilityTags: [],
     spriteFile: "blessom.png",
-    sourceRefs: [batodexExtracted("blessom", "Blessom")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Blixie,
@@ -3947,8 +3139,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "blixie.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("blixie", "Blixie")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Blixie,
@@ -3964,8 +3154,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "blixie.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("blixie", "Blixie")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Blixie,
@@ -3981,8 +3169,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "blixie.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("blixie", "Blixie")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Bonshell,
@@ -4001,8 +3187,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "bonshell.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("bonshell", "Bonshell")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Bonshell,
@@ -4021,8 +3205,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "bonshell.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("bonshell", "Bonshell")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Bonshell,
@@ -4041,8 +3223,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "bonshell.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("bonshell", "Bonshell")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Boomagon,
@@ -4058,8 +3238,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "boomagon.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("boomagon", "Boomagon")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Boomagon,
@@ -4075,8 +3253,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "boomagon.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("boomagon", "Boomagon")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Boomagon,
@@ -4092,8 +3268,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "boomagon.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("boomagon", "Boomagon")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Brawlmantis,
@@ -4117,8 +3291,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "brawlmantis.png",
     abilityTrigger: AbilityTrigger.OnVictory,
-    sourceRefs: [batodexExtracted("brawlmantis", "Brawlmantis")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Brawlmantis,
@@ -4142,8 +3314,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "brawlmantis.png",
     abilityTrigger: AbilityTrigger.OnVictory,
-    sourceRefs: [batodexExtracted("brawlmantis", "Brawlmantis")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Brawlmantis,
@@ -4167,8 +3337,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "brawlmantis.png",
     abilityTrigger: AbilityTrigger.OnVictory,
-    sourceRefs: [batodexExtracted("brawlmantis", "Brawlmantis")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Brimtoad,
@@ -4184,8 +3352,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "brimtoad.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("brimtoad", "Brimtoad")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Brimtoad,
@@ -4201,8 +3367,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "brimtoad.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("brimtoad", "Brimtoad")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Brimtoad,
@@ -4218,8 +3382,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "brimtoad.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("brimtoad", "Brimtoad")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Bunchop,
@@ -4235,8 +3397,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "bunchop.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [batodexExtracted("bunchop", "Bunchop")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Bunchop,
@@ -4252,8 +3412,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "bunchop.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [batodexExtracted("bunchop", "Bunchop")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Bunchop,
@@ -4269,8 +3427,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "bunchop.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [batodexExtracted("bunchop", "Bunchop")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Cairnage,
@@ -4286,8 +3442,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "cairnage.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("cairnage", "Cairnage")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Cairnage,
@@ -4303,8 +3457,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "cairnage.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("cairnage", "Cairnage")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Cairnage,
@@ -4320,8 +3472,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "cairnage.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("cairnage", "Cairnage")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Cawnushi,
@@ -4339,8 +3489,6 @@ export const creatures: CreatureRecord[] = [
       { kind: AbilityTagKind.ManualTrigger, trigger: AbilityTrigger.OnKnockout, effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 120 }] },
     ],
     spriteFile: "cawnushi.png",
-    sourceRefs: [batodexExtracted("cawnushi", "Cawnushi")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Cawnushi,
@@ -4358,8 +3506,6 @@ export const creatures: CreatureRecord[] = [
       { kind: AbilityTagKind.ManualTrigger, trigger: AbilityTrigger.OnKnockout, effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 180 }] },
     ],
     spriteFile: "cawnushi.png",
-    sourceRefs: [batodexExtracted("cawnushi", "Cawnushi")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Cawnushi,
@@ -4377,8 +3523,6 @@ export const creatures: CreatureRecord[] = [
       { kind: AbilityTagKind.ManualTrigger, trigger: AbilityTrigger.OnKnockout, effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 1440 }] },
     ],
     spriteFile: "cawnushi.png",
-    sourceRefs: [batodexExtracted("cawnushi", "Cawnushi")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Celestia,
@@ -4394,8 +3538,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "celestia.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("celestia", "Celestia")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Celestia,
@@ -4411,8 +3553,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "celestia.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("celestia", "Celestia")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Celestia,
@@ -4428,8 +3568,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "celestia.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("celestia", "Celestia")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Cherubble,
@@ -4445,8 +3583,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "cherubble.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("cherubble", "Cherubble")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Cherubble,
@@ -4462,8 +3598,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "cherubble.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("cherubble", "Cherubble")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Cherubble,
@@ -4479,8 +3613,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "cherubble.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("cherubble", "Cherubble")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Cicadence,
@@ -4496,8 +3628,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "cicadence.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("cicadence", "Cicadence")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Cicadence,
@@ -4513,8 +3643,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "cicadence.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("cicadence", "Cicadence")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Cicadence,
@@ -4530,8 +3658,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "cicadence.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("cicadence", "Cicadence")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Cinderfly,
@@ -4546,8 +3672,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "After you buy a Bug monster, this gains +20% Cooldown Speed.",
     abilityTags: [],
     spriteFile: "cinderfly.png",
-    sourceRefs: [batodexExtracted("cinderfly", "Cinderfly")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Cinderfly,
@@ -4562,8 +3686,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "After you buy a Bug monster, this gains +30% Cooldown Speed.",
     abilityTags: [],
     spriteFile: "cinderfly.png",
-    sourceRefs: [batodexExtracted("cinderfly", "Cinderfly")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Cinderfly,
@@ -4578,8 +3700,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "After you buy a Bug monster, this gains +60% Cooldown Speed.",
     abilityTags: [],
     spriteFile: "cinderfly.png",
-    sourceRefs: [batodexExtracted("cinderfly", "Cinderfly")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Cinnabark,
@@ -4595,8 +3715,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "cinnabark.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [batodexExtracted("cinnabark", "Cinnabark")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Cinnabark,
@@ -4612,8 +3730,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "cinnabark.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [batodexExtracted("cinnabark", "Cinnabark")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Cinnabark,
@@ -4629,8 +3745,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "cinnabark.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [batodexExtracted("cinnabark", "Cinnabark")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Clawnetic,
@@ -4645,8 +3759,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Whenever an ally inflicts Shock, Charge this by 1 second(s).",
     abilityTags: [],
     spriteFile: "clawnetic.png",
-    sourceRefs: [batodexExtracted("clawnetic", "Clawnetic")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Clawnetic,
@@ -4661,8 +3773,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Whenever an ally inflicts Shock, Charge this by 1 second(s).",
     abilityTags: [],
     spriteFile: "clawnetic.png",
-    sourceRefs: [batodexExtracted("clawnetic", "Clawnetic")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Clawnetic,
@@ -4677,8 +3787,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Whenever an ally inflicts Shock, Charge this by 1 second(s).",
     abilityTags: [],
     spriteFile: "clawnetic.png",
-    sourceRefs: [batodexExtracted("clawnetic", "Clawnetic")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Coalem,
@@ -4694,8 +3802,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "coalem.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("coalem", "Coalem")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Coalem,
@@ -4711,8 +3817,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "coalem.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("coalem", "Coalem")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Coalem,
@@ -4728,8 +3832,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "coalem.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("coalem", "Coalem")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Cobrex,
@@ -4744,8 +3846,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Whenever an ally inflicts Poison, Charge this by 1 second(s).",
     abilityTags: [{ kind: AbilityTagKind.ChargeOnAllyStatus, status: StatusEffectType.Poison, seconds: 1 }],
     spriteFile: "cobrex.png",
-    sourceRefs: [batodexExtracted("cobrex", "Cobrex")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Cobrex,
@@ -4760,8 +3860,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Whenever an ally inflicts Poison, Charge this by 1 second(s).",
     abilityTags: [{ kind: AbilityTagKind.ChargeOnAllyStatus, status: StatusEffectType.Poison, seconds: 1 }],
     spriteFile: "cobrex.png",
-    sourceRefs: [batodexExtracted("cobrex", "Cobrex")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Cobrex,
@@ -4776,8 +3874,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Whenever an ally inflicts Poison, Charge this by 1 second(s).",
     abilityTags: [{ kind: AbilityTagKind.ChargeOnAllyStatus, status: StatusEffectType.Poison, seconds: 1 }],
     spriteFile: "cobrex.png",
-    sourceRefs: [batodexExtracted("cobrex", "Cobrex")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Cordycant,
@@ -4793,8 +3889,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "cordycant.png",
     abilityTrigger: AbilityTrigger.OnBought,
-    sourceRefs: [batodexExtracted("cordycant", "Cordycant")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Cordycant,
@@ -4810,8 +3904,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "cordycant.png",
     abilityTrigger: AbilityTrigger.OnBought,
-    sourceRefs: [batodexExtracted("cordycant", "Cordycant")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Cordycant,
@@ -4827,8 +3919,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "cordycant.png",
     abilityTrigger: AbilityTrigger.OnBought,
-    sourceRefs: [batodexExtracted("cordycant", "Cordycant")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Cosmivore,
@@ -4843,8 +3933,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "When rerolling the shop, gain 40% of the total stats of the monsters remaining in the shop (excluding Multicast and Cooldown).",
     abilityTags: [],
     spriteFile: "cosmivore.png",
-    sourceRefs: [batodexExtracted("cosmivore", "Cosmivore")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Cosmivore,
@@ -4859,8 +3947,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "When rerolling the shop, gain 60% of the total stats of the monsters remaining in the shop (excluding Multicast and Cooldown).",
     abilityTags: [],
     spriteFile: "cosmivore.png",
-    sourceRefs: [batodexExtracted("cosmivore", "Cosmivore")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Cosmivore,
@@ -4875,8 +3961,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "When rerolling the shop, gain 600% of the total stats of the monsters remaining in the shop (excluding Multicast and Cooldown).",
     abilityTags: [],
     spriteFile: "cosmivore.png",
-    sourceRefs: [batodexExtracted("cosmivore", "Cosmivore")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Craghorn,
@@ -4895,8 +3979,6 @@ export const creatures: CreatureRecord[] = [
       { kind: AbilityTagKind.ManualTrigger, trigger: AbilityTrigger.OnItemUsed, effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 40 }, { stat: ModifierStat.ShieldAmountAdd, amount: 40 }] },
     ],
     spriteFile: "alpinine.png",
-    sourceRefs: [batodexExtracted("alpinine", "Craghorn")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Craghorn,
@@ -4915,8 +3997,6 @@ export const creatures: CreatureRecord[] = [
       { kind: AbilityTagKind.ManualTrigger, trigger: AbilityTrigger.OnItemUsed, effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 60 }, { stat: ModifierStat.ShieldAmountAdd, amount: 60 }] },
     ],
     spriteFile: "alpinine.png",
-    sourceRefs: [batodexExtracted("alpinine", "Craghorn")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Craghorn,
@@ -4935,8 +4015,6 @@ export const creatures: CreatureRecord[] = [
       { kind: AbilityTagKind.ManualTrigger, trigger: AbilityTrigger.OnItemUsed, effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 120 }, { stat: ModifierStat.ShieldAmountAdd, amount: 120 }] },
     ],
     spriteFile: "alpinine.png",
-    sourceRefs: [batodexExtracted("alpinine", "Craghorn")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Danuki,
@@ -4951,8 +4029,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "On ally knockout, this gains 70% of their Damage for this battle.\n(Except other Danuki)",
     abilityTags: [],
     spriteFile: "danuki.png",
-    sourceRefs: [batodexExtracted("danuki", "Danuki")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Danuki,
@@ -4967,8 +4043,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "On ally knockout, this gains 70% of their Damage for this battle.\n(Except other Danuki)",
     abilityTags: [],
     spriteFile: "danuki.png",
-    sourceRefs: [batodexExtracted("danuki", "Danuki")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Danuki,
@@ -4983,8 +4057,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "On ally knockout, this gains 70% of their Damage for this battle.\n(Except other Danuki)",
     abilityTags: [],
     spriteFile: "danuki.png",
-    sourceRefs: [batodexExtracted("danuki", "Danuki")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Dirgefin,
@@ -5001,8 +4073,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "dirgefin.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("dirgefin", "Dirgefin")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Dirgefin,
@@ -5019,8 +4089,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "dirgefin.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("dirgefin", "Dirgefin")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Dirgefin,
@@ -5037,8 +4105,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "dirgefin.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("dirgefin", "Dirgefin")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Dollhime,
@@ -5055,8 +4121,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "dollhime.png",
     abilityTrigger: AbilityTrigger.OnTrinketGained,
-    sourceRefs: [batodexExtracted("dollhime", "Dollhime")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Dollhime,
@@ -5073,8 +4137,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "dollhime.png",
     abilityTrigger: AbilityTrigger.OnTrinketGained,
-    sourceRefs: [batodexExtracted("dollhime", "Dollhime")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Dollhime,
@@ -5091,8 +4153,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "dollhime.png",
     abilityTrigger: AbilityTrigger.OnTrinketGained,
-    sourceRefs: [batodexExtracted("dollhime", "Dollhime")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06; LEVEL 4 VALUE INFERRED -- the notes publish levels 1-3 only, so L4 is rescaled by the same factor as L1 to preserve the existing ratio)",
   },
   {
     id: Species.Dracana,
@@ -5108,8 +4168,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "dracana.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("dracana", "Dracana")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Dracana,
@@ -5125,8 +4183,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "dracana.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("dracana", "Dracana")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Dracana,
@@ -5142,8 +4198,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "dracana.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("dracana", "Dracana")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Draconarch,
@@ -5159,8 +4213,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "dragonarch.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("dragonarch", "Draconarch")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Draconarch,
@@ -5176,8 +4228,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "dragonarch.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("dragonarch", "Draconarch")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Draconarch,
@@ -5193,8 +4243,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "dragonarch.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("dragonarch", "Draconarch")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Dragonegg,
@@ -5209,8 +4257,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Hatches a Legendary Dragon monster in 2 days.",
     abilityTags: [],
     spriteFile: "dragon_egg_0.png",
-    sourceRefs: [batodexExtracted("dragon_egg_0", "Dragon Egg")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Dragonegg,
@@ -5225,8 +4271,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Hatches a Legendary Dragon monster in 2 days.",
     abilityTags: [],
     spriteFile: "dragon_egg_0.png",
-    sourceRefs: [batodexExtracted("dragon_egg_0", "Dragon Egg")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Dragonegg,
@@ -5241,8 +4285,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Hatches a Legendary Dragon monster in 2 days.",
     abilityTags: [],
     spriteFile: "dragon_egg_0.png",
-    sourceRefs: [batodexExtracted("dragon_egg_0", "Dragon Egg")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Dribblet,
@@ -5259,8 +4301,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Evolves at level 3.",
     abilityTags: [],
     spriteFile: "dribblet.png",
-    sourceRefs: [batodexExtracted("dribblet", "Dribblet")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Dribblet,
@@ -5277,8 +4317,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Evolves at level 3.",
     abilityTags: [],
     spriteFile: "dribblet.png",
-    sourceRefs: [batodexExtracted("dribblet", "Dribblet")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Dribblet,
@@ -5295,8 +4333,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Evolves at level 3.",
     abilityTags: [],
     spriteFile: "dribblet.png",
-    sourceRefs: [batodexExtracted("dribblet", "Dribblet")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Drumire,
@@ -5311,8 +4347,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "When a Toxic ally casts, give it +10% Cooldown Speed for this battle.",
     abilityTags: [{ kind: AbilityTagKind.CooldownSpeedOnAllyCast, typeFilter: CreatureType.Toxic, amount: 0.1 }],
     spriteFile: "drumire.png",
-    sourceRefs: [batodexExtracted("drumire", "Drumire")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Drumire,
@@ -5327,8 +4361,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "When a Toxic ally casts, give it +15% Cooldown Speed for this battle.",
     abilityTags: [{ kind: AbilityTagKind.CooldownSpeedOnAllyCast, typeFilter: CreatureType.Toxic, amount: 0.15 }],
     spriteFile: "drumire.png",
-    sourceRefs: [batodexExtracted("drumire", "Drumire")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Drumire,
@@ -5343,8 +4375,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "When a Toxic ally casts, give it +120% Cooldown Speed for this battle.",
     abilityTags: [{ kind: AbilityTagKind.CooldownSpeedOnAllyCast, typeFilter: CreatureType.Toxic, amount: 1.2 }],
     spriteFile: "drumire.png",
-    sourceRefs: [batodexExtracted("drumire", "Drumire")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Dryadell,
@@ -5360,8 +4390,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "dryadell.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("dryadell", "Dryadell")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Dryadell,
@@ -5377,8 +4405,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "dryadell.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("dryadell", "Dryadell")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Dryadell,
@@ -5394,8 +4420,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "dryadell.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("dryadell", "Dryadell")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Electranade,
@@ -5411,8 +4435,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "galvanade.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("galvanade", "Electranade")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Electranade,
@@ -5428,8 +4450,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "galvanade.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("galvanade", "Electranade")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Electranade,
@@ -5445,8 +4465,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "galvanade.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("galvanade", "Electranade")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Emberpaw,
@@ -5463,8 +4481,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Evolve when your team inflicts Burn 25 times.",
     abilityTags: [],
     spriteFile: "emberpaw.png",
-    sourceRefs: [batodexExtracted("emberpaw", "Emberpaw")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Emberpaw,
@@ -5481,8 +4497,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Evolve when your team inflicts Burn 25 times.",
     abilityTags: [],
     spriteFile: "emberpaw.png",
-    sourceRefs: [batodexExtracted("emberpaw", "Emberpaw")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Emberpaw,
@@ -5499,8 +4513,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Evolve when your team inflicts Burn 25 times.",
     abilityTags: [],
     spriteFile: "emberpaw.png",
-    sourceRefs: [batodexExtracted("emberpaw", "Emberpaw")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Emburn,
@@ -5518,8 +4530,6 @@ export const creatures: CreatureRecord[] = [
       { kind: AbilityTagKind.ManualTrigger, trigger: AbilityTrigger.OnKnockout, effects: [{ stat: ModifierStat.BurnAmountAdd, amount: 6 }] },
     ],
     spriteFile: "emburn.png",
-    sourceRefs: [batodexExtracted("emburn", "Emburn")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Emburn,
@@ -5537,8 +4547,6 @@ export const creatures: CreatureRecord[] = [
       { kind: AbilityTagKind.ManualTrigger, trigger: AbilityTrigger.OnKnockout, effects: [{ stat: ModifierStat.BurnAmountAdd, amount: 9 }] },
     ],
     spriteFile: "emburn.png",
-    sourceRefs: [batodexExtracted("emburn", "Emburn")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Emburn,
@@ -5556,8 +4564,6 @@ export const creatures: CreatureRecord[] = [
       { kind: AbilityTagKind.ManualTrigger, trigger: AbilityTrigger.OnKnockout, effects: [{ stat: ModifierStat.BurnAmountAdd, amount: 18 }] },
     ],
     spriteFile: "emburn.png",
-    sourceRefs: [batodexExtracted("emburn", "Emburn")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Faebloom,
@@ -5572,8 +4578,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Mythical Item may appear in your shop.\nOngoing\nAdjacent allies have +20% Damage per Mythical Item used. (currently +X% Damage)",
     abilityTags: [],
     spriteFile: "faebloom.png",
-    sourceRefs: [batodexExtracted("faebloom", "Faebloom")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Faebloom,
@@ -5588,8 +4592,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Mythical Item may appear in your shop.\nOngoing\nAdjacent allies have +30% Damage per Mythical Item used. (currently +X% Damage)",
     abilityTags: [],
     spriteFile: "faebloom.png",
-    sourceRefs: [batodexExtracted("faebloom", "Faebloom")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Faebloom,
@@ -5604,8 +4606,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Mythical Item may appear in your shop.\nOngoing\nAdjacent allies have +300% Damage per Mythical Item used. (currently +X% Damage)",
     abilityTags: [],
     spriteFile: "faebloom.png",
-    sourceRefs: [batodexExtracted("faebloom", "Faebloom")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Fernfowl,
@@ -5621,8 +4621,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Evolve after your team deals 15000 non-status Damage.(currently 0)",
     abilityTags: [],
     spriteFile: "fernfowl.png",
-    sourceRefs: [batodexExtracted("fernfowl", "Fernfowl")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Fernfowl,
@@ -5638,8 +4636,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Evolve after your team deals 15000 non-status Damage.(currently 0)",
     abilityTags: [],
     spriteFile: "fernfowl.png",
-    sourceRefs: [batodexExtracted("fernfowl", "Fernfowl")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Fernfowl,
@@ -5655,8 +4651,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Evolve after your team deals 15000 non-status Damage.(currently 0)",
     abilityTags: [],
     spriteFile: "fernfowl.png",
-    sourceRefs: [batodexExtracted("fernfowl", "Fernfowl")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Flarilisk,
@@ -5673,8 +4667,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "flarilisk.png",
     abilityTrigger: AbilityTrigger.OnVictory,
-    sourceRefs: [batodexExtracted("flarilisk", "Flarilisk")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Flarilisk,
@@ -5691,8 +4683,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "flarilisk.png",
     abilityTrigger: AbilityTrigger.OnVictory,
-    sourceRefs: [batodexExtracted("flarilisk", "Flarilisk")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Flarilisk,
@@ -5709,8 +4699,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "flarilisk.png",
     abilityTrigger: AbilityTrigger.OnVictory,
-    sourceRefs: [batodexExtracted("flarilisk", "Flarilisk")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Frillet,
@@ -5728,8 +4716,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Evolves at level 3.",
     abilityTags: [],
     spriteFile: "frillet.png",
-    sourceRefs: [batodexExtracted("frillet", "Frillet")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Frillet,
@@ -5747,8 +4733,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Evolves at level 3.",
     abilityTags: [],
     spriteFile: "frillet.png",
-    sourceRefs: [batodexExtracted("frillet", "Frillet")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Frillet,
@@ -5766,8 +4750,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Evolves at level 3.",
     abilityTags: [],
     spriteFile: "frillet.png",
-    sourceRefs: [batodexExtracted("frillet", "Frillet")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Frizzly,
@@ -5784,8 +4766,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "frizzly.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("frizzly", "Frizzly")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Frizzly,
@@ -5802,8 +4782,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "frizzly.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("frizzly", "Frizzly")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Frizzly,
@@ -5820,8 +4798,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "frizzly.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("frizzly", "Frizzly")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Fumungus,
@@ -5839,8 +4815,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "fumungus.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [batodexExtracted("fumungus", "Fumungus")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Fumungus,
@@ -5858,8 +4832,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "fumungus.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [batodexExtracted("fumungus", "Fumungus")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Fumungus,
@@ -5877,8 +4849,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "fumungus.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [batodexExtracted("fumungus", "Fumungus")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Furnadon,
@@ -5894,8 +4864,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "furnadon.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [batodexExtracted("furnadon", "Furnadon")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Furnadon,
@@ -5911,8 +4879,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "furnadon.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [batodexExtracted("furnadon", "Furnadon")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Furnadon,
@@ -5928,8 +4894,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "furnadon.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [batodexExtracted("furnadon", "Furnadon")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Gachapod,
@@ -5944,8 +4908,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "When this triggers,",
     abilityTags: [],
     spriteFile: "gachapod.png",
-    sourceRefs: [batodexExtracted("gachapod", "Gachapod")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Gachapod,
@@ -5960,8 +4922,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "When this triggers,",
     abilityTags: [],
     spriteFile: "gachapod.png",
-    sourceRefs: [batodexExtracted("gachapod", "Gachapod")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Gachapod,
@@ -5976,8 +4936,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "When this triggers,",
     abilityTags: [],
     spriteFile: "gachapod.png",
-    sourceRefs: [batodexExtracted("gachapod", "Gachapod")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Gaiadrasil,
@@ -5992,8 +4950,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "gaiadrasil.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [batodexExtracted("gaiadrasil", "Gaiadrasil")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Gaiadrasil,
@@ -6008,8 +4964,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "gaiadrasil.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [batodexExtracted("gaiadrasil", "Gaiadrasil")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Gaiadrasil,
@@ -6024,8 +4978,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "gaiadrasil.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [batodexExtracted("gaiadrasil", "Gaiadrasil")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Galvanine,
@@ -6042,8 +4994,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "galvanine.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("galvanine", "Galvanine")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Galvanine,
@@ -6060,8 +5010,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "galvanine.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("galvanine", "Galvanine")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Galvanine,
@@ -6078,8 +5026,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "galvanine.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("galvanine", "Galvanine")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Geminiss,
@@ -6095,8 +5041,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "geminiss.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("geminiss", "Geminiss")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Geminiss,
@@ -6112,8 +5056,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "geminiss.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("geminiss", "Geminiss")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Geminiss,
@@ -6129,8 +5071,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "geminiss.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("geminiss", "Geminiss")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Gemwing,
@@ -6146,8 +5086,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "gemwing.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("gemwing", "Gemwing")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Gemwing,
@@ -6163,8 +5101,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "gemwing.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("gemwing", "Gemwing")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Gemwing,
@@ -6180,8 +5116,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "gemwing.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("gemwing", "Gemwing")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Gildshell,
@@ -6197,8 +5131,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "gildshell.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("gildshell", "Gildshell")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Gildshell,
@@ -6214,8 +5146,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "gildshell.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("gildshell", "Gildshell")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Gildshell,
@@ -6231,8 +5161,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "gildshell.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("gildshell", "Gildshell")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Ginsage,
@@ -6248,8 +5176,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "ginsage.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("ginsage", "Ginsage")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Ginsage,
@@ -6265,8 +5191,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "ginsage.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("ginsage", "Ginsage")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Ginsage,
@@ -6282,8 +5206,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "ginsage.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("ginsage", "Ginsage")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Goldora,
@@ -6298,8 +5220,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "On the first cast, gain 2 random non-unique Legendary Trinket(s) for each Legendary ally.",
     abilityTags: [],
     spriteFile: "goldora.png",
-    sourceRefs: [batodexExtracted("goldora", "Goldora")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Goldora,
@@ -6314,8 +5234,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "On the first cast, gain 3 random non-unique Legendary Trinket(s) for each Legendary ally.",
     abilityTags: [],
     spriteFile: "goldora.png",
-    sourceRefs: [batodexExtracted("goldora", "Goldora")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Goldora,
@@ -6330,8 +5248,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "On the first cast, gain 30 random non-unique Legendary Trinket(s) for each Legendary ally.",
     abilityTags: [],
     spriteFile: "goldora.png",
-    sourceRefs: [batodexExtracted("goldora", "Goldora")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Guardiant,
@@ -6349,8 +5265,6 @@ export const creatures: CreatureRecord[] = [
       { kind: AbilityTagKind.ManualTrigger, trigger: AbilityTrigger.OnBought, effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 16 }] },
     ],
     spriteFile: "guardiant.png",
-    sourceRefs: [batodexExtracted("guardiant", "Guardiant")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Guardiant,
@@ -6368,8 +5282,6 @@ export const creatures: CreatureRecord[] = [
       { kind: AbilityTagKind.ManualTrigger, trigger: AbilityTrigger.OnBought, effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 24 }] },
     ],
     spriteFile: "guardiant.png",
-    sourceRefs: [batodexExtracted("guardiant", "Guardiant")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Guardiant,
@@ -6387,8 +5299,6 @@ export const creatures: CreatureRecord[] = [
       { kind: AbilityTagKind.ManualTrigger, trigger: AbilityTrigger.OnBought, effects: [{ stat: ModifierStat.DamageFlatAdd, amount: 48 }] },
     ],
     spriteFile: "guardiant.png",
-    sourceRefs: [batodexExtracted("guardiant", "Guardiant")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06; LEVEL 4 VALUE INFERRED -- the notes publish levels 1-3 only, so L4 is rescaled by the same factor as L1 to preserve the existing ratio)",
   },
   {
     id: Species.Humbolt,
@@ -6404,8 +5314,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "",
     abilityTags: [],
     spriteFile: "humbolt.png",
-    sourceRefs: [batodexExtracted("humbolt", "Humbolt")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Humbolt,
@@ -6421,8 +5329,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "",
     abilityTags: [],
     spriteFile: "humbolt.png",
-    sourceRefs: [batodexExtracted("humbolt", "Humbolt")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Humbolt,
@@ -6438,8 +5344,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "",
     abilityTags: [],
     spriteFile: "humbolt.png",
-    sourceRefs: [batodexExtracted("humbolt", "Humbolt")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Ignit,
@@ -6456,8 +5360,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "ignit.png",
     abilityTrigger: AbilityTrigger.OnVictory,
-    sourceRefs: [batodexExtracted("ignit", "Ignit")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Ignit,
@@ -6474,8 +5376,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "ignit.png",
     abilityTrigger: AbilityTrigger.OnVictory,
-    sourceRefs: [batodexExtracted("ignit", "Ignit")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Ignit,
@@ -6492,8 +5392,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "ignit.png",
     abilityTrigger: AbilityTrigger.OnVictory,
-    sourceRefs: [batodexExtracted("ignit", "Ignit")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Ironcore,
@@ -6509,8 +5407,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "ironcore.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("ironcore", "Ironcore")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Ironcore,
@@ -6526,8 +5422,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "ironcore.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("ironcore", "Ironcore")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Ironcore,
@@ -6543,8 +5437,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "ironcore.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("ironcore", "Ironcore")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Joltail,
@@ -6560,8 +5452,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "",
     abilityTags: [],
     spriteFile: "joltail.png",
-    sourceRefs: [batodexExtracted("joltail", "Joltail")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Joltail,
@@ -6577,8 +5467,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "",
     abilityTags: [],
     spriteFile: "joltail.png",
-    sourceRefs: [batodexExtracted("joltail", "Joltail")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Joltail,
@@ -6594,8 +5482,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "",
     abilityTags: [],
     spriteFile: "joltail.png",
-    sourceRefs: [batodexExtracted("joltail", "Joltail")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Kappow,
@@ -6611,8 +5497,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "kappow.png",
     abilityTrigger: AbilityTrigger.OnVictory,
-    sourceRefs: [batodexExtracted("kappow", "Kappow")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Kappow,
@@ -6628,8 +5512,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "kappow.png",
     abilityTrigger: AbilityTrigger.OnVictory,
-    sourceRefs: [batodexExtracted("kappow", "Kappow")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Kappow,
@@ -6645,8 +5527,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "kappow.png",
     abilityTrigger: AbilityTrigger.OnVictory,
-    sourceRefs: [batodexExtracted("kappow", "Kappow")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Kickrane,
@@ -6670,8 +5550,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "kickrane.png",
     abilityTrigger: AbilityTrigger.OnVictory,
-    sourceRefs: [batodexExtracted("kickrane", "Kickrane")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Kickrane,
@@ -6695,8 +5573,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "kickrane.png",
     abilityTrigger: AbilityTrigger.OnVictory,
-    sourceRefs: [batodexExtracted("kickrane", "Kickrane")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Kickrane,
@@ -6720,8 +5596,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "kickrane.png",
     abilityTrigger: AbilityTrigger.OnVictory,
-    sourceRefs: [batodexExtracted("kickrane", "Kickrane")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Kindlepot,
@@ -6737,8 +5611,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Evolve after collecting 5 more Trinkets.(5 left!)",
     abilityTags: [],
     spriteFile: "kindlepot.png",
-    sourceRefs: [batodexExtracted("kindlepot", "Kindlepot")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Kindlepot,
@@ -6754,8 +5626,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Evolve after collecting 5 more Trinkets.(5 left!)",
     abilityTags: [],
     spriteFile: "kindlepot.png",
-    sourceRefs: [batodexExtracted("kindlepot", "Kindlepot")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Kindlepot,
@@ -6771,8 +5641,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Evolve after collecting 5 more Trinkets.(5 left!)",
     abilityTags: [],
     spriteFile: "kindlepot.png",
-    sourceRefs: [batodexExtracted("kindlepot", "Kindlepot")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Lamplet,
@@ -6787,8 +5655,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "",
     abilityTags: [],
     spriteFile: "lamplet.png",
-    sourceRefs: [batodexExtracted("lamplet", "Lamplet")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Lamplet,
@@ -6803,8 +5669,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "",
     abilityTags: [],
     spriteFile: "lamplet.png",
-    sourceRefs: [batodexExtracted("lamplet", "Lamplet")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Lamplet,
@@ -6819,8 +5683,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "",
     abilityTags: [],
     spriteFile: "lamplet.png",
-    sourceRefs: [batodexExtracted("lamplet", "Lamplet")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Leafleap,
@@ -6836,8 +5698,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "leafleap.png",
     abilityTrigger: AbilityTrigger.OnBought,
-    sourceRefs: [batodexExtracted("leafleap", "Leafleap")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Leafleap,
@@ -6853,8 +5713,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "leafleap.png",
     abilityTrigger: AbilityTrigger.OnBought,
-    sourceRefs: [batodexExtracted("leafleap", "Leafleap")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Leafleap,
@@ -6870,8 +5728,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "leafleap.png",
     abilityTrigger: AbilityTrigger.OnBought,
-    sourceRefs: [batodexExtracted("leafleap", "Leafleap")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Lignite,
@@ -6887,8 +5743,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "lignite.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [batodexExtracted("lignite", "Lignite")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Lignite,
@@ -6904,8 +5758,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "lignite.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [batodexExtracted("lignite", "Lignite")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Lignite,
@@ -6921,8 +5773,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "lignite.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [batodexExtracted("lignite", "Lignite")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06; LEVEL 4 VALUE INFERRED -- the notes publish levels 1-3 only, so L4 is rescaled by the same factor as L1 to preserve the existing ratio)",
   },
   {
     id: Species.Lumijel,
@@ -6939,8 +5789,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "lumijel.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("lumijel", "Lumijel")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Lumijel,
@@ -6957,8 +5805,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "lumijel.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("lumijel", "Lumijel")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Lumijel,
@@ -6975,8 +5821,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "lumijel.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("lumijel", "Lumijel")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Magmalith,
@@ -6994,8 +5838,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "magmalith.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("magmalith", "Magmalith")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Magmalith,
@@ -7013,8 +5855,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "magmalith.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("magmalith", "Magmalith")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Magmalith,
@@ -7032,8 +5872,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "magmalith.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("magmalith", "Magmalith")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Magmite,
@@ -7048,8 +5886,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "",
     abilityTags: [],
     spriteFile: "magmite.png",
-    sourceRefs: [batodexExtracted("magmite", "Magmite")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Magmite,
@@ -7064,8 +5900,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "",
     abilityTags: [],
     spriteFile: "magmite.png",
-    sourceRefs: [batodexExtracted("magmite", "Magmite")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Magmite,
@@ -7080,8 +5914,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "",
     abilityTags: [],
     spriteFile: "magmite.png",
-    sourceRefs: [batodexExtracted("magmite", "Magmite")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Mallogre,
@@ -7098,8 +5930,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "mallogre.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("mallogre", "Mallogre")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Mallogre,
@@ -7116,8 +5946,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "mallogre.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("mallogre", "Mallogre")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Mallogre,
@@ -7134,8 +5962,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "mallogre.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("mallogre", "Mallogre")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Miasmaw,
@@ -7151,8 +5977,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [{ kind: AbilityTagKind.BattleStartStatusFromAllies, status: StatusEffectType.Poison, multiplier: 2 }],
     spriteFile: "miasmaw.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("miasmaw", "Miasmaw")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Miasmaw,
@@ -7168,8 +5992,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [{ kind: AbilityTagKind.BattleStartStatusFromAllies, status: StatusEffectType.Poison, multiplier: 3 }],
     spriteFile: "miasmaw.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("miasmaw", "Miasmaw")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Miasmaw,
@@ -7185,8 +6007,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [{ kind: AbilityTagKind.BattleStartStatusFromAllies, status: StatusEffectType.Poison, multiplier: 24 }],
     spriteFile: "miasmaw.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("miasmaw", "Miasmaw")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Missingn,
@@ -7202,8 +6022,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "missing_no.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("missing_no", "MissingN.")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Missingn,
@@ -7219,8 +6037,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "missing_no.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("missing_no", "MissingN.")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Missingn,
@@ -7236,8 +6052,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "missing_no.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("missing_no", "MissingN.")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Mosslug,
@@ -7255,8 +6069,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "mosslug.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("mosslug", "Mosslug")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Mosslug,
@@ -7274,8 +6086,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "mosslug.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("mosslug", "Mosslug")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Mosslug,
@@ -7293,8 +6103,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "mosslug.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("mosslug", "Mosslug")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Nekoffin,
@@ -7310,8 +6118,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "nekoffin.png",
     abilityTrigger: AbilityTrigger.OnKnockedOut,
-    sourceRefs: [batodexExtracted("nekoffin", "Nekoffin")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Nekoffin,
@@ -7327,8 +6133,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "nekoffin.png",
     abilityTrigger: AbilityTrigger.OnKnockedOut,
-    sourceRefs: [batodexExtracted("nekoffin", "Nekoffin")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Nekoffin,
@@ -7344,8 +6148,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "nekoffin.png",
     abilityTrigger: AbilityTrigger.OnKnockedOut,
-    sourceRefs: [batodexExtracted("nekoffin", "Nekoffin")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Ninflora,
@@ -7361,8 +6163,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "ninflora.png",
     abilityTrigger: AbilityTrigger.OnVictory,
-    sourceRefs: [batodexExtracted("ninflora", "Ninflora")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Ninflora,
@@ -7378,8 +6178,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "ninflora.png",
     abilityTrigger: AbilityTrigger.OnVictory,
-    sourceRefs: [batodexExtracted("ninflora", "Ninflora")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Ninflora,
@@ -7395,8 +6193,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "ninflora.png",
     abilityTrigger: AbilityTrigger.OnVictory,
-    sourceRefs: [batodexExtracted("ninflora", "Ninflora")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Noxalith,
@@ -7414,8 +6210,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "noxalith.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("noxalith", "Noxalith")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Noxalith,
@@ -7433,8 +6227,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "noxalith.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("noxalith", "Noxalith")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Noxalith,
@@ -7452,8 +6244,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "noxalith.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("noxalith", "Noxalith")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Noxnimbus,
@@ -7471,8 +6261,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "noxnimbus.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("noxnimbus", "Noxnimbus")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Noxnimbus,
@@ -7490,8 +6278,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "noxnimbus.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("noxnimbus", "Noxnimbus")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Noxnimbus,
@@ -7509,8 +6295,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "noxnimbus.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("noxnimbus", "Noxnimbus")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Null00,
@@ -7526,8 +6310,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "null_00.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [batodexExtracted("null_00", "NULL-00")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Null00,
@@ -7543,8 +6325,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "null_00.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [batodexExtracted("null_00", "NULL-00")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Null00,
@@ -7560,8 +6340,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "null_00.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [batodexExtracted("null_00", "NULL-00")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Null7f,
@@ -7577,8 +6355,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "null_7f.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("null_7f", "NULL-7F")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Null7f,
@@ -7594,8 +6370,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "null_7f.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("null_7f", "NULL-7F")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Null7f,
@@ -7611,8 +6385,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "null_7f.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("null_7f", "NULL-7F")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Nullff,
@@ -7628,8 +6400,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "null_ff.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("null_ff", "NULL-FF")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Nullff,
@@ -7645,8 +6415,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "null_ff.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("null_ff", "NULL-FF")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Nullff,
@@ -7662,8 +6430,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "null_ff.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("null_ff", "NULL-FF")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Omnichrome,
@@ -7679,8 +6445,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "omnichrome.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("omnichrome", "Omnichrome")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Omnichrome,
@@ -7696,8 +6460,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "omnichrome.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("omnichrome", "Omnichrome")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Omnichrome,
@@ -7713,8 +6475,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "omnichrome.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("omnichrome", "Omnichrome")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Oniclaw,
@@ -7730,8 +6490,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Whenever your team inflicts Burn, gain +100% Damage this battle.",
     abilityTags: [],
     spriteFile: "oniclaw.png",
-    sourceRefs: [batodexExtracted("oniclaw", "Oniclaw")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Oniclaw,
@@ -7747,8 +6505,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Whenever your team inflicts Burn, gain +150% Damage this battle.",
     abilityTags: [],
     spriteFile: "oniclaw.png",
-    sourceRefs: [batodexExtracted("oniclaw", "Oniclaw")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Oniclaw,
@@ -7764,8 +6520,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Whenever your team inflicts Burn, gain +1200% Damage this battle.",
     abilityTags: [],
     spriteFile: "oniclaw.png",
-    sourceRefs: [batodexExtracted("oniclaw", "Oniclaw")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Opalion,
@@ -7781,8 +6535,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "opalion.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("opalion", "Opalion")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Opalion,
@@ -7798,8 +6550,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "opalion.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("opalion", "Opalion")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Opalion,
@@ -7815,8 +6565,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "opalion.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("opalion", "Opalion")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Orcana,
@@ -7832,8 +6580,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "orcana.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [batodexExtracted("orcana", "Orcana")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Orcana,
@@ -7849,8 +6595,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "orcana.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [batodexExtracted("orcana", "Orcana")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Orcana,
@@ -7866,8 +6610,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "orcana.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [batodexExtracted("orcana", "Orcana")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Ouroblaze,
@@ -7883,8 +6625,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "ouroblaze.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [batodexExtracted("ouroblaze", "Ouroblaze")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Ouroblaze,
@@ -7900,8 +6640,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "ouroblaze.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [batodexExtracted("ouroblaze", "Ouroblaze")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Ouroblaze,
@@ -7917,8 +6655,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "ouroblaze.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [batodexExtracted("ouroblaze", "Ouroblaze")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Panbud,
@@ -7935,8 +6671,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Evolves at level 3.",
     abilityTags: [],
     spriteFile: "panbud.png",
-    sourceRefs: [batodexExtracted("panbud", "Panbud")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Panbud,
@@ -7953,8 +6687,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Evolves at level 3.",
     abilityTags: [],
     spriteFile: "panbud.png",
-    sourceRefs: [batodexExtracted("panbud", "Panbud")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Panbud,
@@ -7971,8 +6703,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Evolves at level 3.",
     abilityTags: [],
     spriteFile: "panbud.png",
-    sourceRefs: [batodexExtracted("panbud", "Panbud")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Pawsperity,
@@ -7988,8 +6718,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "pawsperity.png",
     abilityTrigger: AbilityTrigger.OnVictory,
-    sourceRefs: [batodexExtracted("pawsperity", "Pawsperity")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Pawsperity,
@@ -8005,8 +6733,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "pawsperity.png",
     abilityTrigger: AbilityTrigger.OnVictory,
-    sourceRefs: [batodexExtracted("pawsperity", "Pawsperity")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Pawsperity,
@@ -8022,8 +6748,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "pawsperity.png",
     abilityTrigger: AbilityTrigger.OnVictory,
-    sourceRefs: [batodexExtracted("pawsperity", "Pawsperity")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Petrirex,
@@ -8041,8 +6765,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "petrirex.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("petrirex", "Petrirex")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Petrirex,
@@ -8060,8 +6782,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "petrirex.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("petrirex", "Petrirex")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Petrirex,
@@ -8079,8 +6799,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "petrirex.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("petrirex", "Petrirex")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Pipskull,
@@ -8096,8 +6814,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Evolve after this monster experiences Knockout 3 times.",
     abilityTags: [],
     spriteFile: "pipskull.png",
-    sourceRefs: [batodexExtracted("pipskull", "Pipskull")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Pipskull,
@@ -8113,8 +6829,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Evolve after this monster experiences Knockout 3 times.",
     abilityTags: [],
     spriteFile: "pipskull.png",
-    sourceRefs: [batodexExtracted("pipskull", "Pipskull")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Pipskull,
@@ -8130,8 +6844,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Evolve after this monster experiences Knockout 3 times.",
     abilityTags: [],
     spriteFile: "pipskull.png",
-    sourceRefs: [batodexExtracted("pipskull", "Pipskull")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Plunderbird,
@@ -8148,8 +6860,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "plunderbird.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("plunderbird", "Plunderbird")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Plunderbird,
@@ -8166,8 +6876,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "plunderbird.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("plunderbird", "Plunderbird")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Plunderbird,
@@ -8184,8 +6892,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "plunderbird.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("plunderbird", "Plunderbird")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Pompummel,
@@ -8201,8 +6907,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "pompummel.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("pompummel", "Pompummel")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Pompummel,
@@ -8218,8 +6922,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "pompummel.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("pompummel", "Pompummel")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Pompummel,
@@ -8235,8 +6937,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "pompummel.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("pompummel", "Pompummel")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Prismagon,
@@ -8254,8 +6954,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "prismagon.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("prismagon", "Prismagon")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Prismagon,
@@ -8273,8 +6971,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "prismagon.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("prismagon", "Prismagon")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Prismagon,
@@ -8292,8 +6988,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "prismagon.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("prismagon", "Prismagon")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Puffloon,
@@ -8311,8 +7005,6 @@ export const creatures: CreatureRecord[] = [
       { kind: AbilityTagKind.TriggerOnAllyTrigger, target: { kind: TargetKind.Adjacent, typeFilter: CreatureType.Toxic } },
     ],
     spriteFile: "puffloon.png",
-    sourceRefs: [batodexExtracted("puffloon", "Puffloon")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Puffloon,
@@ -8330,8 +7022,6 @@ export const creatures: CreatureRecord[] = [
       { kind: AbilityTagKind.TriggerOnAllyTrigger, target: { kind: TargetKind.Adjacent, typeFilter: CreatureType.Toxic } },
     ],
     spriteFile: "puffloon.png",
-    sourceRefs: [batodexExtracted("puffloon", "Puffloon")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Puffloon,
@@ -8349,8 +7039,6 @@ export const creatures: CreatureRecord[] = [
       { kind: AbilityTagKind.TriggerOnAllyTrigger, target: { kind: TargetKind.Adjacent, typeFilter: CreatureType.Toxic } },
     ],
     spriteFile: "puffloon.png",
-    sourceRefs: [batodexExtracted("puffloon", "Puffloon")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Purpleegg,
@@ -8366,10 +7054,7 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     // Paraphrased: the extracted text carried unresolved `{monster_name}`/`{amount}`
     // substitution tokens (research.md R7.1), so the specific monster and day count are not known.
-    unconfirmedFields: [ConfirmableField.AbilityText],
     spriteFile: "purple_egg.png",
-    sourceRefs: [batodexExtracted("purple_egg", "Purple Egg")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Purpleegg,
@@ -8385,10 +7070,7 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     // Paraphrased: the extracted text carried unresolved `{monster_name}`/`{amount}`
     // substitution tokens (research.md R7.1), so the specific monster and day count are not known.
-    unconfirmedFields: [ConfirmableField.AbilityText],
     spriteFile: "purple_egg.png",
-    sourceRefs: [batodexExtracted("purple_egg", "Purple Egg")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Purpleegg,
@@ -8404,10 +7086,7 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     // Paraphrased: the extracted text carried unresolved `{monster_name}`/`{amount}`
     // substitution tokens (research.md R7.1), so the specific monster and day count are not known.
-    unconfirmedFields: [ConfirmableField.AbilityText],
     spriteFile: "purple_egg.png",
-    sourceRefs: [batodexExtracted("purple_egg", "Purple Egg")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Pylong,
@@ -8424,8 +7103,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "pylong.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [batodexExtracted("pylong", "Pylong")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Pylong,
@@ -8442,8 +7119,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "pylong.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [batodexExtracted("pylong", "Pylong")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Pylong,
@@ -8460,8 +7135,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "pylong.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [batodexExtracted("pylong", "Pylong")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Pyrokami,
@@ -8479,8 +7152,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "pyrokami.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("pyrokami", "Pyrokami")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Pyrokami,
@@ -8498,8 +7169,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "pyrokami.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("pyrokami", "Pyrokami")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Pyrokami,
@@ -8517,8 +7186,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "pyrokami.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("pyrokami", "Pyrokami")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Pyronade,
@@ -8534,8 +7201,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "infernade.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("infernade", "Pyronade")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Pyronade,
@@ -8551,8 +7216,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "infernade.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("infernade", "Pyronade")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Pyronade,
@@ -8568,8 +7231,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "infernade.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("infernade", "Pyronade")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Quillustrous,
@@ -8585,8 +7246,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "quillustrous.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [batodexExtracted("quillustrous", "Quillustrous")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Quillustrous,
@@ -8602,8 +7261,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "quillustrous.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [batodexExtracted("quillustrous", "Quillustrous")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Quillustrous,
@@ -8619,8 +7276,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "quillustrous.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [batodexExtracted("quillustrous", "Quillustrous")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Ratacomb,
@@ -8638,8 +7293,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "ratacomb.png",
     abilityTrigger: AbilityTrigger.OnKnockedOut,
-    sourceRefs: [batodexExtracted("ratacomb", "Ratacomb")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Ratacomb,
@@ -8657,8 +7310,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "ratacomb.png",
     abilityTrigger: AbilityTrigger.OnKnockedOut,
-    sourceRefs: [batodexExtracted("ratacomb", "Ratacomb")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Ratacomb,
@@ -8676,8 +7327,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "ratacomb.png",
     abilityTrigger: AbilityTrigger.OnKnockedOut,
-    sourceRefs: [batodexExtracted("ratacomb", "Ratacomb")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Rattleghast,
@@ -8695,8 +7344,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "rattleghast.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("rattleghast", "Rattleghast")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Rattleghast,
@@ -8714,8 +7361,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "rattleghast.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("rattleghast", "Rattleghast")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Rattleghast,
@@ -8733,8 +7378,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "rattleghast.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("rattleghast", "Rattleghast")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Reapra,
@@ -8750,8 +7393,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "reapra.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("reapra", "Reapra")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Reapra,
@@ -8767,8 +7408,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "reapra.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("reapra", "Reapra")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Reapra,
@@ -8784,8 +7423,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "reapra.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("reapra", "Reapra")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Rhizuka,
@@ -8800,8 +7437,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Trigger this when an ally applies Shield.\n(Except other Rhizuka)",
     abilityTags: [],
     spriteFile: "rhizuka.png",
-    sourceRefs: [batodexExtracted("rhizuka", "Rhizuka")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Rhizuka,
@@ -8816,8 +7451,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Trigger this when an ally applies Shield.\n(Except other Rhizuka)",
     abilityTags: [],
     spriteFile: "rhizuka.png",
-    sourceRefs: [batodexExtracted("rhizuka", "Rhizuka")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Rhizuka,
@@ -8832,8 +7465,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Trigger this when an ally applies Shield.\n(Except other Rhizuka)",
     abilityTags: [],
     spriteFile: "rhizuka.png",
-    sourceRefs: [batodexExtracted("rhizuka", "Rhizuka")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Rigalord,
@@ -8849,8 +7480,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "rigalord.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("rigalord", "Rigalord")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Rigalord,
@@ -8866,8 +7495,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "rigalord.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("rigalord", "Rigalord")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Rigalord,
@@ -8883,8 +7510,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "rigalord.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("rigalord", "Rigalord")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Riglet,
@@ -8900,8 +7525,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "At the start of the next day, devour the ally in front and evolve into Rigalord.",
     abilityTags: [],
     spriteFile: "riglet.png",
-    sourceRefs: [batodexExtracted("riglet", "Riglet")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Riglet,
@@ -8917,8 +7540,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "At the start of the next day, devour the ally in front and evolve into Rigalord.",
     abilityTags: [],
     spriteFile: "riglet.png",
-    sourceRefs: [batodexExtracted("riglet", "Riglet")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Riglet,
@@ -8934,8 +7555,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "At the start of the next day, devour the ally in front and evolve into Rigalord.",
     abilityTags: [],
     spriteFile: "riglet.png",
-    sourceRefs: [batodexExtracted("riglet", "Riglet")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Rubbin,
@@ -8951,8 +7570,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "rubbin.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("rubbin", "Rubbin")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Rubbin,
@@ -8968,8 +7585,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "rubbin.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("rubbin", "Rubbin")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Rubbin,
@@ -8985,8 +7600,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "rubbin.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("rubbin", "Rubbin")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Runerock,
@@ -9002,8 +7615,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "runerock.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("runerock", "Runerock")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Runerock,
@@ -9019,8 +7630,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "runerock.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("runerock", "Runerock")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Runerock,
@@ -9036,8 +7645,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "runerock.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("runerock", "Runerock")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Saberhorn,
@@ -9056,8 +7663,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "saberhorn.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("saberhorn", "Saberhorn")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Saberhorn,
@@ -9076,8 +7681,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "saberhorn.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("saberhorn", "Saberhorn")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Saberhorn,
@@ -9096,8 +7699,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "saberhorn.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("saberhorn", "Saberhorn")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Sarudo,
@@ -9113,8 +7714,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "sarudo.png",
     abilityTrigger: AbilityTrigger.OnBattleLost,
-    sourceRefs: [batodexExtracted("sarudo", "Sarudo")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Sarudo,
@@ -9130,8 +7729,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "sarudo.png",
     abilityTrigger: AbilityTrigger.OnBattleLost,
-    sourceRefs: [batodexExtracted("sarudo", "Sarudo")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Sarudo,
@@ -9147,8 +7744,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "sarudo.png",
     abilityTrigger: AbilityTrigger.OnBattleLost,
-    sourceRefs: [batodexExtracted("sarudo", "Sarudo")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Scorubble,
@@ -9163,8 +7758,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "",
     abilityTags: [],
     spriteFile: "scorbble.png",
-    sourceRefs: [batodexExtracted("scorbble", "Scorubble")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Scorubble,
@@ -9179,8 +7772,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "",
     abilityTags: [],
     spriteFile: "scorbble.png",
-    sourceRefs: [batodexExtracted("scorbble", "Scorubble")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Scorubble,
@@ -9195,8 +7786,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "",
     abilityTags: [],
     spriteFile: "scorbble.png",
-    sourceRefs: [batodexExtracted("scorbble", "Scorubble")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Shelldra,
@@ -9212,8 +7801,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Every 4 seconds, +2 Multicast for this battle.",
     abilityTags: [],
     spriteFile: "shelldra.png",
-    sourceRefs: [batodexExtracted("shelldra", "Shelldra")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Shelldra,
@@ -9229,8 +7816,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Every 4 seconds, +3 Multicast for this battle.",
     abilityTags: [],
     spriteFile: "shelldra.png",
-    sourceRefs: [batodexExtracted("shelldra", "Shelldra")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Shelldra,
@@ -9246,8 +7831,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Every 4 seconds, +12 Multicast for this battle.",
     abilityTags: [],
     spriteFile: "shelldra.png",
-    sourceRefs: [batodexExtracted("shelldra", "Shelldra")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Shellter,
@@ -9263,8 +7846,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "shellter.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("shellter", "Shellter")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Shellter,
@@ -9280,8 +7861,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "shellter.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("shellter", "Shellter")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Shellter,
@@ -9297,8 +7876,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "shellter.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("shellter", "Shellter")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Shikitsune,
@@ -9314,8 +7891,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [{ kind: AbilityTagKind.ReviveKnockedOutAllies, cooldownSpeedBonus: 0.3 }],
     spriteFile: "shikitsune.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("shikitsune", "Shikitsune")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Shikitsune,
@@ -9331,8 +7906,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [{ kind: AbilityTagKind.ReviveKnockedOutAllies, cooldownSpeedBonus: 0.45 }],
     spriteFile: "shikitsune.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("shikitsune", "Shikitsune")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Shikitsune,
@@ -9348,8 +7921,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [{ kind: AbilityTagKind.ReviveKnockedOutAllies, cooldownSpeedBonus: 1.8 }],
     spriteFile: "shikitsune.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("shikitsune", "Shikitsune")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Shogapede,
@@ -9364,8 +7935,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "After you buy a Bug monster, this gains +20% Cooldown Speed.",
     abilityTags: [],
     spriteFile: "shogapede.png",
-    sourceRefs: [batodexExtracted("shogapede", "Shogapede")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Shogapede,
@@ -9380,8 +7949,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "After you buy a Bug monster, this gains +30% Cooldown Speed.",
     abilityTags: [],
     spriteFile: "shogapede.png",
-    sourceRefs: [batodexExtracted("shogapede", "Shogapede")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Shogapede,
@@ -9396,8 +7963,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "After you buy a Bug monster, this gains +60% Cooldown Speed.",
     abilityTags: [],
     spriteFile: "shogapede.png",
-    sourceRefs: [batodexExtracted("shogapede", "Shogapede")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Shrinell,
@@ -9413,8 +7978,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "shrinell.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [batodexExtracted("shrinell", "Shrinell")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Shrinell,
@@ -9430,8 +7993,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "shrinell.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [batodexExtracted("shrinell", "Shrinell")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Shrinell,
@@ -9447,8 +8008,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "shrinell.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [batodexExtracted("shrinell", "Shrinell")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Sirenade,
@@ -9464,8 +8023,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "sirenade.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("sirenade", "Sirenade")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Sirenade,
@@ -9481,8 +8038,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "sirenade.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("sirenade", "Sirenade")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Sirenade,
@@ -9498,8 +8053,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "sirenade.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("sirenade", "Sirenade")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Snapscald,
@@ -9515,8 +8068,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Trigger this when an ally of level 3 or above casts.\n(Except other Snapscald)",
     abilityTags: [],
     spriteFile: "snapscald.png",
-    sourceRefs: [batodexExtracted("snapscald", "Snapscald")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Snapscald,
@@ -9532,8 +8083,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Trigger this when an ally of level 3 or above casts.\n(Except other Snapscald)",
     abilityTags: [],
     spriteFile: "snapscald.png",
-    sourceRefs: [batodexExtracted("snapscald", "Snapscald")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Snapscald,
@@ -9549,8 +8098,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Trigger this when an ally of level 3 or above casts.\n(Except other Snapscald)",
     abilityTags: [],
     spriteFile: "snapscald.png",
-    sourceRefs: [batodexExtracted("snapscald", "Snapscald")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Spinarai,
@@ -9566,8 +8113,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "",
     abilityTags: [],
     spriteFile: "spinarai.png",
-    sourceRefs: [batodexExtracted("spinarai", "Spinarai")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Spinarai,
@@ -9583,8 +8128,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "",
     abilityTags: [],
     spriteFile: "spinarai.png",
-    sourceRefs: [batodexExtracted("spinarai", "Spinarai")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Spinarai,
@@ -9600,8 +8143,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "",
     abilityTags: [],
     spriteFile: "spinarai.png",
-    sourceRefs: [batodexExtracted("spinarai", "Spinarai")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Sproach,
@@ -9616,8 +8157,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "sproach.png",
     abilityTrigger: AbilityTrigger.OnBought,
-    sourceRefs: [batodexExtracted("sproach", "Sproach")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Sproach,
@@ -9632,8 +8171,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "sproach.png",
     abilityTrigger: AbilityTrigger.OnBought,
-    sourceRefs: [batodexExtracted("sproach", "Sproach")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Sproach,
@@ -9648,8 +8185,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "sproach.png",
     abilityTrigger: AbilityTrigger.OnBought,
-    sourceRefs: [batodexExtracted("sproach", "Sproach")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Sproutquill,
@@ -9665,8 +8200,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Evolve after your team deals 10000 non-status Damage.(currently 0)",
     abilityTags: [],
     spriteFile: "sproutquill.png",
-    sourceRefs: [batodexExtracted("sproutquill", "Sproutquill")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Sproutquill,
@@ -9682,8 +8215,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Evolve after your team deals 10000 non-status Damage.(currently 0)",
     abilityTags: [],
     spriteFile: "sproutquill.png",
-    sourceRefs: [batodexExtracted("sproutquill", "Sproutquill")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Sproutquill,
@@ -9699,8 +8230,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "Evolve after your team deals 10000 non-status Damage.(currently 0)",
     abilityTags: [],
     spriteFile: "sproutquill.png",
-    sourceRefs: [batodexExtracted("sproutquill", "Sproutquill")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Stalagrove,
@@ -9715,8 +8244,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "When you receive shield, this gains Damage for this battle equal to 30% of the amount shielded.",
     abilityTags: [],
     spriteFile: "stalagrove.png",
-    sourceRefs: [batodexExtracted("stalagrove", "Stalagrove")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Stalagrove,
@@ -9731,8 +8258,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "When you receive shield, this gains Damage for this battle equal to 45% of the amount shielded.",
     abilityTags: [],
     spriteFile: "stalagrove.png",
-    sourceRefs: [batodexExtracted("stalagrove", "Stalagrove")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Stalagrove,
@@ -9747,8 +8272,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "When you receive shield, this gains Damage for this battle equal to 180% of the amount shielded.",
     abilityTags: [],
     spriteFile: "stalagrove.png",
-    sourceRefs: [batodexExtracted("stalagrove", "Stalagrove")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Steamscuttle,
@@ -9765,8 +8288,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "steamscuttle.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("steamscuttle", "Steamscuttle")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Steamscuttle,
@@ -9783,8 +8304,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "steamscuttle.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("steamscuttle", "Steamscuttle")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Steamscuttle,
@@ -9801,8 +8320,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "steamscuttle.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("steamscuttle", "Steamscuttle")],
-    patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
     id: Species.Stellagon,
@@ -9818,8 +8335,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "stellagon.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [batodexExtracted("stellagon", "Stellagon")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Stellagon,
@@ -9835,8 +8350,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "stellagon.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [batodexExtracted("stellagon", "Stellagon")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Stellagon,
@@ -9852,8 +8365,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "stellagon.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [batodexExtracted("stellagon", "Stellagon")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Stingarde,
@@ -9869,8 +8380,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "stingarde.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("stingarde", "Stingarde")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Stingarde,
@@ -9886,8 +8395,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "stingarde.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("stingarde", "Stingarde")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Stingarde,
@@ -9903,8 +8410,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "stingarde.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("stingarde", "Stingarde")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Sukoi,
@@ -9919,8 +8424,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "",
     abilityTags: [],
     spriteFile: "sukoi.png",
-    sourceRefs: [batodexExtracted("sukoi", "Sukoi")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Sukoi,
@@ -9935,8 +8438,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "",
     abilityTags: [],
     spriteFile: "sukoi.png",
-    sourceRefs: [batodexExtracted("sukoi", "Sukoi")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Sukoi,
@@ -9951,8 +8452,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "",
     abilityTags: [],
     spriteFile: "sukoi.png",
-    sourceRefs: [batodexExtracted("sukoi", "Sukoi")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Swoonet,
@@ -9968,8 +8467,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "This only needs 2 copies to level up. This can level up indefinitely.",
     abilityTags: [],
     spriteFile: "swoonet.png",
-    sourceRefs: [batodexExtracted("swoonet", "Swoonet")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Swoonet,
@@ -9985,8 +8482,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "This only needs 2 copies to level up. This can level up indefinitely.",
     abilityTags: [],
     spriteFile: "swoonet.png",
-    sourceRefs: [batodexExtracted("swoonet", "Swoonet")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Swoonet,
@@ -10002,8 +8497,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "This only needs 2 copies to level up. This can level up indefinitely.",
     abilityTags: [],
     spriteFile: "swoonet.png",
-    sourceRefs: [batodexExtracted("swoonet", "Swoonet")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Talonite,
@@ -10019,8 +8512,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "talonite.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("talonite", "Talonite")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Talonite,
@@ -10036,8 +8527,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "talonite.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("talonite", "Talonite")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Talonite,
@@ -10053,8 +8542,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "talonite.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("talonite", "Talonite")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Tengusto,
@@ -10070,8 +8557,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "tengusto.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [batodexExtracted("tengusto", "Tengusto")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Tengusto,
@@ -10087,8 +8572,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "tengusto.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [batodexExtracted("tengusto", "Tengusto")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Tengusto,
@@ -10104,8 +8587,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "tengusto.png",
     abilityTrigger: AbilityTrigger.Ongoing,
-    sourceRefs: [batodexExtracted("tengusto", "Tengusto")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Thorntail,
@@ -10124,8 +8605,6 @@ export const creatures: CreatureRecord[] = [
       { kind: AbilityTagKind.GainOnAllyStatus, status: StatusEffectType.Poison, stat: StatChangeStat.Damage, amount: 16 },
     ],
     spriteFile: "thorntail.png",
-    sourceRefs: [batodexExtracted("thorntail", "Thorntail")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Thorntail,
@@ -10144,8 +8623,6 @@ export const creatures: CreatureRecord[] = [
       { kind: AbilityTagKind.GainOnAllyStatus, status: StatusEffectType.Poison, stat: StatChangeStat.Damage, amount: 24 },
     ],
     spriteFile: "thorntail.png",
-    sourceRefs: [batodexExtracted("thorntail", "Thorntail")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Thorntail,
@@ -10164,8 +8641,6 @@ export const creatures: CreatureRecord[] = [
       { kind: AbilityTagKind.GainOnAllyStatus, status: StatusEffectType.Poison, stat: StatChangeStat.Damage, amount: 96 },
     ],
     spriteFile: "thorntail.png",
-    sourceRefs: [batodexExtracted("thorntail", "Thorntail")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Torrantler,
@@ -10181,8 +8656,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "torrantler.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("torrantler", "Torrantler")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Torrantler,
@@ -10198,8 +8671,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "torrantler.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("torrantler", "Torrantler")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Torrantler,
@@ -10215,8 +8686,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "torrantler.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("torrantler", "Torrantler")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Toximoth,
@@ -10233,8 +8702,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "toximoth.png",
     abilityTrigger: AbilityTrigger.OnBought,
-    sourceRefs: [batodexExtracted("toximoth", "Toximoth")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Toximoth,
@@ -10251,8 +8718,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "toximoth.png",
     abilityTrigger: AbilityTrigger.OnBought,
-    sourceRefs: [batodexExtracted("toximoth", "Toximoth")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Toximoth,
@@ -10269,8 +8734,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "toximoth.png",
     abilityTrigger: AbilityTrigger.OnBought,
-    sourceRefs: [batodexExtracted("toximoth", "Toximoth")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Tsunamere,
@@ -10286,8 +8749,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "tsunamere.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("tsunamere", "Tsunamere")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Tsunamere,
@@ -10303,8 +8764,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "tsunamere.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("tsunamere", "Tsunamere")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Tsunamere,
@@ -10320,8 +8779,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "tsunamere.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("tsunamere", "Tsunamere")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Velocect,
@@ -10336,8 +8793,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "",
     abilityTags: [],
     spriteFile: "velocect.png",
-    sourceRefs: [batodexExtracted("velocect", "Velocect")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Velocect,
@@ -10352,8 +8807,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "",
     abilityTags: [],
     spriteFile: "velocect.png",
-    sourceRefs: [batodexExtracted("velocect", "Velocect")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Velocect,
@@ -10368,8 +8821,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "",
     abilityTags: [],
     spriteFile: "velocect.png",
-    sourceRefs: [batodexExtracted("velocect", "Velocect")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Vengrieve,
@@ -10384,8 +8835,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "vengrieve.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("vengrieve", "Vengrieve")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Vengrieve,
@@ -10400,8 +8849,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "vengrieve.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("vengrieve", "Vengrieve")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Vengrieve,
@@ -10416,8 +8863,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "vengrieve.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("vengrieve", "Vengrieve")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Vipair,
@@ -10435,8 +8880,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "vipair.png",
     abilityTrigger: AbilityTrigger.OnTrinketGained,
-    sourceRefs: [batodexExtracted("vipair", "Vipair")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Vipair,
@@ -10454,8 +8897,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "vipair.png",
     abilityTrigger: AbilityTrigger.OnTrinketGained,
-    sourceRefs: [batodexExtracted("vipair", "Vipair")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Vipair,
@@ -10473,8 +8914,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "vipair.png",
     abilityTrigger: AbilityTrigger.OnTrinketGained,
-    sourceRefs: [batodexExtracted("vipair", "Vipair")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Voltalith,
@@ -10492,8 +8931,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "voltalith.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("voltalith", "Voltalith")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Voltalith,
@@ -10511,8 +8948,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "voltalith.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("voltalith", "Voltalith")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Voltalith,
@@ -10530,8 +8965,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "voltalith.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("voltalith", "Voltalith")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Wishwash,
@@ -10547,8 +8980,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "wishwash.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("wishwash", "Wishwash")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Wishwash,
@@ -10564,8 +8995,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "wishwash.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("wishwash", "Wishwash")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Wishwash,
@@ -10581,8 +9010,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "wishwash.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("wishwash", "Wishwash")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Zephyrex,
@@ -10600,8 +9027,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "zephyrex.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("zephyrex", "Zephyrex")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Zephyrex,
@@ -10619,8 +9044,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "zephyrex.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("zephyrex", "Zephyrex")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Zephyrex,
@@ -10638,8 +9061,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "zephyrex.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("zephyrex", "Zephyrex")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Bambudo,
@@ -10657,8 +9078,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "bambudo.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("bambudo", "Bambudo")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Bambudo,
@@ -10676,8 +9095,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "bambudo.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("bambudo", "Bambudo")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Bambudo,
@@ -10695,8 +9112,6 @@ export const creatures: CreatureRecord[] = [
     ],
     spriteFile: "bambudo.png",
     abilityTrigger: AbilityTrigger.OnCast,
-    sourceRefs: [batodexExtracted("bambudo", "Bambudo")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Emperooze,
@@ -10713,8 +9128,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "emperooze.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("emperooze", "Emperooze")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Emperooze,
@@ -10731,8 +9144,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "emperooze.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("emperooze", "Emperooze")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Emperooze,
@@ -10749,8 +9160,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "emperooze.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("emperooze", "Emperooze")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Sunsage,
@@ -10767,8 +9176,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "sunsage.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("sunsage", "Sunsage")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Sunsage,
@@ -10785,8 +9192,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "sunsage.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("sunsage", "Sunsage")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Sunsage,
@@ -10803,8 +9208,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "sunsage.png",
     abilityTrigger: AbilityTrigger.OnBattleStart,
-    sourceRefs: [batodexExtracted("sunsage", "Sunsage")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Beetdown,
@@ -10820,8 +9223,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "beetdown.png",
     abilityTrigger: AbilityTrigger.OnVictory,
-    sourceRefs: [batodexExtracted("beetdown", "Beetdown")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Beetdown,
@@ -10837,8 +9238,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "beetdown.png",
     abilityTrigger: AbilityTrigger.OnVictory,
-    sourceRefs: [batodexExtracted("beetdown", "Beetdown")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Beetdown,
@@ -10854,8 +9253,6 @@ export const creatures: CreatureRecord[] = [
     abilityTags: [],
     spriteFile: "beetdown.png",
     abilityTrigger: AbilityTrigger.OnVictory,
-    sourceRefs: [batodexExtracted("beetdown", "Beetdown")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Dewlotl,
@@ -10871,8 +9268,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "When an ally levels up, this gains +40 Damage and +40 Heal permanently.",
     abilityTags: [],
     spriteFile: "dewlotl.png",
-    sourceRefs: [batodexExtracted("dewlotl", "Dewlotl")],
-    patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Dewlotl,
@@ -10888,8 +9283,6 @@ export const creatures: CreatureRecord[] = [
     abilityText: "When an ally levels up, this gains +40 Damage and +40 Heal permanently.",
     abilityTags: [],
     spriteFile: "dewlotl.png",
-    sourceRefs: [batodexExtracted("dewlotl", "Dewlotl")],
-    patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
     id: Species.Dewlotl,
@@ -10905,7 +9298,5 @@ export const creatures: CreatureRecord[] = [
     abilityText: "When an ally levels up, this gains +40 Damage and +40 Heal permanently.",
     abilityTags: [],
     spriteFile: "dewlotl.png",
-    sourceRefs: [batodexExtracted("dewlotl", "Dewlotl")],
-    patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
 ];

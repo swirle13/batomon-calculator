@@ -1,4 +1,4 @@
-import type { ItemRecord, SourceRef } from "./types";
+import type { ItemRecord } from "./types";
 import { CreatureType, GridRow, ItemTargetKind, ModifierStat, Rarity } from "./enums";
 import { ItemId } from "./ids";
 
@@ -26,19 +26,6 @@ import { ItemId } from "./ids";
  * data with no Use button -- the same treatment 87 of the 93 trinkets already get, and the same
  * reason: this engine simulates one battle, and most of an item's job happens outside it.
  */
-function batodexItem(slug: string, name: string): SourceRef {
-  return {
-    // The listing page is the cited source: batodex publishes no per-item detail page, so this is
-    // where the record was actually read from.
-    url: `https://batodex.com/items#${encodeURIComponent(slug)}`,
-    title: `${name} - Batodex (extracted from embedded page JSON)`,
-    retrievedAt: "2026-10-08",
-  };
-}
-
-const PATCH =
-  "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded items database, 2026-10-08 -- research.md G2)";
-
 export const items: ItemRecord[] = [
   {
     id: ItemId.BasicBait,
@@ -48,8 +35,6 @@ export const items: ItemRecord[] = [
     cost: 0,
     abilityTags: [],
     spriteFile: "basic_bait.png",
-    sourceRefs: [batodexItem("basic_bait", "Basic Bait")],
-    patch: PATCH,
   },
   {
     id: ItemId.Cake,
@@ -63,8 +48,6 @@ export const items: ItemRecord[] = [
     },
     abilityTags: [],
     spriteFile: "cake.png",
-    sourceRefs: [batodexItem("cake", "Cake")],
-    patch: PATCH,
   },
   {
     id: ItemId.Coupon,
@@ -74,8 +57,6 @@ export const items: ItemRecord[] = [
     cost: 0,
     abilityTags: [],
     spriteFile: "coupon.png",
-    sourceRefs: [batodexItem("coupon", "Coupon")],
-    patch: PATCH,
   },
   {
     id: ItemId.FakeCoin,
@@ -85,8 +66,6 @@ export const items: ItemRecord[] = [
     cost: 0,
     abilityTags: [],
     spriteFile: "fake_coin.png",
-    sourceRefs: [batodexItem("fake_coin", "Fake Coin")],
-    patch: PATCH,
   },
   {
     id: ItemId.GrayChip,
@@ -96,8 +75,6 @@ export const items: ItemRecord[] = [
     cost: 0,
     abilityTags: [],
     spriteFile: "gray_chip.png",
-    sourceRefs: [batodexItem("gray_chip", "Gray Chip")],
-    patch: PATCH,
   },
   {
     id: ItemId.GreenStone,
@@ -107,8 +84,6 @@ export const items: ItemRecord[] = [
     cost: 0,
     abilityTags: [],
     spriteFile: "green_stone.png",
-    sourceRefs: [batodexItem("green_stone", "Green Stone")],
-    patch: PATCH,
   },
   {
     id: ItemId.Voucher,
@@ -118,8 +93,6 @@ export const items: ItemRecord[] = [
     cost: 5,
     abilityTags: [],
     spriteFile: "voucher.png",
-    sourceRefs: [batodexItem("voucher", "Voucher")],
-    patch: PATCH,
   },
   {
     id: ItemId.ApexBait,
@@ -129,8 +102,6 @@ export const items: ItemRecord[] = [
     cost: 20,
     abilityTags: [],
     spriteFile: "apex_bait.png",
-    sourceRefs: [batodexItem("apex_bait", "Apex Bait")],
-    patch: PATCH,
   },
   {
     id: ItemId.DowsingRod,
@@ -140,8 +111,6 @@ export const items: ItemRecord[] = [
     cost: 15,
     abilityTags: [],
     spriteFile: "dowsing_rod.png",
-    sourceRefs: [batodexItem("dowsing_rod", "Dowsing Rod")],
-    patch: PATCH,
   },
   {
     id: ItemId.Feast,
@@ -155,8 +124,6 @@ export const items: ItemRecord[] = [
     },
     abilityTags: [],
     spriteFile: "feast.png",
-    sourceRefs: [batodexItem("feast", "Feast")],
-    patch: PATCH,
   },
   {
     id: ItemId.GrayTicket,
@@ -166,8 +133,6 @@ export const items: ItemRecord[] = [
     cost: 0,
     abilityTags: [],
     spriteFile: "gray_ticket.png",
-    sourceRefs: [batodexItem("gray_ticket", "Gray Ticket")],
-    patch: PATCH,
   },
   {
     id: ItemId.GreenTicket,
@@ -177,8 +142,6 @@ export const items: ItemRecord[] = [
     cost: 0,
     abilityTags: [],
     spriteFile: "green_ticket.png",
-    sourceRefs: [batodexItem("green_ticket", "Green Ticket")],
-    patch: PATCH,
   },
   {
     id: ItemId.NanaBerry,
@@ -192,8 +155,6 @@ export const items: ItemRecord[] = [
     },
     abilityTags: [],
     spriteFile: "nana_berry.png",
-    sourceRefs: [batodexItem("nana_berry", "Nana Berry")],
-    patch: PATCH,
   },
   {
     id: ItemId.PomBerry,
@@ -207,8 +168,6 @@ export const items: ItemRecord[] = [
     },
     abilityTags: [],
     spriteFile: "pom berry.png",
-    sourceRefs: [batodexItem("pom berry", "Pom Berry")],
-    patch: PATCH,
   },
   {
     id: ItemId.RedCoin,
@@ -218,8 +177,6 @@ export const items: ItemRecord[] = [
     cost: 0,
     abilityTags: [],
     spriteFile: "red_coin.png",
-    sourceRefs: [batodexItem("red_coin", "Red Coin")],
-    patch: PATCH,
   },
   {
     id: ItemId.BasicCandy,
@@ -229,8 +186,6 @@ export const items: ItemRecord[] = [
     cost: 30,
     abilityTags: [],
     spriteFile: "basic_candy.png",
-    sourceRefs: [batodexItem("basic_candy", "Basic Candy")],
-    patch: PATCH,
   },
   {
     id: ItemId.BatteryPack,
@@ -244,8 +199,6 @@ export const items: ItemRecord[] = [
     },
     abilityTags: [],
     spriteFile: "battery_pack.png",
-    sourceRefs: [batodexItem("battery_pack", "Battery Pack")],
-    patch: PATCH,
   },
   {
     id: ItemId.BlackSludge,
@@ -259,8 +212,6 @@ export const items: ItemRecord[] = [
     },
     abilityTags: [],
     spriteFile: "black_sludge.png",
-    sourceRefs: [batodexItem("black_sludge", "Black Sludge")],
-    patch: PATCH,
   },
   {
     id: ItemId.BlueTicket,
@@ -270,8 +221,6 @@ export const items: ItemRecord[] = [
     cost: 0,
     abilityTags: [],
     spriteFile: "blue_ticket.png",
-    sourceRefs: [batodexItem("blue_ticket", "Blue Ticket")],
-    patch: PATCH,
   },
   {
     id: ItemId.GoldPowder,
@@ -282,8 +231,6 @@ export const items: ItemRecord[] = [
     uniquePerRound: true,
     abilityTags: [],
     spriteFile: "gold_powder.png",
-    sourceRefs: [batodexItem("gold_powder", "Gold Powder")],
-    patch: PATCH,
   },
   {
     id: ItemId.HotPepper,
@@ -297,8 +244,6 @@ export const items: ItemRecord[] = [
     },
     abilityTags: [],
     spriteFile: "hot_pepper.png",
-    sourceRefs: [batodexItem("hot_pepper", "Hot Pepper")],
-    patch: PATCH,
   },
   {
     id: ItemId.LuckyCoin,
@@ -309,8 +254,6 @@ export const items: ItemRecord[] = [
     uniquePerRound: true,
     abilityTags: [],
     spriteFile: "lucky_coin.png",
-    sourceRefs: [batodexItem("lucky_coin", "Lucky Coin")],
-    patch: PATCH,
   },
   {
     id: ItemId.MysticPearl,
@@ -324,8 +267,6 @@ export const items: ItemRecord[] = [
     },
     abilityTags: [],
     spriteFile: "mystic_pearl.png",
-    sourceRefs: [batodexItem("mystic_pearl", "Mystic Pearl")],
-    patch: PATCH,
   },
   {
     id: ItemId.ShinyPebble,
@@ -339,8 +280,6 @@ export const items: ItemRecord[] = [
     },
     abilityTags: [],
     spriteFile: "shiny_pebble.png",
-    sourceRefs: [batodexItem("shiny_pebble", "Shiny Pebble")],
-    patch: PATCH,
   },
   {
     id: ItemId.Coffee,
@@ -350,8 +289,6 @@ export const items: ItemRecord[] = [
     cost: 5,
     abilityTags: [],
     spriteFile: "coffee.png",
-    sourceRefs: [batodexItem("coffee", "Coffee")],
-    patch: PATCH,
   },
   {
     id: ItemId.FocusPill,
@@ -365,8 +302,6 @@ export const items: ItemRecord[] = [
     },
     abilityTags: [],
     spriteFile: "focus_pill.png",
-    sourceRefs: [batodexItem("focus_pill", "Focus Pill")],
-    patch: PATCH,
   },
   {
     id: ItemId.Lootbox,
@@ -376,8 +311,6 @@ export const items: ItemRecord[] = [
     cost: 30,
     abilityTags: [],
     spriteFile: "lootbox.png",
-    sourceRefs: [batodexItem("lootbox", "Lootbox")],
-    patch: PATCH,
   },
   {
     id: ItemId.PurpleGift,
@@ -387,8 +320,6 @@ export const items: ItemRecord[] = [
     cost: 40,
     abilityTags: [],
     spriteFile: "purple_gift.png",
-    sourceRefs: [batodexItem("purple_gift", "Purple Gift")],
-    patch: PATCH,
   },
   {
     id: ItemId.PurpleTicket,
@@ -398,8 +329,6 @@ export const items: ItemRecord[] = [
     cost: 0,
     abilityTags: [],
     spriteFile: "purple_ticket.png",
-    sourceRefs: [batodexItem("purple_ticket", "Purple Ticket")],
-    patch: PATCH,
   },
   {
     id: ItemId.RecruitingFlyer,
@@ -409,8 +338,6 @@ export const items: ItemRecord[] = [
     cost: 90,
     abilityTags: [],
     spriteFile: "recruiting_flyer.png",
-    sourceRefs: [batodexItem("recruiting_flyer", "Recruiting Flyer")],
-    patch: PATCH,
   },
   {
     id: ItemId.ToteBag,
@@ -421,8 +348,6 @@ export const items: ItemRecord[] = [
     uniquePerRound: true,
     abilityTags: [],
     spriteFile: "tote_bag.png",
-    sourceRefs: [batodexItem("tote_bag", "Tote Bag")],
-    patch: PATCH,
   },
   {
     id: ItemId.GoldenGift,
@@ -432,8 +357,6 @@ export const items: ItemRecord[] = [
     cost: 50,
     abilityTags: [],
     spriteFile: "golden_gift.png",
-    sourceRefs: [batodexItem("golden_gift", "Golden Gift")],
-    patch: PATCH,
   },
   {
     id: ItemId.GoldenTicket,
@@ -443,8 +366,6 @@ export const items: ItemRecord[] = [
     cost: 0,
     abilityTags: [],
     spriteFile: "golden_ticket.png",
-    sourceRefs: [batodexItem("golden_ticket", "Golden Ticket")],
-    patch: PATCH,
   },
   {
     id: ItemId.MagicLasso,
@@ -455,8 +376,6 @@ export const items: ItemRecord[] = [
     uniquePerRound: true,
     abilityTags: [],
     spriteFile: "magic_lasso.png",
-    sourceRefs: [batodexItem("magic_lasso", "Magic Lasso")],
-    patch: PATCH,
   },
   {
     id: ItemId.RareCandy,
@@ -466,8 +385,6 @@ export const items: ItemRecord[] = [
     cost: 40,
     abilityTags: [],
     spriteFile: "rare_candy.png",
-    sourceRefs: [batodexItem("rare_candy", "Rare Candy")],
-    patch: PATCH,
   },
   {
     id: ItemId.BlackFeather,
@@ -481,8 +398,6 @@ export const items: ItemRecord[] = [
     },
     abilityTags: [],
     spriteFile: "black_feather.png",
-    sourceRefs: [batodexItem("black_feather", "Black Feather")],
-    patch: PATCH,
   },
   {
     id: ItemId.CrimsonGift,
@@ -492,8 +407,6 @@ export const items: ItemRecord[] = [
     cost: 70,
     abilityTags: [],
     spriteFile: "crimson_gift.png",
-    sourceRefs: [batodexItem("crimson_gift", "Crimson Gift")],
-    patch: PATCH,
   },
   {
     id: ItemId.CrimsonTicket,
@@ -503,8 +416,6 @@ export const items: ItemRecord[] = [
     cost: 30,
     abilityTags: [],
     spriteFile: "crimson_ticket.png",
-    sourceRefs: [batodexItem("crimson_ticket", "Crimson Ticket")],
-    patch: PATCH,
   },
   {
     id: ItemId.ShinyBerry,
@@ -514,8 +425,6 @@ export const items: ItemRecord[] = [
     cost: 1,
     abilityTags: [],
     spriteFile: "shiny_berry.png",
-    sourceRefs: [batodexItem("shiny_berry", "Shiny Berry")],
-    patch: PATCH,
   },
   {
     id: ItemId.UltraCandy,
@@ -525,7 +434,5 @@ export const items: ItemRecord[] = [
     cost: 60,
     abilityTags: [],
     spriteFile: "ultra_candy.png",
-    sourceRefs: [batodexItem("ultra_candy", "Ultra Candy")],
-    patch: PATCH,
   },
 ];

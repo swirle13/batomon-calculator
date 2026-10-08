@@ -1,14 +1,13 @@
 import type { ReactNode } from "react";
 import type { CreatureRecord, StatModifier } from "../../../data/types";
 import { RARITY_COLORS, STAT_COLORS, rarityLabel } from "../../../data/statColors";
-import { displayField, hasAbilityText, isUnconfirmed } from "../../../data/display";
+import { hasAbilityText } from "../../../data/display";
 import { formatCooldown } from "../../../data/format";
 import { AllTypeTag, TypeTag } from "../TypeTag";
 import { CreatureSprite } from "../CreatureSprite";
 import styles from "./BatomonCard.module.css";
 import { isWildcardType } from "../../../data/vocabularies";
 import { AbilityText } from "../AbilityText";
-import { ConfirmableField } from "../../../data/enums";
 import { buildStatLines, perCastOutputOf, type StatLine } from "./perCastOutput";
 
 /**
@@ -100,7 +99,7 @@ interface BatomonCardProps {
 
 export function BatomonCard({ creature, children, levelLabel, fixedHeight, meta, painted, modifiers }: BatomonCardProps) {
   // Painted species and natively-"All" species render identically — they mean the same thing
-  // in-game and differ only in provenance (run configuration vs corpus data).
+  // in-game and differ only in where the "All" came from (run configuration vs corpus data).
   //
   // `painted` is a PROP, not read from context here. `BatomonCard` is shared with the Corpus
   // Browser, which renders creatures outside any team and has no `TeamConfigProvider`; reading
@@ -108,7 +107,6 @@ export function BatomonCard({ creature, children, levelLabel, fixedHeight, meta,
   // browser test. Callers that know about a run pass it; callers that do not, do not.
   const isAllType = creature.types.some(isWildcardType) || painted === true;
   const rarityColor = RARITY_COLORS[creature.rarity];
-  const cooldownUnconfirmed = isUnconfirmed(creature, ConfirmableField.BaseCooldownSeconds);
   const statLines = buildStatLines(perCastOutputOf(creature, modifiers));
 
   return (
@@ -121,7 +119,7 @@ export function BatomonCard({ creature, children, levelLabel, fixedHeight, meta,
           {creature.name}
           {levelLabel ? <small style={{ opacity: 0.7, fontWeight: 400 }}> {levelLabel}</small> : null}
         </h3>
-        <span className={styles.rarity}>{displayField(creature, ConfirmableField.Rarity, rarityLabel(creature.rarity))}</span>
+        <span className={styles.rarity}>{rarityLabel(creature.rarity)}</span>
       </header>
 
       <div className={styles.identity}>
@@ -150,9 +148,7 @@ export function BatomonCard({ creature, children, levelLabel, fixedHeight, meta,
       <div className={styles.output}>
         <CooldownBlock
           seconds={
-            creature.baseCooldownSeconds === null || cooldownUnconfirmed
-              ? null
-              : formatCooldown(creature.baseCooldownSeconds)
+            creature.baseCooldownSeconds === null ? null : formatCooldown(creature.baseCooldownSeconds)
           }
         />
         <StatLines lines={statLines} />
