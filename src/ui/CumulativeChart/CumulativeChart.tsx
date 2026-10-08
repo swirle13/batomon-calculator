@@ -1,3 +1,4 @@
+import { memo } from "react";
 import type { SimulationResult } from "../../data/types";
 import { STAT_COLORS } from "../../data/statColors";
 
@@ -11,7 +12,13 @@ interface CumulativeChartProps {
  * (data-model.md's single-source-of-truth rule; Constitution Development Workflow).
  */
 import { SeriesChart } from "./SeriesChart";
-export function CumulativeChart({ result }: CumulativeChartProps) {
+/*
+ * `memo` is load-bearing, not a reflex. `CalculatorView` holds the hovered-slot state that drives
+ * the detail panel, so every pointer move across the grid re-renders the whole view — and a
+ * Recharts tree is one of the most expensive things in it to rebuild. `result` is unchanged by a
+ * hover, so this bails out instead.
+ */
+export const CumulativeChart = memo(function CumulativeChart({ result }: CumulativeChartProps) {
   const series = result.cumulativeSeries;
   const xValues = series.map((p) => p.tSeconds);
   // FR-017 / research.md D4: the window end is always the last sample, used as an explicit numeric
@@ -64,4 +71,4 @@ export function CumulativeChart({ result }: CumulativeChartProps) {
       />
     </section>
   );
-}
+});

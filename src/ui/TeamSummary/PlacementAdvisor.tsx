@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { memo, useDeferredValue, useMemo } from "react";
 import { corpus } from "../../data/corpus";
 import { useTeamConfig } from "../../context/teamConfig";
 import {
@@ -27,8 +27,30 @@ const rowLabel = (row: GridRow) => (row === GridRow.Back ? "top" : "bottom");
  * position matter" — and presenting that as "your placement is optimal" would be a lie the user
  * could act on.
  */
-export function PlacementAdvisor() {
-  const { config, replaceConfig } = useTeamConfig();
+export const PlacementAdvisor = memo(function PlacementAdvisor() {
+  const { config: liveConfig, replaceConfig } = useTeamConfig();
+
+  /*
+   * THE SEARCH RUNS AT LOW PRIORITY, AGAINST A DEFERRED CONFIG (2026-10-08, performance).
+   *
+   * `suggestPlacement` simulates every permutation of the board — 720 of them once six creatures
+   * are placed — and that is ~100ms of straight-line work. Keyed directly on `config` it ran
+   * inside the same synchronous task as whatever edit produced the new config, so every drop,
+   * every level change and every keystroke in the simulation-window field blocked the main thread
+   * for the whole search before anything could paint. Measured: a 313ms `mouseup` on a drag, and
+   * over a second at a 90s window. It is the single largest interaction cost in the app, and it
+   * was paid even with this panel collapsed.
+   *
+   * `useDeferredValue` splits that in two. The urgent render uses the previous config, so the
+   * memo below is a cache hit and the board repaints immediately; React then re-renders at
+   * transition priority with the new config, and the search happens there, where it is
+   * interruptible by further input instead of blocking it.
+   *
+   * The consequence is that the figures can briefly describe the PREVIOUS board, so they say so —
+   * see `isStale`. Showing a stale number unlabelled would be worse than showing it late.
+   */
+  const config = useDeferredValue(liveConfig);
+  const isStale = config !== liveConfig;
 
   const { suggestion, coverage, currentDps, suggestedDps, moves } = useMemo(() => {
     const suggestion = suggestPlacement(config, corpus);
@@ -47,7 +69,9 @@ export function PlacementAdvisor() {
     };
   }, [config]);
 
-  if (config.placements.length < 2) return null;
+  // Read off the LIVE config: an advisor that lingers after the board drops below two creatures
+  // is showing advice about a board that no longer exists, which no amount of labelling fixes.
+  if (liveConfig.placements.length < 2) return null;
 
   const blindTags = coverage.withPositionalTag.filter((n) => !coverage.actionable.includes(n));
   const gain = suggestion.bestScore - suggestion.currentScore;
@@ -62,20 +86,22 @@ export function PlacementAdvisor() {
   // as "your placement is optimal" when the real reason is usually that the engine cannot see
   // positional effects. It moves into the collapsed `hint`, which is visible WITHOUT expanding --
   // so the caveat is now harder to miss than it was buried at the bottom of an expanded panel.
+  // While the deferred search catches up the figures below describe the previous board, so the
+  // hint says "recalculating…" rather than quietly presenting last board's numbers as this one's.
   if (!suggestion.placements) {
     const seen = coverage.actionable.length;
-    return (
-      <Disclosure
-        label="Placement suggestion"
-        hint={seen === 0 ? "(none)" : `(none — ${seen}/${config.placements.length} positional abilities modelled)`}
-      />
-    );
+    const hint = seen === 0 ? "(none)" : `(none — ${seen}/${config.placements.length} positional abilities modelled)`;
+    return <Disclosure label="Placement suggestion" hint={isStale ? "(recalculating…)" : hint} />;
   }
 
   return (
     <Disclosure
       label="Placement suggestion"
-      hint={`(${formatRate(currentDps)} → ${formatRate(suggestedDps ?? currentDps)} DPS average)`}
+      hint={
+        isStale
+          ? "(recalculating…)"
+          : `(${formatRate(currentDps)} → ${formatRate(suggestedDps ?? currentDps)} DPS average)`
+      }
     >
       <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", lineHeight: 1.45 }}>
         Searched <strong>{suggestion.evaluated}</strong> arrangements of your placed Batomon, scoring
@@ -101,6 +127,13 @@ export function PlacementAdvisor() {
         </ul>
         <Button
           variant="primary"
+          /*
+           * Unavailable while the deferred search is behind the board. `suggestion.placements`
+           * then describes the PREVIOUS board, so applying it would undo the edit that is still
+           * being searched — and `replaceConfig` below spreads `liveConfig`, so the two halves of
+           * the written config would come from different boards.
+           */
+          disabled={isStale}
           onClick={() => {
             /*
              * Applied as ONE atomic replacement of the whole board.
@@ -114,7 +147,7 @@ export function PlacementAdvisor() {
              * the advisor immediately proposed another rearrangement — the "it keeps flip-flopping
              * between two suggestions" loop. The search itself was fine; only this was wrong.
              */
-            if (suggestion.placements) replaceConfig({ ...config, placements: suggestion.placements });
+            if (suggestion.placements) replaceConfig({ ...liveConfig, placements: suggestion.placements });
           }}
         >
           Apply this arrangement
@@ -165,4 +198,4 @@ export function PlacementAdvisor() {
       </p>
     </Disclosure>
   );
-}
+});

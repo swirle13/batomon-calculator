@@ -1039,23 +1039,36 @@ export function simulate(
   const sampleTimes: number[] = [];
   for (let t = 0; t <= windowSeconds + 1e-9; t = roundTime(t + GRID)) sampleTimes.push(t);
   if (sampleTimes[sampleTimes.length - 1] !== windowSeconds) sampleTimes.push(windowSeconds);
+  /*
+   * A running total advanced by a cursor, NOT a re-scan of `timeline` per sample.
+   *
+   * This was `sampleTimes.map(t => timeline.filter(e => e.tSeconds <= t))`, i.e. O(samples x
+   * events) — and both factors grow with the window, so the cost grew quadratically in window
+   * length. At a 120s window with a full board that alone made one `simulate()` call ~5x the
+   * cost of a 30s one, which the placement optimiser then paid 720 times over.
+   *
+   * Both arrays are sorted ascending (`timeline` by the sort immediately above, `sampleTimes` by
+   * construction), so one shared cursor visits each event exactly once.
+   */
+  let totalDamage = 0;
+  let directDamage = 0;
+  const runningByStatus: Record<StatusEffectType, number> = { Burn: 0, Poison: 0, Shock: 0, Shield: 0 };
+  let cursor = 0;
   const cumulativeSeries = sampleTimes.map((t) => {
-    let totalDamage = 0;
-    let directDamage = 0;
-    const byStatus: Record<StatusEffectType, number> = { Burn: 0, Poison: 0, Shock: 0, Shield: 0 };
-    for (const event of timeline) {
-      if (event.tSeconds > t) continue;
+    while (cursor < timeline.length && timeline[cursor]!.tSeconds <= t) {
+      const event = timeline[cursor]!;
+      cursor++;
       // Shield grants carry no `damage`/`damageType` (Shield deals no damage — see the
       // "Shield counted as an output stat" amendment above); they're tracked via
       // `statusDelta` instead and intentionally excluded from `totalDamage`.
       if (event.statusDelta?.type === StatusEffectType.Shield) {
-        byStatus.Shield += event.statusDelta.layerDelta;
+        runningByStatus.Shield += event.statusDelta.layerDelta;
         continue;
       }
       if (event.damage === undefined || event.damageType === undefined) continue;
       totalDamage += event.damage;
       if (event.damageType === "Burn" || event.damageType === "Poison" || event.damageType === "Shock") {
-        byStatus[event.damageType] += event.damage;
+        runningByStatus[event.damageType] += event.damage;
       } else {
         // Direct hits, tracked as their own series. They were previously only visible inside
         // `totalDamage`, so a mixed team's direct contribution could not be read off the chart at
@@ -1063,7 +1076,8 @@ export function simulate(
         directDamage += event.damage;
       }
     }
-    return { tSeconds: t, totalDamage, directDamage, byStatus };
+    // Copied, not shared: each sample is an independent snapshot of the running totals.
+    return { tSeconds: t, totalDamage, directDamage, byStatus: { ...runningByStatus } };
   });
 
   // --- FR-068 (2026-10-06 round 8): instantaneous DPS over time ------------------------------
@@ -1098,13 +1112,16 @@ export function simulate(
    * Step lookup, not interpolation: a stack count is a discrete quantity that changes at an
    * instant and holds until the next change, so the value at time t is the last snapshot at or
    * before t. Interpolating would draw fractional stacks that never exist.
+   *
+   * Advanced by a cursor for the same reason as `cumulativeSeries` above: this restarted its
+   * scan of `stackSamples` from index 0 for every sample, and both arrays grow with the window.
    */
+  let stackCursor = 0;
   const statusStackSeries = sampleTimes.map((t) => {
-    let latest = stackSamples[0]!;
-    for (const s of stackSamples) {
-      if (s.t <= t + 1e-9) latest = s;
-      else break;
+    while (stackCursor + 1 < stackSamples.length && stackSamples[stackCursor + 1]!.t <= t + 1e-9) {
+      stackCursor++;
     }
+    const latest = stackSamples[stackCursor]!;
     return { tSeconds: t, Burn: latest.Burn, Poison: latest.Poison, Shock: latest.Shock };
   });
 

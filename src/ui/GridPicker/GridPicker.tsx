@@ -1,4 +1,4 @@
-import { Fragment, useState, type KeyboardEvent, type MouseEvent, type ReactNode } from "react";
+import { Fragment, memo, useState, type KeyboardEvent, type MouseEvent, type ReactNode } from "react";
 import {
   DndContext,
   DragOverlay,
@@ -281,7 +281,13 @@ function DroppableZone({ slot, children }: { slot: GridSlot; children: ReactNode
   );
 }
 
-export function GridPicker({ onHighlightSlot }: GridPickerProps) {
+/*
+ * Memoized because the grid is what you hover, and hovering it sets `CalculatorView`'s
+ * highlighted-slot state — so without this, moving the pointer across the board re-rendered the
+ * board. `onHighlightSlot` is a `useState` setter, whose identity is stable, so the bail-out
+ * actually holds; passing an inline arrow from the parent would silently defeat it.
+ */
+export const GridPicker = memo(function GridPicker({ onHighlightSlot }: GridPickerProps) {
   const { config, setPlacement, movePlacement } = useTeamConfig();
   const [searchModalSlot, setSearchModalSlot] = useState<GridSlot | null>(null);
   /** The slot being dragged, so `<DragOverlay>` knows which card to draw under the pointer. */
@@ -429,6 +435,6 @@ export function GridPicker({ onHighlightSlot }: GridPickerProps) {
       />
     </>
   );
-}
+});
 
 export type { CreatureType };

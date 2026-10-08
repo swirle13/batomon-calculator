@@ -54,9 +54,18 @@ export function TeamConfigProvider({
 }) {
   const [config, setConfig] = useState<TeamConfiguration>(initialConfig ?? emptyConfig());
 
-  const value = useMemo<TeamConfigContextValue>(
+  /*
+   * The actions are built ONCE, not once per config change.
+   *
+   * Every one of them updates through `setConfig(prev => ...)` and reads nothing from the render
+   * scope, so none of them needs `config` as a dependency — and keeping them in the same memo as
+   * `config` meant all twelve got a fresh identity on every edit. That made them useless as
+   * dependencies: any `useCallback`/`useEffect`/`memo` downstream keyed on one of these would
+   * re-run on every unrelated change to the team, so `memo()` anywhere in the tree would be
+   * silently inert. Splitting the memo is what makes bailing out possible at all.
+   */
+  const actions = useMemo(
     () => ({
-      config,
       setPlacement: (slot, creatureId, level = 1) => {
         setConfig((prev) => {
           const existing = prev.placements.find((p) => slotsEqual(p.slot, slot));
@@ -177,9 +186,11 @@ export function TeamConfigProvider({
             slotsEqual(p.slot, slot) ? { ...p, modifiers: (p.modifiers ?? []).filter((m) => m.id !== id) } : p,
           ),
         })),
-    }),
-    [config],
+    }) satisfies Omit<TeamConfigContextValue, "config">,
+    [],
   );
+
+  const value = useMemo<TeamConfigContextValue>(() => ({ config, ...actions }), [config, actions]);
 
   return <TeamConfigContext.Provider value={value}>{children}</TeamConfigContext.Provider>;
 }

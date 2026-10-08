@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { memo, useState } from "react";
 import type { SimulationResult, TeamConfiguration } from "../../data/types";
 import { corpus } from "../../data/corpus";
 import { analyzePositionalCoverage } from "../../engine/optimize";
@@ -33,7 +33,8 @@ interface TotalDpsProps {
  * `perStatusPerSecond` must NOT be summed for this purpose: its `Shield` entry is Shield *granted*,
  * never damage, and never enters `facilitatedDamage` — so that route would inflate any Shield team.
  */
-export function TotalDps({ config, result }: TotalDpsProps) {
+/** Memoized for the same reason as `CumulativeChart` — see the note there. */
+export const TotalDps = memo(function TotalDps({ config, result }: TotalDpsProps) {
   // An index into `dpsRateSeries`, never a count of seconds — see the lookup below.
   const [scrubIndex, setScrubIndex] = useState(0);
   const [day, setDay] = useState(1);
@@ -217,4 +218,4 @@ export function TotalDps({ config, result }: TotalDpsProps) {
       )}
     </section>
   );
-}
+});

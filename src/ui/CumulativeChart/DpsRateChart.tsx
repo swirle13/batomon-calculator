@@ -1,3 +1,4 @@
+import { memo } from "react";
 import type { SimulationResult } from "../../data/types";
 import { STAT_COLORS } from "../../data/statColors";
 import { formatRate } from "../../data/format";
@@ -21,7 +22,8 @@ interface DpsRateChartProps {
  * Axis/colour treatment is shared with `CumulativeChart` rather than restyled (Principle VII).
  */
 import { SeriesChart } from "./SeriesChart";
-export function DpsRateChart({ result }: DpsRateChartProps) {
+/** Memoized for the same reason as `CumulativeChart` — see the note there. */
+export const DpsRateChart = memo(function DpsRateChart({ result }: DpsRateChartProps) {
   const xValues = result.dpsRateSeries.map((p) => p.tSeconds);
   const windowSeconds = xValues.length > 0 ? xValues[xValues.length - 1]! : 0;
 
@@ -46,4 +48,4 @@ export function DpsRateChart({ result }: DpsRateChartProps) {
       />
     </section>
   );
-}
+});

@@ -1,3 +1,4 @@
+import { memo } from "react";
 import type { SimulationResult, StatusEffectType, TeamConfiguration } from "../../data/types";
 import { getCreatureById } from "../../data/corpus";
 import { statusColor } from "../../data/statColors";
@@ -18,8 +19,10 @@ interface TeamSummaryProps {
  *
  * 2026-10-06 round 6 (FR-038): the two tables are now laid out as one aligned, centred pair rather
  * than two separately left-justified blocks in different divs.
+ *
+ * Memoized for the same reason as `CumulativeChart` — see the note there.
  */
-export function TeamSummary({ config, result }: TeamSummaryProps) {
+export const TeamSummary = memo(function TeamSummary({ config, result }: TeamSummaryProps) {
   // FR-067: placements follow insertion order, so sort for a stable, readable table.
   const dpsRows = [...config.placements].map((placement) => {
     const creature = getCreatureById(placement.creatureId);
@@ -177,4 +180,4 @@ export function TeamSummary({ config, result }: TeamSummaryProps) {
       </p>
     </section>
   );
-}
+});
