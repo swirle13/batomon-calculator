@@ -289,7 +289,8 @@
   /*
    * Trainer art is 120x80 landscape, unlike every square creature sprite. The placeholder that
    * holds its footprint while no trainer is chosen must match it exactly or the card resizes on
-   * selection — `TrainerCard.tsx` passes the same numbers to `<Sprite>`.
+   * selection, so BOTH read these: the placeholder in `TrainerCard.module.css`, and the sprite
+   * itself through `<Sprite widthVar heightVar>`.
    */
   --sprite-trainer-width: 120px;
   --sprite-trainer-height: 80px;

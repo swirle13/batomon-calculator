@@ -39,11 +39,16 @@ interface SpriteProps {
    */
   sizeVar?: string;
   /**
-   * Explicit dimensions, for art that is not square. Trainer icons are **120x80**, so passing a
-   * single `size` would letterbox or stretch them.
+   * Per-axis tokens, for art that is not square — trainer icons are **120x80**, so a single `size`
+   * would letterbox or stretch them. Each overrides `sizeVar` on its own axis.
+   *
+   * Tokens rather than the numbers they hold, because the only non-square art here is also drawn
+   * by a CSS placeholder that reserves its footprint while no trainer is chosen. Passed as numbers,
+   * the two sat in different files with nothing tying them together, and a card that resizes on
+   * selection is precisely what the placeholder exists to prevent.
    */
-  width?: number;
-  height?: number;
+  widthVar?: string;
+  heightVar?: string;
   /** Usually the record's `name`. */
   alt: string;
   className?: string;
@@ -61,11 +66,15 @@ interface SpriteProps {
  * quietly wrong.
  */
 
-export function Sprite({ spriteFile, kind, size = 48, sizeVar, width, height, alt, className }: SpriteProps) {
+/** A token if one governs this axis, the plain pixel size otherwise. */
+const axis = (token: string | undefined, px: number) => (token ? `var(${token})` : `${px}px`);
+
+export function Sprite({ spriteFile, kind, size = 48, sizeVar, widthVar, heightVar, alt, className }: SpriteProps) {
   if (!spriteFile) return null;
-  const sized = sizeVar
-    ? { width: `var(${sizeVar})`, height: `var(${sizeVar})` }
-    : { width: `${width ?? size}px`, height: `${height ?? size}px` };
+  const sized = {
+    width: axis(widthVar ?? sizeVar, size),
+    height: axis(heightVar ?? sizeVar, size),
+  };
   return (
     <img
       src={`${import.meta.env.BASE_URL}sprites/${kind}/${spriteFile}`}

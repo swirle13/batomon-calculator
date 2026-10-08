@@ -41,11 +41,18 @@ export function TrainerCard({ trainer, controls }: TrainerCardProps) {
   return (
     <Surface className={styles.card}>
       <div className={styles.identity}>
-        {/* T255/FR-102. The placeholder holds the art's exact 120x80 footprint, so choosing a
-            trainer fills the frame instead of growing the card and shifting the selects beside
-            it — which would move the control you just used. */}
+        {/* T255/FR-102. The placeholder holds the art's exact footprint, so choosing a trainer
+            fills the frame instead of growing the card and shifting the selects beside it — which
+            would move the control you just used. Both read the same two tokens; the sprite used to
+            carry the 120x80 as literal props, with only a comment tying it to the placeholder. */}
         {trainer ? (
-          <Sprite spriteFile={trainer.spriteFile} kind="trainer" width={120} height={80} alt={trainer.name} />
+          <Sprite
+            spriteFile={trainer.spriteFile}
+            kind="trainer"
+            widthVar="--sprite-trainer-width"
+            heightVar="--sprite-trainer-height"
+            alt={trainer.name}
+          />
         ) : (
           <div className={styles.spritePlaceholder} aria-hidden="true" />
         )}

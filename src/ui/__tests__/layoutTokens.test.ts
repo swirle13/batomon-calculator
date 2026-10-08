@@ -324,6 +324,21 @@ describe("the trainer card holds one height for every trainer", () => {
     expect(card).toMatch(/min-height:\s*4\.5rem/);
   });
 
+  it("sizes the art and the placeholder that reserves its footprint from the same tokens", () => {
+    // Trainer art is the only non-square art in the app, so it is the only thing `<Sprite>` cannot
+    // size from a single token. It used to take the 120x80 as literal props while the placeholder
+    // took it from CSS, which is two statements of one measurement with nothing holding them
+    // together — and a disagreement between them resizes the card on selection, moving the selects
+    // beside it and the panels below it.
+    const source = read("ui/shared/TrainerCard/TrainerCard.tsx");
+    expect(source).toMatch(/widthVar="--sprite-trainer-width"/);
+    expect(source).toMatch(/heightVar="--sprite-trainer-height"/);
+    expect(source).not.toMatch(/width=\{120\}|height=\{80\}/);
+    expect(card.replace(/\s+/g, " ")).toMatch(
+      /\.spritePlaceholder \{[^}]*width: var\(--sprite-trainer-width\); height: var\(--sprite-trainer-height\)/,
+    );
+  });
+
   it("anchors the affected-species button to the bottom of that reserved space", () => {
     // Only Painter and Smuggler have this button, and their ability texts are one and two lines, so
     // following the text put the same control 21px apart between them. Anchored, both sit 10px above
