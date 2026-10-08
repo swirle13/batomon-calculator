@@ -114,6 +114,16 @@
  * `aspect-ratio`, which is stated for the desktop in the shared rule above.
  */
 @media (max-width: 640px) {
+  /*
+   * FLUID, not the token. `--team-column-width` is three panes' worth of a fixed slot size, and it
+   * lands tens of pixels short of a phone's width — the board sat in a column of its own with the
+   * rest of the page beside it, and the panes were narrower than the screen could afford while the
+   * panels above them ran the full width.
+   */
+  .grid {
+    width: 100%;
+  }
+
   .card,
   .emptyCard {
     aspect-ratio: auto;
@@ -121,11 +131,16 @@
   }
 
   /*
-   * The name gets the room the symmetric padding was spending on empty space. At this width the
-   * pane is 96px across inside its padding, so 1.25rem on both sides left under 60px for a name and
-   * a level; the clear button only ever needed clearing on the right.
+   * The level drops BELOW the name when the two do not fit across a third of a phone, instead of
+   * the name ellipsising to "S…". Flex breaks a line before it shrinks an item, so a name that fits
+   * on its own gets the whole first line; a short one keeps the level beside it. Either way the
+   * height is reserved (--grid-card-chrome), so neighbouring panes stay level.
+   *
+   * The padding is asymmetric because the clear button is: it sits in the top-RIGHT corner, and
+   * clearing a corner that holds nothing was costing the name 20px it has no spare.
    */
   .header {
+    flex-wrap: wrap;
     padding-inline: var(--space-3xs) 1.25rem;
   }
 }

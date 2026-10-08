@@ -68,14 +68,28 @@
 }
 
 /*
- * Full width under the board on a phone (2026-10-08). 22rem is 352px, wider than a 360px screen's
- * content box, and the column neither grows nor shrinks — so it overflowed `main` and took the page
- * sideways with it, which scrolls the board too. The fixed width exists to stop the column resizing
- * on hover (FR-062); at one column per row there is nothing for it to resize against.
+ * ONE column on a phone, each row the full width of the page (2026-10-08).
+ *
+ * Wrapping is not the same thing as stacking, and that difference was visible: both columns kept
+ * the widths they were given for a side-by-side row, so the detail panel (a fixed 22rem = 352px,
+ * neither growing nor shrinking) overflowed a 360px screen, and the team column stayed capped at
+ * `--team-column-width` — a board noticeably narrower than the panels above it, with the page's
+ * second column reserved as empty space down its right-hand side.
+ *
+ * Both widths exist for the side-by-side case: the detail panel's so it cannot resize on hover
+ * (FR-062), the team column's so it cannot settle narrower than the grid it contains. Stacked,
+ * there is nothing for either to resize against.
  */
 @media (max-width: 640px) {
+  .builderRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .teamColumn,
   .detailColumn {
-    flex-basis: 100%;
+    flex: 1 1 auto;
+    max-width: 100%;
     min-width: 0;
   }
 }

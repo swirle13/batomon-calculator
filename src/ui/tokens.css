@@ -254,6 +254,10 @@
   /* FR-062 (WI-007): the selected-creature column is a FIXED width. A content-derived width
      (previously `flex: 1 1 16rem`) visibly resized the column on every hover. */
   --detail-panel-width: 22rem;
+
+  /* `main`'s inset. A token because the team board's width is measured against what is left of the
+     viewport after it, which only the board's own tokens can do if they can name it. */
+  --page-pad: 1rem;
 }
 
 /*
@@ -265,12 +269,30 @@
  * no middle setting to compromise on, because `image-rendering: pixelated` is only crisp at integer
  * multiples of the 48x48 source: 48 or 96, nothing between.
  *
- * It fits, with the gap and the pane's own proportions paying for it. On the narrowest phone in
- * common use (360px, 16px root): `main` gives up half its padding for 344px of content, and three
- * 105.6px panes with 4px gaps come to 324.8px.
+ * What pays for it is everything around the art: half the page padding, most of the gap between
+ * panes, and the square. The board is FLUID here rather than sized from these tokens — it is a
+ * third of the screen per pane, whatever the screen is — so the sprite is capped at 96px instead
+ * of fixed at it, and only a viewport under ~345px makes it give any ground.
  */
 @media (max-width: 640px) {
   :root {
+    /* 1rem a side is 32px of a 360px screen, and the board is what it would come out of. */
+    --page-pad: var(--space-sm);
+    /* 1rem between panes is another 32px — a tenth of the board, spent on nothing. */
+    --grid-gap: var(--space-2xs);
+    /*
+     * FLUID, capped at the size the art is everywhere else.
+     *
+     * The board fills the width of a phone, so a pane is a third of what the page padding and the
+     * gaps leave, and the sprite is that minus the card's own padding. Above ~345px of viewport
+     * that comes out over 96px and the cap holds, which is the case that matters: the art is the
+     * exact 2x of its 48x48 source and stays crisp under `image-rendering: pixelated`. Below it the
+     * sprite shrinks with the pane and goes slightly soft, which beats being clipped by it.
+     */
+    --sprite-grid: min(
+      96px,
+      calc((100vw - 2 * var(--page-pad) - 2 * var(--grid-gap)) / 3 - 2 * var(--grid-card-padding))
+    );
     /*
      * The pane is PORTRAIT here rather than square. 96px of art plus the card's padding is already
      * most of a third of the screen, so its WIDTH is exactly that, and the rows of chrome are added
@@ -278,12 +300,11 @@
      */
     --grid-slot-size: calc(var(--sprite-grid) + 2 * var(--grid-card-padding));
     /*
-     * ~8px of slack around the sprite rather than the desktop's ~36px. The desktop slack is
-     * breathing room in a pane with width to spare; here it would just make a tall pane taller.
+     * Two header lines, not the desktop's one: at a third of a phone the level does not fit beside
+     * the name, so it wraps below it rather than ellipsising the name down to its first letter.
+     * Reserved whether or not it wraps, so panes in a row stay the same height.
      */
-    --grid-card-chrome: 3rem;
-    /* 1rem between panes is 32px of a 360px screen — a tenth of the board, spent on nothing. */
-    --grid-gap: var(--space-2xs);
+    --grid-card-chrome: 3.75rem;
     /*
      * The picker's sprite stays at the desktop 96px too, but its card does NOT stay at the desktop
      * 10rem: `auto-fill` would then fit a single column in a phone-width modal, where 7.5rem keeps

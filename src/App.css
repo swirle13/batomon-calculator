@@ -8,7 +8,9 @@ header {
 }
 
 main {
-  padding: 1rem;
+  /* Tokenised so the team board can measure the viewport it is left with — it halves on a phone,
+     and the board's sprite size is derived from what remains (see `--sprite-grid`). */
+  padding: var(--page-pad);
   /*
    * Never narrower than the builder row needs. A flat 60rem looked sufficient but is not derived
    * from anything, so when the team grid grew the row no longer fit and the grid spilled over the
@@ -20,19 +22,8 @@ main {
    * 1rem padding comes out of the content box. Without it the builder row lost 2rem of usable
    * width and the detail panel wrapped below the grid.
    */
-  max-width: max(60rem, calc(var(--builder-row-width) + 2 * 1rem + var(--space-sm)));
+  max-width: max(60rem, calc(var(--builder-row-width) + 2 * var(--page-pad) + var(--space-sm)));
   margin: 0 auto;
-}
-
-/*
- * Half the padding on a phone (2026-10-08). 1rem a side is 32px of a 360px screen, and the team
- * board is the one row here that cannot compress — those 32px are a meaningful part of what lets
- * three desktop-sized sprites fit across it.
- */
-@media (max-width: 640px) {
-  main {
-    padding: 0.5rem;
-  }
 }
 
 table {

@@ -81,9 +81,14 @@ describe("layout width tokens", () => {
     // that cannot compress always fits. A bare `max-width: 60rem` here is the regression.
     //
     // The padding term is required: `main` is border-box, so max-width is the OUTER width. Omitting
-    // it cost the row 2rem of usable width and the detail panel wrapped below the grid.
+    // it cost the row 2rem of usable width and the detail panel wrapped below the grid. It is the
+    // token rather than a literal 1rem because the padding halves on a phone, and the team board
+    // sizes its sprite against whatever the padding leaves of the viewport.
     const main = read("App.css");
-    expect(main).toMatch(/max-width:\s*max\(60rem,\s*calc\(var\(--builder-row-width\)[^)]*\+ 2 \* 1rem/);
+    expect(main).toMatch(
+      /max-width:\s*max\(60rem,\s*calc\(var\(--builder-row-width\)[^)]*\+ 2 \* var\(--page-pad\)/,
+    );
+    expect(main).toMatch(/padding: var\(--page-pad\)/);
   });
 });
 
@@ -231,15 +236,31 @@ describe("the mobile breakpoint shrinks the pane, not the sprite", () => {
   const grid = read("ui/GridPicker/GridPicker.module.css");
   const mobileRoot = /@media \(max-width: 640px\) \{ :root \{([^}]*)\}/.exec(tokens.replace(/\s+/g, " "))?.[1] ?? "";
 
-  it("leaves both sprite sizes at the desktop value", () => {
-    expect(mobileRoot).not.toMatch(/--sprite-grid:/);
+  it("caps the board's sprite at the desktop size rather than setting it below", () => {
+    // `min(96px, …)` is the whole claim: the art is the desktop's 2x at any viewport that can hold
+    // it, and only a screen too narrow for three of them takes anything off. A flat smaller value
+    // here is the regression.
+    expect(mobileRoot).toMatch(/--sprite-grid: min\( 96px,/);
     expect(mobileRoot).not.toMatch(/--sprite-picker:/);
   });
 
+  it("measures that cap against the viewport the page padding leaves", () => {
+    // Hence --page-pad being a token at all: the board is a third of the screen per pane, and it
+    // cannot work out what a third is without naming the inset around it.
+    expect(mobileRoot).toMatch(
+      /calc\(\(100vw - 2 \* var\(--page-pad\) - 2 \* var\(--grid-gap\)\) \/ 3 - 2 \* var\(--grid-card-padding\)\)/,
+    );
+    expect(mobileRoot).toMatch(/--page-pad: var\(--space-sm\)/);
+  });
+
   it("makes the slot size a WIDTH there: the sprite plus the card's padding", () => {
-    // Three of these plus two gaps is what has to fit a 360px screen, and it is the whole reason
-    // the sprite can stay at 96px.
     expect(mobileRoot).toMatch(/--grid-slot-size: calc\(var\(--sprite-grid\) \+ 2 \* var\(--grid-card-padding\)\)/);
+  });
+
+  it("lets the board fill the screen instead of holding a column's width", () => {
+    // `--team-column-width` is three FIXED slots wide and lands short of a phone, so the board sat
+    // in a narrow column with the page's second column reserved, empty, beside it.
+    expect(grid.replace(/\s+/g, " ")).toMatch(/@media \(max-width: 640px\) \{[^}]*\.grid \{ width: 100%/);
   });
 
   it("adds the pane's chrome to its height, since the square is gone", () => {
@@ -250,12 +271,12 @@ describe("the mobile breakpoint shrinks the pane, not the sprite", () => {
     );
   });
 
-  it("stops the detail column from taking the page sideways", () => {
-    // 22rem is 352px against a 360px screen, and the column neither grows nor shrinks — so it
-    // overflowed `main` and scrolled the board along with it.
-    expect(read("App.module.css").replace(/\s+/g, " ")).toMatch(
-      /@media \(max-width: 640px\) \{ \.detailColumn \{ flex-basis: 100%/,
-    );
+  it("stacks the builder row rather than wrapping it", () => {
+    // Wrapping is not stacking: both columns kept their side-by-side widths, so the detail panel
+    // (a fixed 352px) overflowed a 360px screen and the team column stayed capped well inside it.
+    const app = read("App.module.css").replace(/\s+/g, " ");
+    expect(app).toMatch(/@media \(max-width: 640px\) \{ \.builderRow \{ flex-direction: column/);
+    expect(app).toMatch(/\.teamColumn, \.detailColumn \{ flex: 1 1 auto; max-width: 100%/);
   });
 });
 
