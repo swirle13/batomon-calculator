@@ -1,4 +1,5 @@
 import { RegionId } from "./enums";
+import { Species, TrainerId, TrinketId } from "./ids";
 import { AbilityTrigger, CreatureType, DamageChannel, Rarity, StatColorKey, StatusEffectType, TypeKind } from "./enums";
 
 /**
@@ -300,3 +301,12 @@ export const parseCreatureType = parserFor(CreatureType);
 export const parseRegionId = parserFor(RegionId);
 export const parseAbilityTrigger = parserFor(AbilityTrigger);
 export const parseStatusEffectType = parserFor(StatusEffectType);
+
+/*
+ * Id parsers. These matter more than the vocabulary ones: an id arrives from a `<select>`, a URL or
+ * a build code, and before `Species`/`TrainerId`/`TrinketId` existed a typo'd id simply matched no
+ * record -- the UI showed an empty slot instead of failing.
+ */
+export const parseSpecies = parserFor(Species);
+export const parseTrainerId = parserFor(TrainerId);
+export const parseTrinketId = parserFor(TrinketId);

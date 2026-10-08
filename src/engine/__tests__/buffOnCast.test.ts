@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { simulate } from "../simulate";
 import type { Corpus, CreatureRecord, TeamConfiguration } from "../../data/types";
+
+import { syntheticSpecies } from "../../data/ids";
+
+import type { Species } from "../../data/ids";
 import { AbilityTagKind, AbilityTrigger, CreatureType, DamageChannel, GridRow, Rarity, StatChangeStat, TargetKind, TimelineEventKind } from "../../data/enums";
 
 /**
@@ -27,11 +31,11 @@ const base: Omit<CreatureRecord, "id" | "name"> = {
   patch: "test",
 };
 
-const grower: CreatureRecord = { ...base, id: "grower", name: "Grower" };
-const flat: CreatureRecord = { ...base, id: "flat", name: "Flat", abilityTags: [], abilityText: "test fixture" };
+const grower: CreatureRecord = { ...base, id: syntheticSpecies(syntheticSpecies("grower")), name: "Grower" };
+const flat: CreatureRecord = { ...base, id: syntheticSpecies(syntheticSpecies("flat")), name: "Flat", abilityTags: [], abilityText: "test fixture" };
 const testCorpus: Corpus = { creatures: [grower, flat], trainers: [], trinkets: [], items: [] };
 
-const team = (creatureId: string, windowSeconds: number): TeamConfiguration => ({
+const team = (creatureId: Species, windowSeconds: number): TeamConfiguration => ({
   placements: [{ slot: { row: GridRow.Back, col: 0 }, creatureId, level: 1 }],
   trainerId: null,
   trinketIds: [],
@@ -44,14 +48,14 @@ describe("buffOnCast (T224)", () => {
   it("the FIRST cast is unbuffed — a cast does not buff itself", () => {
     // FR-040 snapshot semantics: the grant lands after the instant it was granted in. Applying it
     // inline would make the buff appear one cast early and overstate the whole family.
-    const r = simulate(team("grower", 1), testCorpus);
+    const r = simulate(team(syntheticSpecies("grower"), 1), testCorpus);
     const attacks = r.timeline.filter((e) => e.kind === TimelineEventKind.Attack && e.damage !== undefined);
     expect(attacks).toHaveLength(1);
     expect(attacks[0]!.damage).toBe(10);
   });
 
   it("each later cast adds another +10: 10, 20, 30, 40", () => {
-    const r = simulate(team("grower", 4), testCorpus);
+    const r = simulate(team(syntheticSpecies("grower"), 4), testCorpus);
     const damages = r.timeline
       .filter((e) => e.kind === TimelineEventKind.Attack && e.damage !== undefined)
       .map((e) => e.damage);
@@ -59,7 +63,7 @@ describe("buffOnCast (T224)", () => {
   });
 
   it("an identical creature WITHOUT the tag stays flat, so growth is the tag's doing", () => {
-    const r = simulate(team("flat", 4), testCorpus);
+    const r = simulate(team(syntheticSpecies("flat"), 4), testCorpus);
     const damages = r.timeline
       .filter((e) => e.kind === TimelineEventKind.Attack && e.damage !== undefined)
       .map((e) => e.damage);
@@ -68,8 +72,8 @@ describe("buffOnCast (T224)", () => {
 
   it("total output is superlinear in the window, which is what makes this family matter", () => {
     // 4s: 10+20+30+40 = 100. 8s: 10+...+80 = 360. Doubling the window near-quadruples the damage.
-    const short = simulate(team("grower", 4), testCorpus);
-    const long = simulate(team("grower", 8), testCorpus);
+    const short = simulate(team(syntheticSpecies("grower"), 4), testCorpus);
+    const long = simulate(team(syntheticSpecies("grower"), 8), testCorpus);
     const total = (r: typeof short) =>
       r.timeline.filter((e) => e.kind === TimelineEventKind.Attack).reduce((s, e) => s + (e.damage ?? 0), 0);
     expect(total(short)).toBe(100);

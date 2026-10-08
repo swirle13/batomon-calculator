@@ -1,5 +1,6 @@
 import type { TrainerRecord, SourceRef } from "./types";
 import { ConfirmableField } from "./enums";
+import { TrainerId } from "./ids";
 
 const RETRIEVED = "2026-10-05";
 
@@ -50,7 +51,7 @@ const NAMED_ONLY_1_0_0 = "1.0.0 (named only; ability text is secondary-wiki sour
  */
 export const trainers: TrainerRecord[] = [
   {
-    id: "musician",
+    id: TrainerId.Musician,
     spriteFile: "musician.png",
     name: "Musician",
     abilityText:
@@ -66,7 +67,7 @@ export const trainers: TrainerRecord[] = [
     patch: "reported in community discussion, exact patch version not stated by the source",
   },
   {
-    id: "black-belt",
+    id: TrainerId.BlackBelt,
     spriteFile: "black-belt.png",
     name: "Black Belt",
     abilityText:
@@ -78,7 +79,7 @@ export const trainers: TrainerRecord[] = [
     patch: NAMED_ONLY_1_0_0,
   },
   {
-    id: "bug-catcher",
+    id: TrainerId.BugCatcher,
     spriteFile: "bug-catcher.png",
     name: "Bug Catcher",
     abilityText: "The first Bug monster you buy each day/round is free.",
@@ -87,7 +88,7 @@ export const trainers: TrainerRecord[] = [
     patch: "demo era (confirmed in official itch demo build, captured 2026-09-27)",
   },
   {
-    id: "burglar",
+    id: TrainerId.Burglar,
     spriteFile: "burglar.png",
     name: "Burglar",
     abilityText: "Trinket gifts only offer 2 choices, but you can take both of them.",
@@ -97,7 +98,7 @@ export const trainers: TrainerRecord[] = [
     patch: NAMED_ONLY_1_0_0,
   },
   {
-    id: "chef",
+    id: TrainerId.Chef,
     spriteFile: "chef.png",
     name: "Chef",
     abilityText:
@@ -107,7 +108,7 @@ export const trainers: TrainerRecord[] = [
     patch: "Steam store description (demo era)",
   },
   {
-    id: "chemist",
+    id: TrainerId.Chemist,
     spriteFile: "chemist.png",
     name: "Chemist",
     abilityText:
@@ -130,7 +131,7 @@ export const trainers: TrainerRecord[] = [
     ],
   },
   {
-    id: "egg-breeder",
+    id: TrainerId.EggBreeder,
     spriteFile: "egg-breeder.png",
     name: "Egg Breeder",
     abilityText: "Gain a Purple Egg that hatches into a level 2 Super Rare monster in 5 days.",
@@ -139,7 +140,7 @@ export const trainers: TrainerRecord[] = [
     patch: PATCH_120,
   },
   {
-    id: "gamer",
+    id: TrainerId.Gamer,
     spriteFile: "gamer.png",
     name: "Gamer",
     abilityText: "On day 9, gain a Mythical monster and $30.",
@@ -148,7 +149,7 @@ export const trainers: TrainerRecord[] = [
     patch: PATCH_120,
   },
   {
-    id: "gentleman",
+    id: TrainerId.Gentleman,
     spriteFile: "gentleman.png",
     name: "Gentleman",
     abilityText: "From day 4 onwards, your shop no longer stocks Common or Uncommon monsters.",
@@ -158,7 +159,7 @@ export const trainers: TrainerRecord[] = [
     patch: NAMED_ONLY_1_0_0,
   },
   {
-    id: "lucky-girl",
+    id: TrainerId.LuckyGirl,
     spriteFile: "lucky-girl.png",
     name: "Lucky Girl",
     abilityText: "SHINY monsters are more likely to appear.",
@@ -167,7 +168,7 @@ export const trainers: TrainerRecord[] = [
     patch: PATCH_120,
   },
   {
-    id: "mad-scientist",
+    id: TrainerId.MadScientist,
     spriteFile: "mad-scientist.png",
     name: "Mad Scientist",
     abilityText:
@@ -177,7 +178,7 @@ export const trainers: TrainerRecord[] = [
     patch: PATCH_120,
   },
   {
-    id: "masked-man",
+    id: TrainerId.MaskedMan,
     spriteFile: "masked-man.png",
     name: "Masked Man",
     abilityText: "Every 4 days, choose a trainer and gain their ability.",
@@ -186,7 +187,7 @@ export const trainers: TrainerRecord[] = [
     patch: PATCH_120,
   },
   {
-    id: "monster-ranger",
+    id: TrainerId.MonsterRanger,
     spriteFile: "monster-ranger.png",
     name: "Monster Ranger",
     abilityText: "Start with an Uncommon monster. Get another copy of that monster every 2 days.",
@@ -195,7 +196,7 @@ export const trainers: TrainerRecord[] = [
     patch: "demo era (official devlog, 2026-04-27)",
   },
   {
-    id: "painter",
+    id: TrainerId.Painter,
     spriteFile: "painter.png",
     name: "Painter",
     abilityText:
@@ -212,7 +213,7 @@ export const trainers: TrainerRecord[] = [
     patch: NAMED_ONLY_1_0_0,
   },
   {
-    id: "redhead",
+    id: TrainerId.Redhead,
     spriteFile: "redhead.png",
     name: "Redhead",
     abilityText: "On Victory: give your Fire monsters +3 Burn permanently.",
@@ -231,7 +232,7 @@ export const trainers: TrainerRecord[] = [
     ],
   },
   {
-    id: "rich-lady",
+    id: TrainerId.RichLady,
     spriteFile: "rich-lady.png",
     name: "Rich Lady",
     abilityText: "Gain shop rank +2 and $10.",
@@ -240,7 +241,7 @@ export const trainers: TrainerRecord[] = [
     patch: PATCH_120,
   },
   {
-    id: "scavenger",
+    id: TrainerId.Scavenger,
     spriteFile: "scavenger.png",
     name: "Scavenger",
     abilityText: "Gain an additional copy of each non-unique Common or Uncommon Trinket from a gift.",
@@ -250,7 +251,7 @@ export const trainers: TrainerRecord[] = [
     patch: NAMED_ONLY_1_0_0,
   },
   {
-    id: "shopkeeper",
+    id: TrainerId.Shopkeeper,
     spriteFile: "shopkeeper.png",
     name: "Shopkeeper",
     abilityText: "Your shop stocks items one rarity tier higher, and 15% cheaper.",
@@ -259,7 +260,7 @@ export const trainers: TrainerRecord[] = [
     patch: PATCH_120,
   },
   {
-    id: "smuggler",
+    id: TrainerId.Smuggler,
     spriteFile: "smuggler.png",
     name: "Smuggler",
     abilityText: "Batomon from other regions appear in your shop and cost 25% less.",
@@ -269,7 +270,7 @@ export const trainers: TrainerRecord[] = [
     unconfirmedFields: [ConfirmableField.AbilityText],
   },
   {
-    id: "swim-coach",
+    id: TrainerId.SwimCoach,
     spriteFile: "swim-coach.png",
     name: "Swim Coach",
     abilityText: "Gain a random Water monster each day.",
@@ -278,7 +279,7 @@ export const trainers: TrainerRecord[] = [
     patch: "demo era (official itch demo capture, 2026-09-27)",
   },
   {
-    id: "treasure-hunter",
+    id: TrainerId.TreasureHunter,
     spriteFile: "treasure-hunter.png",
     name: "Treasure Hunter",
     abilityText: "When you get Trinket gifts, your choices are 1 rarity tier higher.",
@@ -287,7 +288,7 @@ export const trainers: TrainerRecord[] = [
     patch: PATCH_120,
   },
   {
-    id: "twins",
+    id: TrainerId.Twins,
     spriteFile: "twins.png",
     name: "Twins",
     abilityText: "When monsters merge into level 3, gain an exact copy with a sell value of 0.",
@@ -297,7 +298,7 @@ export const trainers: TrainerRecord[] = [
     patch: NAMED_ONLY_1_0_0,
   },
   {
-    id: "youngster",
+    id: TrainerId.Youngster,
     spriteFile: "youngster.png",
     name: "Youngster",
     abilityText: "Gain 3 free rerolls every day.",

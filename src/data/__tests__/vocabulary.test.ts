@@ -19,6 +19,7 @@ import { ABILITY_TRIGGERS, TRIGGER_DEFINITIONS } from "../triggers";
 import { corpus } from "../corpus";
 import { AbilityTrigger, DamageChannel } from "../enums";
 import { ConfirmableField, CreatureType, Rarity, StatusEffectType } from "../enums";
+import { Species } from "../ids";
 
 /**
  * The vocabulary registries (2026-10-07, round 7 WI-001/003/004/005/006).
@@ -247,7 +248,7 @@ describe("GUARD: the corpus stores enum members, never bare strings", () => {
   it("keeps ability TEXT untouched, which the migration could easily have corrupted", () => {
     // The migration rewrote literals only where a known field name preceded them. A blind
     // find-and-replace of `"Common"` would have mangled this sentence, and 148 others like it.
-    const brawlmantis = corpus.creatures.find((c) => c.id === "brawlmantis" && c.level === 1)!;
+    const brawlmantis = corpus.creatures.find((c) => c.id === Species.Brawlmantis && c.level === 1)!;
     expect(brawlmantis.abilityText).toBe("This and Common allies gain +10 Damage permanently.");
     expect(brawlmantis.rarity).toBe(Rarity.Uncommon);
     expect(brawlmantis.types).toEqual([CreatureType.Bug, CreatureType.Fighting]);

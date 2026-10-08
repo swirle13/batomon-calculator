@@ -17,6 +17,7 @@ import {
 } from "../../primitives";
 import styles from "./TrainerCard.module.css";
 import type { AffectedSpeciesKind } from "../../../data/enums";
+import type { Species } from "../../../data/ids";
 
 /**
  * Picks the species a set-designating trainer affects (T235 / FR-090).
@@ -124,7 +125,7 @@ export function AffectedCreaturePicker({ kind, onClose }: AffectedCreaturePicker
 
   const needsRegion = kind === "smuggled" && !config.selectedRegion;
 
-  function remove(id: string) {
+  function remove(id: Species) {
     setSelected(selectedIds.filter((x) => x !== id));
   }
 
@@ -132,7 +133,7 @@ export function AffectedCreaturePicker({ kind, onClose }: AffectedCreaturePicker
    * Adding is REFUSED at the cap rather than rotating the oldest out. A silent replacement would
    * lose a species the user chose deliberately, and they have no way to know which one went.
    */
-  function add(id: string) {
+  function add(id: Species) {
     if (selectedIds.includes(id) || isFull) return;
     setSelected([...selectedIds, id]);
   }

@@ -3,6 +3,7 @@ import { corpus } from "../../data/corpus";
 import { RESOLVED_TAG_KINDS, isResolvableTag, resolveEffects } from "../effects";
 import type { GridSlot, TeamConfiguration } from "../../data/types";
 import { AbilityTagKind, GridRow, TargetKind } from "../../data/enums";
+import { Species } from "../../data/ids";
 
 /**
  * Round 10 (T219): the general selector-based resolver.
@@ -14,7 +15,7 @@ import { AbilityTagKind, GridRow, TargetKind } from "../../data/enums";
  * happens to carry that shape.
  */
 
-const team = (placements: { id: string; slot: GridSlot }[]): TeamConfiguration => ({
+const team = (placements: { id: Species; slot: GridSlot }[]): TeamConfiguration => ({
   placements: placements.map((p) => ({ slot: p.slot, creatureId: p.id, level: 1 })),
   trainerId: null,
   trinketIds: [],
@@ -33,17 +34,17 @@ describe("selector-based effect families (T219)", () => {
     // Formiqueen's ongoing grant targets `adjacent`. back0 and back1 are adjacent; back0 and back2
     // are not, even though both are in the same row.
     const adjacent = resolveEffects(
-      team([{ id: "formiqueen", slot: BACK0 }, { id: "bumblebolt", slot: BACK1 }]),
+      team([{ id: Species.Formiqueen, slot: BACK0 }, { id: Species.Bumblebolt, slot: BACK1 }]),
       corpus,
     );
     const apart = resolveEffects(
-      team([{ id: "formiqueen", slot: BACK0 }, { id: "bumblebolt", slot: BACK2 }]),
+      team([{ id: Species.Formiqueen, slot: BACK0 }, { id: Species.Bumblebolt, slot: BACK2 }]),
       corpus,
     );
     // Both resolve without error and leave Bumblebolt's own status line alone -- Formiqueen grants
     // cooldown speed, which `simulate()` owns (see the double-counting note in effects.ts).
     const shockOf = (r: ReturnType<typeof resolveEffects>) =>
-      r.find((x) => x.creature.id === "bumblebolt")!.appliesStatus.find((s) => s.type === "Shock")!.amount;
+      r.find((x) => x.creature.id === Species.Bumblebolt)!.appliesStatus.find((s) => s.type === "Shock")!.amount;
     expect(shockOf(adjacent)).toBe(1);
     expect(shockOf(apart)).toBe(1);
   });
@@ -51,28 +52,28 @@ describe("selector-based effect families (T219)", () => {
   it("a positional grant reaches the creature behind, and nothing when that slot is empty", () => {
     // Onsetra: "the ally behind applies its Ongoing abilities 1 additional time". `behind` is only
     // defined from the front row, so an Onsetra in the back row grants nothing.
-    const onsetra = corpus.creatures.find((c) => c.id === "onsetra" && c.level === 1);
+    const onsetra = corpus.creatures.find((c) => c.id === Species.Onsetra && c.level === 1);
     expect(onsetra, "fixture depends on Onsetra existing at level 1").toBeDefined();
 
     const granted = resolveEffects(
-      team([{ id: "onsetra", slot: FRONT0 }, { id: "bumblebolt", slot: BACK0 }]),
+      team([{ id: Species.Onsetra, slot: FRONT0 }, { id: Species.Bumblebolt, slot: BACK0 }]),
       corpus,
     );
-    const bumble = granted.find((r) => r.creature.id === "bumblebolt")!;
+    const bumble = granted.find((r) => r.creature.id === Species.Bumblebolt)!;
     expect(bumble.extraOngoingApplications).toBe(1);
 
     // Same pair, Onsetra in the back row: nothing is behind it.
     const nothingBehind = resolveEffects(
-      team([{ id: "onsetra", slot: BACK0 }, { id: "bumblebolt", slot: FRONT0 }]),
+      team([{ id: Species.Onsetra, slot: BACK0 }, { id: Species.Bumblebolt, slot: FRONT0 }]),
       corpus,
     );
-    expect(nothingBehind.find((r) => r.creature.id === "bumblebolt")!.extraOngoingApplications).toBe(0);
+    expect(nothingBehind.find((r) => r.creature.id === Species.Bumblebolt)!.extraOngoingApplications).toBe(0);
   });
 
   it("a lone creature is never affected by its own ally-targeting tags", () => {
     // Every selector except `self` excludes the source, so a solo board must resolve to base stats.
     for (const id of ["formiqueen", "onsetra", "miasmaw"]) {
-      const solo = resolveEffects(team([{ id, slot: BACK1 }]), corpus);
+      const solo = resolveEffects(team([{ id: id as Species, slot: BACK1 }]), corpus);
       const base = corpus.creatures.find((c) => c.id === id && c.level === 1)!;
       expect(solo[0]!.baseDamage, `${id} solo damage`).toBe(base.publishedCast?.damage ?? null);
       expect(solo[0]!.multicast, `${id} solo multicast`).toBe(base.baseMulticast);

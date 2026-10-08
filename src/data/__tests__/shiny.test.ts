@@ -2,8 +2,9 @@ import { describe, expect, it } from "vitest";
 import { corpus, hasShinyVariant, resolveCreatureVariant } from "../corpus";
 import { simulate } from "../../engine/simulate";
 import type { TeamConfiguration } from "../types";
-import { SHINY_STATS } from "../shiny";
+import { SHINY_STATS, type ShinyKey, type ShinyStatLine } from "../shiny";
 import { GridRow, TimelineEventKind } from "../enums";
+import { Species } from "../ids";
 
 /**
  * Round 11 (WI-R11-001). Shiny is a published per-creature stat line, not a multiplier.
@@ -16,7 +17,7 @@ describe("shiny variants", () => {
   it("is not a uniform multiplier: most stats are unchanged", () => {
     let unchanged = 0;
     let changed = 0;
-    for (const [key, line] of Object.entries(SHINY_STATS)) {
+    for (const [key, line] of Object.entries(SHINY_STATS) as [ShinyKey, ShinyStatLine][]) {
       const [id, lvl] = key.split("|");
       const base = corpus.creatures.find((c) => c.id === id && c.level === Number(lvl));
       if (!base || base.publishedCast === undefined || line.baseDamage == null) continue;
@@ -28,22 +29,22 @@ describe("shiny variants", () => {
   });
 
   it("changes cooldown for some species (Furnadon 5s -> 4s)", () => {
-    const normal = resolveCreatureVariant("furnadon", 1, false);
-    const shiny = resolveCreatureVariant("furnadon", 1, true);
+    const normal = resolveCreatureVariant(Species.Furnadon, 1, false);
+    const shiny = resolveCreatureVariant(Species.Furnadon, 1, true);
     expect(normal?.baseCooldownSeconds).toBe(5);
     expect(shiny?.baseCooldownSeconds).toBe(4);
   });
 
   it("changes multicast for some species (Velocect 2 -> 4)", () => {
-    expect(resolveCreatureVariant("velocect", 1, false)?.baseMulticast).toBe(2);
-    expect(resolveCreatureVariant("velocect", 1, true)?.baseMulticast).toBe(4);
+    expect(resolveCreatureVariant(Species.Velocect, 1, false)?.baseMulticast).toBe(2);
+    expect(resolveCreatureVariant(Species.Velocect, 1, true)?.baseMulticast).toBe(4);
   });
 
   it("GUARD: shiny is a DOWNGRADE for at least one species, so it is never assumed strictly better", () => {
     // 7 stat records measured at ratio 0.8. A UI or optimiser that treats shiny as a pure upgrade
     // would mislead on exactly these.
     const worse: string[] = [];
-    for (const [key, line] of Object.entries(SHINY_STATS)) {
+    for (const [key, line] of Object.entries(SHINY_STATS) as [ShinyKey, ShinyStatLine][]) {
       const [id, lvl] = key.split("|");
       const base = corpus.creatures.find((c) => c.id === id && c.level === Number(lvl));
       if (base?.publishedCast === undefined || line.baseDamage == null) continue;
@@ -60,8 +61,8 @@ describe("shiny variants", () => {
   });
 
   it("leaves the creature's identity and ability alone — shiny swaps stats, not behaviour", () => {
-    const normal = resolveCreatureVariant("velocect", 1, false)!;
-    const shiny = resolveCreatureVariant("velocect", 1, true)!;
+    const normal = resolveCreatureVariant(Species.Velocect, 1, false)!;
+    const shiny = resolveCreatureVariant(Species.Velocect, 1, true)!;
     expect(shiny.id).toBe(normal.id);
     expect(shiny.abilityText).toBe(normal.abilityText);
     expect(shiny.abilityTags).toEqual(normal.abilityTags);
@@ -70,7 +71,7 @@ describe("shiny variants", () => {
 });
 
 describe("shiny reaches the ENGINE, not just the card (2026-10-06)", () => {
-  const place = (creatureId: string, shiny: boolean): TeamConfiguration => ({
+  const place = (creatureId: Species, shiny: boolean): TeamConfiguration => ({
     placements: [{ slot: { row: GridRow.Back, col: 0 }, creatureId, level: 1, shiny }],
     trainerId: null,
     trinketIds: [],
@@ -84,8 +85,8 @@ describe("shiny reaches the ENGINE, not just the card (2026-10-06)", () => {
     // so the band rendered a difference that did not exist. The engine looked up the raw corpus
     // record and ignored `placement.shiny`, so `member.resolved` was shiny while every direct
     // `creature.*` read was not.
-    const normal = Object.values(simulate(place("dribblet", false), corpus).perCreatureEffectiveStats)[0]!;
-    const shiny = Object.values(simulate(place("dribblet", true), corpus).perCreatureEffectiveStats)[0]!;
+    const normal = Object.values(simulate(place(Species.Dribblet, false), corpus).perCreatureEffectiveStats)[0]!;
+    const shiny = Object.values(simulate(place(Species.Dribblet, true), corpus).perCreatureEffectiveStats)[0]!;
     expect(normal.output.heal).toBe(15);
     expect(shiny.output.heal).toBe(18);
   });
@@ -94,8 +95,8 @@ describe("shiny reaches the ENGINE, not just the card (2026-10-06)", () => {
     // Velocect is the sharpest case: shiny trades damage DOWN (15 -> 8) for multicast UP (2 -> 4).
     // Reading the normal record meant the engine simulated neither half, so the trade-off that
     // makes shiny Velocect worth taking was invisible.
-    const normal = simulate(place("velocect", false), corpus);
-    const shiny = simulate(place("velocect", true), corpus);
+    const normal = simulate(place(Species.Velocect, false), corpus);
+    const shiny = simulate(place(Species.Velocect, true), corpus);
     const casts = (r: typeof normal) => r.timeline.filter((e) => e.kind === TimelineEventKind.Attack).length;
     expect(casts(shiny)).toBe(casts(normal) * 2);
     expect(Object.values(shiny.perCreatureEffectiveStats)[0]!.output.damage).toBe(8);
@@ -104,9 +105,9 @@ describe("shiny reaches the ENGINE, not just the card (2026-10-06)", () => {
   it("a shiny cooldown changes cast timing", () => {
     // Furnadon's shiny line is a full second faster (5s -> 4s). A 20s window is needed to show it:
     // at 15s both fit exactly 3 casts (5/10/15 against 4/8/12), so the difference is invisible.
-    const longWindow = (id: string, shiny: boolean) => ({ ...place(id, shiny), simulationWindowSeconds: 20 });
-    const normal = simulate(longWindow("furnadon", false), corpus);
-    const shiny = simulate(longWindow("furnadon", true), corpus);
+    const longWindow = (id: Species, shiny: boolean) => ({ ...place(id, shiny), simulationWindowSeconds: 20 });
+    const normal = simulate(longWindow(Species.Furnadon, false), corpus);
+    const shiny = simulate(longWindow(Species.Furnadon, true), corpus);
     expect(Object.values(normal.perCreatureEffectiveStats)[0]!.cooldownSeconds).toBe(5);
     expect(Object.values(shiny.perCreatureEffectiveStats)[0]!.cooldownSeconds).toBe(4);
     expect(shiny.timeline.filter((e) => e.kind === TimelineEventKind.Attack).length).toBeGreaterThan(
@@ -118,7 +119,7 @@ describe("shiny reaches the ENGINE, not just the card (2026-10-06)", () => {
     // The band only renders when it DIFFERS from the card. A shiny creature with no modifiers must
     // therefore produce identical values on both, or every shiny placement shows a phantom
     // difference — which is exactly what was reported.
-    for (const id of ["dribblet", "velocect", "furnadon", "kappow"]) {
+    for (const id of [Species.Dribblet, Species.Velocect, Species.Furnadon, Species.Kappow]) {
       const effective = Object.values(simulate(place(id, true), corpus).perCreatureEffectiveStats)[0]!;
       const card = resolveCreatureVariant(id, 1, true)!;
       expect(effective.output.heal ?? null, `${id} heal`).toBe(card.healAmount ?? null);

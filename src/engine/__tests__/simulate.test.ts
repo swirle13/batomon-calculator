@@ -3,12 +3,15 @@ import { simulate } from "../simulate";
 import { corpus } from "../../data/corpus";
 import type { Corpus, CreatureRecord, GridSlot, TeamConfiguration, TrinketRecord } from "../../data/types";
 import { InvalidTeamConfigurationError } from "../errors";
+
+import { syntheticSpecies , syntheticTrinketId } from "../../data/ids";
 import { CreatureType, DamageChannel, GridRow, ModifierStat, Rarity, StatusEffectType, TimelineEventKind } from "../../data/enums";
+import { Species } from "../../data/ids";
 
 /** Minimal synthetic corpus for isolating "facilitated damage" attribution from real game data. */
 function syntheticCorpus(): Corpus {
   const shockApplier: CreatureRecord = {
-    id: "shockApplier",
+    id: syntheticSpecies("shockApplier"),
     name: "Shock Applier",
     rarity: Rarity.Common,
     types: [CreatureType.Electric],
@@ -23,7 +26,7 @@ function syntheticCorpus(): Corpus {
     patch: "test",
   };
   const attacker: CreatureRecord = {
-    id: "attacker",
+    id: syntheticSpecies("attacker"),
     name: "Attacker",
     rarity: Rarity.Common,
     types: [CreatureType.Fire],
@@ -47,7 +50,7 @@ function syntheticCorpus(): Corpus {
  */
 function multicastCorpus(): Corpus {
   const multiCaster: CreatureRecord = {
-    id: "multiCaster",
+    id: syntheticSpecies("multiCaster"),
     name: "Multi Caster",
     rarity: Rarity.Common,
     types: [CreatureType.Fire],
@@ -67,7 +70,7 @@ function multicastCorpus(): Corpus {
 
 function driftCorpus(): Corpus {
   const driftCreature: CreatureRecord = {
-    id: "driftCreature",
+    id: syntheticSpecies("driftCreature"),
     name: "Drift Creature",
     rarity: Rarity.Common,
     types: [CreatureType.Fire],
@@ -86,7 +89,7 @@ function driftCorpus(): Corpus {
 
 function multiLevelCorpus(): Corpus {
   const level1: CreatureRecord = {
-    id: "leveledMon",
+    id: syntheticSpecies("leveledMon"),
     name: "Leveled Mon",
     rarity: Rarity.Common,
     types: [CreatureType.Fire],
@@ -111,7 +114,7 @@ function multiLevelCorpus(): Corpus {
 describe("simulate", () => {
   it("single Bumblebolt: DPS equals 3 / 2.5 = 1.2", () => {
     const config: TeamConfiguration = {
-      placements: [{ slot: { row: GridRow.Front, col: 0 }, creatureId: "bumblebolt", level: 1 }],
+      placements: [{ slot: { row: GridRow.Front, col: 0 }, creatureId: Species.Bumblebolt, level: 1 }],
       trainerId: null,
       trinketIds: [],
       itemIds: [],
@@ -127,13 +130,13 @@ describe("simulate", () => {
   it("rejects a configuration with more than 6 placements", () => {
     const tooMany: TeamConfiguration = {
       placements: [
-        { slot: { row: GridRow.Front, col: 0 }, creatureId: "bumblebolt", level: 1 },
-        { slot: { row: GridRow.Front, col: 1 }, creatureId: "bumblebolt", level: 1 },
-        { slot: { row: GridRow.Front, col: 2 }, creatureId: "bumblebolt", level: 1 },
-        { slot: { row: GridRow.Back, col: 0 }, creatureId: "bumblebolt", level: 1 },
-        { slot: { row: GridRow.Back, col: 1 }, creatureId: "bumblebolt", level: 1 },
-        { slot: { row: GridRow.Back, col: 2 }, creatureId: "bumblebolt", level: 1 },
-        { slot: { row: GridRow.Back, col: 2 }, creatureId: "scorchimp", level: 1 }, // duplicate slot, also 7th entry
+        { slot: { row: GridRow.Front, col: 0 }, creatureId: Species.Bumblebolt, level: 1 },
+        { slot: { row: GridRow.Front, col: 1 }, creatureId: Species.Bumblebolt, level: 1 },
+        { slot: { row: GridRow.Front, col: 2 }, creatureId: Species.Bumblebolt, level: 1 },
+        { slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Bumblebolt, level: 1 },
+        { slot: { row: GridRow.Back, col: 1 }, creatureId: Species.Bumblebolt, level: 1 },
+        { slot: { row: GridRow.Back, col: 2 }, creatureId: Species.Bumblebolt, level: 1 },
+        { slot: { row: GridRow.Back, col: 2 }, creatureId: Species.Scorchimp, level: 1 }, // duplicate slot, also 7th entry
       ],
       trainerId: null,
       trinketIds: [],
@@ -145,7 +148,7 @@ describe("simulate", () => {
 
   it("rejects a configuration referencing an unknown creature id", () => {
     const bad: TeamConfiguration = {
-      placements: [{ slot: { row: GridRow.Front, col: 0 }, creatureId: "not-a-real-creature", level: 1 }],
+      placements: [{ slot: { row: GridRow.Front, col: 0 }, creatureId: syntheticSpecies("not-a-real-creature"), level: 1 }],
       trainerId: null,
       trinketIds: [],
       itemIds: [],
@@ -157,8 +160,8 @@ describe("simulate", () => {
   it("timeline is sorted ascending by tSeconds", () => {
     const config: TeamConfiguration = {
       placements: [
-        { slot: { row: GridRow.Front, col: 0 }, creatureId: "bumblebolt", level: 1 },
-        { slot: { row: GridRow.Front, col: 1 }, creatureId: "scorchimp", level: 1 },
+        { slot: { row: GridRow.Front, col: 0 }, creatureId: Species.Bumblebolt, level: 1 },
+        { slot: { row: GridRow.Front, col: 1 }, creatureId: Species.Scorchimp, level: 1 },
       ],
       trainerId: null,
       trinketIds: [],
@@ -179,9 +182,9 @@ describe("simulate", () => {
   it("cumulativeSeries is monotonically non-decreasing and matches the timeline running sum", () => {
     const config: TeamConfiguration = {
       placements: [
-        { slot: { row: GridRow.Front, col: 0 }, creatureId: "bumblebolt", level: 1 },
-        { slot: { row: GridRow.Front, col: 1 }, creatureId: "scorchimp", level: 1 },
-        { slot: { row: GridRow.Front, col: 2 }, creatureId: "venopuff", level: 1 },
+        { slot: { row: GridRow.Front, col: 0 }, creatureId: Species.Bumblebolt, level: 1 },
+        { slot: { row: GridRow.Front, col: 1 }, creatureId: Species.Scorchimp, level: 1 },
+        { slot: { row: GridRow.Front, col: 2 }, creatureId: Species.Venopuff, level: 1 },
       ],
       trainerId: null,
       trinketIds: [],
@@ -209,12 +212,12 @@ describe("simulate", () => {
    */
   it("teamModifiers damageFlatAdd raises DPS by the flat amount for every placement", () => {
     const config: TeamConfiguration = {
-      placements: [{ slot: { row: GridRow.Front, col: 0 }, creatureId: "bumblebolt", level: 1 }],
+      placements: [{ slot: { row: GridRow.Front, col: 0 }, creatureId: Species.Bumblebolt, level: 1 }],
       trainerId: null,
       trinketIds: [],
       itemIds: [],
       simulationWindowSeconds: 20,
-      teamModifiers: [{ id: "m1", label: "Round 2 win bonus", stat: ModifierStat.DamageFlatAdd, amount: 10 }],
+      teamModifiers: [{ id: syntheticSpecies("m1"), label: "Round 2 win bonus", stat: ModifierStat.DamageFlatAdd, amount: 10 }],
     };
     const result = simulate(config, corpus);
     const dps = Object.values(result.perCreatureDps)[0];
@@ -226,16 +229,16 @@ describe("simulate", () => {
       placements: [
         {
           slot: { row: GridRow.Front, col: 0 },
-          creatureId: "bumblebolt",
+          creatureId: Species.Bumblebolt,
           level: 1,
-          modifiers: [{ id: "p1", label: "Per-banto bonus", stat: ModifierStat.DamageFlatAdd, amount: 7 }],
+          modifiers: [{ id: syntheticSpecies("p1"), label: "Per-banto bonus", stat: ModifierStat.DamageFlatAdd, amount: 7 }],
         },
       ],
       trainerId: null,
       trinketIds: [],
       itemIds: [],
       simulationWindowSeconds: 20,
-      teamModifiers: [{ id: "m1", label: "Round 2 win bonus", stat: ModifierStat.DamageFlatAdd, amount: 10 }],
+      teamModifiers: [{ id: syntheticSpecies("m1"), label: "Round 2 win bonus", stat: ModifierStat.DamageFlatAdd, amount: 10 }],
     };
     const result = simulate(config, corpus);
     const dps = Object.values(result.perCreatureDps)[0];
@@ -244,12 +247,12 @@ describe("simulate", () => {
 
   it("cooldownFlatAddSeconds and cooldownSpeedAdd modifiers change effective cooldown", () => {
     const config: TeamConfiguration = {
-      placements: [{ slot: { row: GridRow.Front, col: 0 }, creatureId: "bumblebolt", level: 1 }],
+      placements: [{ slot: { row: GridRow.Front, col: 0 }, creatureId: Species.Bumblebolt, level: 1 }],
       trainerId: null,
       trinketIds: [],
       itemIds: [],
       simulationWindowSeconds: 2.5,
-      teamModifiers: [{ id: "m1", label: "Slow aura", stat: ModifierStat.CooldownFlatAddSeconds, amount: 2.5 }],
+      teamModifiers: [{ id: syntheticSpecies("m1"), label: "Slow aura", stat: ModifierStat.CooldownFlatAddSeconds, amount: 2.5 }],
     };
     const result = simulate(config, corpus);
     // Effective cooldown becomes 2.5 (base) + 2.5 (flat add) = 5s, so within a 2.5s window the
@@ -268,12 +271,12 @@ describe("simulate", () => {
    */
   it("a damage modifier gives a cast to a creature with no published damage", () => {
     const config: TeamConfiguration = {
-      placements: [{ slot: { row: GridRow.Front, col: 0 }, creatureId: "venopuff", level: 1 }],
+      placements: [{ slot: { row: GridRow.Front, col: 0 }, creatureId: Species.Venopuff, level: 1 }],
       trainerId: null,
       trinketIds: [],
       itemIds: [],
       simulationWindowSeconds: 10,
-      teamModifiers: [{ id: "m1", label: "Damage trinket", stat: ModifierStat.DamageFlatAdd, amount: 99 }],
+      teamModifiers: [{ id: syntheticSpecies("m1"), label: "Damage trinket", stat: ModifierStat.DamageFlatAdd, amount: 99 }],
     };
     const result = simulate(config, corpus);
     // Venopuff casts every 3.5s, so a 10s window holds two casts — 3.5 and 7.0, with the third at
@@ -283,7 +286,7 @@ describe("simulate", () => {
 
   it("status-amount modifiers increase the applied layer count for a creature that already applies that status", () => {
     const withoutModifier: TeamConfiguration = {
-      placements: [{ slot: { row: GridRow.Front, col: 0 }, creatureId: "venopuff", level: 1 }],
+      placements: [{ slot: { row: GridRow.Front, col: 0 }, creatureId: Species.Venopuff, level: 1 }],
       trainerId: null,
       trinketIds: [],
       itemIds: [],
@@ -292,7 +295,7 @@ describe("simulate", () => {
     };
     const withModifier: TeamConfiguration = {
       ...withoutModifier,
-      teamModifiers: [{ id: "m1", label: "+2 Poison", stat: ModifierStat.PoisonAmountAdd, amount: 2 }],
+      teamModifiers: [{ id: syntheticSpecies("m1"), label: "+2 Poison", stat: ModifierStat.PoisonAmountAdd, amount: 2 }],
     };
     const base = simulate(withoutModifier, corpus).perStatusPerSecond.Poison;
     const boosted = simulate(withModifier, corpus).perStatusPerSecond.Poison;
@@ -310,8 +313,8 @@ describe("simulate", () => {
     const synthetic = syntheticCorpus();
     const config: TeamConfiguration = {
       placements: [
-        { slot: { row: GridRow.Front, col: 0 }, creatureId: "shockApplier", level: 1 },
-        { slot: { row: GridRow.Front, col: 1 }, creatureId: "attacker", level: 1 },
+        { slot: { row: GridRow.Front, col: 0 }, creatureId: syntheticSpecies("shockApplier"), level: 1 },
+        { slot: { row: GridRow.Front, col: 1 }, creatureId: syntheticSpecies("attacker"), level: 1 },
       ],
       trainerId: null,
       trinketIds: [],
@@ -355,7 +358,7 @@ describe("simulate", () => {
    */
   it("Shield grants are tracked in perStatusPerSecond and cumulativeSeries", () => {
     const config: TeamConfiguration = {
-      placements: [{ slot: { row: GridRow.Front, col: 0 }, creatureId: "pebbler", level: 1 }],
+      placements: [{ slot: { row: GridRow.Front, col: 0 }, creatureId: Species.Pebbler, level: 1 }],
       trainerId: null,
       trinketIds: [],
       itemIds: [],
@@ -376,7 +379,7 @@ describe("simulate", () => {
   it("Multicast fires N independent direct-damage events, staggered 0.1s apart (research.md F2, round 4)", () => {
     const synthetic = multicastCorpus();
     const config: TeamConfiguration = {
-      placements: [{ slot: { row: GridRow.Front, col: 0 }, creatureId: "multiCaster", level: 1 }],
+      placements: [{ slot: { row: GridRow.Front, col: 0 }, creatureId: syntheticSpecies("multiCaster"), level: 1 }],
       trainerId: null,
       trinketIds: [],
       itemIds: [],
@@ -414,7 +417,7 @@ describe("simulate", () => {
   it("a Multicast repetition staggered past the simulation window is not generated", () => {
     const synthetic = multicastCorpus(); // baseMulticast: 3, baseCooldownSeconds: 1
     const config: TeamConfiguration = {
-      placements: [{ slot: { row: GridRow.Front, col: 0 }, creatureId: "multiCaster", level: 1 }],
+      placements: [{ slot: { row: GridRow.Front, col: 0 }, creatureId: syntheticSpecies("multiCaster"), level: 1 }],
       trainerId: null,
       trinketIds: [],
       itemIds: [],
@@ -432,12 +435,12 @@ describe("simulate", () => {
    */
   it("perCreatureEffectiveStats reflects an active damageFlatAdd modifier", () => {
     const config: TeamConfiguration = {
-      placements: [{ slot: { row: GridRow.Front, col: 0 }, creatureId: "bumblebolt", level: 1 }],
+      placements: [{ slot: { row: GridRow.Front, col: 0 }, creatureId: Species.Bumblebolt, level: 1 }],
       trainerId: null,
       trinketIds: [],
       itemIds: [],
       simulationWindowSeconds: 20,
-      teamModifiers: [{ id: "m1", stat: ModifierStat.DamageFlatAdd, amount: 10 }],
+      teamModifiers: [{ id: syntheticSpecies("m1"), stat: ModifierStat.DamageFlatAdd, amount: 10 }],
     };
     const result = simulate(config, corpus);
     const key = Object.keys(result.perCreatureEffectiveStats).find((k) => k.startsWith("bumblebolt@"));
@@ -456,7 +459,7 @@ describe("simulate", () => {
   it("cast times never accumulate floating-point drift across many casts", () => {
     const synthetic = driftCorpus();
     const config: TeamConfiguration = {
-      placements: [{ slot: { row: GridRow.Front, col: 0 }, creatureId: "driftCreature", level: 1 }],
+      placements: [{ slot: { row: GridRow.Front, col: 0 }, creatureId: syntheticSpecies("driftCreature"), level: 1 }],
       trainerId: null,
       trinketIds: [],
       itemIds: [],
@@ -480,7 +483,7 @@ describe("simulate", () => {
   it("resolves a placement's creature by the exact (id, level) pair, not id alone", () => {
     const synthetic = multiLevelCorpus();
     const level1Config: TeamConfiguration = {
-      placements: [{ slot: { row: GridRow.Front, col: 0 }, creatureId: "leveledMon", level: 1 }],
+      placements: [{ slot: { row: GridRow.Front, col: 0 }, creatureId: syntheticSpecies("leveledMon"), level: 1 }],
       trainerId: null,
       trinketIds: [],
       itemIds: [],
@@ -497,7 +500,7 @@ describe("simulate", () => {
   it("throws InvalidTeamConfigurationError when no record exists for the exact (id, level) pair", () => {
     const synthetic = multiLevelCorpus(); // only has level 1 and 2 records
     const config: TeamConfiguration = {
-      placements: [{ slot: { row: GridRow.Front, col: 0 }, creatureId: "leveledMon", level: 3 }],
+      placements: [{ slot: { row: GridRow.Front, col: 0 }, creatureId: syntheticSpecies("leveledMon"), level: 3 }],
       trainerId: null,
       trinketIds: [],
       itemIds: [],
@@ -514,7 +517,7 @@ describe("simulate", () => {
   it("a selected trinket's effectTags apply as an implicit team-wide modifier", () => {
     const base = multicastCorpus(); // reuse: has "multiCaster" (baseDamage 5, cooldown 1)
     const bonusTrinket: TrinketRecord = {
-      id: "test-trinket",
+      id: syntheticTrinketId("test-trinket"),
       name: "Test Trinket",
       effectText: "Your team gains +10 Damage permanently.",
       effectTags: [{ stat: ModifierStat.DamageFlatAdd, amount: 10 }],
@@ -524,9 +527,9 @@ describe("simulate", () => {
     };
     const synthetic = { ...base, trinkets: [bonusTrinket] };
     const config: TeamConfiguration = {
-      placements: [{ slot: { row: GridRow.Front, col: 0 }, creatureId: "multiCaster", level: 1 }],
+      placements: [{ slot: { row: GridRow.Front, col: 0 }, creatureId: syntheticSpecies("multiCaster"), level: 1 }],
       trainerId: null,
-      trinketIds: ["test-trinket"],
+      trinketIds: [syntheticTrinketId("test-trinket")],
       itemIds: [],
       // Must cover the full staggered Multicast burst (t=1.0/1.1/1.2) -- see round 4's own
       // Multicast stagger test for why a window of exactly 1 would truncate to 1 hit.
@@ -541,7 +544,7 @@ describe("simulate", () => {
   it("an unselected trinket's effectTags have no effect", () => {
     const base = multicastCorpus();
     const bonusTrinket: TrinketRecord = {
-      id: "test-trinket",
+      id: syntheticTrinketId("test-trinket"),
       name: "Test Trinket",
       effectText: "Your team gains +10 Damage permanently.",
       effectTags: [{ stat: ModifierStat.DamageFlatAdd, amount: 10 }],
@@ -551,7 +554,7 @@ describe("simulate", () => {
     };
     const synthetic = { ...base, trinkets: [bonusTrinket] };
     const config: TeamConfiguration = {
-      placements: [{ slot: { row: GridRow.Front, col: 0 }, creatureId: "multiCaster", level: 1 }],
+      placements: [{ slot: { row: GridRow.Front, col: 0 }, creatureId: syntheticSpecies("multiCaster"), level: 1 }],
       trainerId: null,
       trinketIds: [], // not selected
       itemIds: [],
@@ -584,7 +587,7 @@ describe("slot-permutation invariance (FR-040)", () => {
    */
   function collidingCorpus(multicast: number): Corpus {
     const shockHitter: CreatureRecord = {
-      id: "shockHitter",
+      id: syntheticSpecies("shockHitter"),
       name: "Shock Hitter",
       rarity: Rarity.Common,
       types: [CreatureType.Electric],
@@ -600,7 +603,7 @@ describe("slot-permutation invariance (FR-040)", () => {
       patch: "test",
     };
     const bigHitter: CreatureRecord = {
-      id: "bigHitter",
+      id: syntheticSpecies("bigHitter"),
       name: "Big Hitter",
       rarity: Rarity.Common,
       types: [CreatureType.Fire],
@@ -623,7 +626,12 @@ describe("slot-permutation invariance (FR-040)", () => {
    */
   function outputsByCreature(corpusToUse: Corpus, slots: Record<string, GridSlot>) {
     const config: TeamConfiguration = {
-      placements: Object.entries(slots).map(([creatureId, slot]) => ({ slot, creatureId, level: 1 })),
+      // Keys are synthetic fixture ids, so they go through the sanctioned escape hatch.
+      placements: Object.entries(slots).map(([id, slot]) => ({
+        slot,
+        creatureId: syntheticSpecies(id),
+        level: 1 as const,
+      })),
       trainerId: null,
       trinketIds: [],
       itemIds: [],
@@ -700,7 +708,7 @@ describe("slot-permutation invariance (FR-040)", () => {
 describe("second-order status metrics (FR-055/056/057)", () => {
   /** A lone Drumire: Poison 20, 8s cooldown, no direct damage. */
   const drumireOnly = (windowSeconds: number): TeamConfiguration => ({
-    placements: [{ slot: { row: GridRow.Back, col: 0 }, creatureId: "drumire", level: 1 }],
+    placements: [{ slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Drumire, level: 1 }],
     trainerId: null,
     trinketIds: [],
     itemIds: [],
@@ -748,9 +756,9 @@ describe("second-order status metrics (FR-055/056/057)", () => {
     // any realistic battle and plateaus only in principle.
     const fireBuild: TeamConfiguration = {
       placements: [
-        { slot: { row: GridRow.Back, col: 0 }, creatureId: "basilord", level: 1 },
-        { slot: { row: GridRow.Back, col: 1 }, creatureId: "blixie", level: 1 },
-        { slot: { row: GridRow.Back, col: 2 }, creatureId: "pyronade", level: 1 },
+        { slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Basilord, level: 1 },
+        { slot: { row: GridRow.Back, col: 1 }, creatureId: Species.Blixie, level: 1 },
+        { slot: { row: GridRow.Back, col: 2 }, creatureId: Species.Pyronade, level: 1 },
       ],
       trainerId: null,
       trinketIds: [],
@@ -769,7 +777,7 @@ describe("second-order status metrics (FR-055/056/057)", () => {
     // burn stack DOES plateau fast, because its instance expires in well under a second.
     const tinyBurn = simulate(
       {
-        placements: [{ slot: { row: GridRow.Back, col: 0 }, creatureId: "brimtoad", level: 1 }],
+        placements: [{ slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Brimtoad, level: 1 }],
         trainerId: null,
         trinketIds: [],
         itemIds: [],
@@ -828,7 +836,7 @@ describe("instantaneous DPS series (FR-068)", () => {
       { row: GridRow.Back, col: 0 }, { row: GridRow.Back, col: 1 }, { row: GridRow.Back, col: 2 },
     ] as const;
     return {
-      placements: ids.map((creatureId, i) => ({ creatureId, level: 1 as const, slot: slots[i]! })),
+      placements: ids.map((id, i) => ({ creatureId: syntheticSpecies(id), level: 1 as const, slot: slots[i]! })),
       trainerId: null,
       trinketIds: [],
       itemIds: [],

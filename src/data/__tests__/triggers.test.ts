@@ -5,6 +5,7 @@ import { isResolvableTag } from "../../engine/effects";
 import { recipientsOfPress } from "../../engine/manualTriggers";
 import type { CreatureRecord, GridSlot } from "../types";
 import { AbilityTrigger, GridRow, ModifierStat, Rarity, TargetKind } from "../enums";
+import { Species } from "../ids";
 
 describe("manual trigger framework", () => {
   it("Craghorn offers its item trigger with the right per-level amounts", () => {
@@ -12,7 +13,7 @@ describe("manual trigger framework", () => {
     // scaling 20/40/60/120 by level.
     const expected = { 1: 20, 2: 40, 3: 60, 4: 120 };
     for (const [level, amount] of Object.entries(expected)) {
-      const c = corpus.creatures.find((x) => x.id === "craghorn" && x.level === Number(level))!;
+      const c = corpus.creatures.find((x) => x.id === Species.Craghorn && x.level === Number(level))!;
       const [trigger] = manualTriggersFor(c);
       expect(trigger, `craghorn L${level}`).toBeDefined();
       expect(trigger!.trigger).toBe("On Item Used");
@@ -26,7 +27,7 @@ describe("manual trigger framework", () => {
   it("gives Craghorn an abilityTrigger, which it previously lacked entirely", () => {
     // batodex's own `trigger` field is null for it, so the value had to come from the text. Its
     // absence is why the creature showed no trigger at all.
-    const c = corpus.creatures.find((x) => x.id === "craghorn" && x.level === 1)!;
+    const c = corpus.creatures.find((x) => x.id === Species.Craghorn && x.level === 1)!;
     expect(c.abilityTrigger).toBe("On Item Used");
   });
 
@@ -66,7 +67,7 @@ describe("manual trigger framework", () => {
   });
 
   it("a press yields modifiers with no id, for the caller to accumulate", () => {
-    const c = corpus.creatures.find((x) => x.id === "craghorn" && x.level === 1)!;
+    const c = corpus.creatures.find((x) => x.id === Species.Craghorn && x.level === 1)!;
     const press = modifiersForPress(manualTriggersFor(c)[0]!);
     expect(press).toEqual([
       { stat: ModifierStat.DamageFlatAdd, amount: 20 },
@@ -79,7 +80,10 @@ describe("manual trigger framework", () => {
     const withButtons = new Set(
       corpus.creatures.filter((c) => manualTriggersFor(c).length > 0).map((c) => c.id),
     );
-    for (const id of ["craghorn", "guardiant", "dollhime", "ratacomb", "cawnushi", "emburn", "vipair"]) {
+    for (const id of [
+      Species.Craghorn, Species.Guardiant, Species.Dollhime, Species.Ratacomb,
+      Species.Cawnushi, Species.Emburn, Species.Vipair,
+    ]) {
       expect(withButtons.has(id), `${id} has no manual trigger`).toBe(true);
     }
   });
@@ -88,7 +92,7 @@ describe("manual trigger framework", () => {
     const withButtons = corpus.creatures.filter((c) => manualTriggersFor(c).length > 0);
     expect(withButtons.length).toBeGreaterThan(0);
     expect(withButtons.length).toBeLessThan(corpus.creatures.length / 2);
-    expect(manualTriggersFor(corpus.creatures.find((c) => c.id === "bumblebolt")!)).toEqual([]);
+    expect(manualTriggersFor(corpus.creatures.find((c) => c.id === Species.Bumblebolt)!)).toEqual([]);
   });
 });
 
@@ -99,7 +103,7 @@ describe("manual trigger framework", () => {
  * banked the bonus on the presser and silently skipped the allies the ability text names.
  */
 describe("manual trigger recipients", () => {
-  const lv1 = (id: string) => corpus.creatures.find((c) => c.id === id && c.level === 1)!;
+  const lv1 = (id: Species) => corpus.creatures.find((c) => c.id === id && c.level === 1)!;
 
   const SLOTS: GridSlot[] = [
     { row: GridRow.Back, col: 0 },
@@ -111,7 +115,7 @@ describe("manual trigger recipients", () => {
   ];
 
   /** A full board in the shape the selectors read, `source` first. */
-  function board(ids: string[]) {
+  function board(ids: Species[]) {
     const members = ids.map((id, i) => ({
       slot: SLOTS[i]!,
       key: `${id}@${i}`,
@@ -122,7 +126,7 @@ describe("manual trigger recipients", () => {
 
   it("Brawlmantis reaches itself and the Common allies, at every level", () => {
     for (const level of [1, 2, 3, 4]) {
-      const c = corpus.creatures.find((x) => x.id === "brawlmantis" && x.level === level)!;
+      const c = corpus.creatures.find((x) => x.id === Species.Brawlmantis && x.level === level)!;
       const [trigger] = manualTriggersFor(c);
       expect(trigger!.target, `brawlmantis L${level}`).toEqual({ kind: TargetKind.AllAllies, rarityFilter: Rarity.Common });
       expect(trigger!.includeSelf).toBe(true);
@@ -131,21 +135,21 @@ describe("manual trigger recipients", () => {
     // The user's board: Pebbler and Venopuff are Common; Pyronade and Craghorn are Uncommon and
     // Shikitsune is Rare.
     const { source, members } = board([
-      "brawlmantis", "pebbler", "venopuff", "pyronade", "craghorn", "shikitsune",
+      Species.Brawlmantis, Species.Pebbler, Species.Venopuff, Species.Pyronade, Species.Craghorn, Species.Shikitsune,
     ]);
     const got = recipientsOfPress(manualTriggersFor(source.creature)[0]!, source, members);
     expect(got.map((m) => m.creature.id).sort()).toEqual(["brawlmantis", "pebbler", "venopuff"]);
   });
 
   it("Kickrane reaches the whole board, Common or not", () => {
-    const { source, members } = board(["kickrane", "pebbler", "pyronade", "shikitsune"]);
+    const { source, members } = board([Species.Kickrane, Species.Pebbler, Species.Pyronade, Species.Shikitsune]);
     const got = recipientsOfPress(manualTriggersFor(source.creature)[0]!, source, members);
     expect(got.length).toBe(members.length);
   });
 
   it("a trigger with no target stays on the creature itself", () => {
     // The default seven rely on this. Craghorn's item bonus is its own, however many allies it has.
-    const { source, members } = board(["craghorn", "pebbler", "venopuff", "kickrane"]);
+    const { source, members } = board([Species.Craghorn, Species.Pebbler, Species.Venopuff, Species.Kickrane]);
     const got = recipientsOfPress(manualTriggersFor(source.creature)[0]!, source, members);
     expect(got.map((m) => m.creature.id)).toEqual(["craghorn"]);
   });
@@ -153,7 +157,7 @@ describe("manual trigger recipients", () => {
   it("banks on the presser exactly once, never twice", () => {
     // `includeSelf` prepends the source and the selector may also return it; a duplicate would
     // double the amount for the one creature the user is looking at.
-    const { source, members } = board(["kickrane", "pebbler"]);
+    const { source, members } = board([Species.Kickrane, Species.Pebbler]);
     const got = recipientsOfPress(manualTriggersFor(source.creature)[0]!, source, members);
     expect(got.filter((m) => m.key === source.key).length).toBe(1);
   });

@@ -3,6 +3,7 @@ import { analyzePositionalCoverage, suggestPlacement, scoreConfiguration } from 
 import { corpus } from "../../data/corpus";
 import type { TeamConfiguration } from "../../data/types";
 import { GridRow } from "../../data/enums";
+import { Species, TrinketId } from "../../data/ids";
 
 /**
  * FR-069 (WI-018). The optimiser is only honest if it is clear about what it cannot see, so the
@@ -12,8 +13,8 @@ describe("placement optimiser (FR-069)", () => {
   /** Formiqueen buffs ADJACENT Common allies. Bumblebolt is Common, so adjacency matters here. */
   const adjacent: TeamConfiguration = {
     placements: [
-      { slot: { row: GridRow.Back, col: 0 }, creatureId: "formiqueen", level: 1 },
-      { slot: { row: GridRow.Back, col: 1 }, creatureId: "bumblebolt", level: 1 },
+      { slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Formiqueen, level: 1 },
+      { slot: { row: GridRow.Back, col: 1 }, creatureId: Species.Bumblebolt, level: 1 },
     ],
     trainerId: null,
     trinketIds: [],
@@ -24,7 +25,7 @@ describe("placement optimiser (FR-069)", () => {
   it("weights earlier damage more heavily than later damage", () => {
     // The user's requirement: raw totals over-reward a slow ramp that may arrive after death.
     const early = scoreConfiguration(
-      { ...adjacent, placements: [{ slot: { row: GridRow.Back, col: 0 }, creatureId: "bumblebolt", level: 1 }] },
+      { ...adjacent, placements: [{ slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Bumblebolt, level: 1 }] },
       corpus,
     );
     const rawTotal = 3 * 8; // Bumblebolt: 3 damage x 8 casts in 20s
@@ -38,8 +39,8 @@ describe("placement optimiser (FR-069)", () => {
     const withOnsetra: TeamConfiguration = {
       ...adjacent,
       placements: [
-        { slot: { row: GridRow.Back, col: 0 }, creatureId: "formiqueen", level: 1 },
-        { slot: { row: GridRow.Back, col: 1 }, creatureId: "onsetra", level: 1 },
+        { slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Formiqueen, level: 1 },
+        { slot: { row: GridRow.Back, col: 1 }, creatureId: Species.Onsetra, level: 1 },
       ],
     };
     const coverage = analyzePositionalCoverage(withOnsetra, corpus);
@@ -57,7 +58,7 @@ describe("placement optimiser (FR-069)", () => {
   });
 
   it("flags selected trinkets whose positional effect the engine cannot model", () => {
-    const withLinkCable: TeamConfiguration = { ...adjacent, trinketIds: ["link_cable"] };
+    const withLinkCable: TeamConfiguration = { ...adjacent, trinketIds: [TrinketId.LinkCable] };
     const coverage = analyzePositionalCoverage(withLinkCable, corpus);
     // Link Cable makes every monster adjacent, which would invalidate the one interaction the
     // optimiser CAN see -- so a result computed while it is selected must be caveated.
@@ -76,7 +77,7 @@ describe("placement optimiser (FR-069)", () => {
   it("is a no-op for a team too small to rearrange", () => {
     const solo: TeamConfiguration = {
       ...adjacent,
-      placements: [{ slot: { row: GridRow.Back, col: 0 }, creatureId: "bumblebolt", level: 1 }],
+      placements: [{ slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Bumblebolt, level: 1 }],
     };
     expect(suggestPlacement(solo, corpus).placements).toBeNull();
   });

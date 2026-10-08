@@ -8,7 +8,8 @@ import type {
   TargetSelector,
   TeamConfiguration,
 } from "../data/types";
-import { aboveSlot, behindSlot, isAdjacent, slotKey, slotsEqual } from "./grid";
+import { aboveSlot, behindSlot, isAdjacent, slotsEqual } from "./grid";
+import type { PlacementKey } from "../data/types";
 import { applyShinyOverlay } from "../data/corpus";
 import { creatureHasType } from "../data/typing";
 import { isWildcardType } from "../data/vocabularies";
@@ -16,6 +17,7 @@ import { hasAbilityText } from "../data/display";
 import { addFlat, addPostMultiplier, applyMultiplier, readRounded, statValue, type StatValue } from "./statValue";
 import { TYPE_COLORS } from "../data/typeColors";
 import { AbilityTagKind, EventLabel, GridRow, StatChangeStat } from "../data/enums";
+import { placementKey } from "./grid";
 
 /**
  * Effect resolution (FR-073/FR-074, 2026-10-06 round 9).
@@ -53,7 +55,7 @@ import { AbilityTagKind, EventLabel, GridRow, StatChangeStat } from "../data/enu
 
 export interface ResolvedPlacement {
   /** `${creatureId}@${slotKey}` — the key used across `SimulationResult`'s per-creature records. */
-  key: string;
+  key: PlacementKey;
   slot: GridSlot;
   creature: CreatureRecord;
   /** Effective status applications per cast, after battle-start grants. */
@@ -244,7 +246,7 @@ export function resolveEffects(config: TeamConfiguration, corpus: Corpus): Resol
   //
   // Every tag kind must be classified into a phase. An unclassified kind is a bug, not a default.
   const base = members.map(({ placement, creature }) => ({
-    key: `${creature.id}@${slotKey(placement.slot)}`,
+    key: placementKey(creature.id, placement.slot),
     slot: placement.slot,
     creature,
     appliesStatus: (creature.appliesStatus ?? []).map((s) => ({ ...s })),
@@ -360,13 +362,13 @@ export function resolveEffects(config: TeamConfiguration, corpus: Corpus): Resol
     ]),
   );
 
-  const addStatus = (key: string, type: StatusEffectType, amount: number) => {
+  const addStatus = (key: PlacementKey, type: StatusEffectType, amount: number) => {
     const d = deltas.get(key);
     if (!d || amount === 0) return;
     d.status.set(type, (d.status.get(type) ?? 0) + amount);
   };
 
-  const applyEffect = (targetKey: string, effect: EffectDescriptor, scale = 1) => {
+  const applyEffect = (targetKey: PlacementKey, effect: EffectDescriptor, scale = 1) => {
     const d = deltas.get(targetKey);
     if (!d) return;
     if (effect.statChange) {

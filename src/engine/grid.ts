@@ -1,5 +1,7 @@
 import type { GridSlot } from "../data/types";
 import { GridRow } from "../data/enums";
+import type { Species } from "../data/ids";
+import type { PlacementKey } from "../data/types";
 
 /**
  * Board/grid helpers.
@@ -60,4 +62,21 @@ export function aboveSlot(slot: GridSlot): GridSlot | null {
     return { row: GridRow.Back, col: slot.col };
   }
   return null; // back row is already the topmost row
+}
+
+/**
+ * The key identifying one PLACED creature across a `SimulationResult` (2026-10-07, round 7).
+ *
+ * Every per-creature record -- `perCreatureDps`, `perCreatureFacilitatedDps`,
+ * `perCreatureEffectiveStats` -- is keyed by this. It was a bare `string` built inline as
+ * `` placementKey(creature.id, slot) `` at eleven sites in `simulate.ts`, `effects.ts` and the UI,
+ * with nothing checking that the producer and the consumer built it the same way. A change to the
+ * format, or one site forgetting the `@`, would have produced a lookup that silently returned
+ * `undefined` rather than a type error.
+ *
+ * Branded so a raw string cannot be used as one, and built by `placementKey` only.
+ */
+/** The one place the key format is defined. */
+export function placementKey(creatureId: Species, slot: GridSlot): PlacementKey {
+  return `${creatureId}@${slotKey(slot)}` as PlacementKey;
 }

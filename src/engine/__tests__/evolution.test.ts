@@ -2,7 +2,10 @@ import { describe, expect, it } from "vitest";
 import { resolveLevelUp } from "../evolution";
 import { corpus } from "../../data/corpus";
 import type { Corpus, CreatureRecord } from "../../data/types";
+
+import { syntheticSpecies } from "../../data/ids";
 import { CreatureType, DamageChannel, Rarity } from "../../data/enums";
+import { Species } from "../../data/ids";
 
 /**
  * Synthetic corpus isolating the evolution-chain resolver from the real corpus's current data
@@ -13,7 +16,7 @@ import { CreatureType, DamageChannel, Rarity } from "../../data/enums";
  */
 function evolutionCorpus(): Corpus {
   const panbudL1: CreatureRecord = {
-    id: "panbud",
+    id: Species.Panbud,
     name: "Panbud",
     rarity: Rarity.Common,
     types: [CreatureType.Grass],
@@ -22,7 +25,7 @@ function evolutionCorpus(): Corpus {
     shopCost: 10,
     baseCooldownSeconds: 5.5,
     publishedCast: { damage: 25, channel: DamageChannel.Direct },
-    evolvesInto: "bambudo",
+    evolvesInto: Species.Bambudo,
     evolvesAtLevel: 3,
     abilityText: "Evolves at level 3.",
     abilityTags: [],
@@ -30,7 +33,7 @@ function evolutionCorpus(): Corpus {
     patch: "test",
   };
   const bambudoL3: CreatureRecord = {
-    id: "bambudo",
+    id: Species.Bambudo,
     name: "Bambudo",
     rarity: Rarity.Common,
     types: [CreatureType.Grass],
@@ -45,7 +48,7 @@ function evolutionCorpus(): Corpus {
     patch: "test",
   };
   const nonEvolving: CreatureRecord = {
-    id: "steadymon",
+    id: syntheticSpecies("steadymon"),
     name: "Steadymon",
     rarity: Rarity.Common,
     types: [CreatureType.Rock],
@@ -109,7 +112,7 @@ describe("resolveLevelUp", () => {
    */
   it("a species with evolvesInto but no evolvesAtLevel never resolves through evolution at any level", () => {
     const victoryTriggered: CreatureRecord = {
-      id: "victoryMon",
+      id: syntheticSpecies("victoryMon"),
       name: "Victory Mon",
       rarity: Rarity.SuperRare,
       types: [CreatureType.Fire],
@@ -117,7 +120,7 @@ describe("resolveLevelUp", () => {
       baseMulticast: 1,
       shopCost: 40,
       baseCooldownSeconds: 8,
-      evolvesInto: "evolvedVictoryMon", // no evolvesAtLevel -- victory-triggered, not level-based
+      evolvesInto: syntheticSpecies("evolvedVictoryMon"), // no evolvesAtLevel -- victory-triggered, not level-based
       abilityText: "Evolve on victory.",
       abilityTags: [],
       sourceRefs: [],

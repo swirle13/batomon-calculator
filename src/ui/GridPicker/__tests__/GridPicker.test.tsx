@@ -4,6 +4,7 @@ import { GridPicker, POINTER_ACTIVATION_CONSTRAINT } from "../GridPicker";
 import { TeamConfigProvider } from "../../../context/TeamConfigContext";
 import type { TeamConfiguration } from "../../../data/types";
 import { GridRow } from "../../../data/enums";
+import { Species } from "../../../data/ids";
 
 /**
  * FR-033/FR-034/FR-035 (2026-10-06 round 6). The clear-control tests are the substantive ones:
@@ -15,7 +16,7 @@ import { GridRow } from "../../../data/enums";
 /** Renders GridPicker inside the provider with one creature already placed at front-0. */
 function renderWithPlacement() {
   const config: TeamConfiguration = {
-    placements: [{ slot: { row: GridRow.Front, col: 0 }, creatureId: "bumblebolt", level: 1 }],
+    placements: [{ slot: { row: GridRow.Front, col: 0 }, creatureId: Species.Bumblebolt, level: 1 }],
     trainerId: null,
     trinketIds: [],
     itemIds: [],

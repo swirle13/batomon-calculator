@@ -2,6 +2,7 @@ import { CREATURE_REGIONS } from "./regions";
 import { isWildcardType } from "./vocabularies";
 import type { CreatureRecord, RegionId, TeamConfiguration } from "./types";
 import { CreatureType } from "./enums";
+import type { Species } from "./ids";
 
 /**
  * The ONE type-matching predicate (T230 / FR-086).
@@ -38,14 +39,14 @@ export function creatureHasType(
 
 /** True when this species is painted in the given configuration. Drives the chip and the overlay. */
 export function isPainted(
-  creatureId: string,
+  creatureId: Species,
   config?: Pick<TeamConfiguration, "paintedCreatureIds">,
 ): boolean {
   return config?.paintedCreatureIds?.includes(creatureId) === true;
 }
 
 /** The regions a species belongs to. Empty = belongs to none (events/fossils) OR is unsourced. */
-export function regionsOf(creatureId: string): readonly RegionId[] {
+export function regionsOf(creatureId: Species): readonly RegionId[] {
   return CREATURE_REGIONS[creatureId] ?? [];
 }
 
@@ -56,7 +57,7 @@ export function regionsOf(creatureId: string): readonly RegionId[] {
  * `!== current` would wrongly offer all 27: a dual-region species is not smuggled (you already have
  * it) and a region-less event creature was never regional stock to begin with.
  */
-export function isInOppositeRegion(creatureId: string, current: RegionId | undefined): boolean {
+export function isInOppositeRegion(creatureId: Species, current: RegionId | undefined): boolean {
   if (!current) return false;
   const regions = regionsOf(creatureId);
   return regions.length > 0 && !regions.includes(current) ;
@@ -80,7 +81,7 @@ export function isInOppositeRegion(creatureId: string, current: RegionId | undef
  * (events and fossils were never regional stock), and for anything smuggled in deliberately.
  */
 export function isOutOfRegion(
-  creatureId: string,
+  creatureId: Species,
   config?: Pick<TeamConfiguration, "selectedRegion" | "smuggledCreatureIds">,
 ): boolean {
   if (!config?.selectedRegion) return false;

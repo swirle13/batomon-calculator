@@ -18,7 +18,11 @@ import { simulate } from "../../engine/simulate";
 import { corpus } from "../../data/corpus";
 import { RARITIES_ASC } from "../../data/statColors";
 import type { TeamConfiguration } from "../../data/types";
+
+import { syntheticSpecies } from "../../data/ids";
 import { GridRow, ModifierStat, RegionId } from "../../data/enums";
+import { Species, TrainerId } from "../../data/ids";
+import { placementKey } from "../../engine/grid";
 
 /**
  * Tripwires for the round-6 presentation items that would otherwise have **no** automated coverage
@@ -31,7 +35,7 @@ import { GridRow, ModifierStat, RegionId } from "../../data/enums";
  */
 
 const CONFIG: TeamConfiguration = {
-  placements: [{ slot: { row: GridRow.Front, col: 0 }, creatureId: "bumblebolt", level: 1 }],
+  placements: [{ slot: { row: GridRow.Front, col: 0 }, creatureId: Species.Bumblebolt, level: 1 }],
   trainerId: null,
   trinketIds: [],
   itemIds: [],
@@ -185,7 +189,7 @@ describe("TrinketPicker duplicates and the Selected section (2026-10-07)", () =>
  * could not report even if it applied to a flex container, which it does not.
  */
 describe("the card's output band overflows into a second column (WI-003)", () => {
-  const shelldra = corpus.creatures.find((c) => c.id === "shelldra" && c.level === 1)!;
+  const shelldra = corpus.creatures.find((c) => c.id === Species.Shelldra && c.level === 1)!;
 
   function statLinesElement(modifiers: TeamConfiguration["teamModifiers"]): HTMLElement {
     render(<BatomonCard creature={shelldra} modifiers={modifiers} />);
@@ -207,9 +211,9 @@ describe("the card's output band overflows into a second column (WI-003)", () =>
   it("splits the ask's six-line example into 3 rows, in the published order", () => {
     // The ask: "col 1: Deal 15 damage, POison 3, shock 3. col 2: shield 4, heal 15, multicast x3".
     const band = statLinesElement([
-      { id: "p", stat: ModifierStat.PoisonAmountAdd, amount: 3 },
-      { id: "s", stat: ModifierStat.ShockAmountAdd, amount: 3 },
-      { id: "h", stat: ModifierStat.ShieldAmountAdd, amount: 4 },
+      { id: syntheticSpecies("p"), stat: ModifierStat.PoisonAmountAdd, amount: 3 },
+      { id: syntheticSpecies("s"), stat: ModifierStat.ShockAmountAdd, amount: 3 },
+      { id: syntheticSpecies("h"), stat: ModifierStat.ShieldAmountAdd, amount: 4 },
     ]);
     expect(band.style.getPropertyValue("--stat-rows")).toBe("3");
     expect(Array.from(band.children).map((c) => c.textContent)).toEqual([
@@ -225,10 +229,10 @@ describe("the card's output band overflows into a second column (WI-003)", () =>
   it("holds the 7-line worst case as 4 rows, never a third column", () => {
     // Seven is the ceiling: damage + all four statuses + heal + multicast (research.md Q2).
     const band = statLinesElement([
-      { id: "b", stat: ModifierStat.BurnAmountAdd, amount: 2 },
-      { id: "p", stat: ModifierStat.PoisonAmountAdd, amount: 3 },
-      { id: "s", stat: ModifierStat.ShockAmountAdd, amount: 3 },
-      { id: "h", stat: ModifierStat.ShieldAmountAdd, amount: 4 },
+      { id: syntheticSpecies("b"), stat: ModifierStat.BurnAmountAdd, amount: 2 },
+      { id: syntheticSpecies("p"), stat: ModifierStat.PoisonAmountAdd, amount: 3 },
+      { id: syntheticSpecies("s"), stat: ModifierStat.ShockAmountAdd, amount: 3 },
+      { id: syntheticSpecies("h"), stat: ModifierStat.ShieldAmountAdd, amount: 4 },
     ]);
     expect(band.children.length).toBe(7);
     // 7 items over 4 rows is two columns of 4 and 3. A third column cannot arise from ceil(n/2).
@@ -359,7 +363,7 @@ describe("round 7 presentation fixes", () => {
     // two bands — which is the point of that change, not a regression in this one.
     const modified: TeamConfiguration = {
       ...CONFIG,
-      teamModifiers: [{ id: "m1", stat: ModifierStat.DamageFlatAdd, amount: 5 }],
+      teamModifiers: [{ id: syntheticSpecies("m1"), stat: ModifierStat.DamageFlatAdd, amount: 5 }],
     };
     render(
       <TeamConfigProvider initialConfig={modified}>
@@ -384,14 +388,14 @@ describe("round 7 presentation fixes", () => {
   });
 
   it("reports Shield without the over-qualifying parenthetical (FR-046, item 7)", () => {
-    const shieldConfig = { ...CONFIG, placements: [{ slot: { row: GridRow.Back, col: 0 as const }, creatureId: "opalion", level: 1 as const }] };
+    const shieldConfig = { ...CONFIG, placements: [{ slot: { row: GridRow.Back, col: 0 as const }, creatureId: syntheticSpecies("opalion"), level: 1 as const }] };
     render(<TeamSummary config={shieldConfig} result={simulate(shieldConfig, corpus)} />);
     expect(screen.queryByText(/Shield \(granted\)/)).toBeNull();
     expect(screen.getByText("Shield")).toBeTruthy();
   });
 
   it("reports second-order status metrics, not just one averaged figure (FR-055, item 20)", () => {
-    const poison = { ...CONFIG, placements: [{ slot: { row: GridRow.Back, col: 0 as const }, creatureId: "drumire", level: 1 as const }] };
+    const poison = { ...CONFIG, placements: [{ slot: { row: GridRow.Back, col: 0 as const }, creatureId: syntheticSpecies("drumire"), level: 1 as const }] };
     render(<TeamSummary config={poison} result={simulate(poison, corpus)} />);
     // getAllByText: earlier cases in this file also render a TeamSummary, so the header text can
     // legitimately appear more than once in the shared DOM.
@@ -413,10 +417,10 @@ describe("round 9: total DPS and grid sizing", () => {
   /** The user's own team: four Poison creatures, zero direct damage. */
   const poisonTeam: TeamConfiguration = {
     placements: [
-      { slot: { row: GridRow.Front, col: 1 }, creatureId: "miasmaw", level: 1 },
-      { slot: { row: GridRow.Front, col: 2 }, creatureId: "cobrex", level: 1 },
-      { slot: { row: GridRow.Back, col: 0 }, creatureId: "drumire", level: 1 },
-      { slot: { row: GridRow.Back, col: 1 }, creatureId: "fumungus", level: 1 },
+      { slot: { row: GridRow.Front, col: 1 }, creatureId: Species.Miasmaw, level: 1 },
+      { slot: { row: GridRow.Front, col: 2 }, creatureId: Species.Cobrex, level: 1 },
+      { slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Drumire, level: 1 },
+      { slot: { row: GridRow.Back, col: 1 }, creatureId: Species.Fumungus, level: 1 },
     ],
     trainerId: null,
     trinketIds: [],
@@ -494,7 +498,7 @@ describe("effective band renders healing (2026-10-06)", () => {
   // `perCreatureEffectiveStats` carried no heal field at all, and the band's `buildStatLines` call
   // omitted it. 9 species were fully blank this way and 20 were missing a heal line.
   const healerTeam: TeamConfiguration = {
-    placements: [{ slot: { row: GridRow.Back, col: 0 }, creatureId: "dribblet", level: 1 }],
+    placements: [{ slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Dribblet, level: 1 }],
     trainerId: null,
     trinketIds: [],
     itemIds: [],
@@ -504,11 +508,11 @@ describe("effective band renders healing (2026-10-06)", () => {
 
   it("carries heal through to the effective stats", () => {
     const result = simulate(healerTeam, corpus);
-    expect(result.perCreatureEffectiveStats["dribblet@back0"]!.output.heal).toBe(15);
+    expect(result.perCreatureEffectiveStats[placementKey(Species.Dribblet, { row: GridRow.Back, col: 0 })]!.output.heal).toBe(15);
   });
 
   it("renders a Heal line rather than an empty band", () => {
-    const effective = simulate(healerTeam, corpus).perCreatureEffectiveStats["dribblet@back0"]!;
+    const effective = simulate(healerTeam, corpus).perCreatureEffectiveStats[placementKey(Species.Dribblet, { row: GridRow.Back, col: 0 })]!;
     // The point of `PerCastOutput`: the band passes the engine's shape straight through, with no
     // field list to forget a stat in.
     const lines = buildStatLines(effective.output);
@@ -535,7 +539,7 @@ describe("effective band renders healing (2026-10-06)", () => {
 
 describe("modifier amount input (2026-10-07)", () => {
   const CFG: TeamConfiguration = {
-    placements: [{ slot: { row: GridRow.Back, col: 0 }, creatureId: "bumblebolt", level: 1 }],
+    placements: [{ slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Bumblebolt, level: 1 }],
     trainerId: null,
     trinketIds: [],
     itemIds: [],
@@ -608,7 +612,7 @@ describe("the trainer card holds its selects before a trainer is chosen", () => 
         <TrainerPicker />
       </TeamConfigProvider>,
     );
-    const twins = corpus.trainers.find((t) => t.id === "twins")!;
+    const twins = corpus.trainers.find((t) => t.id === TrainerId.Twins)!;
     fireEvent.change(screen.getByRole("combobox", { name: /trainer/i }), { target: { value: twins.id } });
 
     // By ROLE: the name is now in two places — the card's heading and the select's own option —
@@ -663,7 +667,7 @@ describe("trainer card (2026-10-07)", () => {
   it("shows no 'unconfirmed' chip", () => {
     // Removed: it appeared on straightforward trainers like Twins, where it told the user nothing
     // actionable and only cast doubt on text that reads plainly.
-    const twins = corpus.trainers.find((t) => t.id === "twins")!;
+    const twins = corpus.trainers.find((t) => t.id === TrainerId.Twins)!;
     render(
       <TeamConfigProvider>
         <TrainerCard trainer={twins} />

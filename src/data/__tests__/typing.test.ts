@@ -3,11 +3,12 @@ import { corpus } from "../corpus";
 import { CREATURE_REGIONS, REGION_UNSOURCED } from "../regions";
 import { creatureHasType, isInOppositeRegion, isOutOfRegion, isPainted } from "../typing";
 import { CreatureType, RegionId } from "../enums";
+import { Species } from "../ids";
 
 /** Round 4 orchestration: painting, the "All" type, and region membership. */
 describe("type matching (T230 / FR-086)", () => {
-  const omnichrome = corpus.creatures.find((c) => c.id === "omnichrome" && c.level === 1)!;
-  const bumblebolt = corpus.creatures.find((c) => c.id === "bumblebolt" && c.level === 1)!;
+  const omnichrome = corpus.creatures.find((c) => c.id === Species.Omnichrome && c.level === 1)!;
+  const bumblebolt = corpus.creatures.find((c) => c.id === Species.Bumblebolt && c.level === 1)!;
 
   it("a natively-'All' creature matches every type — the pre-existing bug this fixes", () => {
     // Before the single predicate, every call site did `types.includes(t)`, and
@@ -20,7 +21,7 @@ describe("type matching (T230 / FR-086)", () => {
   });
 
   it("a painted species matches every type; the same species unpainted does not", () => {
-    const painted = { paintedCreatureIds: ["bumblebolt"] };
+    const painted = { paintedCreatureIds: [Species.Bumblebolt] };
     expect(creatureHasType(bumblebolt, CreatureType.Fire, painted)).toBe(true);
     expect(creatureHasType(bumblebolt, CreatureType.Fire, { paintedCreatureIds: [] })).toBe(false);
     // Its real typing still matches either way.
@@ -28,8 +29,8 @@ describe("type matching (T230 / FR-086)", () => {
   });
 
   it("painting is by SPECIES, so it is not slot- or level-dependent", () => {
-    const cfg = { paintedCreatureIds: ["bumblebolt"] };
-    for (const c of corpus.creatures.filter((x) => x.id === "bumblebolt")) {
+    const cfg = { paintedCreatureIds: [Species.Bumblebolt] };
+    for (const c of corpus.creatures.filter((x) => x.id === Species.Bumblebolt)) {
       expect(isPainted(c.id, cfg)).toBe(true);
       expect(creatureHasType(c, CreatureType.Rock, cfg)).toBe(true);
     }
@@ -50,9 +51,9 @@ describe("regions (T229 / FR-087, FR-088)", () => {
   });
 
   it("'opposite region' excludes dual-region and region-less species", () => {
-    const dual = Object.entries(CREATURE_REGIONS).find(([, r]) => r.length > 1)![0];
-    const none = Object.entries(CREATURE_REGIONS).find(([, r]) => r.length === 0)![0];
-    const jintoOnly = Object.entries(CREATURE_REGIONS).find(([, r]) => r.length === 1 && r[0] === RegionId.Jinto)![0];
+    const dual = (Object.entries(CREATURE_REGIONS) as [Species, RegionId[]][]).find(([, r]) => r.length > 1)![0];
+    const none = (Object.entries(CREATURE_REGIONS) as [Species, RegionId[]][]).find(([, r]) => r.length === 0)![0];
+    const jintoOnly = (Object.entries(CREATURE_REGIONS) as [Species, RegionId[]][]).find(([, r]) => r.length === 1 && r[0] === RegionId.Jinto)![0];
 
     // From Pantra, only a Jinto-exclusive species is "the other region".
     expect(isInOppositeRegion(jintoOnly, RegionId.Pantra)).toBe(true);
@@ -64,8 +65,8 @@ describe("regions (T229 / FR-087, FR-088)", () => {
     // This was a FILTER until 2026-10-07, which made creatures the Travelling Merchant event can
     // put on your team unselectable — the tool could not represent a board the player was looking
     // at. It is now a marker, so nothing is unreachable.
-    const jintoOnly = Object.entries(CREATURE_REGIONS).find(([, r]) => r.length === 1 && r[0] === RegionId.Jinto)![0];
-    const none = Object.entries(CREATURE_REGIONS).find(([, r]) => r.length === 0)![0];
+    const jintoOnly = (Object.entries(CREATURE_REGIONS) as [Species, RegionId[]][]).find(([, r]) => r.length === 1 && r[0] === RegionId.Jinto)![0];
+    const none = (Object.entries(CREATURE_REGIONS) as [Species, RegionId[]][]).find(([, r]) => r.length === 0)![0];
 
     expect(isOutOfRegion(jintoOnly, { selectedRegion: RegionId.Pantra })).toBe(true);
     // Smuggled in deliberately, so not foreign.
@@ -80,6 +81,6 @@ describe("regions (T229 / FR-087, FR-088)", () => {
     // research.md M6 says explicitly these must not be conflated: "in neither set" is a fact about
     // the creature; "absent from the payload" is a gap in our data.
     expect(REGION_UNSOURCED.length).toBe(10);
-    for (const id of REGION_UNSOURCED) expect(CREATURE_REGIONS[id]).toBeUndefined();
+    for (const id of REGION_UNSOURCED) expect(CREATURE_REGIONS[id as Species]).toBeUndefined();
   });
 });

@@ -7,9 +7,10 @@ import { hasAbilityText } from "../../data/display";
 import { MAX_RECORDED_DAY } from "../../data/enemyHealth";
 import type { TeamConfiguration } from "../../data/types";
 import { GridRow } from "../../data/enums";
+import { Species } from "../../data/ids";
 
 const team: TeamConfiguration = {
-  placements: [{ slot: { row: GridRow.Back, col: 0 }, creatureId: "bumblebolt", level: 1 }],
+  placements: [{ slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Bumblebolt, level: 1 }],
   trainerId: null,
   trinketIds: [],
   itemIds: [],
@@ -85,8 +86,8 @@ describe("placeholder ability text never reaches the UI (2026-10-06)", () => {
 describe("TTK figure (2026-10-07)", () => {
   const poisonTeam: TeamConfiguration = {
     placements: [
-      { slot: { row: GridRow.Back, col: 0 }, creatureId: "venopuff", level: 1 },
-      { slot: { row: GridRow.Back, col: 1 }, creatureId: "magmite", level: 1 },
+      { slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Venopuff, level: 1 },
+      { slot: { row: GridRow.Back, col: 1 }, creatureId: Species.Magmite, level: 1 },
     ],
     trainerId: null,
     trinketIds: [],

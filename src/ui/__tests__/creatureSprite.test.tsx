@@ -4,6 +4,7 @@ import { render } from "@testing-library/react";
 import { CreatureSprite } from "../shared/CreatureSprite";
 import { BatomonCard } from "../shared/BatomonCard/BatomonCard";
 import { corpus } from "../../data/corpus";
+import { Species } from "../../data/ids";
 
 /**
  * 2026-10-06. Three defects, all visible in one screenshot of a painted Magmite:
@@ -15,7 +16,7 @@ import { corpus } from "../../data/corpus";
  * 3. The drift ran north-west instead of south-east.
  */
 describe("CreatureSprite", () => {
-  const magmite = corpus.creatures.find((c) => c.id === "magmite" && c.level === 1)!;
+  const magmite = corpus.creatures.find((c) => c.id === Species.Magmite && c.level === 1)!;
 
   it("puts the painted treatment on the sprite, not on an enclosing frame", () => {
     const { container } = render(

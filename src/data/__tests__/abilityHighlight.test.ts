@@ -4,6 +4,7 @@ import { hasAbilityText } from "../display";
 import { runColor, tokenizeAbilityText, type AbilityTextRun } from "../abilityHighlight";
 import { STAT_COLORS } from "../statColors";
 import { StatColorKey } from "../enums";
+import { Species } from "../ids";
 
 /**
  * Ability-text keyword highlighting (2026-10-07, round 7 WI-007 / FR-115).
@@ -22,14 +23,14 @@ const render = (text: string) =>
 
 describe("tokenizeAbilityText — the reference cards from the ask", () => {
   it("colours Shikitsune's '+15% Cooldown Speed' as ONE run, sign and percent included", () => {
-    const c = corpus.creatures.find((x) => x.id === "shikitsune" && x.level === 1)!;
+    const c = corpus.creatures.find((x) => x.id === Species.Shikitsune && x.level === 1)!;
     expect(render(c.abilityText)).toBe(
       "Knocked-out allies are revived and gain [+15% Cooldown Speed|cooldown] for this battle.",
     );
   });
 
   it("colours Pebbler's '+15 Shield' in the Shield colour", () => {
-    const c = corpus.creatures.find((x) => x.id === "pebbler" && x.level === 1)!;
+    const c = corpus.creatures.find((x) => x.id === Species.Pebbler && x.level === 1)!;
     const runs = coloured(tokenizeAbilityText(c.abilityText));
     expect(runs).toEqual([{ text: "+15 Shield", colorKey: StatColorKey.Shield }]);
     expect(runColor(runs[0]!)).toBe(STAT_COLORS.shield);
@@ -38,7 +39,7 @@ describe("tokenizeAbilityText — the reference cards from the ask", () => {
   it("colours Craghorn's two keywords DIFFERENTLY in one sentence", () => {
     // This card is the proof that highlighting is per-keyword rather than per-card: the game renders
     // "+20 Damage" pink and "Shield" tan inside the same sentence.
-    const c = corpus.creatures.find((x) => x.id === "craghorn" && x.level === 1)!;
+    const c = corpus.creatures.find((x) => x.id === Species.Craghorn && x.level === 1)!;
     expect(render(c.abilityText)).toBe(
       "When you use an item, this gains [+20 Damage|damage] and [Shield|shield].",
     );
@@ -88,7 +89,7 @@ describe("tokenizeAbilityText — it must not change the text", () => {
   });
 
   it("does not mangle the flavour quote some abilities carry", () => {
-    const c = corpus.creatures.find((x) => x.id === "bumblebolt" && x.level === 1)!;
+    const c = corpus.creatures.find((x) => x.id === Species.Bumblebolt && x.level === 1)!;
     // Its text ends `... applies 1 Shock. "The poster Common: 2.5s, Shock, cheap."` — concatenation
     // is covered above; this pins that the quote's own "Shock" is reached rather than swallowed.
     expect(c.abilityText).toContain('"The poster Common');

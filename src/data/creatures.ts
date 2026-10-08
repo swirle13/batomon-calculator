@@ -1,5 +1,6 @@
 import type { CreatureRecord, SourceRef } from "./types";
 import { AbilityTagKind, AbilityTrigger, ConfirmableField, CreatureType, DamageChannel, ModifierStat, Rarity, StatChangeStat, StatusEffectType, TargetKind } from "./enums";
+import { Species } from "./ids";
 
 /**
  * Full-corpus widening pass (tasks.md T043, completed 2026-10-05). This file now covers 149
@@ -204,7 +205,7 @@ function batodexExtracted(slug: string, name: string): SourceRef {
 
 export const creatures: CreatureRecord[] = [
   {
-    id: "bumblebolt",
+    id: Species.Bumblebolt,
     name: "Bumblebolt",
     rarity: Rarity.Common,
     types: [CreatureType.Bug, CreatureType.Electric],
@@ -222,7 +223,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 24 / 1.2.0 (community-imported build)",
   },
   {
-    id: "formiqueen",
+    id: Species.Formiqueen,
     name: "Formiqueen",
     rarity: Rarity.Rare,
     types: [CreatureType.Bug],
@@ -257,7 +258,7 @@ export const creatures: CreatureRecord[] = [
     // `patch` above.
   },
   {
-    id: "venopuff",
+    id: Species.Venopuff,
     name: "Venopuff",
     rarity: Rarity.Common,
     types: [CreatureType.Toxic],
@@ -289,7 +290,7 @@ export const creatures: CreatureRecord[] = [
     ],
   },
   {
-    id: "scorchimp",
+    id: Species.Scorchimp,
     name: "Scorchimp",
     rarity: Rarity.Common,
     types: [CreatureType.Fire],
@@ -301,7 +302,7 @@ export const creatures: CreatureRecord[] = [
     appliesStatus: [{ type: StatusEffectType.Burn, amount: 5 }],
     abilityText: "Deals 5 direct damage and applies 5 Burn every 5.5 seconds. Evolves at level 3 into Sunsage.",
     abilityTags: [],
-    evolvesInto: "sunsage",
+    evolvesInto: Species.Sunsage,
     // Confirmed level-3 threshold, round 3 (research.md E2.6): corroborated independently by
     // batodex.com and batomon.com's per-creature Scorchimp pages, both retrieved 2026-10-05.
     evolvesAtLevel: 3,
@@ -310,7 +311,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 24 / 1.2.0 (community-imported build)",
   },
   {
-    id: "pebbler",
+    id: Species.Pebbler,
     name: "Pebbler",
     rarity: Rarity.Common,
     types: [CreatureType.Rock],
@@ -345,7 +346,7 @@ export const creatures: CreatureRecord[] = [
     ],
   },
   {
-    id: "onsetra",
+    id: Species.Onsetra,
     name: "Onsetra",
     rarity: Rarity.Legendary,
     types: [CreatureType.Dragon],
@@ -367,7 +368,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 24 / 1.2.0 (community-imported build) — cooldown/damage not published in sources reviewed",
   },
   {
-    id: "aegistruct",
+    id: Species.Aegistruct,
     name: "Aegistruct",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Rock],
@@ -384,7 +385,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "aerophim",
+    id: Species.Aerophim,
     name: "Aerophim",
     rarity: Rarity.Mythical,
     types: [CreatureType.Flying],
@@ -401,7 +402,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "aristobat",
+    id: Species.Aristobat,
     name: "Aristobat",
     rarity: Rarity.Rare,
     types: [CreatureType.Toxic, CreatureType.Flying],
@@ -418,7 +419,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "aster",
+    id: Species.Aster,
     name: "Aster",
     rarity: Rarity.Rare,
     types: [CreatureType.Water],
@@ -435,7 +436,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "aviarab",
+    id: Species.Aviarab,
     name: "Aviarab",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Bug, CreatureType.Flying],
@@ -453,7 +454,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "basilord",
+    id: Species.Basilord,
     name: "Basilord",
     rarity: Rarity.Legendary,
     types: [CreatureType.Fire],
@@ -470,7 +471,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "beetbud",
+    id: Species.Beetbud,
     name: "Beetbud",
     rarity: Rarity.Common,
     types: [CreatureType.Fighting, CreatureType.Grass],
@@ -481,7 +482,7 @@ export const creatures: CreatureRecord[] = [
     publishedCast: { damage: 35, channel: DamageChannel.Direct },
     abilityText: "Evolves at level 3.",
     abilityTags: [],
-    evolvesInto: "beetdown",
+    evolvesInto: Species.Beetdown,
     // Confirmed level-3 threshold, round 3 (research.md E2.6) -- "Evolves at level 3" above
     // already stated the threshold; evolvesAtLevel just encodes it structurally for the engine.
     evolvesAtLevel: 3,
@@ -491,7 +492,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "berroon",
+    id: Species.Berroon,
     name: "Berroon",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Grass],
@@ -508,7 +509,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "blazewing",
+    id: Species.Blazewing,
     name: "Blazewing",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Fire, CreatureType.Flying],
@@ -525,7 +526,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "blessom",
+    id: Species.Blessom,
     name: "Blessom",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Grass],
@@ -542,7 +543,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "blixie",
+    id: Species.Blixie,
     name: "Blixie",
     rarity: Rarity.Legendary,
     types: [CreatureType.Fire],
@@ -559,7 +560,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "bonshell",
+    id: Species.Bonshell,
     name: "Bonshell",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Rock, CreatureType.Grass],
@@ -580,7 +581,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "boomagon",
+    id: Species.Boomagon,
     name: "Boomagon",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Dragon],
@@ -597,7 +598,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "brawlmantis",
+    id: Species.Brawlmantis,
     name: "Brawlmantis",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Bug, CreatureType.Fighting],
@@ -623,7 +624,7 @@ export const creatures: CreatureRecord[] = [
       "damage confirmed via batodex.com 2026-10-05)",
   },
   {
-    id: "brimtoad",
+    id: Species.Brimtoad,
     name: "Brimtoad",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Fire, CreatureType.Toxic],
@@ -641,7 +642,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "bunchop",
+    id: Species.Bunchop,
     name: "Bunchop",
     rarity: Rarity.Common,
     types: [CreatureType.Fighting],
@@ -659,7 +660,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "cairnage",
+    id: Species.Cairnage,
     name: "Cairnage",
     rarity: Rarity.Legendary,
     types: [CreatureType.Rock],
@@ -677,7 +678,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "cawnushi",
+    id: Species.Cawnushi,
     name: "Cawnushi",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Flying, CreatureType.Ghost],
@@ -697,7 +698,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "celestia",
+    id: Species.Celestia,
     name: "Celestia",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Dragon],
@@ -714,7 +715,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "cherubble",
+    id: Species.Cherubble,
     name: "Cherubble",
     rarity: Rarity.Rare,
     types: [CreatureType.Rock],
@@ -731,7 +732,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "cicadence",
+    id: Species.Cicadence,
     name: "Cicadence",
     rarity: Rarity.Rare,
     types: [CreatureType.Bug],
@@ -748,7 +749,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "cinderfly",
+    id: Species.Cinderfly,
     name: "Cinderfly",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Bug, CreatureType.Fire],
@@ -764,7 +765,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "cinnabark",
+    id: Species.Cinnabark,
     name: "Cinnabark",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Rock, CreatureType.Toxic],
@@ -782,7 +783,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "clawnetic",
+    id: Species.Clawnetic,
     name: "Clawnetic",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Steel],
@@ -798,7 +799,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "coalem",
+    id: Species.Coalem,
     name: "Coalem",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Fire, CreatureType.Rock],
@@ -815,7 +816,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "cobrex",
+    id: Species.Cobrex,
     name: "Cobrex",
     rarity: Rarity.Legendary,
     types: [CreatureType.Toxic],
@@ -833,7 +834,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "cordycant",
+    id: Species.Cordycant,
     name: "Cordycant",
     rarity: Rarity.Rare,
     types: [CreatureType.Toxic, CreatureType.Bug],
@@ -851,7 +852,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "cosmivore",
+    id: Species.Cosmivore,
     name: "Cosmivore",
     rarity: Rarity.Mythical,
     types: [CreatureType.Ghost],
@@ -867,7 +868,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "craghorn",
+    id: Species.Craghorn,
     name: "Craghorn",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Grass, CreatureType.Rock],
@@ -888,7 +889,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "danuki",
+    id: Species.Danuki,
     name: "Danuki",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Ghost],
@@ -905,7 +906,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "dirgefin",
+    id: Species.Dirgefin,
     name: "Dirgefin",
     rarity: Rarity.Rare,
     types: [CreatureType.Ghost, CreatureType.Water],
@@ -923,7 +924,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "dollhime",
+    id: Species.Dollhime,
     name: "Dollhime",
     rarity: Rarity.Rare,
     types: [CreatureType.Curio],
@@ -942,7 +943,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "dracana",
+    id: Species.Dracana,
     name: "Dracana",
     rarity: Rarity.Rare,
     types: [CreatureType.Dragon],
@@ -964,7 +965,7 @@ export const creatures: CreatureRecord[] = [
       "damage confirmed via batodex.com + batomon.net 2026-10-05)",
   },
   {
-    id: "draconarch",
+    id: Species.Draconarch,
     name: "Draconarch",
     rarity: Rarity.Legendary,
     types: [CreatureType.Dragon],
@@ -981,7 +982,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "dragonegg",
+    id: Species.Dragonegg,
     name: "Dragon Egg",
     rarity: Rarity.SuperRare,
     types: [],
@@ -998,7 +999,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "dribblet",
+    id: Species.Dribblet,
     name: "Dribblet",
     rarity: Rarity.Common,
     types: [CreatureType.Water],
@@ -1008,7 +1009,7 @@ export const creatures: CreatureRecord[] = [
     baseCooldownSeconds: 3,
     // Confirmed level-3 threshold + target, round 4 (batodex.com's own page): "Evolves into
     // Emperooze at Lv 3".
-    evolvesInto: "emperooze",
+    evolvesInto: Species.Emperooze,
     evolvesAtLevel: 3,
     abilityText: "Evolves at level 3.",
     abilityTags: [],
@@ -1032,7 +1033,7 @@ export const creatures: CreatureRecord[] = [
     ],
   },
   {
-    id: "drumire",
+    id: Species.Drumire,
     name: "Drumire",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Toxic],
@@ -1051,7 +1052,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "dryadell",
+    id: Species.Dryadell,
     name: "Dryadell",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Grass],
@@ -1068,7 +1069,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "electranade",
+    id: Species.Electranade,
     name: "Electranade",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Electric],
@@ -1085,7 +1086,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "emberpaw",
+    id: Species.Emberpaw,
     name: "Emberpaw",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Fire],
@@ -1103,7 +1104,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "emburn",
+    id: Species.Emburn,
     name: "Emburn",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Fire, CreatureType.Ghost],
@@ -1123,7 +1124,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "faebloom",
+    id: Species.Faebloom,
     name: "Faebloom",
     rarity: Rarity.Mythical,
     types: [CreatureType.Grass],
@@ -1139,7 +1140,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "fernfowl",
+    id: Species.Fernfowl,
     name: "Fernfowl",
     rarity: Rarity.Legendary,
     types: [CreatureType.Flying, CreatureType.Grass],
@@ -1156,7 +1157,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "flarilisk",
+    id: Species.Flarilisk,
     name: "Flarilisk",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Fire],
@@ -1174,7 +1175,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "frillet",
+    id: Species.Frillet,
     name: "Frillet",
     rarity: Rarity.Common,
     types: [CreatureType.Water],
@@ -1186,7 +1187,7 @@ export const creatures: CreatureRecord[] = [
     healAmount: 10,
     // Confirmed level-3 threshold + target, round 4 (batodex.com's own page): "Evolves into
     // Dewlotl at Lv 3".
-    evolvesInto: "dewlotl",
+    evolvesInto: Species.Dewlotl,
     evolvesAtLevel: 3,
     abilityText: "Evolves at level 3.",
     abilityTags: [],
@@ -1196,7 +1197,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "frizzly",
+    id: Species.Frizzly,
     name: "Frizzly",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Electric],
@@ -1220,7 +1221,7 @@ export const creatures: CreatureRecord[] = [
       "damage/Shock confirmed via batodex.com 2026-10-05)",
   },
   {
-    id: "fumungus",
+    id: Species.Fumungus,
     name: "Fumungus",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Grass, CreatureType.Toxic],
@@ -1239,7 +1240,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "furnadon",
+    id: Species.Furnadon,
     name: "Furnadon",
     rarity: Rarity.Common,
     types: [CreatureType.Fire, CreatureType.Curio],
@@ -1257,7 +1258,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "gachapod",
+    id: Species.Gachapod,
     name: "Gachapod",
     rarity: Rarity.Legendary,
     types: [CreatureType.Curio],
@@ -1274,7 +1275,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "gaiadrasil",
+    id: Species.Gaiadrasil,
     name: "Gaiadrasil",
     rarity: Rarity.Legendary,
     types: [CreatureType.Grass],
@@ -1290,7 +1291,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "galvanine",
+    id: Species.Galvanine,
     name: "Galvanine",
     rarity: Rarity.Legendary,
     types: [CreatureType.Electric],
@@ -1308,7 +1309,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "geminiss",
+    id: Species.Geminiss,
     name: "Geminiss",
     rarity: Rarity.Legendary,
     types: [CreatureType.Rock],
@@ -1325,7 +1326,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "gemwing",
+    id: Species.Gemwing,
     name: "Gemwing",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Bug],
@@ -1343,7 +1344,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "gildshell",
+    id: Species.Gildshell,
     name: "Gildshell",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Bug],
@@ -1360,7 +1361,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "ginsage",
+    id: Species.Ginsage,
     name: "Ginsage",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Grass],
@@ -1378,7 +1379,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "goldora",
+    id: Species.Goldora,
     name: "Goldora",
     rarity: Rarity.Mythical,
     types: [CreatureType.Curio],
@@ -1394,7 +1395,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "guardiant",
+    id: Species.Guardiant,
     name: "Guardiant",
     rarity: Rarity.Common,
     types: [CreatureType.Bug],
@@ -1413,7 +1414,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "humbolt",
+    id: Species.Humbolt,
     name: "Humbolt",
     rarity: Rarity.Rare,
     types: [CreatureType.Electric, CreatureType.Flying],
@@ -1431,7 +1432,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "ignit",
+    id: Species.Ignit,
     name: "Ignit",
     rarity: Rarity.Rare,
     types: [CreatureType.Fire],
@@ -1449,7 +1450,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "ironcore",
+    id: Species.Ironcore,
     name: "Ironcore",
     rarity: Rarity.Rare,
     types: [CreatureType.Steel],
@@ -1466,7 +1467,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "joltail",
+    id: Species.Joltail,
     name: "Joltail",
     rarity: Rarity.Common,
     types: [CreatureType.Electric],
@@ -1484,7 +1485,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "kappow",
+    id: Species.Kappow,
     name: "Kappow",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Water, CreatureType.Fighting],
@@ -1502,7 +1503,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "kickrane",
+    id: Species.Kickrane,
     name: "Kickrane",
     rarity: Rarity.Rare,
     types: [CreatureType.Fighting, CreatureType.Flying],
@@ -1528,7 +1529,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "kindlepot",
+    id: Species.Kindlepot,
     name: "Kindlepot",
     rarity: Rarity.Common,
     types: [CreatureType.Fire, CreatureType.Curio],
@@ -1545,7 +1546,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "lamplet",
+    id: Species.Lamplet,
     name: "Lamplet",
     rarity: Rarity.Common,
     types: [CreatureType.Bug, CreatureType.Fire],
@@ -1562,7 +1563,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "leafleap",
+    id: Species.Leafleap,
     name: "Leafleap",
     rarity: Rarity.Common,
     types: [CreatureType.Bug, CreatureType.Grass],
@@ -1580,7 +1581,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "lignite",
+    id: Species.Lignite,
     name: "Lignite",
     rarity: Rarity.Rare,
     types: [CreatureType.Fire],
@@ -1597,7 +1598,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "lumijel",
+    id: Species.Lumijel,
     name: "Lumijel",
     rarity: Rarity.Rare,
     types: [CreatureType.Water],
@@ -1616,7 +1617,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "magmalith",
+    id: Species.Magmalith,
     name: "Magmalith",
     rarity: Rarity.Rare,
     types: [CreatureType.Fire],
@@ -1649,7 +1650,7 @@ export const creatures: CreatureRecord[] = [
     ],
   },
   {
-    id: "magmite",
+    id: Species.Magmite,
     name: "Magmite",
     rarity: Rarity.Common,
     types: [CreatureType.Fire, CreatureType.Rock],
@@ -1666,7 +1667,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "mallogre",
+    id: Species.Mallogre,
     name: "Mallogre",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Curio, CreatureType.Rock],
@@ -1685,7 +1686,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "miasmaw",
+    id: Species.Miasmaw,
     name: "Miasmaw",
     rarity: Rarity.Legendary,
     types: [CreatureType.Toxic],
@@ -1705,7 +1706,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "missingn",
+    id: Species.Missingn,
     name: "MissingN.",
     rarity: Rarity.Mythical,
     types: [CreatureType.NULL],
@@ -1723,7 +1724,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "mosslug",
+    id: Species.Mosslug,
     name: "Mosslug",
     rarity: Rarity.Common,
     types: [CreatureType.Water, CreatureType.Grass],
@@ -1742,7 +1743,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "nekoffin",
+    id: Species.Nekoffin,
     name: "Nekoffin",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Curio, CreatureType.Ghost],
@@ -1774,7 +1775,7 @@ export const creatures: CreatureRecord[] = [
     ],
   },
   {
-    id: "ninflora",
+    id: Species.Ninflora,
     name: "Ninflora",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Grass, CreatureType.Fighting],
@@ -1792,7 +1793,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "noxalith",
+    id: Species.Noxalith,
     name: "Noxalith",
     rarity: Rarity.Rare,
     types: [CreatureType.Toxic],
@@ -1825,7 +1826,7 @@ export const creatures: CreatureRecord[] = [
     ],
   },
   {
-    id: "noxnimbus",
+    id: Species.Noxnimbus,
     name: "Noxnimbus",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Toxic],
@@ -1844,7 +1845,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "null00",
+    id: Species.Null00,
     name: "NULL-00",
     rarity: Rarity.Mythical,
     types: [CreatureType.NULL],
@@ -1862,7 +1863,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "null7f",
+    id: Species.Null7f,
     name: "NULL-7F",
     rarity: Rarity.Mythical,
     types: [CreatureType.NULL],
@@ -1880,7 +1881,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "nullff",
+    id: Species.Nullff,
     name: "NULL-FF",
     rarity: Rarity.Mythical,
     types: [CreatureType.NULL],
@@ -1898,7 +1899,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "omnichrome",
+    id: Species.Omnichrome,
     name: "Omnichrome",
     rarity: Rarity.Mythical,
     types: [CreatureType.All],
@@ -1915,7 +1916,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "oniclaw",
+    id: Species.Oniclaw,
     name: "Oniclaw",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Fire],
@@ -1933,7 +1934,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "opalion",
+    id: Species.Opalion,
     name: "Opalion",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Rock],
@@ -1965,7 +1966,7 @@ export const creatures: CreatureRecord[] = [
     ],
   },
   {
-    id: "orcana",
+    id: Species.Orcana,
     name: "Orcana",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Water],
@@ -1983,7 +1984,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "ouroblaze",
+    id: Species.Ouroblaze,
     name: "Ouroblaze",
     rarity: Rarity.Legendary,
     types: [CreatureType.Dragon, CreatureType.Fire],
@@ -2001,7 +2002,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "panbud",
+    id: Species.Panbud,
     name: "Panbud",
     rarity: Rarity.Common,
     types: [CreatureType.Grass],
@@ -2010,7 +2011,7 @@ export const creatures: CreatureRecord[] = [
     shopCost: 10,
     baseCooldownSeconds: 5,
     publishedCast: { damage: 25, channel: DamageChannel.Direct },
-    evolvesInto: "bambudo",
+    evolvesInto: Species.Bambudo,
     evolvesAtLevel: 3,
     abilityText: "Evolves at level 3.",
     abilityTags: [],
@@ -2031,7 +2032,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "pawsperity",
+    id: Species.Pawsperity,
     name: "Pawsperity",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Fighting, CreatureType.Curio],
@@ -2049,7 +2050,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "petrirex",
+    id: Species.Petrirex,
     name: "Petrirex",
     rarity: Rarity.Rare,
     types: [CreatureType.Rock, CreatureType.Ghost],
@@ -2108,7 +2109,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "pipskull",
+    id: Species.Pipskull,
     name: "Pipskull",
     rarity: Rarity.Common,
     types: [CreatureType.Ghost],
@@ -2125,7 +2126,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "plunderbird",
+    id: Species.Plunderbird,
     name: "Plunderbird",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Water, CreatureType.Flying],
@@ -2143,7 +2144,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "pompummel",
+    id: Species.Pompummel,
     name: "Pompummel",
     rarity: Rarity.Legendary,
     types: [CreatureType.Fighting],
@@ -2161,7 +2162,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "prismagon",
+    id: Species.Prismagon,
     name: "Prismagon",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Dragon],
@@ -2180,7 +2181,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "puffloon",
+    id: Species.Puffloon,
     name: "Puffloon",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Toxic, CreatureType.Water],
@@ -2199,7 +2200,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "purpleegg",
+    id: Species.Purpleegg,
     name: "Purple Egg",
     rarity: Rarity.SuperRare,
     types: [],
@@ -2218,7 +2219,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "pylong",
+    id: Species.Pylong,
     name: "Pylong",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Electric],
@@ -2236,7 +2237,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "pyrokami",
+    id: Species.Pyrokami,
     name: "Pyrokami",
     rarity: Rarity.Rare,
     types: [CreatureType.Fire],
@@ -2256,7 +2257,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "pyronade",
+    id: Species.Pyronade,
     name: "Pyronade",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Fire],
@@ -2273,7 +2274,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "quillustrous",
+    id: Species.Quillustrous,
     name: "Quillustrous",
     rarity: Rarity.Legendary,
     types: [CreatureType.Flying, CreatureType.Grass],
@@ -2291,7 +2292,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "ratacomb",
+    id: Species.Ratacomb,
     name: "Ratacomb",
     rarity: Rarity.Common,
     types: [CreatureType.Ghost],
@@ -2310,7 +2311,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "rattleghast",
+    id: Species.Rattleghast,
     name: "Rattleghast",
     rarity: Rarity.Common,
     types: [CreatureType.Ghost, CreatureType.Toxic],
@@ -2327,7 +2328,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "reapra",
+    id: Species.Reapra,
     name: "Reapra",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Ghost],
@@ -2344,7 +2345,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "rhizuka",
+    id: Species.Rhizuka,
     name: "Rhizuka",
     rarity: Rarity.Rare,
     types: [CreatureType.Rock],
@@ -2361,7 +2362,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "rigalord",
+    id: Species.Rigalord,
     name: "Rigalord",
     rarity: Rarity.Mythical,
     types: [CreatureType.Ghost],
@@ -2378,7 +2379,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "riglet",
+    id: Species.Riglet,
     name: "Riglet",
     rarity: Rarity.Mythical,
     types: [CreatureType.Ghost],
@@ -2394,7 +2395,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "rubbin",
+    id: Species.Rubbin,
     name: "Rubbin",
     rarity: Rarity.Common,
     types: [CreatureType.Curio],
@@ -2412,7 +2413,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "runerock",
+    id: Species.Runerock,
     name: "Runerock",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Rock],
@@ -2429,7 +2430,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "saberhorn",
+    id: Species.Saberhorn,
     name: "Saberhorn",
     rarity: Rarity.Legendary,
     types: [CreatureType.Dragon],
@@ -2449,7 +2450,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01; cooldown/damage/status confirmed via batodex.com 2026-10-05, round 4)",
   },
   {
-    id: "sarudo",
+    id: Species.Sarudo,
     name: "Sarudo",
     rarity: Rarity.Rare,
     types: [CreatureType.Fighting],
@@ -2467,7 +2468,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "scorubble",
+    id: Species.Scorubble,
     name: "Scorubble",
     rarity: Rarity.Common,
     types: [CreatureType.Rock, CreatureType.Toxic],
@@ -2484,7 +2485,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "shelldra",
+    id: Species.Shelldra,
     name: "Shelldra",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Water, CreatureType.Dragon],
@@ -2501,7 +2502,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "shellter",
+    id: Species.Shellter,
     name: "Shellter",
     rarity: Rarity.Common,
     types: [CreatureType.Rock],
@@ -2519,7 +2520,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "shikitsune",
+    id: Species.Shikitsune,
     name: "Shikitsune",
     rarity: Rarity.Rare,
     types: [CreatureType.Ghost],
@@ -2537,7 +2538,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "shogapede",
+    id: Species.Shogapede,
     name: "Shogapede",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Bug, CreatureType.Toxic],
@@ -2553,7 +2554,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "shrinell",
+    id: Species.Shrinell,
     name: "Shrinell",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Curio],
@@ -2571,7 +2572,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "sirenade",
+    id: Species.Sirenade,
     name: "Sirenade",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Water],
@@ -2588,7 +2589,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "snapscald",
+    id: Species.Snapscald,
     name: "Snapscald",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Fire, CreatureType.Water],
@@ -2606,7 +2607,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "spinarai",
+    id: Species.Spinarai,
     name: "Spinarai",
     rarity: Rarity.Common,
     types: [CreatureType.Bug, CreatureType.Toxic],
@@ -2624,7 +2625,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "sproach",
+    id: Species.Sproach,
     name: "Sproach",
     rarity: Rarity.Rare,
     types: [CreatureType.Bug, CreatureType.Grass],
@@ -2641,7 +2642,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "sproutquill",
+    id: Species.Sproutquill,
     name: "Sproutquill",
     rarity: Rarity.Legendary,
     types: [CreatureType.Flying, CreatureType.Grass],
@@ -2658,7 +2659,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "stalagrove",
+    id: Species.Stalagrove,
     name: "Stalagrove",
     rarity: Rarity.Rare,
     types: [CreatureType.Grass, CreatureType.Rock],
@@ -2674,7 +2675,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "steamscuttle",
+    id: Species.Steamscuttle,
     name: "Steamscuttle",
     rarity: Rarity.Rare,
     types: [CreatureType.Fire, CreatureType.Water],
@@ -2693,7 +2694,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "stellagon",
+    id: Species.Stellagon,
     name: "Stellagon",
     rarity: Rarity.Legendary,
     types: [CreatureType.Dragon],
@@ -2710,7 +2711,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "stingarde",
+    id: Species.Stingarde,
     name: "Stingarde",
     rarity: Rarity.Common,
     types: [CreatureType.Bug],
@@ -2727,7 +2728,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "sukoi",
+    id: Species.Sukoi,
     name: "Sukoi",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Water],
@@ -2744,7 +2745,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "swoonet",
+    id: Species.Swoonet,
     name: "Swoonet",
     rarity: Rarity.Common,
     types: [CreatureType.Water, CreatureType.Flying],
@@ -2762,7 +2763,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "talonite",
+    id: Species.Talonite,
     name: "Talonite",
     rarity: Rarity.Rare,
     types: [CreatureType.Flying, CreatureType.Rock],
@@ -2780,7 +2781,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "tengusto",
+    id: Species.Tengusto,
     name: "Tengusto",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Fighting, CreatureType.Flying],
@@ -2798,7 +2799,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "thorntail",
+    id: Species.Thorntail,
     name: "Thorntail",
     rarity: Rarity.Rare,
     types: [CreatureType.Grass, CreatureType.Toxic],
@@ -2818,7 +2819,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "torrantler",
+    id: Species.Torrantler,
     name: "Torrantler",
     rarity: Rarity.Legendary,
     types: [CreatureType.Water],
@@ -2835,7 +2836,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "toximoth",
+    id: Species.Toximoth,
     name: "Toximoth",
     rarity: Rarity.Common,
     types: [CreatureType.Bug, CreatureType.Toxic],
@@ -2854,7 +2855,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "tsunamere",
+    id: Species.Tsunamere,
     name: "Tsunamere",
     rarity: Rarity.Legendary,
     types: [CreatureType.Dragon, CreatureType.Water],
@@ -2872,7 +2873,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "velocect",
+    id: Species.Velocect,
     name: "Velocect",
     rarity: Rarity.Common,
     types: [CreatureType.Bug, CreatureType.Flying],
@@ -2889,7 +2890,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "vengrieve",
+    id: Species.Vengrieve,
     name: "Vengrieve",
     rarity: Rarity.Legendary,
     types: [CreatureType.Ghost],
@@ -2906,7 +2907,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "vipair",
+    id: Species.Vipair,
     name: "Vipair",
     rarity: Rarity.Rare,
     types: [CreatureType.Toxic, CreatureType.Curio],
@@ -2926,7 +2927,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "voltalith",
+    id: Species.Voltalith,
     name: "Voltalith",
     rarity: Rarity.Rare,
     types: [CreatureType.Electric],
@@ -2945,7 +2946,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "wishwash",
+    id: Species.Wishwash,
     name: "Wishwash",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Water],
@@ -2962,7 +2963,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "zephyrex",
+    id: Species.Zephyrex,
     name: "Zephyrex",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Flying],
@@ -2981,7 +2982,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (community-transcribed dex, checked 2026-10-01)",
   },
   {
-    id: "bambudo",
+    id: Species.Bambudo,
     name: "Bambudo",
     rarity: Rarity.Common,
     types: [CreatureType.Grass],
@@ -2999,7 +3000,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Steam Demo Build 25037381 / Balance 14 (tier/cost table only; not present in the 144-row ability-text dex reviewed). Rarity inferred from this corpus's own empirically 1:1 Tier<->Rarity correlation across the 69 names present in both source tables, not independently stated by this source.",
   },
   {
-    id: "emperooze",
+    id: Species.Emperooze,
     name: "Emperooze",
     rarity: Rarity.Common,
     types: [CreatureType.Water],
@@ -3018,7 +3019,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Steam Demo Build 25037381 / Balance 14 (tier/cost table only; not present in the 144-row ability-text dex reviewed). Rarity inferred from this corpus's own empirically 1:1 Tier<->Rarity correlation across the 69 names present in both source tables, not independently stated by this source.",
   },
   {
-    id: "sunsage",
+    id: Species.Sunsage,
     name: "Sunsage",
     rarity: Rarity.Common,
     types: [CreatureType.Fire],
@@ -3037,7 +3038,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Steam Demo Build 25037381 / Balance 14 (tier/cost table only; not present in the 144-row ability-text dex reviewed). Rarity inferred from this corpus's own empirically 1:1 Tier<->Rarity correlation across the 69 names present in both source tables, not independently stated by this source.",
   },
   {
-    id: "beetdown",
+    id: Species.Beetdown,
     name: "Beetdown",
     rarity: Rarity.Common,
     types: [CreatureType.Fighting, CreatureType.Grass],
@@ -3055,7 +3056,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (name-only; not independently confirmed)",
   },
   {
-    id: "dewlotl",
+    id: Species.Dewlotl,
     name: "Dewlotl",
     rarity: Rarity.Common,
     types: [CreatureType.Water],
@@ -3079,7 +3080,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (name-only; not independently confirmed)",
   },
   {
-    id: "bumblebolt",
+    id: Species.Bumblebolt,
     name: "Bumblebolt",
     rarity: Rarity.Common,
     types: [CreatureType.Bug, CreatureType.Electric],
@@ -3096,7 +3097,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "bumblebolt",
+    id: Species.Bumblebolt,
     name: "Bumblebolt",
     rarity: Rarity.Common,
     types: [CreatureType.Bug, CreatureType.Electric],
@@ -3113,7 +3114,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "bumblebolt",
+    id: Species.Bumblebolt,
     name: "Bumblebolt",
     rarity: Rarity.Common,
     types: [CreatureType.Bug, CreatureType.Electric],
@@ -3130,7 +3131,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "formiqueen",
+    id: Species.Formiqueen,
     name: "Formiqueen",
     rarity: Rarity.Rare,
     types: [CreatureType.Bug],
@@ -3154,7 +3155,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "formiqueen",
+    id: Species.Formiqueen,
     name: "Formiqueen",
     rarity: Rarity.Rare,
     types: [CreatureType.Bug],
@@ -3178,7 +3179,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "formiqueen",
+    id: Species.Formiqueen,
     name: "Formiqueen",
     rarity: Rarity.Rare,
     types: [CreatureType.Bug],
@@ -3202,7 +3203,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "venopuff",
+    id: Species.Venopuff,
     name: "Venopuff",
     rarity: Rarity.Common,
     types: [CreatureType.Toxic],
@@ -3218,7 +3219,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "venopuff",
+    id: Species.Venopuff,
     name: "Venopuff",
     rarity: Rarity.Common,
     types: [CreatureType.Toxic],
@@ -3234,7 +3235,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "venopuff",
+    id: Species.Venopuff,
     name: "Venopuff",
     rarity: Rarity.Common,
     types: [CreatureType.Toxic],
@@ -3250,7 +3251,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "scorchimp",
+    id: Species.Scorchimp,
     name: "Scorchimp",
     rarity: Rarity.Common,
     types: [CreatureType.Fire],
@@ -3260,7 +3261,7 @@ export const creatures: CreatureRecord[] = [
     baseCooldownSeconds: 5.5,
     publishedCast: { damage: 10, channel: DamageChannel.Direct },
     appliesStatus: [{ type: StatusEffectType.Burn, amount: 10 }],
-    evolvesInto: "sunsage",
+    evolvesInto: Species.Sunsage,
     evolvesAtLevel: 3,
     abilityText: "Evolves at level 3.",
     abilityTags: [],
@@ -3269,7 +3270,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "scorchimp",
+    id: Species.Scorchimp,
     name: "Scorchimp",
     rarity: Rarity.Common,
     types: [CreatureType.Fire],
@@ -3279,7 +3280,7 @@ export const creatures: CreatureRecord[] = [
     baseCooldownSeconds: 5.5,
     publishedCast: { damage: 15, channel: DamageChannel.Direct },
     appliesStatus: [{ type: StatusEffectType.Burn, amount: 15 }],
-    evolvesInto: "sunsage",
+    evolvesInto: Species.Sunsage,
     evolvesAtLevel: 3,
     abilityText: "Evolves at level 3.",
     abilityTags: [],
@@ -3288,7 +3289,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "scorchimp",
+    id: Species.Scorchimp,
     name: "Scorchimp",
     rarity: Rarity.Common,
     types: [CreatureType.Fire],
@@ -3298,7 +3299,7 @@ export const creatures: CreatureRecord[] = [
     baseCooldownSeconds: 5.5,
     publishedCast: { damage: 15, channel: DamageChannel.Direct },
     appliesStatus: [{ type: StatusEffectType.Burn, amount: 15 }],
-    evolvesInto: "sunsage",
+    evolvesInto: Species.Sunsage,
     evolvesAtLevel: 3,
     abilityText: "Evolves at level 3.",
     abilityTags: [],
@@ -3307,7 +3308,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "pebbler",
+    id: Species.Pebbler,
     name: "Pebbler",
     rarity: Rarity.Common,
     types: [CreatureType.Rock],
@@ -3326,7 +3327,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "pebbler",
+    id: Species.Pebbler,
     name: "Pebbler",
     rarity: Rarity.Common,
     types: [CreatureType.Rock],
@@ -3345,7 +3346,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "pebbler",
+    id: Species.Pebbler,
     name: "Pebbler",
     rarity: Rarity.Common,
     types: [CreatureType.Rock],
@@ -3364,7 +3365,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "onsetra",
+    id: Species.Onsetra,
     name: "Onsetra",
     rarity: Rarity.Legendary,
     types: [CreatureType.Dragon],
@@ -3386,7 +3387,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "onsetra",
+    id: Species.Onsetra,
     name: "Onsetra",
     rarity: Rarity.Legendary,
     types: [CreatureType.Dragon],
@@ -3408,7 +3409,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "onsetra",
+    id: Species.Onsetra,
     name: "Onsetra",
     rarity: Rarity.Legendary,
     types: [CreatureType.Dragon],
@@ -3430,7 +3431,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "aegistruct",
+    id: Species.Aegistruct,
     name: "Aegistruct",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Rock],
@@ -3447,7 +3448,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "aegistruct",
+    id: Species.Aegistruct,
     name: "Aegistruct",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Rock],
@@ -3464,7 +3465,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "aegistruct",
+    id: Species.Aegistruct,
     name: "Aegistruct",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Rock],
@@ -3481,7 +3482,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "aerophim",
+    id: Species.Aerophim,
     name: "Aerophim",
     rarity: Rarity.Mythical,
     types: [CreatureType.Flying],
@@ -3498,7 +3499,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "aerophim",
+    id: Species.Aerophim,
     name: "Aerophim",
     rarity: Rarity.Mythical,
     types: [CreatureType.Flying],
@@ -3515,7 +3516,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "aerophim",
+    id: Species.Aerophim,
     name: "Aerophim",
     rarity: Rarity.Mythical,
     types: [CreatureType.Flying],
@@ -3532,7 +3533,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "aristobat",
+    id: Species.Aristobat,
     name: "Aristobat",
     rarity: Rarity.Rare,
     types: [CreatureType.Toxic, CreatureType.Flying],
@@ -3548,7 +3549,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "aristobat",
+    id: Species.Aristobat,
     name: "Aristobat",
     rarity: Rarity.Rare,
     types: [CreatureType.Toxic, CreatureType.Flying],
@@ -3564,7 +3565,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "aristobat",
+    id: Species.Aristobat,
     name: "Aristobat",
     rarity: Rarity.Rare,
     types: [CreatureType.Toxic, CreatureType.Flying],
@@ -3580,7 +3581,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "aster",
+    id: Species.Aster,
     name: "Aster",
     rarity: Rarity.Rare,
     types: [CreatureType.Water],
@@ -3597,7 +3598,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "aster",
+    id: Species.Aster,
     name: "Aster",
     rarity: Rarity.Rare,
     types: [CreatureType.Water],
@@ -3614,7 +3615,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "aster",
+    id: Species.Aster,
     name: "Aster",
     rarity: Rarity.Rare,
     types: [CreatureType.Water],
@@ -3631,7 +3632,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "aviarab",
+    id: Species.Aviarab,
     name: "Aviarab",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Bug, CreatureType.Flying],
@@ -3648,7 +3649,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "aviarab",
+    id: Species.Aviarab,
     name: "Aviarab",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Bug, CreatureType.Flying],
@@ -3665,7 +3666,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "aviarab",
+    id: Species.Aviarab,
     name: "Aviarab",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Bug, CreatureType.Flying],
@@ -3682,7 +3683,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "basilord",
+    id: Species.Basilord,
     name: "Basilord",
     rarity: Rarity.Legendary,
     types: [CreatureType.Fire],
@@ -3698,7 +3699,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "basilord",
+    id: Species.Basilord,
     name: "Basilord",
     rarity: Rarity.Legendary,
     types: [CreatureType.Fire],
@@ -3714,7 +3715,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "basilord",
+    id: Species.Basilord,
     name: "Basilord",
     rarity: Rarity.Legendary,
     types: [CreatureType.Fire],
@@ -3730,7 +3731,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "beetbud",
+    id: Species.Beetbud,
     name: "Beetbud",
     rarity: Rarity.Common,
     types: [CreatureType.Fighting, CreatureType.Grass],
@@ -3739,7 +3740,7 @@ export const creatures: CreatureRecord[] = [
     shopCost: 10,
     baseCooldownSeconds: 4.5,
     publishedCast: { damage: 70, channel: DamageChannel.Direct },
-    evolvesInto: "beetdown",
+    evolvesInto: Species.Beetdown,
     evolvesAtLevel: 3,
     abilityText: "Evolves at level 3.",
     abilityTags: [],
@@ -3748,7 +3749,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "beetbud",
+    id: Species.Beetbud,
     name: "Beetbud",
     rarity: Rarity.Common,
     types: [CreatureType.Fighting, CreatureType.Grass],
@@ -3757,7 +3758,7 @@ export const creatures: CreatureRecord[] = [
     shopCost: 10,
     baseCooldownSeconds: 4.5,
     publishedCast: { damage: 105, channel: DamageChannel.Direct },
-    evolvesInto: "beetdown",
+    evolvesInto: Species.Beetdown,
     evolvesAtLevel: 3,
     abilityText: "Evolves at level 3.",
     abilityTags: [],
@@ -3766,7 +3767,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "beetbud",
+    id: Species.Beetbud,
     name: "Beetbud",
     rarity: Rarity.Common,
     types: [CreatureType.Fighting, CreatureType.Grass],
@@ -3775,7 +3776,7 @@ export const creatures: CreatureRecord[] = [
     shopCost: 10,
     baseCooldownSeconds: 4.5,
     publishedCast: { damage: 105, channel: DamageChannel.Direct },
-    evolvesInto: "beetdown",
+    evolvesInto: Species.Beetdown,
     evolvesAtLevel: 3,
     abilityText: "Evolves at level 3.",
     abilityTags: [],
@@ -3784,7 +3785,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "berroon",
+    id: Species.Berroon,
     name: "Berroon",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Grass],
@@ -3801,7 +3802,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "berroon",
+    id: Species.Berroon,
     name: "Berroon",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Grass],
@@ -3818,7 +3819,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "berroon",
+    id: Species.Berroon,
     name: "Berroon",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Grass],
@@ -3835,7 +3836,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "blazewing",
+    id: Species.Blazewing,
     name: "Blazewing",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Fire, CreatureType.Flying],
@@ -3851,7 +3852,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "blazewing",
+    id: Species.Blazewing,
     name: "Blazewing",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Fire, CreatureType.Flying],
@@ -3867,7 +3868,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "blazewing",
+    id: Species.Blazewing,
     name: "Blazewing",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Fire, CreatureType.Flying],
@@ -3883,7 +3884,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "blessom",
+    id: Species.Blessom,
     name: "Blessom",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Grass],
@@ -3899,7 +3900,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "blessom",
+    id: Species.Blessom,
     name: "Blessom",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Grass],
@@ -3915,7 +3916,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "blessom",
+    id: Species.Blessom,
     name: "Blessom",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Grass],
@@ -3931,7 +3932,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "blixie",
+    id: Species.Blixie,
     name: "Blixie",
     rarity: Rarity.Legendary,
     types: [CreatureType.Fire],
@@ -3948,7 +3949,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "blixie",
+    id: Species.Blixie,
     name: "Blixie",
     rarity: Rarity.Legendary,
     types: [CreatureType.Fire],
@@ -3965,7 +3966,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "blixie",
+    id: Species.Blixie,
     name: "Blixie",
     rarity: Rarity.Legendary,
     types: [CreatureType.Fire],
@@ -3982,7 +3983,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "bonshell",
+    id: Species.Bonshell,
     name: "Bonshell",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Rock, CreatureType.Grass],
@@ -4002,7 +4003,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "bonshell",
+    id: Species.Bonshell,
     name: "Bonshell",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Rock, CreatureType.Grass],
@@ -4022,7 +4023,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "bonshell",
+    id: Species.Bonshell,
     name: "Bonshell",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Rock, CreatureType.Grass],
@@ -4042,7 +4043,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "boomagon",
+    id: Species.Boomagon,
     name: "Boomagon",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Dragon],
@@ -4059,7 +4060,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "boomagon",
+    id: Species.Boomagon,
     name: "Boomagon",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Dragon],
@@ -4076,7 +4077,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "boomagon",
+    id: Species.Boomagon,
     name: "Boomagon",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Dragon],
@@ -4093,7 +4094,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "brawlmantis",
+    id: Species.Brawlmantis,
     name: "Brawlmantis",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Bug, CreatureType.Fighting],
@@ -4118,7 +4119,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "brawlmantis",
+    id: Species.Brawlmantis,
     name: "Brawlmantis",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Bug, CreatureType.Fighting],
@@ -4143,7 +4144,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "brawlmantis",
+    id: Species.Brawlmantis,
     name: "Brawlmantis",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Bug, CreatureType.Fighting],
@@ -4168,7 +4169,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "brimtoad",
+    id: Species.Brimtoad,
     name: "Brimtoad",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Fire, CreatureType.Toxic],
@@ -4185,7 +4186,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "brimtoad",
+    id: Species.Brimtoad,
     name: "Brimtoad",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Fire, CreatureType.Toxic],
@@ -4202,7 +4203,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "brimtoad",
+    id: Species.Brimtoad,
     name: "Brimtoad",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Fire, CreatureType.Toxic],
@@ -4219,7 +4220,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "bunchop",
+    id: Species.Bunchop,
     name: "Bunchop",
     rarity: Rarity.Common,
     types: [CreatureType.Fighting],
@@ -4236,7 +4237,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "bunchop",
+    id: Species.Bunchop,
     name: "Bunchop",
     rarity: Rarity.Common,
     types: [CreatureType.Fighting],
@@ -4253,7 +4254,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "bunchop",
+    id: Species.Bunchop,
     name: "Bunchop",
     rarity: Rarity.Common,
     types: [CreatureType.Fighting],
@@ -4270,7 +4271,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "cairnage",
+    id: Species.Cairnage,
     name: "Cairnage",
     rarity: Rarity.Legendary,
     types: [CreatureType.Rock],
@@ -4287,7 +4288,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "cairnage",
+    id: Species.Cairnage,
     name: "Cairnage",
     rarity: Rarity.Legendary,
     types: [CreatureType.Rock],
@@ -4304,7 +4305,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "cairnage",
+    id: Species.Cairnage,
     name: "Cairnage",
     rarity: Rarity.Legendary,
     types: [CreatureType.Rock],
@@ -4321,7 +4322,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "cawnushi",
+    id: Species.Cawnushi,
     name: "Cawnushi",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Flying, CreatureType.Ghost],
@@ -4340,7 +4341,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "cawnushi",
+    id: Species.Cawnushi,
     name: "Cawnushi",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Flying, CreatureType.Ghost],
@@ -4359,7 +4360,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "cawnushi",
+    id: Species.Cawnushi,
     name: "Cawnushi",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Flying, CreatureType.Ghost],
@@ -4378,7 +4379,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "celestia",
+    id: Species.Celestia,
     name: "Celestia",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Dragon],
@@ -4395,7 +4396,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "celestia",
+    id: Species.Celestia,
     name: "Celestia",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Dragon],
@@ -4412,7 +4413,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "celestia",
+    id: Species.Celestia,
     name: "Celestia",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Dragon],
@@ -4429,7 +4430,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "cherubble",
+    id: Species.Cherubble,
     name: "Cherubble",
     rarity: Rarity.Rare,
     types: [CreatureType.Rock],
@@ -4446,7 +4447,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "cherubble",
+    id: Species.Cherubble,
     name: "Cherubble",
     rarity: Rarity.Rare,
     types: [CreatureType.Rock],
@@ -4463,7 +4464,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "cherubble",
+    id: Species.Cherubble,
     name: "Cherubble",
     rarity: Rarity.Rare,
     types: [CreatureType.Rock],
@@ -4480,7 +4481,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "cicadence",
+    id: Species.Cicadence,
     name: "Cicadence",
     rarity: Rarity.Rare,
     types: [CreatureType.Bug],
@@ -4497,7 +4498,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "cicadence",
+    id: Species.Cicadence,
     name: "Cicadence",
     rarity: Rarity.Rare,
     types: [CreatureType.Bug],
@@ -4514,7 +4515,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "cicadence",
+    id: Species.Cicadence,
     name: "Cicadence",
     rarity: Rarity.Rare,
     types: [CreatureType.Bug],
@@ -4531,7 +4532,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "cinderfly",
+    id: Species.Cinderfly,
     name: "Cinderfly",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Bug, CreatureType.Fire],
@@ -4547,7 +4548,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "cinderfly",
+    id: Species.Cinderfly,
     name: "Cinderfly",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Bug, CreatureType.Fire],
@@ -4563,7 +4564,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "cinderfly",
+    id: Species.Cinderfly,
     name: "Cinderfly",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Bug, CreatureType.Fire],
@@ -4579,7 +4580,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "cinnabark",
+    id: Species.Cinnabark,
     name: "Cinnabark",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Rock, CreatureType.Toxic],
@@ -4596,7 +4597,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "cinnabark",
+    id: Species.Cinnabark,
     name: "Cinnabark",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Rock, CreatureType.Toxic],
@@ -4613,7 +4614,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "cinnabark",
+    id: Species.Cinnabark,
     name: "Cinnabark",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Rock, CreatureType.Toxic],
@@ -4630,7 +4631,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "clawnetic",
+    id: Species.Clawnetic,
     name: "Clawnetic",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Steel],
@@ -4646,7 +4647,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "clawnetic",
+    id: Species.Clawnetic,
     name: "Clawnetic",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Steel],
@@ -4662,7 +4663,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "clawnetic",
+    id: Species.Clawnetic,
     name: "Clawnetic",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Steel],
@@ -4678,7 +4679,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "coalem",
+    id: Species.Coalem,
     name: "Coalem",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Fire, CreatureType.Rock],
@@ -4695,7 +4696,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "coalem",
+    id: Species.Coalem,
     name: "Coalem",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Fire, CreatureType.Rock],
@@ -4712,7 +4713,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "coalem",
+    id: Species.Coalem,
     name: "Coalem",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Fire, CreatureType.Rock],
@@ -4729,7 +4730,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "cobrex",
+    id: Species.Cobrex,
     name: "Cobrex",
     rarity: Rarity.Legendary,
     types: [CreatureType.Toxic],
@@ -4745,7 +4746,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "cobrex",
+    id: Species.Cobrex,
     name: "Cobrex",
     rarity: Rarity.Legendary,
     types: [CreatureType.Toxic],
@@ -4761,7 +4762,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "cobrex",
+    id: Species.Cobrex,
     name: "Cobrex",
     rarity: Rarity.Legendary,
     types: [CreatureType.Toxic],
@@ -4777,7 +4778,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "cordycant",
+    id: Species.Cordycant,
     name: "Cordycant",
     rarity: Rarity.Rare,
     types: [CreatureType.Toxic, CreatureType.Bug],
@@ -4794,7 +4795,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "cordycant",
+    id: Species.Cordycant,
     name: "Cordycant",
     rarity: Rarity.Rare,
     types: [CreatureType.Toxic, CreatureType.Bug],
@@ -4811,7 +4812,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "cordycant",
+    id: Species.Cordycant,
     name: "Cordycant",
     rarity: Rarity.Rare,
     types: [CreatureType.Toxic, CreatureType.Bug],
@@ -4828,7 +4829,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "cosmivore",
+    id: Species.Cosmivore,
     name: "Cosmivore",
     rarity: Rarity.Mythical,
     types: [CreatureType.Ghost],
@@ -4844,7 +4845,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "cosmivore",
+    id: Species.Cosmivore,
     name: "Cosmivore",
     rarity: Rarity.Mythical,
     types: [CreatureType.Ghost],
@@ -4860,7 +4861,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "cosmivore",
+    id: Species.Cosmivore,
     name: "Cosmivore",
     rarity: Rarity.Mythical,
     types: [CreatureType.Ghost],
@@ -4876,7 +4877,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "craghorn",
+    id: Species.Craghorn,
     name: "Craghorn",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Grass, CreatureType.Rock],
@@ -4896,7 +4897,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "craghorn",
+    id: Species.Craghorn,
     name: "Craghorn",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Grass, CreatureType.Rock],
@@ -4916,7 +4917,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "craghorn",
+    id: Species.Craghorn,
     name: "Craghorn",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Grass, CreatureType.Rock],
@@ -4936,7 +4937,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "danuki",
+    id: Species.Danuki,
     name: "Danuki",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Ghost],
@@ -4952,7 +4953,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "danuki",
+    id: Species.Danuki,
     name: "Danuki",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Ghost],
@@ -4968,7 +4969,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "danuki",
+    id: Species.Danuki,
     name: "Danuki",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Ghost],
@@ -4984,7 +4985,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "dirgefin",
+    id: Species.Dirgefin,
     name: "Dirgefin",
     rarity: Rarity.Rare,
     types: [CreatureType.Ghost, CreatureType.Water],
@@ -5002,7 +5003,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "dirgefin",
+    id: Species.Dirgefin,
     name: "Dirgefin",
     rarity: Rarity.Rare,
     types: [CreatureType.Ghost, CreatureType.Water],
@@ -5020,7 +5021,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "dirgefin",
+    id: Species.Dirgefin,
     name: "Dirgefin",
     rarity: Rarity.Rare,
     types: [CreatureType.Ghost, CreatureType.Water],
@@ -5038,7 +5039,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "dollhime",
+    id: Species.Dollhime,
     name: "Dollhime",
     rarity: Rarity.Rare,
     types: [CreatureType.Curio],
@@ -5056,7 +5057,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "dollhime",
+    id: Species.Dollhime,
     name: "Dollhime",
     rarity: Rarity.Rare,
     types: [CreatureType.Curio],
@@ -5074,7 +5075,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "dollhime",
+    id: Species.Dollhime,
     name: "Dollhime",
     rarity: Rarity.Rare,
     types: [CreatureType.Curio],
@@ -5092,7 +5093,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06; LEVEL 4 VALUE INFERRED -- the notes publish levels 1-3 only, so L4 is rescaled by the same factor as L1 to preserve the existing ratio)",
   },
   {
-    id: "dracana",
+    id: Species.Dracana,
     name: "Dracana",
     rarity: Rarity.Rare,
     types: [CreatureType.Dragon],
@@ -5109,7 +5110,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "dracana",
+    id: Species.Dracana,
     name: "Dracana",
     rarity: Rarity.Rare,
     types: [CreatureType.Dragon],
@@ -5126,7 +5127,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "dracana",
+    id: Species.Dracana,
     name: "Dracana",
     rarity: Rarity.Rare,
     types: [CreatureType.Dragon],
@@ -5143,7 +5144,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "draconarch",
+    id: Species.Draconarch,
     name: "Draconarch",
     rarity: Rarity.Legendary,
     types: [CreatureType.Dragon],
@@ -5160,7 +5161,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "draconarch",
+    id: Species.Draconarch,
     name: "Draconarch",
     rarity: Rarity.Legendary,
     types: [CreatureType.Dragon],
@@ -5177,7 +5178,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "draconarch",
+    id: Species.Draconarch,
     name: "Draconarch",
     rarity: Rarity.Legendary,
     types: [CreatureType.Dragon],
@@ -5194,7 +5195,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "dragonegg",
+    id: Species.Dragonegg,
     name: "Dragon Egg",
     rarity: Rarity.SuperRare,
     types: [],
@@ -5210,7 +5211,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "dragonegg",
+    id: Species.Dragonegg,
     name: "Dragon Egg",
     rarity: Rarity.SuperRare,
     types: [],
@@ -5226,7 +5227,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "dragonegg",
+    id: Species.Dragonegg,
     name: "Dragon Egg",
     rarity: Rarity.SuperRare,
     types: [],
@@ -5242,7 +5243,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "dribblet",
+    id: Species.Dribblet,
     name: "Dribblet",
     rarity: Rarity.Common,
     types: [CreatureType.Water],
@@ -5251,7 +5252,7 @@ export const creatures: CreatureRecord[] = [
     shopCost: 10,
     baseCooldownSeconds: 3,
     healAmount: 30,
-    evolvesInto: "emperooze",
+    evolvesInto: Species.Emperooze,
     evolvesAtLevel: 3,
     abilityText: "Evolves at level 3.",
     abilityTags: [],
@@ -5260,7 +5261,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "dribblet",
+    id: Species.Dribblet,
     name: "Dribblet",
     rarity: Rarity.Common,
     types: [CreatureType.Water],
@@ -5269,7 +5270,7 @@ export const creatures: CreatureRecord[] = [
     shopCost: 10,
     baseCooldownSeconds: 3,
     healAmount: 45,
-    evolvesInto: "emperooze",
+    evolvesInto: Species.Emperooze,
     evolvesAtLevel: 3,
     abilityText: "Evolves at level 3.",
     abilityTags: [],
@@ -5278,7 +5279,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "dribblet",
+    id: Species.Dribblet,
     name: "Dribblet",
     rarity: Rarity.Common,
     types: [CreatureType.Water],
@@ -5287,7 +5288,7 @@ export const creatures: CreatureRecord[] = [
     shopCost: 10,
     baseCooldownSeconds: 3,
     healAmount: 45,
-    evolvesInto: "emperooze",
+    evolvesInto: Species.Emperooze,
     evolvesAtLevel: 3,
     abilityText: "Evolves at level 3.",
     abilityTags: [],
@@ -5296,7 +5297,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "drumire",
+    id: Species.Drumire,
     name: "Drumire",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Toxic],
@@ -5312,7 +5313,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "drumire",
+    id: Species.Drumire,
     name: "Drumire",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Toxic],
@@ -5328,7 +5329,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "drumire",
+    id: Species.Drumire,
     name: "Drumire",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Toxic],
@@ -5344,7 +5345,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "dryadell",
+    id: Species.Dryadell,
     name: "Dryadell",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Grass],
@@ -5361,7 +5362,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "dryadell",
+    id: Species.Dryadell,
     name: "Dryadell",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Grass],
@@ -5378,7 +5379,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "dryadell",
+    id: Species.Dryadell,
     name: "Dryadell",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Grass],
@@ -5395,7 +5396,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "electranade",
+    id: Species.Electranade,
     name: "Electranade",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Electric],
@@ -5412,7 +5413,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "electranade",
+    id: Species.Electranade,
     name: "Electranade",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Electric],
@@ -5429,7 +5430,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "electranade",
+    id: Species.Electranade,
     name: "Electranade",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Electric],
@@ -5446,7 +5447,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "emberpaw",
+    id: Species.Emberpaw,
     name: "Emberpaw",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Fire],
@@ -5456,7 +5457,7 @@ export const creatures: CreatureRecord[] = [
     baseCooldownSeconds: 6,
     publishedCast: { damage: 50, channel: DamageChannel.Direct },
     appliesStatus: [{ type: StatusEffectType.Burn, amount: 5 }],
-    evolvesInto: "oniclaw",
+    evolvesInto: Species.Oniclaw,
     abilityText: "Evolve when your team inflicts Burn 25 times.",
     abilityTags: [],
     spriteFile: "emberpaw.png",
@@ -5464,7 +5465,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "emberpaw",
+    id: Species.Emberpaw,
     name: "Emberpaw",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Fire],
@@ -5474,7 +5475,7 @@ export const creatures: CreatureRecord[] = [
     baseCooldownSeconds: 6,
     publishedCast: { damage: 50, channel: DamageChannel.Direct },
     appliesStatus: [{ type: StatusEffectType.Burn, amount: 5 }],
-    evolvesInto: "oniclaw",
+    evolvesInto: Species.Oniclaw,
     abilityText: "Evolve when your team inflicts Burn 25 times.",
     abilityTags: [],
     spriteFile: "emberpaw.png",
@@ -5482,7 +5483,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "emberpaw",
+    id: Species.Emberpaw,
     name: "Emberpaw",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Fire],
@@ -5492,7 +5493,7 @@ export const creatures: CreatureRecord[] = [
     baseCooldownSeconds: 6,
     publishedCast: { damage: 50, channel: DamageChannel.Direct },
     appliesStatus: [{ type: StatusEffectType.Burn, amount: 5 }],
-    evolvesInto: "oniclaw",
+    evolvesInto: Species.Oniclaw,
     abilityText: "Evolve when your team inflicts Burn 25 times.",
     abilityTags: [],
     spriteFile: "emberpaw.png",
@@ -5500,7 +5501,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "emburn",
+    id: Species.Emburn,
     name: "Emburn",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Fire, CreatureType.Ghost],
@@ -5519,7 +5520,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "emburn",
+    id: Species.Emburn,
     name: "Emburn",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Fire, CreatureType.Ghost],
@@ -5538,7 +5539,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "emburn",
+    id: Species.Emburn,
     name: "Emburn",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Fire, CreatureType.Ghost],
@@ -5557,7 +5558,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "faebloom",
+    id: Species.Faebloom,
     name: "Faebloom",
     rarity: Rarity.Mythical,
     types: [CreatureType.Grass],
@@ -5573,7 +5574,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "faebloom",
+    id: Species.Faebloom,
     name: "Faebloom",
     rarity: Rarity.Mythical,
     types: [CreatureType.Grass],
@@ -5589,7 +5590,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "faebloom",
+    id: Species.Faebloom,
     name: "Faebloom",
     rarity: Rarity.Mythical,
     types: [CreatureType.Grass],
@@ -5605,7 +5606,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "fernfowl",
+    id: Species.Fernfowl,
     name: "Fernfowl",
     rarity: Rarity.Legendary,
     types: [CreatureType.Flying, CreatureType.Grass],
@@ -5614,7 +5615,7 @@ export const creatures: CreatureRecord[] = [
     shopCost: 0,
     baseCooldownSeconds: 7,
     publishedCast: { damage: 200, channel: DamageChannel.Direct },
-    evolvesInto: "quillustrous",
+    evolvesInto: Species.Quillustrous,
     abilityText: "Evolve after your team deals 15000 non-status Damage.(currently 0)",
     abilityTags: [],
     spriteFile: "fernfowl.png",
@@ -5622,7 +5623,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "fernfowl",
+    id: Species.Fernfowl,
     name: "Fernfowl",
     rarity: Rarity.Legendary,
     types: [CreatureType.Flying, CreatureType.Grass],
@@ -5631,7 +5632,7 @@ export const creatures: CreatureRecord[] = [
     shopCost: 0,
     baseCooldownSeconds: 7,
     publishedCast: { damage: 300, channel: DamageChannel.Direct },
-    evolvesInto: "quillustrous",
+    evolvesInto: Species.Quillustrous,
     abilityText: "Evolve after your team deals 15000 non-status Damage.(currently 0)",
     abilityTags: [],
     spriteFile: "fernfowl.png",
@@ -5639,7 +5640,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "fernfowl",
+    id: Species.Fernfowl,
     name: "Fernfowl",
     rarity: Rarity.Legendary,
     types: [CreatureType.Flying, CreatureType.Grass],
@@ -5648,7 +5649,7 @@ export const creatures: CreatureRecord[] = [
     shopCost: 0,
     baseCooldownSeconds: 7,
     publishedCast: { damage: 3000, channel: DamageChannel.Direct },
-    evolvesInto: "quillustrous",
+    evolvesInto: Species.Quillustrous,
     abilityText: "Evolve after your team deals 15000 non-status Damage.(currently 0)",
     abilityTags: [],
     spriteFile: "fernfowl.png",
@@ -5656,7 +5657,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "flarilisk",
+    id: Species.Flarilisk,
     name: "Flarilisk",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Fire],
@@ -5665,7 +5666,7 @@ export const creatures: CreatureRecord[] = [
     shopCost: 60,
     baseCooldownSeconds: 8,
     appliesStatus: [{ type: StatusEffectType.Burn, amount: 20 }],
-    evolvesInto: "basilord",
+    evolvesInto: Species.Basilord,
     abilityText: "Evolve.",
     abilityTags: [],
     spriteFile: "flarilisk.png",
@@ -5674,7 +5675,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "flarilisk",
+    id: Species.Flarilisk,
     name: "Flarilisk",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Fire],
@@ -5683,7 +5684,7 @@ export const creatures: CreatureRecord[] = [
     shopCost: 60,
     baseCooldownSeconds: 8,
     appliesStatus: [{ type: StatusEffectType.Burn, amount: 30 }],
-    evolvesInto: "basilord",
+    evolvesInto: Species.Basilord,
     abilityText: "Evolve.",
     abilityTags: [],
     spriteFile: "flarilisk.png",
@@ -5692,7 +5693,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "flarilisk",
+    id: Species.Flarilisk,
     name: "Flarilisk",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Fire],
@@ -5701,7 +5702,7 @@ export const creatures: CreatureRecord[] = [
     shopCost: 60,
     baseCooldownSeconds: 1,
     appliesStatus: [{ type: StatusEffectType.Burn, amount: 60 }],
-    evolvesInto: "basilord",
+    evolvesInto: Species.Basilord,
     abilityText: "Evolve.",
     abilityTags: [],
     spriteFile: "flarilisk.png",
@@ -5710,7 +5711,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "frillet",
+    id: Species.Frillet,
     name: "Frillet",
     rarity: Rarity.Common,
     types: [CreatureType.Water],
@@ -5720,7 +5721,7 @@ export const creatures: CreatureRecord[] = [
     baseCooldownSeconds: 4,
     publishedCast: { damage: 20, channel: DamageChannel.Direct },
     healAmount: 20,
-    evolvesInto: "dewlotl",
+    evolvesInto: Species.Dewlotl,
     evolvesAtLevel: 3,
     abilityText: "Evolves at level 3.",
     abilityTags: [],
@@ -5729,7 +5730,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "frillet",
+    id: Species.Frillet,
     name: "Frillet",
     rarity: Rarity.Common,
     types: [CreatureType.Water],
@@ -5739,7 +5740,7 @@ export const creatures: CreatureRecord[] = [
     baseCooldownSeconds: 4,
     publishedCast: { damage: 30, channel: DamageChannel.Direct },
     healAmount: 30,
-    evolvesInto: "dewlotl",
+    evolvesInto: Species.Dewlotl,
     evolvesAtLevel: 3,
     abilityText: "Evolves at level 3.",
     abilityTags: [],
@@ -5748,7 +5749,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "frillet",
+    id: Species.Frillet,
     name: "Frillet",
     rarity: Rarity.Common,
     types: [CreatureType.Water],
@@ -5758,7 +5759,7 @@ export const creatures: CreatureRecord[] = [
     baseCooldownSeconds: 4,
     publishedCast: { damage: 30, channel: DamageChannel.Direct },
     healAmount: 30,
-    evolvesInto: "dewlotl",
+    evolvesInto: Species.Dewlotl,
     evolvesAtLevel: 3,
     abilityText: "Evolves at level 3.",
     abilityTags: [],
@@ -5767,7 +5768,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "frizzly",
+    id: Species.Frizzly,
     name: "Frizzly",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Electric],
@@ -5785,7 +5786,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "frizzly",
+    id: Species.Frizzly,
     name: "Frizzly",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Electric],
@@ -5803,7 +5804,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "frizzly",
+    id: Species.Frizzly,
     name: "Frizzly",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Electric],
@@ -5821,7 +5822,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "fumungus",
+    id: Species.Fumungus,
     name: "Fumungus",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Grass, CreatureType.Toxic],
@@ -5840,7 +5841,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "fumungus",
+    id: Species.Fumungus,
     name: "Fumungus",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Grass, CreatureType.Toxic],
@@ -5859,7 +5860,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "fumungus",
+    id: Species.Fumungus,
     name: "Fumungus",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Grass, CreatureType.Toxic],
@@ -5878,7 +5879,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "furnadon",
+    id: Species.Furnadon,
     name: "Furnadon",
     rarity: Rarity.Common,
     types: [CreatureType.Fire, CreatureType.Curio],
@@ -5895,7 +5896,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "furnadon",
+    id: Species.Furnadon,
     name: "Furnadon",
     rarity: Rarity.Common,
     types: [CreatureType.Fire, CreatureType.Curio],
@@ -5912,7 +5913,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "furnadon",
+    id: Species.Furnadon,
     name: "Furnadon",
     rarity: Rarity.Common,
     types: [CreatureType.Fire, CreatureType.Curio],
@@ -5929,7 +5930,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "gachapod",
+    id: Species.Gachapod,
     name: "Gachapod",
     rarity: Rarity.Legendary,
     types: [CreatureType.Curio],
@@ -5945,7 +5946,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "gachapod",
+    id: Species.Gachapod,
     name: "Gachapod",
     rarity: Rarity.Legendary,
     types: [CreatureType.Curio],
@@ -5961,7 +5962,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "gachapod",
+    id: Species.Gachapod,
     name: "Gachapod",
     rarity: Rarity.Legendary,
     types: [CreatureType.Curio],
@@ -5977,7 +5978,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "gaiadrasil",
+    id: Species.Gaiadrasil,
     name: "Gaiadrasil",
     rarity: Rarity.Legendary,
     types: [CreatureType.Grass],
@@ -5993,7 +5994,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "gaiadrasil",
+    id: Species.Gaiadrasil,
     name: "Gaiadrasil",
     rarity: Rarity.Legendary,
     types: [CreatureType.Grass],
@@ -6009,7 +6010,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "gaiadrasil",
+    id: Species.Gaiadrasil,
     name: "Gaiadrasil",
     rarity: Rarity.Legendary,
     types: [CreatureType.Grass],
@@ -6025,7 +6026,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "galvanine",
+    id: Species.Galvanine,
     name: "Galvanine",
     rarity: Rarity.Legendary,
     types: [CreatureType.Electric],
@@ -6043,7 +6044,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "galvanine",
+    id: Species.Galvanine,
     name: "Galvanine",
     rarity: Rarity.Legendary,
     types: [CreatureType.Electric],
@@ -6061,7 +6062,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "galvanine",
+    id: Species.Galvanine,
     name: "Galvanine",
     rarity: Rarity.Legendary,
     types: [CreatureType.Electric],
@@ -6079,7 +6080,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "geminiss",
+    id: Species.Geminiss,
     name: "Geminiss",
     rarity: Rarity.Legendary,
     types: [CreatureType.Rock],
@@ -6096,7 +6097,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "geminiss",
+    id: Species.Geminiss,
     name: "Geminiss",
     rarity: Rarity.Legendary,
     types: [CreatureType.Rock],
@@ -6113,7 +6114,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "geminiss",
+    id: Species.Geminiss,
     name: "Geminiss",
     rarity: Rarity.Legendary,
     types: [CreatureType.Rock],
@@ -6130,7 +6131,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "gemwing",
+    id: Species.Gemwing,
     name: "Gemwing",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Bug],
@@ -6147,7 +6148,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "gemwing",
+    id: Species.Gemwing,
     name: "Gemwing",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Bug],
@@ -6164,7 +6165,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "gemwing",
+    id: Species.Gemwing,
     name: "Gemwing",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Bug],
@@ -6181,7 +6182,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "gildshell",
+    id: Species.Gildshell,
     name: "Gildshell",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Bug],
@@ -6198,7 +6199,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "gildshell",
+    id: Species.Gildshell,
     name: "Gildshell",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Bug],
@@ -6215,7 +6216,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "gildshell",
+    id: Species.Gildshell,
     name: "Gildshell",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Bug],
@@ -6232,7 +6233,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "ginsage",
+    id: Species.Ginsage,
     name: "Ginsage",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Grass],
@@ -6249,7 +6250,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "ginsage",
+    id: Species.Ginsage,
     name: "Ginsage",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Grass],
@@ -6266,7 +6267,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "ginsage",
+    id: Species.Ginsage,
     name: "Ginsage",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Grass],
@@ -6283,7 +6284,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "goldora",
+    id: Species.Goldora,
     name: "Goldora",
     rarity: Rarity.Mythical,
     types: [CreatureType.Curio],
@@ -6299,7 +6300,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "goldora",
+    id: Species.Goldora,
     name: "Goldora",
     rarity: Rarity.Mythical,
     types: [CreatureType.Curio],
@@ -6315,7 +6316,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "goldora",
+    id: Species.Goldora,
     name: "Goldora",
     rarity: Rarity.Mythical,
     types: [CreatureType.Curio],
@@ -6331,7 +6332,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "guardiant",
+    id: Species.Guardiant,
     name: "Guardiant",
     rarity: Rarity.Common,
     types: [CreatureType.Bug],
@@ -6350,7 +6351,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "guardiant",
+    id: Species.Guardiant,
     name: "Guardiant",
     rarity: Rarity.Common,
     types: [CreatureType.Bug],
@@ -6369,7 +6370,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "guardiant",
+    id: Species.Guardiant,
     name: "Guardiant",
     rarity: Rarity.Common,
     types: [CreatureType.Bug],
@@ -6388,7 +6389,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06; LEVEL 4 VALUE INFERRED -- the notes publish levels 1-3 only, so L4 is rescaled by the same factor as L1 to preserve the existing ratio)",
   },
   {
-    id: "humbolt",
+    id: Species.Humbolt,
     name: "Humbolt",
     rarity: Rarity.Rare,
     types: [CreatureType.Electric, CreatureType.Flying],
@@ -6405,7 +6406,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "humbolt",
+    id: Species.Humbolt,
     name: "Humbolt",
     rarity: Rarity.Rare,
     types: [CreatureType.Electric, CreatureType.Flying],
@@ -6422,7 +6423,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "humbolt",
+    id: Species.Humbolt,
     name: "Humbolt",
     rarity: Rarity.Rare,
     types: [CreatureType.Electric, CreatureType.Flying],
@@ -6439,7 +6440,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "ignit",
+    id: Species.Ignit,
     name: "Ignit",
     rarity: Rarity.Rare,
     types: [CreatureType.Fire],
@@ -6448,7 +6449,7 @@ export const creatures: CreatureRecord[] = [
     shopCost: 40,
     baseCooldownSeconds: 8,
     appliesStatus: [{ type: StatusEffectType.Burn, amount: 2 }],
-    evolvesInto: "flarilisk",
+    evolvesInto: Species.Flarilisk,
     abilityText: "Evolve.",
     abilityTags: [],
     spriteFile: "ignit.png",
@@ -6457,7 +6458,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "ignit",
+    id: Species.Ignit,
     name: "Ignit",
     rarity: Rarity.Rare,
     types: [CreatureType.Fire],
@@ -6466,7 +6467,7 @@ export const creatures: CreatureRecord[] = [
     shopCost: 40,
     baseCooldownSeconds: 8,
     appliesStatus: [{ type: StatusEffectType.Burn, amount: 3 }],
-    evolvesInto: "flarilisk",
+    evolvesInto: Species.Flarilisk,
     abilityText: "Evolve.",
     abilityTags: [],
     spriteFile: "ignit.png",
@@ -6475,7 +6476,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "ignit",
+    id: Species.Ignit,
     name: "Ignit",
     rarity: Rarity.Rare,
     types: [CreatureType.Fire],
@@ -6484,7 +6485,7 @@ export const creatures: CreatureRecord[] = [
     shopCost: 40,
     baseCooldownSeconds: 1,
     appliesStatus: [{ type: StatusEffectType.Burn, amount: 3 }],
-    evolvesInto: "flarilisk",
+    evolvesInto: Species.Flarilisk,
     abilityText: "Evolve.",
     abilityTags: [],
     spriteFile: "ignit.png",
@@ -6493,7 +6494,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "ironcore",
+    id: Species.Ironcore,
     name: "Ironcore",
     rarity: Rarity.Rare,
     types: [CreatureType.Steel],
@@ -6510,7 +6511,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "ironcore",
+    id: Species.Ironcore,
     name: "Ironcore",
     rarity: Rarity.Rare,
     types: [CreatureType.Steel],
@@ -6527,7 +6528,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "ironcore",
+    id: Species.Ironcore,
     name: "Ironcore",
     rarity: Rarity.Rare,
     types: [CreatureType.Steel],
@@ -6544,7 +6545,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "joltail",
+    id: Species.Joltail,
     name: "Joltail",
     rarity: Rarity.Common,
     types: [CreatureType.Electric],
@@ -6561,7 +6562,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "joltail",
+    id: Species.Joltail,
     name: "Joltail",
     rarity: Rarity.Common,
     types: [CreatureType.Electric],
@@ -6578,7 +6579,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "joltail",
+    id: Species.Joltail,
     name: "Joltail",
     rarity: Rarity.Common,
     types: [CreatureType.Electric],
@@ -6595,7 +6596,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "kappow",
+    id: Species.Kappow,
     name: "Kappow",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Water, CreatureType.Fighting],
@@ -6612,7 +6613,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "kappow",
+    id: Species.Kappow,
     name: "Kappow",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Water, CreatureType.Fighting],
@@ -6629,7 +6630,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "kappow",
+    id: Species.Kappow,
     name: "Kappow",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Water, CreatureType.Fighting],
@@ -6646,7 +6647,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "kickrane",
+    id: Species.Kickrane,
     name: "Kickrane",
     rarity: Rarity.Rare,
     types: [CreatureType.Fighting, CreatureType.Flying],
@@ -6671,7 +6672,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "kickrane",
+    id: Species.Kickrane,
     name: "Kickrane",
     rarity: Rarity.Rare,
     types: [CreatureType.Fighting, CreatureType.Flying],
@@ -6696,7 +6697,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "kickrane",
+    id: Species.Kickrane,
     name: "Kickrane",
     rarity: Rarity.Rare,
     types: [CreatureType.Fighting, CreatureType.Flying],
@@ -6721,7 +6722,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "kindlepot",
+    id: Species.Kindlepot,
     name: "Kindlepot",
     rarity: Rarity.Common,
     types: [CreatureType.Fire, CreatureType.Curio],
@@ -6730,7 +6731,7 @@ export const creatures: CreatureRecord[] = [
     shopCost: 0,
     baseCooldownSeconds: 5,
     appliesStatus: [{ type: StatusEffectType.Burn, amount: 8 }],
-    evolvesInto: "furnadon",
+    evolvesInto: Species.Furnadon,
     abilityText: "Evolve after collecting 5 more Trinkets.(5 left!)",
     abilityTags: [],
     spriteFile: "kindlepot.png",
@@ -6738,7 +6739,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "kindlepot",
+    id: Species.Kindlepot,
     name: "Kindlepot",
     rarity: Rarity.Common,
     types: [CreatureType.Fire, CreatureType.Curio],
@@ -6747,7 +6748,7 @@ export const creatures: CreatureRecord[] = [
     shopCost: 0,
     baseCooldownSeconds: 5,
     appliesStatus: [{ type: StatusEffectType.Burn, amount: 12 }],
-    evolvesInto: "furnadon",
+    evolvesInto: Species.Furnadon,
     abilityText: "Evolve after collecting 5 more Trinkets.(5 left!)",
     abilityTags: [],
     spriteFile: "kindlepot.png",
@@ -6755,7 +6756,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "kindlepot",
+    id: Species.Kindlepot,
     name: "Kindlepot",
     rarity: Rarity.Common,
     types: [CreatureType.Fire, CreatureType.Curio],
@@ -6764,7 +6765,7 @@ export const creatures: CreatureRecord[] = [
     shopCost: 0,
     baseCooldownSeconds: 5,
     appliesStatus: [{ type: StatusEffectType.Burn, amount: 24 }],
-    evolvesInto: "furnadon",
+    evolvesInto: Species.Furnadon,
     abilityText: "Evolve after collecting 5 more Trinkets.(5 left!)",
     abilityTags: [],
     spriteFile: "kindlepot.png",
@@ -6772,7 +6773,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "lamplet",
+    id: Species.Lamplet,
     name: "Lamplet",
     rarity: Rarity.Common,
     types: [CreatureType.Bug, CreatureType.Fire],
@@ -6788,7 +6789,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "lamplet",
+    id: Species.Lamplet,
     name: "Lamplet",
     rarity: Rarity.Common,
     types: [CreatureType.Bug, CreatureType.Fire],
@@ -6804,7 +6805,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "lamplet",
+    id: Species.Lamplet,
     name: "Lamplet",
     rarity: Rarity.Common,
     types: [CreatureType.Bug, CreatureType.Fire],
@@ -6820,7 +6821,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "leafleap",
+    id: Species.Leafleap,
     name: "Leafleap",
     rarity: Rarity.Common,
     types: [CreatureType.Bug, CreatureType.Grass],
@@ -6837,7 +6838,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "leafleap",
+    id: Species.Leafleap,
     name: "Leafleap",
     rarity: Rarity.Common,
     types: [CreatureType.Bug, CreatureType.Grass],
@@ -6854,7 +6855,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "leafleap",
+    id: Species.Leafleap,
     name: "Leafleap",
     rarity: Rarity.Common,
     types: [CreatureType.Bug, CreatureType.Grass],
@@ -6871,7 +6872,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "lignite",
+    id: Species.Lignite,
     name: "Lignite",
     rarity: Rarity.Rare,
     types: [CreatureType.Fire],
@@ -6888,7 +6889,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "lignite",
+    id: Species.Lignite,
     name: "Lignite",
     rarity: Rarity.Rare,
     types: [CreatureType.Fire],
@@ -6905,7 +6906,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "lignite",
+    id: Species.Lignite,
     name: "Lignite",
     rarity: Rarity.Rare,
     types: [CreatureType.Fire],
@@ -6922,7 +6923,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06; LEVEL 4 VALUE INFERRED -- the notes publish levels 1-3 only, so L4 is rescaled by the same factor as L1 to preserve the existing ratio)",
   },
   {
-    id: "lumijel",
+    id: Species.Lumijel,
     name: "Lumijel",
     rarity: Rarity.Rare,
     types: [CreatureType.Water],
@@ -6940,7 +6941,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "lumijel",
+    id: Species.Lumijel,
     name: "Lumijel",
     rarity: Rarity.Rare,
     types: [CreatureType.Water],
@@ -6958,7 +6959,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "lumijel",
+    id: Species.Lumijel,
     name: "Lumijel",
     rarity: Rarity.Rare,
     types: [CreatureType.Water],
@@ -6976,7 +6977,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "magmalith",
+    id: Species.Magmalith,
     name: "Magmalith",
     rarity: Rarity.Rare,
     types: [CreatureType.Fire],
@@ -6995,7 +6996,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "magmalith",
+    id: Species.Magmalith,
     name: "Magmalith",
     rarity: Rarity.Rare,
     types: [CreatureType.Fire],
@@ -7014,7 +7015,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "magmalith",
+    id: Species.Magmalith,
     name: "Magmalith",
     rarity: Rarity.Rare,
     types: [CreatureType.Fire],
@@ -7033,7 +7034,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "magmite",
+    id: Species.Magmite,
     name: "Magmite",
     rarity: Rarity.Common,
     types: [CreatureType.Fire, CreatureType.Rock],
@@ -7049,7 +7050,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "magmite",
+    id: Species.Magmite,
     name: "Magmite",
     rarity: Rarity.Common,
     types: [CreatureType.Fire, CreatureType.Rock],
@@ -7065,7 +7066,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "magmite",
+    id: Species.Magmite,
     name: "Magmite",
     rarity: Rarity.Common,
     types: [CreatureType.Fire, CreatureType.Rock],
@@ -7081,7 +7082,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "mallogre",
+    id: Species.Mallogre,
     name: "Mallogre",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Curio, CreatureType.Rock],
@@ -7099,7 +7100,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "mallogre",
+    id: Species.Mallogre,
     name: "Mallogre",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Curio, CreatureType.Rock],
@@ -7117,7 +7118,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "mallogre",
+    id: Species.Mallogre,
     name: "Mallogre",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Curio, CreatureType.Rock],
@@ -7135,7 +7136,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "miasmaw",
+    id: Species.Miasmaw,
     name: "Miasmaw",
     rarity: Rarity.Legendary,
     types: [CreatureType.Toxic],
@@ -7152,7 +7153,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "miasmaw",
+    id: Species.Miasmaw,
     name: "Miasmaw",
     rarity: Rarity.Legendary,
     types: [CreatureType.Toxic],
@@ -7169,7 +7170,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "miasmaw",
+    id: Species.Miasmaw,
     name: "Miasmaw",
     rarity: Rarity.Legendary,
     types: [CreatureType.Toxic],
@@ -7186,7 +7187,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "missingn",
+    id: Species.Missingn,
     name: "MissingN.",
     rarity: Rarity.Mythical,
     types: [CreatureType.NULL],
@@ -7203,7 +7204,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "missingn",
+    id: Species.Missingn,
     name: "MissingN.",
     rarity: Rarity.Mythical,
     types: [CreatureType.NULL],
@@ -7220,7 +7221,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "missingn",
+    id: Species.Missingn,
     name: "MissingN.",
     rarity: Rarity.Mythical,
     types: [CreatureType.NULL],
@@ -7237,7 +7238,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "mosslug",
+    id: Species.Mosslug,
     name: "Mosslug",
     rarity: Rarity.Common,
     types: [CreatureType.Water, CreatureType.Grass],
@@ -7256,7 +7257,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "mosslug",
+    id: Species.Mosslug,
     name: "Mosslug",
     rarity: Rarity.Common,
     types: [CreatureType.Water, CreatureType.Grass],
@@ -7275,7 +7276,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "mosslug",
+    id: Species.Mosslug,
     name: "Mosslug",
     rarity: Rarity.Common,
     types: [CreatureType.Water, CreatureType.Grass],
@@ -7294,7 +7295,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "nekoffin",
+    id: Species.Nekoffin,
     name: "Nekoffin",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Curio, CreatureType.Ghost],
@@ -7311,7 +7312,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "nekoffin",
+    id: Species.Nekoffin,
     name: "Nekoffin",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Curio, CreatureType.Ghost],
@@ -7328,7 +7329,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "nekoffin",
+    id: Species.Nekoffin,
     name: "Nekoffin",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Curio, CreatureType.Ghost],
@@ -7345,7 +7346,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "ninflora",
+    id: Species.Ninflora,
     name: "Ninflora",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Grass, CreatureType.Fighting],
@@ -7362,7 +7363,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "ninflora",
+    id: Species.Ninflora,
     name: "Ninflora",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Grass, CreatureType.Fighting],
@@ -7379,7 +7380,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "ninflora",
+    id: Species.Ninflora,
     name: "Ninflora",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Grass, CreatureType.Fighting],
@@ -7396,7 +7397,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "noxalith",
+    id: Species.Noxalith,
     name: "Noxalith",
     rarity: Rarity.Rare,
     types: [CreatureType.Toxic],
@@ -7415,7 +7416,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "noxalith",
+    id: Species.Noxalith,
     name: "Noxalith",
     rarity: Rarity.Rare,
     types: [CreatureType.Toxic],
@@ -7434,7 +7435,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "noxalith",
+    id: Species.Noxalith,
     name: "Noxalith",
     rarity: Rarity.Rare,
     types: [CreatureType.Toxic],
@@ -7453,7 +7454,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "noxnimbus",
+    id: Species.Noxnimbus,
     name: "Noxnimbus",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Toxic],
@@ -7472,7 +7473,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "noxnimbus",
+    id: Species.Noxnimbus,
     name: "Noxnimbus",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Toxic],
@@ -7491,7 +7492,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "noxnimbus",
+    id: Species.Noxnimbus,
     name: "Noxnimbus",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Toxic],
@@ -7510,7 +7511,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "null00",
+    id: Species.Null00,
     name: "NULL-00",
     rarity: Rarity.Mythical,
     types: [CreatureType.NULL],
@@ -7527,7 +7528,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "null00",
+    id: Species.Null00,
     name: "NULL-00",
     rarity: Rarity.Mythical,
     types: [CreatureType.NULL],
@@ -7544,7 +7545,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "null00",
+    id: Species.Null00,
     name: "NULL-00",
     rarity: Rarity.Mythical,
     types: [CreatureType.NULL],
@@ -7561,7 +7562,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "null7f",
+    id: Species.Null7f,
     name: "NULL-7F",
     rarity: Rarity.Mythical,
     types: [CreatureType.NULL],
@@ -7578,7 +7579,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "null7f",
+    id: Species.Null7f,
     name: "NULL-7F",
     rarity: Rarity.Mythical,
     types: [CreatureType.NULL],
@@ -7595,7 +7596,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "null7f",
+    id: Species.Null7f,
     name: "NULL-7F",
     rarity: Rarity.Mythical,
     types: [CreatureType.NULL],
@@ -7612,7 +7613,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "nullff",
+    id: Species.Nullff,
     name: "NULL-FF",
     rarity: Rarity.Mythical,
     types: [CreatureType.NULL],
@@ -7629,7 +7630,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "nullff",
+    id: Species.Nullff,
     name: "NULL-FF",
     rarity: Rarity.Mythical,
     types: [CreatureType.NULL],
@@ -7646,7 +7647,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "nullff",
+    id: Species.Nullff,
     name: "NULL-FF",
     rarity: Rarity.Mythical,
     types: [CreatureType.NULL],
@@ -7663,7 +7664,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "omnichrome",
+    id: Species.Omnichrome,
     name: "Omnichrome",
     rarity: Rarity.Mythical,
     types: [CreatureType.All],
@@ -7680,7 +7681,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "omnichrome",
+    id: Species.Omnichrome,
     name: "Omnichrome",
     rarity: Rarity.Mythical,
     types: [CreatureType.All],
@@ -7697,7 +7698,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "omnichrome",
+    id: Species.Omnichrome,
     name: "Omnichrome",
     rarity: Rarity.Mythical,
     types: [CreatureType.All],
@@ -7714,7 +7715,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "oniclaw",
+    id: Species.Oniclaw,
     name: "Oniclaw",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Fire],
@@ -7731,7 +7732,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "oniclaw",
+    id: Species.Oniclaw,
     name: "Oniclaw",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Fire],
@@ -7748,7 +7749,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "oniclaw",
+    id: Species.Oniclaw,
     name: "Oniclaw",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Fire],
@@ -7765,7 +7766,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "opalion",
+    id: Species.Opalion,
     name: "Opalion",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Rock],
@@ -7782,7 +7783,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "opalion",
+    id: Species.Opalion,
     name: "Opalion",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Rock],
@@ -7799,7 +7800,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "opalion",
+    id: Species.Opalion,
     name: "Opalion",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Rock],
@@ -7816,7 +7817,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "orcana",
+    id: Species.Orcana,
     name: "Orcana",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Water],
@@ -7833,7 +7834,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "orcana",
+    id: Species.Orcana,
     name: "Orcana",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Water],
@@ -7850,7 +7851,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "orcana",
+    id: Species.Orcana,
     name: "Orcana",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Water],
@@ -7867,7 +7868,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "ouroblaze",
+    id: Species.Ouroblaze,
     name: "Ouroblaze",
     rarity: Rarity.Legendary,
     types: [CreatureType.Dragon, CreatureType.Fire],
@@ -7884,7 +7885,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "ouroblaze",
+    id: Species.Ouroblaze,
     name: "Ouroblaze",
     rarity: Rarity.Legendary,
     types: [CreatureType.Dragon, CreatureType.Fire],
@@ -7901,7 +7902,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "ouroblaze",
+    id: Species.Ouroblaze,
     name: "Ouroblaze",
     rarity: Rarity.Legendary,
     types: [CreatureType.Dragon, CreatureType.Fire],
@@ -7918,7 +7919,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "panbud",
+    id: Species.Panbud,
     name: "Panbud",
     rarity: Rarity.Common,
     types: [CreatureType.Grass],
@@ -7927,7 +7928,7 @@ export const creatures: CreatureRecord[] = [
     shopCost: 10,
     baseCooldownSeconds: 5,
     publishedCast: { damage: 50, channel: DamageChannel.Direct },
-    evolvesInto: "bambudo",
+    evolvesInto: Species.Bambudo,
     evolvesAtLevel: 3,
     abilityText: "Evolves at level 3.",
     abilityTags: [],
@@ -7936,7 +7937,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "panbud",
+    id: Species.Panbud,
     name: "Panbud",
     rarity: Rarity.Common,
     types: [CreatureType.Grass],
@@ -7945,7 +7946,7 @@ export const creatures: CreatureRecord[] = [
     shopCost: 10,
     baseCooldownSeconds: 5,
     publishedCast: { damage: 75, channel: DamageChannel.Direct },
-    evolvesInto: "bambudo",
+    evolvesInto: Species.Bambudo,
     evolvesAtLevel: 3,
     abilityText: "Evolves at level 3.",
     abilityTags: [],
@@ -7954,7 +7955,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "panbud",
+    id: Species.Panbud,
     name: "Panbud",
     rarity: Rarity.Common,
     types: [CreatureType.Grass],
@@ -7963,7 +7964,7 @@ export const creatures: CreatureRecord[] = [
     shopCost: 10,
     baseCooldownSeconds: 5,
     publishedCast: { damage: 75, channel: DamageChannel.Direct },
-    evolvesInto: "bambudo",
+    evolvesInto: Species.Bambudo,
     evolvesAtLevel: 3,
     abilityText: "Evolves at level 3.",
     abilityTags: [],
@@ -7972,7 +7973,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "pawsperity",
+    id: Species.Pawsperity,
     name: "Pawsperity",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Fighting, CreatureType.Curio],
@@ -7989,7 +7990,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "pawsperity",
+    id: Species.Pawsperity,
     name: "Pawsperity",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Fighting, CreatureType.Curio],
@@ -8006,7 +8007,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "pawsperity",
+    id: Species.Pawsperity,
     name: "Pawsperity",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Fighting, CreatureType.Curio],
@@ -8023,7 +8024,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "petrirex",
+    id: Species.Petrirex,
     name: "Petrirex",
     rarity: Rarity.Rare,
     types: [CreatureType.Rock, CreatureType.Ghost],
@@ -8042,7 +8043,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "petrirex",
+    id: Species.Petrirex,
     name: "Petrirex",
     rarity: Rarity.Rare,
     types: [CreatureType.Rock, CreatureType.Ghost],
@@ -8061,7 +8062,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "petrirex",
+    id: Species.Petrirex,
     name: "Petrirex",
     rarity: Rarity.Rare,
     types: [CreatureType.Rock, CreatureType.Ghost],
@@ -8080,7 +8081,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "pipskull",
+    id: Species.Pipskull,
     name: "Pipskull",
     rarity: Rarity.Common,
     types: [CreatureType.Ghost],
@@ -8089,7 +8090,7 @@ export const creatures: CreatureRecord[] = [
     shopCost: 15,
     baseCooldownSeconds: 4,
     publishedCast: { damage: 40, channel: DamageChannel.Direct },
-    evolvesInto: "ratacomb",
+    evolvesInto: Species.Ratacomb,
     abilityText: "Evolve after this monster experiences Knockout 3 times.",
     abilityTags: [],
     spriteFile: "pipskull.png",
@@ -8097,7 +8098,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "pipskull",
+    id: Species.Pipskull,
     name: "Pipskull",
     rarity: Rarity.Common,
     types: [CreatureType.Ghost],
@@ -8106,7 +8107,7 @@ export const creatures: CreatureRecord[] = [
     shopCost: 15,
     baseCooldownSeconds: 4,
     publishedCast: { damage: 60, channel: DamageChannel.Direct },
-    evolvesInto: "ratacomb",
+    evolvesInto: Species.Ratacomb,
     abilityText: "Evolve after this monster experiences Knockout 3 times.",
     abilityTags: [],
     spriteFile: "pipskull.png",
@@ -8114,7 +8115,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "pipskull",
+    id: Species.Pipskull,
     name: "Pipskull",
     rarity: Rarity.Common,
     types: [CreatureType.Ghost],
@@ -8123,7 +8124,7 @@ export const creatures: CreatureRecord[] = [
     shopCost: 15,
     baseCooldownSeconds: 4,
     publishedCast: { damage: 120, channel: DamageChannel.Direct },
-    evolvesInto: "ratacomb",
+    evolvesInto: Species.Ratacomb,
     abilityText: "Evolve after this monster experiences Knockout 3 times.",
     abilityTags: [],
     spriteFile: "pipskull.png",
@@ -8131,7 +8132,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "plunderbird",
+    id: Species.Plunderbird,
     name: "Plunderbird",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Water, CreatureType.Flying],
@@ -8149,7 +8150,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "plunderbird",
+    id: Species.Plunderbird,
     name: "Plunderbird",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Water, CreatureType.Flying],
@@ -8167,7 +8168,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "plunderbird",
+    id: Species.Plunderbird,
     name: "Plunderbird",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Water, CreatureType.Flying],
@@ -8185,7 +8186,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "pompummel",
+    id: Species.Pompummel,
     name: "Pompummel",
     rarity: Rarity.Legendary,
     types: [CreatureType.Fighting],
@@ -8202,7 +8203,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "pompummel",
+    id: Species.Pompummel,
     name: "Pompummel",
     rarity: Rarity.Legendary,
     types: [CreatureType.Fighting],
@@ -8219,7 +8220,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "pompummel",
+    id: Species.Pompummel,
     name: "Pompummel",
     rarity: Rarity.Legendary,
     types: [CreatureType.Fighting],
@@ -8236,7 +8237,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "prismagon",
+    id: Species.Prismagon,
     name: "Prismagon",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Dragon],
@@ -8255,7 +8256,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "prismagon",
+    id: Species.Prismagon,
     name: "Prismagon",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Dragon],
@@ -8274,7 +8275,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "prismagon",
+    id: Species.Prismagon,
     name: "Prismagon",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Dragon],
@@ -8293,7 +8294,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "puffloon",
+    id: Species.Puffloon,
     name: "Puffloon",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Toxic, CreatureType.Water],
@@ -8312,7 +8313,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "puffloon",
+    id: Species.Puffloon,
     name: "Puffloon",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Toxic, CreatureType.Water],
@@ -8331,7 +8332,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "puffloon",
+    id: Species.Puffloon,
     name: "Puffloon",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Toxic, CreatureType.Water],
@@ -8350,7 +8351,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "purpleegg",
+    id: Species.Purpleegg,
     name: "Purple Egg",
     rarity: Rarity.SuperRare,
     types: [],
@@ -8369,7 +8370,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "purpleegg",
+    id: Species.Purpleegg,
     name: "Purple Egg",
     rarity: Rarity.SuperRare,
     types: [],
@@ -8388,7 +8389,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "purpleegg",
+    id: Species.Purpleegg,
     name: "Purple Egg",
     rarity: Rarity.SuperRare,
     types: [],
@@ -8407,7 +8408,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "pylong",
+    id: Species.Pylong,
     name: "Pylong",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Electric],
@@ -8425,7 +8426,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "pylong",
+    id: Species.Pylong,
     name: "Pylong",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Electric],
@@ -8443,7 +8444,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "pylong",
+    id: Species.Pylong,
     name: "Pylong",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Electric],
@@ -8461,7 +8462,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "pyrokami",
+    id: Species.Pyrokami,
     name: "Pyrokami",
     rarity: Rarity.Rare,
     types: [CreatureType.Fire],
@@ -8480,7 +8481,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "pyrokami",
+    id: Species.Pyrokami,
     name: "Pyrokami",
     rarity: Rarity.Rare,
     types: [CreatureType.Fire],
@@ -8499,7 +8500,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "pyrokami",
+    id: Species.Pyrokami,
     name: "Pyrokami",
     rarity: Rarity.Rare,
     types: [CreatureType.Fire],
@@ -8518,7 +8519,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "pyronade",
+    id: Species.Pyronade,
     name: "Pyronade",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Fire],
@@ -8535,7 +8536,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "pyronade",
+    id: Species.Pyronade,
     name: "Pyronade",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Fire],
@@ -8552,7 +8553,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "pyronade",
+    id: Species.Pyronade,
     name: "Pyronade",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Fire],
@@ -8569,7 +8570,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "quillustrous",
+    id: Species.Quillustrous,
     name: "Quillustrous",
     rarity: Rarity.Legendary,
     types: [CreatureType.Flying, CreatureType.Grass],
@@ -8586,7 +8587,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "quillustrous",
+    id: Species.Quillustrous,
     name: "Quillustrous",
     rarity: Rarity.Legendary,
     types: [CreatureType.Flying, CreatureType.Grass],
@@ -8603,7 +8604,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "quillustrous",
+    id: Species.Quillustrous,
     name: "Quillustrous",
     rarity: Rarity.Legendary,
     types: [CreatureType.Flying, CreatureType.Grass],
@@ -8620,7 +8621,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "ratacomb",
+    id: Species.Ratacomb,
     name: "Ratacomb",
     rarity: Rarity.Common,
     types: [CreatureType.Ghost],
@@ -8639,7 +8640,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "ratacomb",
+    id: Species.Ratacomb,
     name: "Ratacomb",
     rarity: Rarity.Common,
     types: [CreatureType.Ghost],
@@ -8658,7 +8659,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "ratacomb",
+    id: Species.Ratacomb,
     name: "Ratacomb",
     rarity: Rarity.Common,
     types: [CreatureType.Ghost],
@@ -8677,7 +8678,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "rattleghast",
+    id: Species.Rattleghast,
     name: "Rattleghast",
     rarity: Rarity.Common,
     types: [CreatureType.Ghost, CreatureType.Toxic],
@@ -8694,7 +8695,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "rattleghast",
+    id: Species.Rattleghast,
     name: "Rattleghast",
     rarity: Rarity.Common,
     types: [CreatureType.Ghost, CreatureType.Toxic],
@@ -8711,7 +8712,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "rattleghast",
+    id: Species.Rattleghast,
     name: "Rattleghast",
     rarity: Rarity.Common,
     types: [CreatureType.Ghost, CreatureType.Toxic],
@@ -8728,7 +8729,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "reapra",
+    id: Species.Reapra,
     name: "Reapra",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Ghost],
@@ -8745,7 +8746,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "reapra",
+    id: Species.Reapra,
     name: "Reapra",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Ghost],
@@ -8762,7 +8763,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "reapra",
+    id: Species.Reapra,
     name: "Reapra",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Ghost],
@@ -8779,7 +8780,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "rhizuka",
+    id: Species.Rhizuka,
     name: "Rhizuka",
     rarity: Rarity.Rare,
     types: [CreatureType.Rock],
@@ -8795,7 +8796,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "rhizuka",
+    id: Species.Rhizuka,
     name: "Rhizuka",
     rarity: Rarity.Rare,
     types: [CreatureType.Rock],
@@ -8811,7 +8812,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "rhizuka",
+    id: Species.Rhizuka,
     name: "Rhizuka",
     rarity: Rarity.Rare,
     types: [CreatureType.Rock],
@@ -8827,7 +8828,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "rigalord",
+    id: Species.Rigalord,
     name: "Rigalord",
     rarity: Rarity.Mythical,
     types: [CreatureType.Ghost],
@@ -8844,7 +8845,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "rigalord",
+    id: Species.Rigalord,
     name: "Rigalord",
     rarity: Rarity.Mythical,
     types: [CreatureType.Ghost],
@@ -8861,7 +8862,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "rigalord",
+    id: Species.Rigalord,
     name: "Rigalord",
     rarity: Rarity.Mythical,
     types: [CreatureType.Ghost],
@@ -8878,7 +8879,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "riglet",
+    id: Species.Riglet,
     name: "Riglet",
     rarity: Rarity.Mythical,
     types: [CreatureType.Ghost],
@@ -8887,7 +8888,7 @@ export const creatures: CreatureRecord[] = [
     shopCost: 80,
     baseCooldownSeconds: 2,
     publishedCast: { damage: 1, channel: DamageChannel.Direct },
-    evolvesInto: "rigalord",
+    evolvesInto: Species.Rigalord,
     abilityText: "At the start of the next day, devour the ally in front and evolve into Rigalord.",
     abilityTags: [],
     spriteFile: "riglet.png",
@@ -8895,7 +8896,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "riglet",
+    id: Species.Riglet,
     name: "Riglet",
     rarity: Rarity.Mythical,
     types: [CreatureType.Ghost],
@@ -8904,7 +8905,7 @@ export const creatures: CreatureRecord[] = [
     shopCost: 80,
     baseCooldownSeconds: 2,
     publishedCast: { damage: 1, channel: DamageChannel.Direct },
-    evolvesInto: "rigalord",
+    evolvesInto: Species.Rigalord,
     abilityText: "At the start of the next day, devour the ally in front and evolve into Rigalord.",
     abilityTags: [],
     spriteFile: "riglet.png",
@@ -8912,7 +8913,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "riglet",
+    id: Species.Riglet,
     name: "Riglet",
     rarity: Rarity.Mythical,
     types: [CreatureType.Ghost],
@@ -8921,7 +8922,7 @@ export const creatures: CreatureRecord[] = [
     shopCost: 80,
     baseCooldownSeconds: 2,
     publishedCast: { damage: 1, channel: DamageChannel.Direct },
-    evolvesInto: "rigalord",
+    evolvesInto: Species.Rigalord,
     abilityText: "At the start of the next day, devour the ally in front and evolve into Rigalord.",
     abilityTags: [],
     spriteFile: "riglet.png",
@@ -8929,7 +8930,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "rubbin",
+    id: Species.Rubbin,
     name: "Rubbin",
     rarity: Rarity.Common,
     types: [CreatureType.Curio],
@@ -8946,7 +8947,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "rubbin",
+    id: Species.Rubbin,
     name: "Rubbin",
     rarity: Rarity.Common,
     types: [CreatureType.Curio],
@@ -8963,7 +8964,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "rubbin",
+    id: Species.Rubbin,
     name: "Rubbin",
     rarity: Rarity.Common,
     types: [CreatureType.Curio],
@@ -8980,7 +8981,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "runerock",
+    id: Species.Runerock,
     name: "Runerock",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Rock],
@@ -8997,7 +8998,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "runerock",
+    id: Species.Runerock,
     name: "Runerock",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Rock],
@@ -9014,7 +9015,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "runerock",
+    id: Species.Runerock,
     name: "Runerock",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Rock],
@@ -9031,7 +9032,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "saberhorn",
+    id: Species.Saberhorn,
     name: "Saberhorn",
     rarity: Rarity.Legendary,
     types: [CreatureType.Dragon],
@@ -9051,7 +9052,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "saberhorn",
+    id: Species.Saberhorn,
     name: "Saberhorn",
     rarity: Rarity.Legendary,
     types: [CreatureType.Dragon],
@@ -9071,7 +9072,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "saberhorn",
+    id: Species.Saberhorn,
     name: "Saberhorn",
     rarity: Rarity.Legendary,
     types: [CreatureType.Dragon],
@@ -9091,7 +9092,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "sarudo",
+    id: Species.Sarudo,
     name: "Sarudo",
     rarity: Rarity.Rare,
     types: [CreatureType.Fighting],
@@ -9108,7 +9109,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "sarudo",
+    id: Species.Sarudo,
     name: "Sarudo",
     rarity: Rarity.Rare,
     types: [CreatureType.Fighting],
@@ -9125,7 +9126,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "sarudo",
+    id: Species.Sarudo,
     name: "Sarudo",
     rarity: Rarity.Rare,
     types: [CreatureType.Fighting],
@@ -9142,7 +9143,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "scorubble",
+    id: Species.Scorubble,
     name: "Scorubble",
     rarity: Rarity.Common,
     types: [CreatureType.Rock, CreatureType.Toxic],
@@ -9158,7 +9159,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "scorubble",
+    id: Species.Scorubble,
     name: "Scorubble",
     rarity: Rarity.Common,
     types: [CreatureType.Rock, CreatureType.Toxic],
@@ -9174,7 +9175,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "scorubble",
+    id: Species.Scorubble,
     name: "Scorubble",
     rarity: Rarity.Common,
     types: [CreatureType.Rock, CreatureType.Toxic],
@@ -9190,7 +9191,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "shelldra",
+    id: Species.Shelldra,
     name: "Shelldra",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Water, CreatureType.Dragon],
@@ -9207,7 +9208,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "shelldra",
+    id: Species.Shelldra,
     name: "Shelldra",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Water, CreatureType.Dragon],
@@ -9224,7 +9225,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "shelldra",
+    id: Species.Shelldra,
     name: "Shelldra",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Water, CreatureType.Dragon],
@@ -9241,7 +9242,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "shellter",
+    id: Species.Shellter,
     name: "Shellter",
     rarity: Rarity.Common,
     types: [CreatureType.Rock],
@@ -9258,7 +9259,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "shellter",
+    id: Species.Shellter,
     name: "Shellter",
     rarity: Rarity.Common,
     types: [CreatureType.Rock],
@@ -9275,7 +9276,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "shellter",
+    id: Species.Shellter,
     name: "Shellter",
     rarity: Rarity.Common,
     types: [CreatureType.Rock],
@@ -9292,7 +9293,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "shikitsune",
+    id: Species.Shikitsune,
     name: "Shikitsune",
     rarity: Rarity.Rare,
     types: [CreatureType.Ghost],
@@ -9309,7 +9310,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "shikitsune",
+    id: Species.Shikitsune,
     name: "Shikitsune",
     rarity: Rarity.Rare,
     types: [CreatureType.Ghost],
@@ -9326,7 +9327,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "shikitsune",
+    id: Species.Shikitsune,
     name: "Shikitsune",
     rarity: Rarity.Rare,
     types: [CreatureType.Ghost],
@@ -9343,7 +9344,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "shogapede",
+    id: Species.Shogapede,
     name: "Shogapede",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Bug, CreatureType.Toxic],
@@ -9359,7 +9360,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "shogapede",
+    id: Species.Shogapede,
     name: "Shogapede",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Bug, CreatureType.Toxic],
@@ -9375,7 +9376,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "shogapede",
+    id: Species.Shogapede,
     name: "Shogapede",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Bug, CreatureType.Toxic],
@@ -9391,7 +9392,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "shrinell",
+    id: Species.Shrinell,
     name: "Shrinell",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Curio],
@@ -9408,7 +9409,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "shrinell",
+    id: Species.Shrinell,
     name: "Shrinell",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Curio],
@@ -9425,7 +9426,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "shrinell",
+    id: Species.Shrinell,
     name: "Shrinell",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Curio],
@@ -9442,7 +9443,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "sirenade",
+    id: Species.Sirenade,
     name: "Sirenade",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Water],
@@ -9459,7 +9460,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "sirenade",
+    id: Species.Sirenade,
     name: "Sirenade",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Water],
@@ -9476,7 +9477,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "sirenade",
+    id: Species.Sirenade,
     name: "Sirenade",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Water],
@@ -9493,7 +9494,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "snapscald",
+    id: Species.Snapscald,
     name: "Snapscald",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Fire, CreatureType.Water],
@@ -9510,7 +9511,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "snapscald",
+    id: Species.Snapscald,
     name: "Snapscald",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Fire, CreatureType.Water],
@@ -9527,7 +9528,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "snapscald",
+    id: Species.Snapscald,
     name: "Snapscald",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Fire, CreatureType.Water],
@@ -9544,7 +9545,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "spinarai",
+    id: Species.Spinarai,
     name: "Spinarai",
     rarity: Rarity.Common,
     types: [CreatureType.Bug, CreatureType.Toxic],
@@ -9561,7 +9562,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "spinarai",
+    id: Species.Spinarai,
     name: "Spinarai",
     rarity: Rarity.Common,
     types: [CreatureType.Bug, CreatureType.Toxic],
@@ -9578,7 +9579,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "spinarai",
+    id: Species.Spinarai,
     name: "Spinarai",
     rarity: Rarity.Common,
     types: [CreatureType.Bug, CreatureType.Toxic],
@@ -9595,7 +9596,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "sproach",
+    id: Species.Sproach,
     name: "Sproach",
     rarity: Rarity.Rare,
     types: [CreatureType.Bug, CreatureType.Grass],
@@ -9611,7 +9612,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "sproach",
+    id: Species.Sproach,
     name: "Sproach",
     rarity: Rarity.Rare,
     types: [CreatureType.Bug, CreatureType.Grass],
@@ -9627,7 +9628,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "sproach",
+    id: Species.Sproach,
     name: "Sproach",
     rarity: Rarity.Rare,
     types: [CreatureType.Bug, CreatureType.Grass],
@@ -9643,7 +9644,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "sproutquill",
+    id: Species.Sproutquill,
     name: "Sproutquill",
     rarity: Rarity.Legendary,
     types: [CreatureType.Flying, CreatureType.Grass],
@@ -9652,7 +9653,7 @@ export const creatures: CreatureRecord[] = [
     shopCost: 0,
     baseCooldownSeconds: 7,
     publishedCast: { damage: 100, channel: DamageChannel.Direct },
-    evolvesInto: "fernfowl",
+    evolvesInto: Species.Fernfowl,
     abilityText: "Evolve after your team deals 10000 non-status Damage.(currently 0)",
     abilityTags: [],
     spriteFile: "sproutquill.png",
@@ -9660,7 +9661,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "sproutquill",
+    id: Species.Sproutquill,
     name: "Sproutquill",
     rarity: Rarity.Legendary,
     types: [CreatureType.Flying, CreatureType.Grass],
@@ -9669,7 +9670,7 @@ export const creatures: CreatureRecord[] = [
     shopCost: 0,
     baseCooldownSeconds: 7,
     publishedCast: { damage: 150, channel: DamageChannel.Direct },
-    evolvesInto: "fernfowl",
+    evolvesInto: Species.Fernfowl,
     abilityText: "Evolve after your team deals 10000 non-status Damage.(currently 0)",
     abilityTags: [],
     spriteFile: "sproutquill.png",
@@ -9677,7 +9678,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "sproutquill",
+    id: Species.Sproutquill,
     name: "Sproutquill",
     rarity: Rarity.Legendary,
     types: [CreatureType.Flying, CreatureType.Grass],
@@ -9686,7 +9687,7 @@ export const creatures: CreatureRecord[] = [
     shopCost: 0,
     baseCooldownSeconds: 7,
     publishedCast: { damage: 1500, channel: DamageChannel.Direct },
-    evolvesInto: "fernfowl",
+    evolvesInto: Species.Fernfowl,
     abilityText: "Evolve after your team deals 10000 non-status Damage.(currently 0)",
     abilityTags: [],
     spriteFile: "sproutquill.png",
@@ -9694,7 +9695,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "stalagrove",
+    id: Species.Stalagrove,
     name: "Stalagrove",
     rarity: Rarity.Rare,
     types: [CreatureType.Grass, CreatureType.Rock],
@@ -9710,7 +9711,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "stalagrove",
+    id: Species.Stalagrove,
     name: "Stalagrove",
     rarity: Rarity.Rare,
     types: [CreatureType.Grass, CreatureType.Rock],
@@ -9726,7 +9727,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "stalagrove",
+    id: Species.Stalagrove,
     name: "Stalagrove",
     rarity: Rarity.Rare,
     types: [CreatureType.Grass, CreatureType.Rock],
@@ -9742,7 +9743,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "steamscuttle",
+    id: Species.Steamscuttle,
     name: "Steamscuttle",
     rarity: Rarity.Rare,
     types: [CreatureType.Fire, CreatureType.Water],
@@ -9760,7 +9761,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "steamscuttle",
+    id: Species.Steamscuttle,
     name: "Steamscuttle",
     rarity: Rarity.Rare,
     types: [CreatureType.Fire, CreatureType.Water],
@@ -9778,7 +9779,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "steamscuttle",
+    id: Species.Steamscuttle,
     name: "Steamscuttle",
     rarity: Rarity.Rare,
     types: [CreatureType.Fire, CreatureType.Water],
@@ -9796,7 +9797,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)",
   },
   {
-    id: "stellagon",
+    id: Species.Stellagon,
     name: "Stellagon",
     rarity: Rarity.Legendary,
     types: [CreatureType.Dragon],
@@ -9813,7 +9814,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "stellagon",
+    id: Species.Stellagon,
     name: "Stellagon",
     rarity: Rarity.Legendary,
     types: [CreatureType.Dragon],
@@ -9830,7 +9831,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "stellagon",
+    id: Species.Stellagon,
     name: "Stellagon",
     rarity: Rarity.Legendary,
     types: [CreatureType.Dragon],
@@ -9847,7 +9848,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "stingarde",
+    id: Species.Stingarde,
     name: "Stingarde",
     rarity: Rarity.Common,
     types: [CreatureType.Bug],
@@ -9864,7 +9865,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "stingarde",
+    id: Species.Stingarde,
     name: "Stingarde",
     rarity: Rarity.Common,
     types: [CreatureType.Bug],
@@ -9881,7 +9882,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "stingarde",
+    id: Species.Stingarde,
     name: "Stingarde",
     rarity: Rarity.Common,
     types: [CreatureType.Bug],
@@ -9898,7 +9899,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "sukoi",
+    id: Species.Sukoi,
     name: "Sukoi",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Water],
@@ -9914,7 +9915,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "sukoi",
+    id: Species.Sukoi,
     name: "Sukoi",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Water],
@@ -9930,7 +9931,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "sukoi",
+    id: Species.Sukoi,
     name: "Sukoi",
     rarity: Rarity.Uncommon,
     types: [CreatureType.Water],
@@ -9946,7 +9947,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "swoonet",
+    id: Species.Swoonet,
     name: "Swoonet",
     rarity: Rarity.Common,
     types: [CreatureType.Water, CreatureType.Flying],
@@ -9963,7 +9964,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "swoonet",
+    id: Species.Swoonet,
     name: "Swoonet",
     rarity: Rarity.Common,
     types: [CreatureType.Water, CreatureType.Flying],
@@ -9980,7 +9981,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "swoonet",
+    id: Species.Swoonet,
     name: "Swoonet",
     rarity: Rarity.Common,
     types: [CreatureType.Water, CreatureType.Flying],
@@ -9997,7 +9998,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "talonite",
+    id: Species.Talonite,
     name: "Talonite",
     rarity: Rarity.Rare,
     types: [CreatureType.Flying, CreatureType.Rock],
@@ -10014,7 +10015,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "talonite",
+    id: Species.Talonite,
     name: "Talonite",
     rarity: Rarity.Rare,
     types: [CreatureType.Flying, CreatureType.Rock],
@@ -10031,7 +10032,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "talonite",
+    id: Species.Talonite,
     name: "Talonite",
     rarity: Rarity.Rare,
     types: [CreatureType.Flying, CreatureType.Rock],
@@ -10048,7 +10049,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "tengusto",
+    id: Species.Tengusto,
     name: "Tengusto",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Fighting, CreatureType.Flying],
@@ -10065,7 +10066,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "tengusto",
+    id: Species.Tengusto,
     name: "Tengusto",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Fighting, CreatureType.Flying],
@@ -10082,7 +10083,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "tengusto",
+    id: Species.Tengusto,
     name: "Tengusto",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Fighting, CreatureType.Flying],
@@ -10099,7 +10100,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "thorntail",
+    id: Species.Thorntail,
     name: "Thorntail",
     rarity: Rarity.Rare,
     types: [CreatureType.Grass, CreatureType.Toxic],
@@ -10119,7 +10120,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "thorntail",
+    id: Species.Thorntail,
     name: "Thorntail",
     rarity: Rarity.Rare,
     types: [CreatureType.Grass, CreatureType.Toxic],
@@ -10139,7 +10140,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "thorntail",
+    id: Species.Thorntail,
     name: "Thorntail",
     rarity: Rarity.Rare,
     types: [CreatureType.Grass, CreatureType.Toxic],
@@ -10159,7 +10160,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "torrantler",
+    id: Species.Torrantler,
     name: "Torrantler",
     rarity: Rarity.Legendary,
     types: [CreatureType.Water],
@@ -10176,7 +10177,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "torrantler",
+    id: Species.Torrantler,
     name: "Torrantler",
     rarity: Rarity.Legendary,
     types: [CreatureType.Water],
@@ -10193,7 +10194,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "torrantler",
+    id: Species.Torrantler,
     name: "Torrantler",
     rarity: Rarity.Legendary,
     types: [CreatureType.Water],
@@ -10210,7 +10211,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "toximoth",
+    id: Species.Toximoth,
     name: "Toximoth",
     rarity: Rarity.Common,
     types: [CreatureType.Bug, CreatureType.Toxic],
@@ -10228,7 +10229,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "toximoth",
+    id: Species.Toximoth,
     name: "Toximoth",
     rarity: Rarity.Common,
     types: [CreatureType.Bug, CreatureType.Toxic],
@@ -10246,7 +10247,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "toximoth",
+    id: Species.Toximoth,
     name: "Toximoth",
     rarity: Rarity.Common,
     types: [CreatureType.Bug, CreatureType.Toxic],
@@ -10264,7 +10265,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "tsunamere",
+    id: Species.Tsunamere,
     name: "Tsunamere",
     rarity: Rarity.Legendary,
     types: [CreatureType.Dragon, CreatureType.Water],
@@ -10281,7 +10282,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "tsunamere",
+    id: Species.Tsunamere,
     name: "Tsunamere",
     rarity: Rarity.Legendary,
     types: [CreatureType.Dragon, CreatureType.Water],
@@ -10298,7 +10299,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "tsunamere",
+    id: Species.Tsunamere,
     name: "Tsunamere",
     rarity: Rarity.Legendary,
     types: [CreatureType.Dragon, CreatureType.Water],
@@ -10315,7 +10316,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "velocect",
+    id: Species.Velocect,
     name: "Velocect",
     rarity: Rarity.Common,
     types: [CreatureType.Bug, CreatureType.Flying],
@@ -10331,7 +10332,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "velocect",
+    id: Species.Velocect,
     name: "Velocect",
     rarity: Rarity.Common,
     types: [CreatureType.Bug, CreatureType.Flying],
@@ -10347,7 +10348,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "velocect",
+    id: Species.Velocect,
     name: "Velocect",
     rarity: Rarity.Common,
     types: [CreatureType.Bug, CreatureType.Flying],
@@ -10363,7 +10364,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "vengrieve",
+    id: Species.Vengrieve,
     name: "Vengrieve",
     rarity: Rarity.Legendary,
     types: [CreatureType.Ghost],
@@ -10379,7 +10380,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "vengrieve",
+    id: Species.Vengrieve,
     name: "Vengrieve",
     rarity: Rarity.Legendary,
     types: [CreatureType.Ghost],
@@ -10395,7 +10396,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "vengrieve",
+    id: Species.Vengrieve,
     name: "Vengrieve",
     rarity: Rarity.Legendary,
     types: [CreatureType.Ghost],
@@ -10411,7 +10412,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "vipair",
+    id: Species.Vipair,
     name: "Vipair",
     rarity: Rarity.Rare,
     types: [CreatureType.Toxic, CreatureType.Curio],
@@ -10430,7 +10431,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "vipair",
+    id: Species.Vipair,
     name: "Vipair",
     rarity: Rarity.Rare,
     types: [CreatureType.Toxic, CreatureType.Curio],
@@ -10449,7 +10450,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "vipair",
+    id: Species.Vipair,
     name: "Vipair",
     rarity: Rarity.Rare,
     types: [CreatureType.Toxic, CreatureType.Curio],
@@ -10468,7 +10469,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "voltalith",
+    id: Species.Voltalith,
     name: "Voltalith",
     rarity: Rarity.Rare,
     types: [CreatureType.Electric],
@@ -10487,7 +10488,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "voltalith",
+    id: Species.Voltalith,
     name: "Voltalith",
     rarity: Rarity.Rare,
     types: [CreatureType.Electric],
@@ -10506,7 +10507,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "voltalith",
+    id: Species.Voltalith,
     name: "Voltalith",
     rarity: Rarity.Rare,
     types: [CreatureType.Electric],
@@ -10525,7 +10526,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "wishwash",
+    id: Species.Wishwash,
     name: "Wishwash",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Water],
@@ -10542,7 +10543,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "wishwash",
+    id: Species.Wishwash,
     name: "Wishwash",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Water],
@@ -10559,7 +10560,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "wishwash",
+    id: Species.Wishwash,
     name: "Wishwash",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Water],
@@ -10576,7 +10577,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "zephyrex",
+    id: Species.Zephyrex,
     name: "Zephyrex",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Flying],
@@ -10595,7 +10596,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "zephyrex",
+    id: Species.Zephyrex,
     name: "Zephyrex",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Flying],
@@ -10614,7 +10615,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "zephyrex",
+    id: Species.Zephyrex,
     name: "Zephyrex",
     rarity: Rarity.SuperRare,
     types: [CreatureType.Flying],
@@ -10633,7 +10634,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "bambudo",
+    id: Species.Bambudo,
     name: "Bambudo",
     rarity: Rarity.Common,
     types: [CreatureType.Grass],
@@ -10652,7 +10653,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "bambudo",
+    id: Species.Bambudo,
     name: "Bambudo",
     rarity: Rarity.Common,
     types: [CreatureType.Grass],
@@ -10671,7 +10672,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "bambudo",
+    id: Species.Bambudo,
     name: "Bambudo",
     rarity: Rarity.Common,
     types: [CreatureType.Grass],
@@ -10690,7 +10691,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "emperooze",
+    id: Species.Emperooze,
     name: "Emperooze",
     rarity: Rarity.Common,
     types: [CreatureType.Water],
@@ -10708,7 +10709,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "emperooze",
+    id: Species.Emperooze,
     name: "Emperooze",
     rarity: Rarity.Common,
     types: [CreatureType.Water],
@@ -10726,7 +10727,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "emperooze",
+    id: Species.Emperooze,
     name: "Emperooze",
     rarity: Rarity.Common,
     types: [CreatureType.Water],
@@ -10744,7 +10745,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "sunsage",
+    id: Species.Sunsage,
     name: "Sunsage",
     rarity: Rarity.Common,
     types: [CreatureType.Fire],
@@ -10762,7 +10763,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "sunsage",
+    id: Species.Sunsage,
     name: "Sunsage",
     rarity: Rarity.Common,
     types: [CreatureType.Fire],
@@ -10780,7 +10781,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "sunsage",
+    id: Species.Sunsage,
     name: "Sunsage",
     rarity: Rarity.Common,
     types: [CreatureType.Fire],
@@ -10798,7 +10799,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "beetdown",
+    id: Species.Beetdown,
     name: "Beetdown",
     rarity: Rarity.Common,
     types: [CreatureType.Fighting, CreatureType.Grass],
@@ -10815,7 +10816,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "beetdown",
+    id: Species.Beetdown,
     name: "Beetdown",
     rarity: Rarity.Common,
     types: [CreatureType.Fighting, CreatureType.Grass],
@@ -10832,7 +10833,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "beetdown",
+    id: Species.Beetdown,
     name: "Beetdown",
     rarity: Rarity.Common,
     types: [CreatureType.Fighting, CreatureType.Grass],
@@ -10849,7 +10850,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 4 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "dewlotl",
+    id: Species.Dewlotl,
     name: "Dewlotl",
     rarity: Rarity.Common,
     types: [CreatureType.Water],
@@ -10866,7 +10867,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 2 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "dewlotl",
+    id: Species.Dewlotl,
     name: "Dewlotl",
     rarity: Rarity.Common,
     types: [CreatureType.Water],
@@ -10883,7 +10884,7 @@ export const creatures: CreatureRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (level 3 stats extracted from batodex.com's embedded per-page database, 2026-10-06, round 5 -- research.md G1)",
   },
   {
-    id: "dewlotl",
+    id: Species.Dewlotl,
     name: "Dewlotl",
     rarity: Rarity.Common,
     types: [CreatureType.Water],

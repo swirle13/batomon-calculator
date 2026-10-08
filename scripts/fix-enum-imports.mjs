@@ -21,7 +21,7 @@ import { join, relative, dirname } from "node:path";
 const ENUMS = [
   "Rarity", "CreatureType", "DamageChannel", "StatusEffectType", "AbilityTrigger",
   "RegionId", "GridRow", "ModifierStat", "EventLabel", "TimelineEventKind",
-  "StatChangeStat", "MultiplierScope", "StatColorKey", "ConfirmableField", "TargetKind", "AbilityTagKind", "TypeKind", "AffectedSpeciesKind",
+  "StatChangeStat", "MultiplierScope", "StatColorKey", "ConfirmableField", "TargetKind", "AbilityTagKind", "TypeKind", "AffectedSpeciesKind", "Species", "TrainerId", "TrinketId", "ItemId",
 ];
 
 function files(dir) {
@@ -32,8 +32,11 @@ function files(dir) {
 }
 
 /** Specifier from `file` to `src/data/enums`, POSIX-style and always explicitly relative. */
-function spec(file) {
-  let r = relative(dirname(file), "src/data/enums").split("\\").join("/");
+/** The id enums live in `src/data/ids.ts`; everything else in `src/data/enums.ts`. */
+const ID_ENUMS = new Set(["Species", "TrainerId", "TrinketId", "ItemId"]);
+
+function spec(file, module = "enums") {
+  let r = relative(dirname(file), `src/data/${module}`).split("\\").join("/");
   return r.startsWith(".") ? r : `./${r}`;
 }
 
@@ -78,8 +81,13 @@ for (const file of files("src")) {
 
   // Collapse the blank lines the removals left behind, then insert one import.
   t = t.replace(/^\n+/, "").replace(/\n{3,}/g, "\n\n");
-  if (used.length > 0) {
-    const line = `import { ${[...used].sort().join(", ")} } from "${spec(file)}";`;
+  const groups = [
+    ["enums", used.filter((u) => !ID_ENUMS.has(u))],
+    ["ids", used.filter((u) => ID_ENUMS.has(u))],
+  ].filter(([, names]) => names.length > 0);
+
+  for (const [module, names] of groups) {
+    const line = `import { ${[...names].sort().join(", ")} } from "${spec(file, module)}";`;
     const lines = t.split("\n");
     let last = -1;
     for (let i = 0; i < Math.min(lines.length, 80); i++) if (/^import\b/.test(lines[i])) last = i;

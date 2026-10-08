@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { act, renderHook } from "@testing-library/react";
 import { TeamConfigProvider, useTeamConfig } from "../TeamConfigContext";
 import { GridRow, ModifierStat } from "../../data/enums";
+import { Species } from "../../data/ids";
 
 /**
  * `movePlacement` (2026-10-05 round 3, data-model.md's "Drag-and-drop placement editing"
@@ -13,7 +14,7 @@ describe("TeamConfigContext.movePlacement", () => {
   it("moves a placement into an empty slot, preserving its level and modifiers", () => {
     const { result } = renderHook(() => useTeamConfig(), { wrapper: TeamConfigProvider });
 
-    act(() => result.current.setPlacement({ row: GridRow.Front, col: 0 }, "bumblebolt", 2));
+    act(() => result.current.setPlacement({ row: GridRow.Front, col: 0 }, Species.Bumblebolt, 2));
     act(() =>
       result.current.addPlacementModifier({ row: GridRow.Front, col: 0 }, { stat: ModifierStat.DamageFlatAdd, amount: 7 }),
     );
@@ -32,11 +33,11 @@ describe("TeamConfigContext.movePlacement", () => {
   it("swaps two placements onto each other's slots, each keeping its own level and modifiers", () => {
     const { result } = renderHook(() => useTeamConfig(), { wrapper: TeamConfigProvider });
 
-    act(() => result.current.setPlacement({ row: GridRow.Front, col: 0 }, "bumblebolt", 1));
+    act(() => result.current.setPlacement({ row: GridRow.Front, col: 0 }, Species.Bumblebolt, 1));
     act(() =>
       result.current.addPlacementModifier({ row: GridRow.Front, col: 0 }, { stat: ModifierStat.DamageFlatAdd, amount: 5 }),
     );
-    act(() => result.current.setPlacement({ row: GridRow.Front, col: 1 }, "scorchimp", 1));
+    act(() => result.current.setPlacement({ row: GridRow.Front, col: 1 }, Species.Scorchimp, 1));
     act(() =>
       result.current.addPlacementModifier({ row: GridRow.Front, col: 1 }, { stat: ModifierStat.BurnAmountAdd, amount: 2 }),
     );
@@ -64,7 +65,7 @@ describe("TeamConfigContext.movePlacement", () => {
 
   it("is a no-op when the source and destination slots are the same", () => {
     const { result } = renderHook(() => useTeamConfig(), { wrapper: TeamConfigProvider });
-    act(() => result.current.setPlacement({ row: GridRow.Front, col: 0 }, "bumblebolt", 1));
+    act(() => result.current.setPlacement({ row: GridRow.Front, col: 0 }, Species.Bumblebolt, 1));
     act(() => result.current.movePlacement({ row: GridRow.Front, col: 0 }, { row: GridRow.Front, col: 0 }));
     expect(result.current.config.placements).toHaveLength(1);
     expect(result.current.config.placements[0]!.creatureId).toBe("bumblebolt");

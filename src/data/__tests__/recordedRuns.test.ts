@@ -6,6 +6,7 @@ import { corpus } from "../corpus";
 import { timeToKill } from "../enemyHealth";
 import { perCastOutputOf } from "../../ui/shared/BatomonCard/BatomonCard";
 import { StatusEffectType } from "../enums";
+import { Species } from "../ids";
 
 /**
  * Regression anchors from recorded play. Each board came from a real run with a video reference.
@@ -49,8 +50,8 @@ describe("recorded run fixtures", () => {
     // 20 shield published, with +20/+20 entered by hand to stand in for its untriggerable ability;
     // the card must read 40/40, not 20/20 with a separate band showing 40.
     const config = importBuild(RECORDED_RUNS.find((r) => r.id === "r2d2")!.code);
-    const craghorn = config.placements.find((p) => p.creatureId === "craghorn")!;
-    const record = corpus.creatures.find((c) => c.id === "craghorn" && c.level === 1)!;
+    const craghorn = config.placements.find((p) => p.creatureId === Species.Craghorn)!;
+    const record = corpus.creatures.find((c) => c.id === Species.Craghorn && c.level === 1)!;
 
     expect(record.publishedCast?.damage ?? null).toBe(20);
     const shown = perCastOutputOf(record, craghorn.modifiers);

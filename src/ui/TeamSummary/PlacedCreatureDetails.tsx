@@ -4,9 +4,10 @@ import { TriggerButtons } from "./TriggerButtons";
 import { isPainted } from "../../data/typing";
 import { useTeamConfig } from "../../context/TeamConfigContext";
 import type { GridSlot, SimulationResult } from "../../data/types";
-import { slotKey } from "../../engine/grid";
+import {  } from "../../engine/grid";
 import { formatCooldown } from "../../data/format";
 import { BatomonCard, CooldownBlock, StatLines, buildStatLines, perCastOutputOf } from "../shared/BatomonCard/BatomonCard";
+import { placementKey } from "../../engine/grid";
 
 interface PlacedCreatureDetailsProps {
   result: SimulationResult;
@@ -65,7 +66,7 @@ export function PlacedCreatureDetails({ result, highlightedSlot }: PlacedCreatur
     );
   }
 
-  const effective = result.perCreatureEffectiveStats[`${creature.id}@${slotKey(placement.slot)}`];
+  const effective = result.perCreatureEffectiveStats[placementKey(creature.id, placement.slot)];
 
   /**
    * Only show "Effective this battle" when it actually differs from the card above it.

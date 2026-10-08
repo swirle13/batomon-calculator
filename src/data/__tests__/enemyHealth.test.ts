@@ -4,6 +4,7 @@ import { simulate } from "../../engine/simulate";
 import { corpus } from "../corpus";
 import type { TeamConfiguration } from "../types";
 import { GridRow } from "../enums";
+import { Species } from "../ids";
 
 describe("enemy HP by day", () => {
   it("covers days 1 through 19 and grows monotonically", () => {
@@ -32,8 +33,8 @@ describe("enemy HP by day", () => {
 describe("timeToKill", () => {
   const team = (windowSeconds: number): TeamConfiguration => ({
     placements: [
-      { slot: { row: GridRow.Back, col: 0 }, creatureId: "venopuff", level: 1 },
-      { slot: { row: GridRow.Back, col: 1 }, creatureId: "magmite", level: 1 },
+      { slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Venopuff, level: 1 },
+      { slot: { row: GridRow.Back, col: 1 }, creatureId: Species.Magmite, level: 1 },
     ],
     trainerId: null,
     trinketIds: [],

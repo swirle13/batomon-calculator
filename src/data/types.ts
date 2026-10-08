@@ -26,11 +26,14 @@
  * bare `export … from` does not bring the names into local scope.
  */
 import { AbilityTrigger, ConfirmableField, CreatureType, DamageChannel, EventLabel, GridRow, ModifierStat, MultiplierScope, RegionId, StatusEffectType, TimelineEventKind } from "./enums";
+import { ItemId, Species, TrainerId, TrinketId } from "./ids";
 import { Rarity } from "./enums";
 import { AbilityTagKind, StatChangeStat, TargetKind } from "./enums";
 
 // Re-exports the LOCAL bindings above rather than a second `export … from "./enums"`, which would
 // be a duplicate declaration of each name.
+export { ItemId, Species, TrainerId, TrinketId };
+
 export {
   AbilityTrigger,
   ConfirmableField,
@@ -328,8 +331,8 @@ export type AbilityTag =
 // ---------------------------------------------------------------------------
 
 export interface CreatureRecord extends Provenance {
-  /** Stable slug across levels, e.g. "bumblebolt" */
-  id: string;
+  /** Stable slug across levels, e.g. `Species.Bumblebolt` -> "bumblebolt". */
+  id: Species;
   name: string;
   rarity: Rarity;
   /** 1 or 2 entries typically; ["All"] for Omnichrome-style exceptions */
@@ -386,7 +389,7 @@ export interface CreatureRecord extends Provenance {
   abilityText: string;
   abilityTags: AbilityTag[];
   /** CreatureRecord.id this transforms into, if any (e.g. Riglet -> Rigalord) */
-  evolvesInto?: string;
+  evolvesInto?: Species;
   /**
    * The level at which `evolvesInto` takes effect, e.g. 3 for Panbud -> Bambudo (2026-10-05
    * round 3, data-model.md's "Evolution-aware leveling" amendment). Required whenever
@@ -455,7 +458,7 @@ export interface PerCastOutput {
 }
 
 export interface TrainerRecord extends Provenance {
-  id: string;
+  id: TrainerId;
   name: string;
   /** Vendored trainer sprite filename (T255/FR-102), under `public/sprites/trainer/`. */
   spriteFile?: string;
@@ -464,7 +467,7 @@ export interface TrainerRecord extends Provenance {
 }
 
 export interface TrinketRecord extends Provenance {
-  id: string;
+  id: TrinketId;
   name: string;
   effectText: string;
   /** Added 2026-10-06 round 5 -- batodex.com's trinket database publishes rarity directly,
@@ -489,7 +492,7 @@ export interface TrinketRecord extends Provenance {
 }
 
 export interface ItemRecord extends Provenance {
-  id: string;
+  id: ItemId;
   name: string;
   effectText: string;
   abilityTags: AbilityTag[];
@@ -540,7 +543,7 @@ export interface StatModifier {
 
 export interface TeamPlacement {
   slot: GridSlot;
-  creatureId: string;
+  creatureId: Species;
   /** Widened 1-3 -> 1-4 alongside CreatureRecord.level (2026-10-05 round 2) — must match an
    * actual `(creatureId, level)` corpus record; see data-model.md's lookup-fix amendment. */
   level: 1 | 2 | 3 | 4;
@@ -565,14 +568,14 @@ export interface TeamConfiguration {
    * reads "whenever these specific species appear… on your board", so painting Mosslug paints
    * every Mosslug (research.md M1).
    */
-  paintedCreatureIds?: string[];
+  paintedCreatureIds?: Species[];
   /** Species brought in from the opposite region by Smuggler (FR-091). */
-  smuggledCreatureIds?: string[];
+  smuggledCreatureIds?: Species[];
   /** Max 6; one per unique slot — see Validation rules in data-model.md */
   placements: TeamPlacement[];
-  trainerId: string | null;
-  trinketIds: string[];
-  itemIds: string[];
+  trainerId: TrainerId | null;
+  trinketIds: TrinketId[];
+  itemIds: ItemId[];
   /** Configurable per FR-007/FR-008 */
   simulationWindowSeconds: number;
   /** Applies to every placement's creature when resolving its effective stats */
@@ -582,6 +585,21 @@ export interface TeamConfiguration {
 // ---------------------------------------------------------------------------
 // Simulation entities
 // ---------------------------------------------------------------------------
+
+/**
+ * The key identifying one PLACED creature across a `SimulationResult` (2026-10-07, round 7).
+ *
+ * `perCreatureDps`, `perCreatureFacilitatedDps` and `perCreatureEffectiveStats` are all keyed by
+ * this. It was a bare `string`, built inline at TWELVE sites across
+ * `simulate.ts`, `effects.ts` and the UI, with nothing checking that the producer and the consumer
+ * built it the same way. `TeamSummary` is the proof that this was not theoretical: it assembled the
+ * key by hand as `` `${creatureId}@${row}${col}` ``, bypassing `slotKey` entirely, and matched only
+ * because `slotKey` happens to have that exact format. A change to either would have made every
+ * lookup on that page silently return 0 rather than fail.
+ *
+ * Branded, so a raw string cannot be used as one; built only by `engine/grid.ts`'s `placementKey`.
+ */
+export type PlacementKey = string & { readonly __brand: "PlacementKey" };
 
 export interface TimelineEvent {
   tSeconds: number;
@@ -606,7 +624,7 @@ export interface StatusEffectInstance {
 export interface SimulationResult {
   /** Every event in time order — single source of truth for both UI consumers */
   timeline: TimelineEvent[];
-  perCreatureDps: Record<string, number>; // keyed by `${creatureId}@${row}${col}`
+  perCreatureDps: Record<PlacementKey, number>;
   /** Window-AVERAGE damage per second, by status. See the three fields below before reading this
    * as "the" rate: for a status whose stacks never decay it understates the end of a fight. */
   perStatusPerSecond: Record<StatusEffectType, number>;
@@ -660,7 +678,7 @@ export interface SimulationResult {
    * `perCreatureDps`. Deliberately excludes a creature's own direct-damage contribution (that's
    * what `perCreatureDps` already measures) — see data-model.md's "Facilitated damage" amendment.
    */
-  perCreatureFacilitatedDps: Record<string, number>;
+  perCreatureFacilitatedDps: Record<PlacementKey, number>;
   /**
    * User-requested amendment, 2026-10-05 round 2 (item 2 — "no visualization of the current
    * mon's damage/shield/burn/poison/multi-cast/shock"): per-placement *effective* (post-

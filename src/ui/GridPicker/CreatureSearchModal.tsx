@@ -19,13 +19,14 @@ import {
 import styles from "./CreatureSearchModal.module.css";
 import { creatureHasType, isOutOfRegion } from "../../data/typing";
 import type { TeamConfiguration } from "../../data/types";
+import type { Species } from "../../data/ids";
 
 interface CreatureSearchModalProps {
   /** `null` = closed. Changing to a different slot while already open re-triggers the
    * clear+autofocus effect below, same as opening fresh (FR-018). */
   slot: GridSlot | null;
   onClose: () => void;
-  onSelect: (creatureId: string | null) => void;
+  onSelect: (creatureId: Species | null) => void;
   /**
    * The run's configuration, for painting and region availability. A PROP rather than a context
    * read: this modal is rendered standalone in tests and must not require a `TeamConfigProvider`.

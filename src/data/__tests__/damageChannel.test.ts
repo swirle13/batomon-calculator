@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { creatures } from "../creatures";
 import { corpus, applyShinyOverlay } from "../corpus";
-import { SHINY_STATS } from "../shiny";
+import { SHINY_STATS, type ShinyKey } from "../shiny";
 import { DamageChannel } from "../enums";
 
 /**
@@ -64,7 +64,7 @@ describe("WI-004: the shiny override is now atomic", () => {
    * that path, not by construction.
    */
   it("still has no channel on the shiny stat line, which is why this needed deciding once", () => {
-    const lines = Object.values(SHINY_STATS);
+    const lines = Object.values(SHINY_STATS).filter((s) => s !== undefined);
     expect(lines.length).toBeGreaterThan(0);
     expect(lines.some((s) => s.baseDamage !== null)).toBe(true);
     expect(lines.every((s) => !("damageType" in s))).toBe(true);
@@ -85,7 +85,7 @@ describe("WI-004: the shiny override is now atomic", () => {
   it("drops the cast entirely when the shiny line publishes no damage", () => {
     // Shiny can be a DOWNGRADE for a handful of species, so a shiny line with `baseDamage: null`
     // against a normal record that has a cast must remove it rather than keep the normal number.
-    const id = Object.keys(SHINY_STATS).find((k) => SHINY_STATS[k]!.baseDamage === null);
+    const id = (Object.keys(SHINY_STATS) as ShinyKey[]).find((k) => SHINY_STATS[k]!.baseDamage === null);
     if (id === undefined) return; // nothing to check in this corpus revision
     const [species, level] = id.split("|");
     const base = corpus.creatures.find((c) => c.id === species && c.level === Number(level))!;

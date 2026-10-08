@@ -4,6 +4,7 @@ import { simulate } from "../simulate";
 import { corpus } from "../../data/corpus";
 import type { TeamConfiguration } from "../../data/types";
 import { GridRow, StatusEffectType } from "../../data/enums";
+import { Species } from "../../data/ids";
 
 /**
  * FR-073/FR-074 (WI-003, WI-004, WI-009). The user's own worked example is the acceptance
@@ -13,10 +14,10 @@ import { GridRow, StatusEffectType } from "../../data/enums";
 /** The team from the user's screenshot. */
 const USER_TEAM: TeamConfiguration = {
   placements: [
-    { slot: { row: GridRow.Front, col: 1 }, creatureId: "miasmaw", level: 1 },
-    { slot: { row: GridRow.Front, col: 2 }, creatureId: "cobrex", level: 1 },
-    { slot: { row: GridRow.Back, col: 0 }, creatureId: "drumire", level: 1 },
-    { slot: { row: GridRow.Back, col: 1 }, creatureId: "fumungus", level: 1 },
+    { slot: { row: GridRow.Front, col: 1 }, creatureId: Species.Miasmaw, level: 1 },
+    { slot: { row: GridRow.Front, col: 2 }, creatureId: Species.Cobrex, level: 1 },
+    { slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Drumire, level: 1 },
+    { slot: { row: GridRow.Back, col: 1 }, creatureId: Species.Fumungus, level: 1 },
   ],
   trainerId: null,
   trinketIds: [],
@@ -30,7 +31,7 @@ describe("effect resolution (FR-073)", () => {
     // "Gain Poison for this battle equal to 1x the total Poison of your allies.
     //  (Except other Miasmaw)" -- allies 6 + 20 + 300 = 326, plus its own 10 = 336.
     const resolved = resolveEffects(USER_TEAM, corpus);
-    const miasmaw = resolved.find((r) => r.creature.id === "miasmaw");
+    const miasmaw = resolved.find((r) => r.creature.id === Species.Miasmaw);
     expect(miasmaw).toBeDefined();
     const poison = miasmaw!.appliesStatus.find((s) => s.type === "Poison");
     expect(poison?.amount).toBe(336);
@@ -40,7 +41,7 @@ describe("effect resolution (FR-073)", () => {
     // The resolver must not perturb teams it has nothing to say about.
     const plain: TeamConfiguration = {
       ...USER_TEAM,
-      placements: [{ slot: { row: GridRow.Back, col: 0 }, creatureId: "bumblebolt", level: 1 }],
+      placements: [{ slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Bumblebolt, level: 1 }],
     };
     const resolved = resolveEffects(plain, corpus);
     expect(resolved[0]!.appliesStatus).toEqual([{ type: StatusEffectType.Shock, amount: 1 }]);
@@ -52,7 +53,7 @@ describe("effect resolution (FR-073)", () => {
     // Decided in writing in T200: "ally" excludes self, matching simulate()'s existing self-skip.
     const soloMiasmaw: TeamConfiguration = {
       ...USER_TEAM,
-      placements: [{ slot: { row: GridRow.Front, col: 1 }, creatureId: "miasmaw", level: 1 }],
+      placements: [{ slot: { row: GridRow.Front, col: 1 }, creatureId: Species.Miasmaw, level: 1 }],
     };
     const resolved = resolveEffects(soloMiasmaw, corpus);
     // No allies -> gains nothing -> stays at its base 10.
@@ -84,7 +85,7 @@ describe("charge mechanic (FR-073 / WI-009)", () => {
   it("does not charge a creature from its own status applications", () => {
     const soloCobrex: TeamConfiguration = {
       ...USER_TEAM,
-      placements: [{ slot: { row: GridRow.Front, col: 2 }, creatureId: "cobrex", level: 1 }],
+      placements: [{ slot: { row: GridRow.Front, col: 2 }, creatureId: Species.Cobrex, level: 1 }],
       simulationWindowSeconds: 40,
     };
     const result = simulate(soloCobrex, corpus);
@@ -110,11 +111,11 @@ describe("effects resolve at every level (round 9b)", () => {
         {
           ...USER_TEAM,
           placements: USER_TEAM.placements.map((p) =>
-            p.creatureId === "miasmaw" ? { ...p, level } : p,
+            p.creatureId === Species.Miasmaw ? { ...p, level } : p,
           ),
         },
         corpus,
-      ).find((r) => r.creature.id === "miasmaw")!;
+      ).find((r) => r.creature.id === Species.Miasmaw)!;
 
     expect(atLevel(1).appliesStatus.find((s) => s.type === "Poison")?.amount).toBe(336);
     // L2's own base Poison is 10 as well, +2x326 = 662.

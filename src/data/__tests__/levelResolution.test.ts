@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { corpus, getCreatureById, getCreatureByIdAndLevel } from "../corpus";
+import { Species } from "../ids";
 
 /**
  * Round 10 (T209b / WI-002). The user reported that Puffloon showed no Multicast chip at level 2.
@@ -12,13 +13,13 @@ import { corpus, getCreatureById, getCreatureByIdAndLevel } from "../corpus";
  */
 describe("creature lookup resolves by level", () => {
   it("getCreatureById returns level 1 — the trap that caused WI-002", () => {
-    const puffloon = getCreatureById("puffloon");
+    const puffloon = getCreatureById(Species.Puffloon);
     expect(puffloon?.level).toBe(1);
   });
 
   it("the level-2 Puffloon record really does carry Multicast 2", () => {
-    expect(getCreatureByIdAndLevel("puffloon", 2)?.baseMulticast).toBe(2);
-    expect(getCreatureByIdAndLevel("puffloon", 1)?.baseMulticast).toBe(1);
+    expect(getCreatureByIdAndLevel(Species.Puffloon, 2)?.baseMulticast).toBe(2);
+    expect(getCreatureByIdAndLevel(Species.Puffloon, 1)?.baseMulticast).toBe(1);
   });
 
   it("GUARD: for every creature with level variants, at least one stat differs from level 1", () => {

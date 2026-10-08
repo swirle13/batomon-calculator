@@ -4,6 +4,8 @@ import { TrainerCard } from "../shared/TrainerCard/TrainerCard";
 import { Field, Select } from "../primitives";
 
 import { parseRegionId } from "../../data/vocabularies";
+
+import { parseTrainerId } from "../../data/vocabularies";
 import { RegionId } from "../../data/enums";
 
 /**
@@ -75,7 +77,7 @@ export function TrainerPicker() {
             <Select
               block
               value={config.trainerId ?? ""}
-              onChange={(e) => setTrainerId(e.target.value === "" ? null : e.target.value)}
+              onChange={(e) => setTrainerId(parseTrainerId(e.target.value) ?? null)}
             >
               <option value="">— none —</option>
               {[...corpus.trainers]

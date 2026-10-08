@@ -4,6 +4,7 @@ import { ModifierEditor } from "../ModifierEditor";
 import { TeamConfigProvider } from "../../../context/TeamConfigContext";
 import type { TeamConfiguration } from "../../../data/types";
 import { GridRow } from "../../../data/enums";
+import { Species } from "../../../data/ids";
 
 /**
  * FR-039 (2026-10-06 round 6, research.md H7). Four distinct user-requested changes, each asserted
@@ -47,8 +48,8 @@ function openOverlay(): HTMLElement {
 }
 
 const TWO_PLACEMENTS = configWith([
-  { slot: { row: GridRow.Front, col: 0 }, creatureId: "bumblebolt", level: 1 },
-  { slot: { row: GridRow.Back, col: 1 }, creatureId: "panbud", level: 1 },
+  { slot: { row: GridRow.Front, col: 0 }, creatureId: Species.Bumblebolt, level: 1 },
+  { slot: { row: GridRow.Back, col: 1 }, creatureId: Species.Panbud, level: 1 },
 ]);
 
 describe("ModifierEditor (FR-039)", () => {

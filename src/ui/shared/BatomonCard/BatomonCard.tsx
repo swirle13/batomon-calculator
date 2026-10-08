@@ -11,6 +11,7 @@ import { CreatureSprite } from "../CreatureSprite";
 import styles from "./BatomonCard.module.css";
 import { isWildcardType } from "../../../data/vocabularies";
 import { AbilityText } from "../AbilityText";
+import {  } from "../../../data/enums";
 import { ConfirmableField, ModifierStat, StatColorKey } from "../../../data/enums";
 
 /**
@@ -102,7 +103,7 @@ export function buildStatLines(input: PerCastOutput): StatLine[] {
   // 149 species still have `baseDamage: null`, so this is the common path, not an edge case
   // (research.md H9).
   if (input.damage !== null && !input.damageUnconfirmed) {
-    // 2026-10-07 (round 7 WI-004): this read `input.damageType === "Direct" ? "Deal" : "Deal"` --
+    // 2026-10-07 (round 7 WI-004): this read `input.damageType === DamageChannel.Direct ? "Deal" : "Deal"` --
     // a branch whose two arms were the same string, so the field was consulted for a decision that
     // could not have an outcome. It is the clearest evidence that `damageType` on a record carries
     // no information: measured over all 596 records it is `null` exactly when `baseDamage` is null,

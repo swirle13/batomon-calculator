@@ -6,6 +6,7 @@ import { resolveCreatureVariant } from "../../../data/corpus";
 import { slotKey } from "../../../engine/grid";
 import type { GridSlot, TeamConfiguration, TeamPlacement } from "../../../data/types";
 import { GridRow, ModifierStat } from "../../../data/enums";
+import { Species } from "../../../data/ids";
 
 /**
  * The manual trigger buttons (2026-10-07, user-reported).
@@ -17,13 +18,13 @@ import { GridRow, ModifierStat } from "../../../data/enums";
  */
 
 /** The reported board: two Commons that should gain, and three non-Commons that must not. */
-const BOARD: { name: string; id: string; slot: GridSlot }[] = [
-  { name: "Shikitsune", id: "shikitsune", slot: { row: GridRow.Back, col: 0 } }, // Rare
-  { name: "Pyronade", id: "pyronade", slot: { row: GridRow.Back, col: 1 } }, // Uncommon
-  { name: "Pebbler", id: "pebbler", slot: { row: GridRow.Back, col: 2 } }, // Common
-  { name: "Brawlmantis", id: "brawlmantis", slot: { row: GridRow.Front, col: 0 } }, // Uncommon, the presser
-  { name: "Venopuff", id: "venopuff", slot: { row: GridRow.Front, col: 1 } }, // Common
-  { name: "Craghorn", id: "craghorn", slot: { row: GridRow.Front, col: 2 } }, // Uncommon
+const BOARD: { name: string; id: Species; slot: GridSlot }[] = [
+  { name: "Shikitsune", id: Species.Shikitsune, slot: { row: GridRow.Back, col: 0 } }, // Rare
+  { name: "Pyronade", id: Species.Pyronade, slot: { row: GridRow.Back, col: 1 } }, // Uncommon
+  { name: "Pebbler", id: Species.Pebbler, slot: { row: GridRow.Back, col: 2 } }, // Common
+  { name: "Brawlmantis", id: Species.Brawlmantis, slot: { row: GridRow.Front, col: 0 } }, // Uncommon, the presser
+  { name: "Venopuff", id: Species.Venopuff, slot: { row: GridRow.Front, col: 1 } }, // Common
+  { name: "Craghorn", id: Species.Craghorn, slot: { row: GridRow.Front, col: 2 } }, // Uncommon
 ];
 
 function configWith(placements: TeamPlacement[]): TeamConfiguration {
@@ -65,11 +66,11 @@ function renderBoard(sourceId: string, placements: TeamPlacement[] = BOARD.map(t
   );
 }
 
-function toPlacement(entry: { id: string; slot: GridSlot }): TeamPlacement {
+function toPlacement(entry: { id: Species; slot: GridSlot }): TeamPlacement {
   return { slot: entry.slot, creatureId: entry.id, level: 1 };
 }
 
-function banked(creatureId: string): string {
+function banked(creatureId: Species): string {
   return screen.getByTestId(`banked-${creatureId}`).textContent ?? "";
 }
 
@@ -78,9 +79,9 @@ describe("TriggerButtons — who a press lands on", () => {
     renderBoard("brawlmantis");
     fireEvent.click(screen.getByRole("button", { name: /win a round/i }));
 
-    expect(banked("brawlmantis")).toBe("10");
-    expect(banked("pebbler")).toBe("10");
-    expect(banked("venopuff")).toBe("10");
+    expect(banked(Species.Brawlmantis)).toBe("10");
+    expect(banked(Species.Pebbler)).toBe("10");
+    expect(banked(Species.Venopuff)).toBe("10");
   });
 
   it("leaves the non-Common allies alone, because the ability names Commons", () => {
@@ -89,7 +90,7 @@ describe("TriggerButtons — who a press lands on", () => {
 
     // Pyronade and Craghorn are Uncommon, Shikitsune is Rare. A fix that simply wrote to every
     // placement would pass the test above and fail this one.
-    for (const id of ["shikitsune", "pyronade", "craghorn"]) expect(banked(id)).toBe("");
+    for (const id of [Species.Shikitsune, Species.Pyronade, Species.Craghorn]) expect(banked(id)).toBe("");
   });
 
   it("accumulates per press rather than appending a chip each time", () => {
@@ -100,8 +101,8 @@ describe("TriggerButtons — who a press lands on", () => {
     fireEvent.click(press);
 
     // One value, tripled — not "10,10,10". Three round wins are +30, on every recipient.
-    expect(banked("brawlmantis")).toBe("30");
-    expect(banked("venopuff")).toBe("30");
+    expect(banked(Species.Brawlmantis)).toBe("30");
+    expect(banked(Species.Venopuff)).toBe("30");
   });
 
   it("says how many monsters a press covers, so the spread is visible before pressing", () => {
@@ -110,12 +111,12 @@ describe("TriggerButtons — who a press lands on", () => {
   });
 
   it("covers only Brawlmantis when no Common ally is placed, and says so by saying nothing", () => {
-    const lone = [BOARD.find((b) => b.id === "brawlmantis")!].map(toPlacement);
+    const lone = [BOARD.find((b) => b.id === Species.Brawlmantis)!].map(toPlacement);
     renderBoard("brawlmantis", lone);
     expect(screen.queryByText(/to \d+ monsters/)).toBeNull();
 
     fireEvent.click(screen.getByRole("button", { name: /win a round/i }));
-    expect(banked("brawlmantis")).toBe("10");
+    expect(banked(Species.Brawlmantis)).toBe("10");
   });
 
   it("keeps a self-only trigger self-only, with the same allies on the board", () => {
@@ -124,8 +125,8 @@ describe("TriggerButtons — who a press lands on", () => {
     renderBoard("craghorn");
     fireEvent.click(screen.getByRole("button", { name: /use an item/i }));
 
-    expect(banked("craghorn")).toBe("20");
-    for (const id of ["brawlmantis", "pebbler", "venopuff"]) expect(banked(id)).toBe("");
+    expect(banked(Species.Craghorn)).toBe("20");
+    for (const id of [Species.Brawlmantis, Species.Pebbler, Species.Venopuff]) expect(banked(id)).toBe("");
   });
 });
 
@@ -136,7 +137,7 @@ describe("TriggerButtons — undoing a press", () => {
     fireEvent.click(screen.getByRole("button", { name: /reset banked/i }));
 
     // Clearing only the presser would leave the allies carrying a bonus with no control to undo it.
-    for (const id of ["brawlmantis", "pebbler", "venopuff"]) expect(banked(id)).toBe("");
+    for (const id of [Species.Brawlmantis, Species.Pebbler, Species.Venopuff]) expect(banked(id)).toBe("");
   });
 
   it("offers no reset until something has been banked", () => {

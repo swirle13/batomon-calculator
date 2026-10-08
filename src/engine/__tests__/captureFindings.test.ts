@@ -5,6 +5,7 @@ import { resolveEffects } from "../effects";
 import { addFlat, applyMultiplier, read, statValue } from "../statValue";
 import type { GridSlot, TeamConfiguration } from "../../data/types";
 import { GridRow, TimelineEventKind } from "../../data/enums";
+import { Species } from "../../data/ids";
 
 /**
  * Round 5: the findings from `orchestration/engine-handoff-gameplay-capture.md`.
@@ -14,7 +15,7 @@ import { GridRow, TimelineEventKind } from "../../data/enums";
  * second-count from this footage is usable". A test pinning seconds would encode the fast-forward
  * factor as if it were a game rule.
  */
-const team = (ps: { id: string; slot: GridSlot; level?: 1 | 2 | 3 | 4 }[], w = 20): TeamConfiguration => ({
+const team = (ps: { id: Species; slot: GridSlot; level?: 1 | 2 | 3 | 4 }[], w = 20): TeamConfiguration => ({
   placements: ps.map((p) => ({ slot: p.slot, creatureId: p.id, level: p.level ?? 1 })),
   trainerId: null,
   trinketIds: [],
@@ -70,14 +71,14 @@ describe("Finding 3 — reactive gains are never scaled (T241)", () => {
 
 describe("Finding 5 — damage from the TARGET's status (T244)", () => {
   it("Fumungus deals damage proportional to accumulated enemy Poison, from a null base", () => {
-    const fumungus = corpus.creatures.find((c) => c.id === "fumungus" && c.level === 2)!;
+    const fumungus = corpus.creatures.find((c) => c.id === Species.Fumungus && c.level === 2)!;
     expect(fumungus.publishedCast?.damage ?? null, "base damage is null; all of it comes from the target").toBeNull();
 
     // Paired with a Poison applier so stacks accumulate.
     const r = simulate(
       team([
-        { id: "fumungus", slot: { row: GridRow.Front, col: 0 }, level: 2 },
-        { id: "miasmaw", slot: { row: GridRow.Front, col: 1 } },
+        { id: Species.Fumungus, slot: { row: GridRow.Front, col: 0 }, level: 2 },
+        { id: Species.Miasmaw, slot: { row: GridRow.Front, col: 1 } },
       ]),
       corpus,
     );
@@ -95,15 +96,15 @@ describe("Finding 7b — a reaction must not consume the reactor's cooldown (T24
     // reactor, so a reaction consumed the cast it should have been additional to.
     const r = simulate(
       team([
-        { id: "puffloon", slot: { row: GridRow.Back, col: 1 }, level: 2 },
-        { id: "miasmaw", slot: { row: GridRow.Back, col: 2 } },
+        { id: Species.Puffloon, slot: { row: GridRow.Back, col: 1 }, level: 2 },
+        { id: Species.Miasmaw, slot: { row: GridRow.Back, col: 2 } },
       ], 30),
       corpus,
     );
     const puffloonCasts = r.timeline.filter(
       (e) => e.kind === TimelineEventKind.Attack && e.sourceSlot.row === GridRow.Back && e.sourceSlot.col === 1,
     );
-    const base = corpus.creatures.find((c) => c.id === "puffloon" && c.level === 2)!.baseCooldownSeconds!;
+    const base = corpus.creatures.find((c) => c.id === Species.Puffloon && c.level === 2)!.baseCooldownSeconds!;
     // More casts than its own cooldown alone could produce in the window — the reactions are extra.
     expect(puffloonCasts.length).toBeGreaterThan(Math.floor(30 / base));
   });
@@ -117,13 +118,13 @@ describe("Finding 1 — phase ordering (T242)", () => {
     // guess as a fixture.
     const resolved = resolveEffects(
       team([
-        { id: "miasmaw", slot: { row: GridRow.Front, col: 1 } },
-        { id: "cobrex", slot: { row: GridRow.Front, col: 2 } },
+        { id: Species.Miasmaw, slot: { row: GridRow.Front, col: 1 } },
+        { id: Species.Cobrex, slot: { row: GridRow.Front, col: 2 } },
       ]),
       corpus,
     );
-    const miasmaw = resolved.find((r) => r.creature.id === "miasmaw")!;
-    const cobrex = resolved.find((r) => r.creature.id === "cobrex")!;
+    const miasmaw = resolved.find((r) => r.creature.id === Species.Miasmaw)!;
+    const cobrex = resolved.find((r) => r.creature.id === Species.Cobrex)!;
     const cobrexPoison = cobrex.appliesStatus.find((s) => s.type === "Poison")!.amount;
     const miasmawPoison = miasmaw.appliesStatus.find((s) => s.type === "Poison")!.amount;
     // Miasmaw's own 10 plus its ally's resolved (not base) total.

@@ -10,6 +10,7 @@ import { InvalidTeamConfigurationError } from "./errors";
 
 import { damageChannelOf } from "../data/vocabularies";
 import { AbilityTagKind, DamageChannel, ModifierStat, StatChangeStat, StatusEffectType, TargetKind, TimelineEventKind } from "../data/enums";
+import { placementKey } from "./grid";
 
 /**
  * The statuses that tick for damage: the `StatusEffectType` members that have a `DamageChannel`.
@@ -248,7 +249,7 @@ export function simulate(
     return {
       slot: p.slot,
       creature,
-      resolved: resolvedByKey.get(`${creature.id}@${slotKey(p.slot)}`)!,
+      resolved: resolvedByKey.get(placementKey(creature.id, p.slot))!,
       placementModifiers: p.modifiers ?? [],
     };
   });
@@ -283,7 +284,7 @@ export function simulate(
 
   for (const member of teamMembers) {
     const { creature, slot, placementModifiers } = member;
-    const key = `${creature.id}@${slotKey(slot)}`;
+    const key = placementKey(creature.id, slot);
 
     // Modifiers are resolved up front — even when this creature has no ordinary cooldown cast
     // — so `perCreatureEffectiveStats` can report them below regardless of cast eligibility.
@@ -360,7 +361,7 @@ export function simulate(
       sourceSlot: slot,
       creature,
       modifiers,
-      key: `${creature.id}@${slotKey(slot)}`,
+      key: placementKey(creature.id, slot),
       chargeRules: member.resolved.chargeRules,
     });
   }
@@ -601,13 +602,13 @@ export function simulate(
       // Round 10 (T219): the RESOLVED multicast, so a multicast-granting ally actually produces
       // extra repetitions. This read `entry.creature.baseMulticast`, which meant every
       // multicast-grant ability resolved correctly in `effects.ts` and then changed nothing here.
-      const resolvedEntry = resolvedByKey.get(`${entry.creature.id}@${slotKey(entry.sourceSlot)}`);
+      const resolvedEntry = resolvedByKey.get(placementKey(entry.creature.id, entry.sourceSlot));
       const multicastCount = Math.max(
         1,
         (resolvedEntry?.multicast ?? entry.creature.baseMulticast) +
           entry.modifiers.multicastAdd +
           // T224: accumulated multicast grants, e.g. Shelldra's "+1 Multicast for this battle".
-          (runtimeBuffs.get(`${entry.creature.id}@${slotKey(entry.sourceSlot)}`)?.multicast ?? 0),
+          (runtimeBuffs.get(placementKey(entry.creature.id, entry.sourceSlot))?.multicast ?? 0),
       );
       for (let rep = 1; rep < multicastCount; rep++) {
         const repT = roundTime(tSeconds + rep * STEP);
@@ -642,7 +643,7 @@ export function simulate(
 
     for (const cast of group) {
       const { creature, sourceSlot, modifiers } = cast;
-      const sourceKey = `${creature.id}@${slotKey(sourceSlot)}`;
+      const sourceKey = placementKey(creature.id, sourceSlot);
       const effective = resolvedByKey.get(sourceKey);
       // T224: base/resolved damage PLUS whatever this creature has accumulated so far this battle.
       const accrued = runtimeBuffs.get(sourceKey);
@@ -775,7 +776,7 @@ export function simulate(
     // Multicast repetitions do NOT re-grant: the buff is "on cast", and a multicast burst is one
     // cast producing several hits (research.md F2). Only `dueCasts` grants, never `dueReps`.
     for (const entry of dueCasts) {
-      const sourceKey = `${entry.creature.id}@${slotKey(entry.sourceSlot)}`;
+      const sourceKey = placementKey(entry.creature.id, entry.sourceSlot);
       const sourceResolved = resolvedByKey.get(sourceKey);
       if (!sourceResolved) continue;
       for (const tag of entry.creature.abilityTags) {
@@ -809,7 +810,7 @@ export function simulate(
     // `cooldownSpeedOnAllyCast` (Drumire's grant, which compounds across the battle) and
     // `triggerOnAllyCast` (a chained cast).
     for (const caster of dueCasts) {
-      const casterKey = `${caster.creature.id}@${slotKey(caster.sourceSlot)}`;
+      const casterKey = placementKey(caster.creature.id, caster.sourceSlot);
       const casterResolved = resolvedByKey.get(casterKey);
       if (!casterResolved) continue;
 

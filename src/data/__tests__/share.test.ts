@@ -1,22 +1,25 @@
 import { describe, expect, it } from "vitest";
 import { InvalidBuildCodeError, buildId, canonicalize, exportBuild, importBuild, readBuildFromUrl } from "../share";
 import type { TeamConfiguration } from "../types";
+
+import { syntheticSpecies } from "../ids";
 import { GridRow, ModifierStat, RegionId } from "../enums";
+import { Species, TrainerId, TrinketId } from "../ids";
 
 const base: TeamConfiguration = {
   selectedRegion: RegionId.Pantra,
-  trainerId: "painter",
+  trainerId: TrainerId.Painter,
   placements: [
-    { slot: { row: GridRow.Front, col: 1 }, creatureId: "miasmaw", level: 2, shiny: true },
-    { slot: { row: GridRow.Back, col: 0 }, creatureId: "cobrex", level: 1,
-      modifiers: [{ id: "x1", stat: ModifierStat.DamageFlatAdd, amount: 10 }] },
+    { slot: { row: GridRow.Front, col: 1 }, creatureId: Species.Miasmaw, level: 2, shiny: true },
+    { slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Cobrex, level: 1,
+      modifiers: [{ id: syntheticSpecies("x1"), stat: ModifierStat.DamageFlatAdd, amount: 10 }] },
   ],
-  trinketIds: ["link_cable", "gold_nugget"],
+  trinketIds: [TrinketId.LinkCable, TrinketId.GoldNugget],
   itemIds: [],
-  paintedCreatureIds: ["mosslug"],
+  paintedCreatureIds: [Species.Mosslug],
   smuggledCreatureIds: [],
   simulationWindowSeconds: 30,
-  teamModifiers: [{ id: "t1", stat: ModifierStat.PoisonAmountAdd, amount: 4 }],
+  teamModifiers: [{ id: syntheticSpecies("t1"), stat: ModifierStat.PoisonAmountAdd, amount: 4 }],
 };
 
 describe("build export/import", () => {
@@ -24,7 +27,7 @@ describe("build export/import", () => {
     const restored = importBuild(exportBuild(base));
     expect(canonicalize(restored)).toEqual(canonicalize(base));
     expect(restored.placements).toHaveLength(2);
-    expect(restored.placements.find((p) => p.creatureId === "miasmaw")!.shiny).toBe(true);
+    expect(restored.placements.find((p) => p.creatureId === Species.Miasmaw)!.shiny).toBe(true);
     expect(restored.selectedRegion).toBe("pantra");
     expect(restored.trainerId).toBe("painter");
     expect(restored.paintedCreatureIds).toEqual(["mosslug"]);
@@ -39,9 +42,9 @@ describe("build export/import", () => {
       ...base,
       placements: [...base.placements].reverse().map((p) => ({
         ...p,
-        modifiers: p.modifiers?.map((m) => ({ ...m, id: "regenerated" })),
+        modifiers: p.modifiers?.map((m) => ({ ...m, id: syntheticSpecies("regenerated") })),
       })),
-      trinketIds: ["gold_nugget", "link_cable"],
+      trinketIds: [TrinketId.GoldNugget, TrinketId.LinkCable],
       smuggledCreatureIds: undefined,
     };
     expect(buildId(shuffled)).toBe(buildId(base));
@@ -54,13 +57,13 @@ describe("build export/import", () => {
       ["level", { ...base, placements: base.placements.map((p, i) => (i === 0 ? { ...p, level: 3 as const } : p)) }],
       ["shiny", { ...base, placements: base.placements.map((p, i) => (i === 0 ? { ...p, shiny: false } : p)) }],
       ["slot", { ...base, placements: base.placements.map((p, i) => (i === 0 ? { ...p, slot: { row: GridRow.Back as const, col: 2 } } : p)) }],
-      ["creature", { ...base, placements: base.placements.map((p, i) => (i === 0 ? { ...p, creatureId: "drumire" } : p)) }],
+      ["creature", { ...base, placements: base.placements.map((p, i) => (i === 0 ? { ...p, creatureId: Species.Drumire } : p)) }],
       ["region", { ...base, selectedRegion: RegionId.Jinto }],
-      ["trainer", { ...base, trainerId: "smuggler" }],
-      ["trinkets", { ...base, trinketIds: ["link_cable"] }],
+      ["trainer", { ...base, trainerId: TrainerId.Smuggler }],
+      ["trinkets", { ...base, trinketIds: [TrinketId.LinkCable] }],
       ["painted", { ...base, paintedCreatureIds: [] }],
       ["window", { ...base, simulationWindowSeconds: 20 }],
-      ["modifier amount", { ...base, teamModifiers: [{ id: "t1", stat: ModifierStat.PoisonAmountAdd, amount: 5 }] }],
+      ["modifier amount", { ...base, teamModifiers: [{ id: syntheticSpecies("t1"), stat: ModifierStat.PoisonAmountAdd, amount: 5 }] }],
     ];
     for (const [label, variant] of variants) {
       expect(buildId(variant), `${label} did not change the id`).not.toBe(id);

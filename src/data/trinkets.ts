@@ -1,5 +1,6 @@
 import type { TrinketRecord, SourceRef } from "./types";
 import { ModifierStat, Rarity } from "./enums";
+import { TrinketId } from "./ids";
 
 const RETRIEVED = "2026-10-06";
 
@@ -25,7 +26,7 @@ function batodexTrinket(slug: string, name: string): SourceRef {
 
 export const trinkets: TrinketRecord[] = [
   {
-    id: "bargain_bin",
+    id: TrinketId.BargainBin,
     name: "Bargain Bin",
     effectText: "The first Common monster you buy each day is free.",
     rarity: Rarity.Common,
@@ -35,7 +36,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "boxing_glove",
+    id: TrinketId.BoxingGlove,
     name: "Boxing Glove",
     effectText: "On Victory\nYour team gains +5 Damage permanently.",
     rarity: Rarity.Common,
@@ -46,7 +47,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "gold_bracelet",
+    id: TrinketId.GoldBracelet,
     name: "Gold Bracelet",
     effectText: "At the start of each day, give a random monster +8 Sell Value.",
     rarity: Rarity.Common,
@@ -56,7 +57,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "gold_nugget",
+    id: TrinketId.GoldNugget,
     name: "Gold Nugget",
     effectText: "Increase Income by $3.",
     rarity: Rarity.Common,
@@ -66,7 +67,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "gold_trophy",
+    id: TrinketId.GoldTrophy,
     name: "Gold Trophy",
     effectText: "On Victory\nGain $8.",
     rarity: Rarity.Common,
@@ -76,7 +77,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "junk",
+    id: TrinketId.Junk,
     name: "Junk",
     effectText: "Does nothing.",
     rarity: Rarity.Common,
@@ -86,7 +87,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "locked_box",
+    id: TrinketId.LockedBox,
     name: "Locked Box",
     effectText: "The next time you lose a battle, gain a random non-unique Trinket of the highest rarity your shop rank allows.",
     rarity: Rarity.Common,
@@ -96,7 +97,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "mini_duplicator",
+    id: TrinketId.MiniDuplicator,
     name: "Mini Duplicator",
     effectText: "Gain an additional copy of the next non-unique Trinket from a gift.",
     rarity: Rarity.Common,
@@ -106,7 +107,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "power_pouch",
+    id: TrinketId.PowerPouch,
     name: "Power Pouch",
     effectText: "When you buy an item, give your monsters +2 Damage.",
     rarity: Rarity.Common,
@@ -116,7 +117,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "quick_bell",
+    id: TrinketId.QuickBell,
     name: "Quick Bell",
     effectText: "Monsters in your shop have +4% Cooldown Speed.",
     rarity: Rarity.Common,
@@ -126,7 +127,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "quick_flag",
+    id: TrinketId.QuickFlag,
     name: "Quick Flag",
     effectText: "Your monsters in the leftmost column have +4% Cooldown Speed.",
     rarity: Rarity.Common,
@@ -136,7 +137,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "rainbow_berry",
+    id: TrinketId.RainbowBerry,
     name: "Rainbow Berry",
     effectText: "Your monsters have +4 Damage for each unique type on your team.",
     rarity: Rarity.Common,
@@ -146,7 +147,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "sapphire_ring",
+    id: TrinketId.SapphireRing,
     name: "Sapphire Ring",
     effectText: "Monsters in your shop have +10% Heal.",
     rarity: Rarity.Common,
@@ -156,7 +157,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "speed_whistle",
+    id: TrinketId.SpeedWhistle,
     name: "Speed Whistle",
     effectText: "The next monster you buy has +12% Cooldown Speed.",
     rarity: Rarity.Common,
@@ -166,7 +167,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "tempo_charm",
+    id: TrinketId.TempoCharm,
     name: "Tempo Charm",
     effectText: "On Battle Start\nA random monster gains +4% Cooldown Speed permanently.",
     rarity: Rarity.Common,
@@ -176,7 +177,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "topaz_ring",
+    id: TrinketId.TopazRing,
     name: "Topaz Ring",
     effectText: "Monsters in your shop have +10% Shield.",
     rarity: Rarity.Common,
@@ -186,7 +187,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "training_weights",
+    id: TrinketId.TrainingWeights,
     name: "Training Weights",
     effectText: "+100 HP",
     rarity: Rarity.Common,
@@ -196,7 +197,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "treasure_map",
+    id: TrinketId.TreasureMap,
     name: "Treasure Map",
     effectText: "Your next Trinket gift choices are 1 rarity tier higher.",
     rarity: Rarity.Common,
@@ -206,7 +207,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "wood_sword",
+    id: TrinketId.WoodSword,
     name: "Wood Sword",
     effectText: "Your monsters have +5 Damage.",
     rarity: Rarity.Common,
@@ -217,7 +218,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "bug_net",
+    id: TrinketId.BugNet,
     name: "Bug Net",
     effectText: "Bug monsters in the shop cost 3 less.",
     rarity: Rarity.Uncommon,
@@ -227,7 +228,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "earth_crest",
+    id: TrinketId.EarthCrest,
     name: "Earth Crest",
     effectText: "On Battle Start\nYour monsters in the rightmost column gain +10% Shield permanently.",
     rarity: Rarity.Uncommon,
@@ -237,7 +238,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "echo_charm",
+    id: TrinketId.EchoCharm,
     name: "Echo Charm",
     effectText: "Your monsters' On Bought abilities activate an additional time.",
     rarity: Rarity.Uncommon,
@@ -247,7 +248,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "fire_bell",
+    id: TrinketId.FireBell,
     name: "Fire Bell",
     effectText: "Fire monsters in your shop have +5 Burn.",
     rarity: Rarity.Uncommon,
@@ -257,7 +258,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "fire_orb",
+    id: TrinketId.FireOrb,
     name: "Fire Orb",
     effectText: "Your Fire monsters have +3 Burn.",
     rarity: Rarity.Uncommon,
@@ -267,7 +268,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "greedy_gloves",
+    id: TrinketId.GreedyGloves,
     name: "Greedy Gloves",
     effectText: "You can take all of the choices from your next Trinket gift.",
     rarity: Rarity.Uncommon,
@@ -277,7 +278,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "market_license",
+    id: TrinketId.MarketLicense,
     name: "Market License",
     effectText: "Increase shop rank by 1.",
     rarity: Rarity.Uncommon,
@@ -287,7 +288,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "membership_card",
+    id: TrinketId.MembershipCard,
     name: "Membership Card",
     effectText: "You can use 1 additional Item each day.",
     rarity: Rarity.Uncommon,
@@ -297,7 +298,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "piggy_bank",
+    id: TrinketId.PiggyBank,
     name: "Piggy Bank",
     effectText: "Gain +$1 for each $10 you have at the end of each day.",
     rarity: Rarity.Uncommon,
@@ -307,7 +308,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "poison_bell",
+    id: TrinketId.PoisonBell,
     name: "Poison Bell",
     effectText: "Toxic monsters in your shop have +6 Poison.",
     rarity: Rarity.Uncommon,
@@ -317,7 +318,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "poison_orb",
+    id: TrinketId.PoisonOrb,
     name: "Poison Orb",
     effectText: "Your Toxic monsters have +3 Poison.",
     rarity: Rarity.Uncommon,
@@ -327,7 +328,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "power_band",
+    id: TrinketId.PowerBand,
     name: "Power Band",
     effectText: "Give the first monster you buy each day +20 Damage.",
     rarity: Rarity.Uncommon,
@@ -337,7 +338,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "power_crown",
+    id: TrinketId.PowerCrown,
     name: "Power Crown",
     effectText: "Your top middle monster has +20 Damage.",
     rarity: Rarity.Uncommon,
@@ -347,7 +348,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "rally_flag",
+    id: TrinketId.RallyFlag,
     name: "Rally Flag",
     effectText: "On Battle Start\nYour monsters in the leftmost column gain +12 Damage permanently.",
     rarity: Rarity.Uncommon,
@@ -357,7 +358,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "sea_crest",
+    id: TrinketId.SeaCrest,
     name: "Sea Crest",
     effectText: "On Battle Start\nYour monsters in the rightmost column gain +10% Heal permanently.",
     rarity: Rarity.Uncommon,
@@ -367,7 +368,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "small_club",
+    id: TrinketId.SmallClub,
     name: "Small Club",
     effectText: "Your monsters with a Cooldown of 5.0 seconds or above have +20% Damage.",
     rarity: Rarity.Uncommon,
@@ -377,7 +378,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "winged_fossil",
+    id: TrinketId.WingedFossil,
     name: "Winged Fossil",
     effectText: "Your Flying monsters have +25% stats (except Cooldown and Multicast).",
     rarity: Rarity.Uncommon,
@@ -387,7 +388,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "ancient_plume",
+    id: TrinketId.AncientPlume,
     name: "Ancient Plume",
     effectText: "On Battle Start\nIf you only have 1 monster, give it +1 Multicast permanently and destroy this.",
     rarity: Rarity.Rare,
@@ -397,7 +398,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "arcade_coins",
+    id: TrinketId.ArcadeCoins,
     name: "Arcade Coins",
     effectText: "Gain 10 free rerolls.",
     rarity: Rarity.Rare,
@@ -407,7 +408,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "blue_incense",
+    id: TrinketId.BlueIncense,
     name: "Blue Incense",
     effectText: "The next 5 shops will contain only Rare monsters.",
     rarity: Rarity.Rare,
@@ -417,7 +418,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "fake_diamond",
+    id: TrinketId.FakeDiamond,
     name: "Fake Diamond",
     effectText: "The next time you lose a battle, gain $40.",
     rarity: Rarity.Rare,
@@ -427,7 +428,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "fools_gold",
+    id: TrinketId.FoolsGold,
     name: "Fool's Gold",
     effectText: "Increase Income by $15. The shop no longer stocks Item.",
     rarity: Rarity.Rare,
@@ -437,7 +438,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "gold_bar",
+    id: TrinketId.GoldBar,
     name: "Gold Bar",
     effectText: "Increase Income by $10.",
     rarity: Rarity.Rare,
@@ -447,7 +448,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "heros_sword",
+    id: TrinketId.HerosSword,
     name: "Hero's Sword",
     effectText: "Your monsters have +12 Damage.",
     rarity: Rarity.Rare,
@@ -458,7 +459,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "kaleidoscope",
+    id: TrinketId.Kaleidoscope,
     name: "Kaleidoscope",
     effectText: "Your monsters that don't share a type with any ally have +25% Cooldown Speed.",
     rarity: Rarity.Rare,
@@ -468,7 +469,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "link_cable",
+    id: TrinketId.LinkCable,
     name: "Link Cable",
     effectText: "All of your team's monsters are now considered adjacent to each other.",
     rarity: Rarity.Rare,
@@ -478,7 +479,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "mega_duplicator",
+    id: TrinketId.MegaDuplicator,
     name: "Mega Duplicator",
     effectText: "Gain 2 additional copies of the next non-unique Trinket from a gift.",
     rarity: Rarity.Rare,
@@ -488,7 +489,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "metal_bat",
+    id: TrinketId.MetalBat,
     name: "Metal Bat",
     effectText: "On Battle Start\nYour monster with the highest Cooldown gains +50% Damage for this battle.",
     rarity: Rarity.Rare,
@@ -498,7 +499,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "meteorite",
+    id: TrinketId.Meteorite,
     name: "Meteorite",
     effectText: "On Battle Start\nYour monsters with no abilities gain +20 Damage permanently.",
     rarity: Rarity.Rare,
@@ -508,7 +509,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "power_bell",
+    id: TrinketId.PowerBell,
     name: "Power Bell",
     effectText: "Monsters in your shop have +25 Damage.",
     rarity: Rarity.Rare,
@@ -518,7 +519,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "rigged_dice",
+    id: TrinketId.RiggedDice,
     name: "Rigged Dice",
     effectText: "The first shop each day stocks only the rarest monsters and items your shop rank allows.",
     rarity: Rarity.Rare,
@@ -528,7 +529,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "sapphire_amulet",
+    id: TrinketId.SapphireAmulet,
     name: "Sapphire Amulet",
     effectText: "You receive 25% more Heal.",
     rarity: Rarity.Rare,
@@ -538,7 +539,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "scrap_sword",
+    id: TrinketId.ScrapSword,
     name: "Scrap Sword",
     effectText: "Your monsters have +2 Damage for each Common Trinket you have.",
     rarity: Rarity.Rare,
@@ -548,7 +549,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "silver_watch",
+    id: TrinketId.SilverWatch,
     name: "Silver Watch",
     effectText: "When a monster levels up from a merge, it gains +12% Cooldown Speed.",
     rarity: Rarity.Rare,
@@ -558,7 +559,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "speed_crest",
+    id: TrinketId.SpeedCrest,
     name: "Speed Crest",
     effectText: "Your monsters in the rightmost column have +15% Cooldown Speed.",
     rarity: Rarity.Rare,
@@ -568,7 +569,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "terrarium",
+    id: TrinketId.Terrarium,
     name: "Terrarium",
     effectText: "Your Bug monsters have +20% Damage.",
     rarity: Rarity.Rare,
@@ -578,7 +579,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "topaz_amulet",
+    id: TrinketId.TopazAmulet,
     name: "Topaz Amulet",
     effectText: "You receive 25% more Shield.",
     rarity: Rarity.Rare,
@@ -588,7 +589,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "warhorn",
+    id: TrinketId.Warhorn,
     name: "Warhorn",
     effectText: "On Battle Start\nYour monsters gain +10 Damage permanently.",
     rarity: Rarity.Rare,
@@ -599,7 +600,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "blitz_bell",
+    id: TrinketId.BlitzBell,
     name: "Blitz Bell",
     effectText: "Monsters in your shop have +25% Cooldown Speed.",
     rarity: Rarity.SuperRare,
@@ -609,7 +610,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "echo_bell",
+    id: TrinketId.EchoBell,
     name: "Echo Bell",
     effectText: "When you buy a 0 cost item, use it an additional time.",
     rarity: Rarity.SuperRare,
@@ -619,7 +620,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "grow_lamp",
+    id: TrinketId.GrowLamp,
     name: "Grow Lamp",
     effectText: "Your Grass monsters only need 2 copies to level up.",
     rarity: Rarity.SuperRare,
@@ -629,7 +630,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "haste_crown",
+    id: TrinketId.HasteCrown,
     name: "Haste Crown",
     effectText: "Your top middle monster has +20% Cooldown Speed.",
     rarity: Rarity.SuperRare,
@@ -639,7 +640,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "haste_orb",
+    id: TrinketId.HasteOrb,
     name: "Haste Orb",
     effectText: "Your monsters have +10% Cooldown Speed.",
     rarity: Rarity.SuperRare,
@@ -650,7 +651,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "momentum_flag",
+    id: TrinketId.MomentumFlag,
     name: "Momentum Flag",
     effectText: "On Battle Start\nYour monsters in the leftmost column gain +8% Cooldown Speed permanently.",
     rarity: Rarity.SuperRare,
@@ -660,7 +661,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "mysterious_charm",
+    id: TrinketId.MysteriousCharm,
     name: "Mysterious Charm",
     effectText: "+25% HP",
     rarity: Rarity.SuperRare,
@@ -670,7 +671,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "mysterious_mask",
+    id: TrinketId.MysteriousMask,
     name: "Mysterious Mask",
     effectText: "Choose a trainer and gain their ability.",
     rarity: Rarity.SuperRare,
@@ -680,7 +681,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "purple_incense",
+    id: TrinketId.PurpleIncense,
     name: "Purple Incense",
     effectText: "The next 5 shops will contain only Super Rare monsters.",
     rarity: Rarity.SuperRare,
@@ -690,7 +691,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "razor_beak",
+    id: TrinketId.RazorBeak,
     name: "Razor Beak",
     effectText: "Your Flying monsters have +1 Multicast.",
     rarity: Rarity.SuperRare,
@@ -700,7 +701,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "repeater_charm",
+    id: TrinketId.RepeaterCharm,
     name: "Repeater Charm",
     effectText: "Your monsters' On Battle Start abilities activate an additional time.",
     rarity: Rarity.SuperRare,
@@ -710,7 +711,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "rocket_boots",
+    id: TrinketId.RocketBoots,
     name: "Rocket Boots",
     effectText: "Monsters in your shop gain Flying typing.",
     rarity: Rarity.SuperRare,
@@ -720,7 +721,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "upgrade_disc",
+    id: TrinketId.UpgradeDisc,
     name: "Upgrade Disc",
     effectText: "When you buy a monster, level it up and destroy this.",
     rarity: Rarity.SuperRare,
@@ -730,7 +731,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "vip_pass",
+    id: TrinketId.VipPass,
     name: "VIP Pass",
     effectText: "Your shop no longer stocks anything Common or Uncommon.",
     rarity: Rarity.SuperRare,
@@ -740,7 +741,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "barbell",
+    id: TrinketId.Barbell,
     name: "Barbell",
     effectText: "+5000 HP",
     rarity: Rarity.Legendary,
@@ -750,7 +751,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "candy_jar",
+    id: TrinketId.CandyJar,
     name: "Candy Jar",
     effectText: "On Battle Start\nYour Common and Uncommon monsters permanently level up to level 3.",
     rarity: Rarity.Legendary,
@@ -760,7 +761,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "dryads_charm",
+    id: TrinketId.DryadsCharm,
     name: "Dryad's Charm",
     effectText: "+30% HP",
     rarity: Rarity.Legendary,
@@ -770,7 +771,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "fancy_sword",
+    id: TrinketId.FancySword,
     name: "Fancy Sword",
     effectText: "Your monsters have +3% Damage for each Trinket you have.",
     rarity: Rarity.Legendary,
@@ -780,7 +781,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "giant_club",
+    id: TrinketId.GiantClub,
     name: "Giant Club",
     effectText: "Your monsters with a Cooldown of 5.0 seconds or above have +70% stats (except Cooldown and Multicast).",
     rarity: Rarity.Legendary,
@@ -790,7 +791,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "gold_incense",
+    id: TrinketId.GoldIncense,
     name: "Gold Incense",
     effectText: "The next 5 shops will contain only Legendary monsters.",
     rarity: Rarity.Legendary,
@@ -800,7 +801,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "gold_o_matic",
+    id: TrinketId.GoldOMatic,
     name: "Gold-o-matic",
     effectText: "Increase Income by $30.",
     rarity: Rarity.Legendary,
@@ -810,7 +811,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "metronome",
+    id: TrinketId.Metronome,
     name: "Metronome",
     effectText: "When your monsters cast, they gain +10 Damage for this battle.",
     rarity: Rarity.Legendary,
@@ -820,7 +821,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "mighty_bell",
+    id: TrinketId.MightyBell,
     name: "Mighty Bell",
     effectText: "Monsters in your shop have +300 Damage.",
     rarity: Rarity.Legendary,
@@ -830,7 +831,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "mysterious_chest",
+    id: TrinketId.MysteriousChest,
     name: "Mysterious Chest",
     effectText: "On Battle Lost\nGain a random non-unique Legendary Trinket.",
     rarity: Rarity.Legendary,
@@ -840,7 +841,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "mysterious_gem",
+    id: TrinketId.MysteriousGem,
     name: "Mysterious Gem",
     effectText: "Your monsters have +20% Damage.",
     rarity: Rarity.Legendary,
@@ -850,7 +851,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "research_notes",
+    id: TrinketId.ResearchNotes,
     name: "Research Notes",
     effectText: "Legendary monsters are much more likely to appear in your shop.",
     rarity: Rarity.Legendary,
@@ -860,7 +861,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "winged_crown",
+    id: TrinketId.WingedCrown,
     name: "Winged Crown",
     effectText: "Your top middle monster has +1 Multicast.",
     rarity: Rarity.Legendary,
@@ -870,7 +871,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "zenith_stone",
+    id: TrinketId.ZenithStone,
     name: "Zenith Stone",
     effectText: "When your monsters gain stats, they gain +80% more (except Multicast and % bonuses).",
     rarity: Rarity.Legendary,
@@ -880,7 +881,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "alphas_crown",
+    id: TrinketId.AlphasCrown,
     name: "Alpha Crown",
     effectText: "On Battle Start\nYour monsters' Damage is set to your top-middle monster's Damage for this battle.",
     rarity: Rarity.Mythical,
@@ -890,7 +891,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "excalibur",
+    id: TrinketId.Excalibur,
     name: "Excalibur",
     effectText: "Your monsters have +350 Damage.",
     rarity: Rarity.Mythical,
@@ -901,7 +902,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "holy_grail",
+    id: TrinketId.HolyGrail,
     name: "Holy Grail",
     effectText: "On Victory\nGain $100.",
     rarity: Rarity.Mythical,
@@ -911,7 +912,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "master_crown",
+    id: TrinketId.MasterCrown,
     name: "Master Crown",
     effectText: "Your top middle monster has +80% stats (except Cooldown and Multicast).",
     rarity: Rarity.Mythical,
@@ -921,7 +922,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "mega_upgrade_disc",
+    id: TrinketId.MegaUpgradeDisc,
     name: "Mega Upgrade Disc",
     effectText: "When a monster reaches level 3, level it up again and destroy this.",
     rarity: Rarity.Mythical,
@@ -931,7 +932,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "mystic_incense",
+    id: TrinketId.MysticIncense,
     name: "Mystic Incense",
     effectText: "A Mythical monster will appear in your next shop.",
     rarity: Rarity.Mythical,
@@ -941,7 +942,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "rainbow_pearl",
+    id: TrinketId.RainbowPearl,
     name: "Rainbow Pearl",
     effectText: "All monsters in your shop are SHINY.",
     rarity: Rarity.Mythical,
@@ -951,7 +952,7 @@ export const trinkets: TrinketRecord[] = [
     patch: "Patch 1.2.0 / Balance 24 (extracted from batodex.com's embedded trinkets database, 2026-10-06, round 5 -- research.md G2)",
   },
   {
-    id: "ultra_duplicator",
+    id: TrinketId.UltraDuplicator,
     name: "Ultra Duplicator",
     effectText: "Gain an additional copy of each non-unique Trinket from a gift.",
     rarity: Rarity.Mythical,

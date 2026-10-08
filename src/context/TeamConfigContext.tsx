@@ -1,6 +1,7 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
 import type { TeamConfiguration, TeamPlacement, GridSlot, RegionId, StatModifier } from "../data/types";
 import { slotsEqual } from "../engine/grid";
+import type { Species, TrainerId, TrinketId } from "../data/ids";
 
 /**
  * The one shared, editable object (research.md A3) feeding both the DPS/status summary and
@@ -40,7 +41,7 @@ function freshModifierId(): string {
 
 interface TeamConfigContextValue {
   config: TeamConfiguration;
-  setPlacement: (slot: GridSlot, creatureId: string | null, level?: 1 | 2 | 3 | 4) => void;
+  setPlacement: (slot: GridSlot, creatureId: Species | null, level?: 1 | 2 | 3 | 4) => void;
   /**
    * Drag-and-drop support (2026-10-05 round 3, data-model.md's "Drag-and-drop placement
    * editing" amendment): moves the placement at `fromSlot` to `toSlot`. If `toSlot` is already
@@ -50,11 +51,11 @@ interface TeamConfigContextValue {
    * sides. A no-op if `fromSlot` has no placement.
    */
   movePlacement: (fromSlot: GridSlot, toSlot: GridSlot) => void;
-  setTrainerId: (trainerId: string | null) => void;
+  setTrainerId: (trainerId: TrainerId | null) => void;
   /** FR-027 (2026-10-06 round 5): multi-select, mirroring the Trainer single-select pattern --
    * `TeamConfiguration.trinketIds` already existed in the type (round 1) but had no setter. */
-  addTrinketId: (trinketId: string) => void;
-  removeTrinketId: (trinketId: string) => void;
+  addTrinketId: (trinketId: TrinketId) => void;
+  removeTrinketId: (trinketId: TrinketId) => void;
   setSimulationWindowSeconds: (seconds: number) => void;
   addTeamModifier: (modifier: Omit<StatModifier, "id">) => void;
   removeTeamModifier: (id: string) => void;
@@ -64,8 +65,8 @@ interface TeamConfigContextValue {
   /** Replaces the entire team, for build import (item 5). Not a merge — see `ShareBuild`. */
   replaceConfig: (next: TeamConfiguration) => void;
   setSelectedRegion: (region: RegionId | undefined) => void;
-  setPaintedCreatureIds: (ids: string[]) => void;
-  setSmuggledCreatureIds: (ids: string[]) => void;
+  setPaintedCreatureIds: (ids: Species[]) => void;
+  setSmuggledCreatureIds: (ids: Species[]) => void;
   addPlacementModifier: (slot: GridSlot, modifier: Omit<StatModifier, "id">) => void;
   removePlacementModifier: (slot: GridSlot, id: string) => void;
 }

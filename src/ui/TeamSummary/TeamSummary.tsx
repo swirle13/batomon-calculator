@@ -4,6 +4,7 @@ import { statusColor } from "../../data/statColors";
 import { formatRate } from "../../data/format";
 import styles from "./TeamSummary.module.css";
 import { STATUS_EFFECTS_ASC } from "../../data/vocabularies";
+import { placementKey } from "../../engine/grid";
 
 interface TeamSummaryProps {
   config: TeamConfiguration;
@@ -22,7 +23,12 @@ export function TeamSummary({ config, result }: TeamSummaryProps) {
   // FR-067: placements follow insertion order, so sort for a stable, readable table.
   const dpsRows = [...config.placements].map((placement) => {
     const creature = getCreatureById(placement.creatureId);
-    const key = `${placement.creatureId}@${placement.slot.row}${placement.slot.col}`;
+    /*
+     * Was built BY HAND here as `${creatureId}@${row}${col}`, independently of `slotKey` -- it
+     * matched only because `slotKey` happens to be `${row}${col}`, with nothing enforcing that. A
+     * change to either would have made every lookup on this page silently return 0.
+     */
+    const key = placementKey(placement.creatureId, placement.slot);
     const dps = result.perCreatureDps[key] ?? 0;
     // "Facilitated DPS" (user-requested, data-model.md amendment): damage this creature's own
     // status grants enabled on OTHER hits (currently just Shock procs) — separate from its own

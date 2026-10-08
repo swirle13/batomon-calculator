@@ -3,10 +3,12 @@ import { creatures } from "./creatures";
 import { trainers } from "./trainers";
 import { trinkets } from "./trinkets";
 import { items } from "./items";
-import { SHINY_STATS } from "./shiny";
+import { SHINY_STATS, shinyKey } from "./shiny";
 import { creatureHasType } from "./typing";
 import { deriveAbilityTags } from "./deriveTags";
 import { CreatureType } from "./enums";
+
+import type { Species } from "./ids";
 import { DamageChannel } from "./enums";
 
 /**
@@ -49,7 +51,7 @@ export const corpus: Corpus = {
   items,
 };
 
-export function getCreatureById(id: string) {
+export function getCreatureById(id: Species) {
   return corpus.creatures.find((c) => c.id === id) ?? null;
 }
 
@@ -79,7 +81,7 @@ export const distinctCreatures: CreatureRecord[] = corpus.creatures
  * requires (data-model.md's lookup-fix amendment). `getCreatureById` above is kept for existing
  * callers that don't yet care about level (every corpus record is still level 1 today).
  */
-export function getCreatureByIdAndLevel(id: string, level: number): CreatureRecord | null {
+export function getCreatureByIdAndLevel(id: Species, level: number): CreatureRecord | null {
   return corpus.creatures.find((c) => c.id === id && c.level === level) ?? null;
 }
 
@@ -94,7 +96,7 @@ export function getCreatureByIdAndLevel(id: string, level: number): CreatureReco
  * an ordinary creature, not as a crash.
  */
 export function resolveCreatureVariant(
-  id: string,
+  id: Species,
   level: number,
   shiny?: boolean,
 ): CreatureRecord | null {
@@ -114,7 +116,7 @@ export function applyShinyOverlay(
   shiny?: boolean,
 ): CreatureRecord | null {
   if (!base || !shiny) return base;
-  const line = SHINY_STATS[`${base.id}|${base.level}`];
+  const line = SHINY_STATS[shinyKey(base.id, base.level)];
   if (!line) return base;
   return {
     ...base,
@@ -147,8 +149,8 @@ export function applyShinyOverlay(
 }
 
 /** True when this species+level has a published shiny stat line to switch to. */
-export function hasShinyVariant(id: string, level: number): boolean {
-  return SHINY_STATS[`${id}|${level}`] !== undefined;
+export function hasShinyVariant(id: Species, level: number): boolean {
+  return SHINY_STATS[shinyKey(id, level)] !== undefined;
 }
 
 /** Every level the corpus actually has a record for, for a given species id — sorted

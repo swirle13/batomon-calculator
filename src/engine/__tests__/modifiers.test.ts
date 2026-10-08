@@ -3,7 +3,10 @@ import { applyModifiers, type ModifierAmounts } from "../modifiers";
 import { simulate } from "../simulate";
 import { corpus } from "../../data/corpus";
 import type { TeamConfiguration } from "../../data/types";
+
+import { syntheticSpecies } from "../../data/ids";
 import { DamageChannel, GridRow, ModifierStat, StatusEffectType } from "../../data/enums";
+import { Species } from "../../data/ids";
 
 /**
  * FR-078 (amended 2026-10-07): a user modifier may CREATE an effect, not only scale one.
@@ -107,7 +110,7 @@ describe("applyModifiers — null still means nothing is there", () => {
 describe("simulate — modifiers reach a creature that had nothing to scale", () => {
   function pebblerTeam(modifiers: TeamConfiguration["placements"][number]["modifiers"]): TeamConfiguration {
     return {
-      placements: [{ slot: { row: GridRow.Front, col: 0 }, creatureId: "pebbler", level: 1, modifiers }],
+      placements: [{ slot: { row: GridRow.Front, col: 0 }, creatureId: Species.Pebbler, level: 1, modifiers }],
       trainerId: null,
       trinketIds: [],
       itemIds: [],
@@ -120,7 +123,7 @@ describe("simulate — modifiers reach a creature that had nothing to scale", ()
       r.cumulativeSeries[r.cumulativeSeries.length - 1]?.totalDamage ?? 0;
     const before = simulate(pebblerTeam([]), corpus);
     const after = simulate(
-      pebblerTeam([{ id: "m1", stat: ModifierStat.DamageFlatAdd, amount: 40, label: "trinket" }]),
+      pebblerTeam([{ id: syntheticSpecies("m1"), stat: ModifierStat.DamageFlatAdd, amount: 40, label: "trinket" }]),
       corpus,
     );
     expect(total(before)).toBe(0);
@@ -139,7 +142,7 @@ describe("simulate — modifiers reach a creature that had nothing to scale", ()
           slot: { row: GridRow.Front, col: 0 },
           creatureId: passive.id,
           level: passive.level,
-          modifiers: [{ id: "m1", stat: ModifierStat.DamageFlatAdd, amount: 25, label: "trinket" }],
+          modifiers: [{ id: syntheticSpecies("m1"), stat: ModifierStat.DamageFlatAdd, amount: 25, label: "trinket" }],
         },
       ],
       trainerId: null,

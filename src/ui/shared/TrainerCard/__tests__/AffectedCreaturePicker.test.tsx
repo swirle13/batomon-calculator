@@ -6,6 +6,7 @@ import { distinctCreatures } from "../../../../data/corpus";
 import { isInOppositeRegion } from "../../../../data/typing";
 import type { TeamConfiguration } from "../../../../data/types";
 import { AffectedSpeciesKind, RegionId } from "../../../../data/enums";
+import { TrainerId } from "../../../../data/ids";
 
 /**
  * The affected-species picker (WI-001, WI-002 — orchestration round 6).
@@ -29,7 +30,7 @@ function configWith(overrides: Partial<TeamConfiguration> = {}): TeamConfigurati
 
 function openPainted(overrides: Partial<TeamConfiguration> = {}) {
   render(
-    <TeamConfigProvider initialConfig={configWith({ trainerId: "painter", ...overrides })}>
+    <TeamConfigProvider initialConfig={configWith({ trainerId: TrainerId.Painter, ...overrides })}>
       <AffectedCreaturePicker kind={AffectedSpeciesKind.Painted} onClose={() => {}} />
     </TeamConfigProvider>,
   );
@@ -114,7 +115,7 @@ describe("AffectedCreaturePicker (WI-002) — nine slots, shown and enforced", (
 describe("AffectedCreaturePicker — Smuggler's pool (FR-088)", () => {
   it("offers only opposite-region species, never the set complement", () => {
     render(
-      <TeamConfigProvider initialConfig={configWith({ trainerId: "smuggler", selectedRegion: RegionId.Pantra })}>
+      <TeamConfigProvider initialConfig={configWith({ trainerId: TrainerId.Smuggler, selectedRegion: RegionId.Pantra })}>
         <AffectedCreaturePicker kind={AffectedSpeciesKind.Smuggled} onClose={() => {}} />
       </TeamConfigProvider>,
     );
@@ -134,7 +135,7 @@ describe("AffectedCreaturePicker — Smuggler's pool (FR-088)", () => {
 
   it("says a region is needed rather than offering an arbitrary pool", () => {
     render(
-      <TeamConfigProvider initialConfig={configWith({ trainerId: "smuggler" })}>
+      <TeamConfigProvider initialConfig={configWith({ trainerId: TrainerId.Smuggler })}>
         <AffectedCreaturePicker kind={AffectedSpeciesKind.Smuggled} onClose={() => {}} />
       </TeamConfigProvider>,
     );
