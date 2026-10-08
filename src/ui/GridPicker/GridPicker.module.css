@@ -309,7 +309,14 @@
     line-height: 1.15;
   }
 
+  /*
+   * `text-align`, not just the flex alignment above it. The level spans the whole second row
+   * (`flex-basis: 100%`), so `justify-content` has nothing left to place — the item already fills
+   * the line, and the TEXT inside it was still being centred by the page's inherited
+   * `text-align: center`.
+   */
   .header .level {
     flex-basis: 100%;
+    text-align: left;
   }
 }
