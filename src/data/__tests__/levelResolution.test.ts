@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { corpus, getCreatureById, getCreatureByIdAndLevel } from "../corpus";
+import { allCreatureRecords, getCreatureById, getCreatureByIdAndLevel } from "../corpus";
 import { Species } from "../ids";
+import type { CreatureRecord } from "../types";
 
 /**
  * Round 10 (T209b / WI-002). The user reported that Puffloon showed no Multicast chip at level 2.
@@ -23,8 +24,8 @@ describe("creature lookup resolves by level", () => {
   });
 
   it("GUARD: for every creature with level variants, at least one stat differs from level 1", () => {
-    const byId = new Map<string, typeof corpus.creatures>();
-    for (const c of corpus.creatures) {
+    const byId = new Map<string, CreatureRecord[]>();
+    for (const c of allCreatureRecords()) {
       const list = byId.get(c.id) ?? [];
       list.push(c);
       byId.set(c.id, list);

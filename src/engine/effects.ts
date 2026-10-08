@@ -10,7 +10,7 @@ import type {
 } from "../data/types";
 import { aboveSlot, behindSlot, isAdjacent, slotsEqual } from "./grid";
 import type { PlacementKey } from "../data/types";
-import { applyShinyOverlay } from "../data/corpus";
+import { applyShinyOverlay, findCreature } from "../data/corpus";
 import { creatureHasType } from "../data/typing";
 import { isWildcardType } from "../data/vocabularies";
 import { hasAbilityText } from "../data/display";
@@ -267,9 +267,7 @@ export function resolveBoard(config: TeamConfiguration, corpus: Corpus): Resolve
       // point where the engine turns a placement into stats, so routing it here means shiny flows
       // into DPS, the charts, the optimiser and the effective-stat band without four separate fixes.
       const creature = applyShinyOverlay(
-        corpus.creatures.find(
-          (c) => c.id === placement.creatureId && c.level === placement.level,
-        ) ?? null,
+        findCreature(corpus, placement.creatureId, placement.level),
         placement.shiny,
       );
       return creature ? { placement, creature } : null;

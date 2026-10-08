@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { TotalDps } from "../TeamSummary/TotalDps";
 import { simulate } from "../../engine/simulate";
-import { corpus } from "../../data/corpus";
+import { allCreatureRecords, corpus } from "../../data/corpus";
 import { hasAbilityText } from "../../data/display";
 import { MAX_RECORDED_DAY } from "../../data/enemyHealth";
 import type { TeamConfiguration } from "../../data/types";
@@ -67,7 +67,7 @@ describe("placeholder ability text never reaches the UI (2026-10-06)", () => {
      * The guard below catches placeholder PROSE ("unknown", "n/a"); it could not see template
      * syntax, which is a different shape of the same mistake. Both are checked now.
      */
-    const templated = corpus.creatures
+    const templated = allCreatureRecords()
       .filter((c) => /\{[a-z_]+\}|%[sd]\b|\$\{/i.test(c.abilityText ?? ""))
       .map((c) => `${c.id} L${c.level}: ${c.abilityText}`);
     expect(templated).toEqual([]);
@@ -76,7 +76,7 @@ describe("placeholder ability text never reaches the UI (2026-10-06)", () => {
   it("GUARD: the corpus spells 'no ability' as an empty string, never as prose", () => {
     // Prose placeholders are indistinguishable from real abilities to anything but this predicate,
     // so a newly-introduced phrasing would silently render as an ability called e.g. "Unknown".
-    const prose = corpus.creatures
+    const prose = allCreatureRecords()
       .map((c) => ({ id: c.id, text: c.abilityText ?? "" }))
       .filter((c) => /^(no ability|none|unknown|n\/a|not transcribed|tbd)/i.test(c.text.trim()));
     expect(prose, `placeholder prose in corpus: ${prose.map((c) => c.id).join(", ")}`).toEqual([]);

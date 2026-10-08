@@ -315,64 +315,27 @@ export type AbilityTag =
 // Corpus entities
 // ---------------------------------------------------------------------------
 
-export interface CreatureRecord {
+/**
+ * The parts of a creature that are the SAME at every level (2026-10-08).
+ *
+ * Measured over the pre-collapse corpus of 596 records (149 species x exactly 4 levels): every
+ * field below held an identical value across all four of a species' records, without exception.
+ * That measurement is what makes the split safe, and it is why these fields live on the species
+ * once instead of being repeated four times.
+ */
+interface CreatureIdentity {
   /** Stable slug across levels, e.g. `Species.Bumblebolt` -> "bumblebolt". */
   id: Species;
   name: string;
   rarity: Rarity;
   /** 1 or 2 entries typically; ["All"] for Omnichrome-style exceptions */
   types: CreatureType[];
-  /**
-   * Widened 1-3 -> 1-4 (2026-10-05 round 2, research.md D2): standard merging only reaches
-   * level 3 (3x L1 -> L2, 2x L2 -> L3); level 4 is reachable only via rare in-run events or
-   * consumable level-up items, and is NOT guaranteed for every species.
-   */
-  level: 1 | 2 | 3 | 4;
   /** Per-species confirmed level cap, when sourced; absent = not yet researched (NOT every
    * creature is assumed to reach 4 by default — see research.md D2's Sukoi example). */
   confirmedMaxLevel?: 1 | 2 | 3 | 4;
-  /** Gold cost at level 1; merge levels typically have no independent shop cost */
-  shopCost: number;
-  /** null for creatures with no ordinary cooldown cast */
-  baseCooldownSeconds: number | null;
-  /**
-   * The creature's published damaging cast, or ABSENT if it has none (2026-10-07, round 7 WI-004).
-   *
-   * Replaces the `(baseDamage, damageType)` pair, which was two nullable fields that had to agree.
-   * Measured over all 596 records they always did — `damageType` was `null` exactly when
-   * `baseDamage` was, zero exceptions either way — so the pair stored one fact in two places and
-   * four representable combinations of which only two were legal. One optional field cannot
-   * disagree with itself, which is the whole point: the illegal state stops being representable
-   * rather than being prevented by a test.
-   *
-   * 240 of 596 records have no cast at all. That is the common case, not an edge case: a shield or
-   * status creature deals no direct damage, and absence says so better than two nulls did.
-   *
-   * A modifier or an ability grant can still CREATE a cast for a creature with none — see
-   * `engine/modifiers.ts`. That now reads as "no `publishedCast`, but a resolved cast", instead of
-   * two nullables that had to be updated together.
-   */
-  publishedCast?: { damage: number; channel: DamageChannel };
-  /**
-   * Number of independent direct-damage events a single cooldown completion fires (2026-10-05
-   * round 2, research.md D3). Default `1` ("no stated Multicast bonus") — backfilled onto all
-   * existing records rather than flagged unconfirmed, since "1 = none" is the reasonable
-   * baseline absent contrary evidence in `abilityText`.
-   */
-  baseMulticast: number;
-  /**
-   * HP restored per cast, resolved after damage in the same tick (2026-10-05 round 4,
-   * research.md F3). Corpus data only — not simulated, same "no modeled target/HP pool" gap as
-   * Shield absorption (tasks.md T037) — until/unless a target entity exists.
-   */
-  healAmount?: number;
   /** Extra gold gained when sold (2026-10-05 round 4, research.md F3) — shop/economy data
    * (research.md B6, out of scope for the engine), recorded for Corpus Browser completeness. */
   sellValue?: number;
-  /** Layers/shield applied per cast, if any */
-  appliesStatus?: { type: StatusEffectType; amount: number }[];
-  abilityText: string;
-  abilityTags: AbilityTag[];
   /** CreatureRecord.id this transforms into, if any (e.g. Riglet -> Rigalord) */
   evolvesInto?: Species;
   /**
@@ -412,6 +375,117 @@ export interface CreatureRecord {
    */
   spriteFile?: string;
 }
+
+/**
+ * The parts of a creature that CAN differ between its four levels.
+ *
+ * Every one of these was measured to actually vary for at least one species, so the split is drawn
+ * from the data rather than guessed: `abilityText` varies for 103 species, `publishedCast` for 61,
+ * `appliesStatus` for 48, `baseMulticast` for 37, `abilityTags` for 30, `baseCooldownSeconds` for
+ * 17, `healAmount` for 13 and `shopCost` for exactly one (Kindlepot, which publishes 10/0/0/0).
+ *
+ * The progressions are NOT formulaic and must stay as stored values: level 2 and 3 are usually 2x
+ * and 3x level 1, but level 4 multipliers observed across the corpus include 1x, 2x, 3x, 6x, 12x,
+ * 24x, 30x, 100x and 999x. Damage alone has 15 distinct progression shapes.
+ */
+export interface CreatureLevelStats {
+  /** Gold cost at level 1; merge levels typically have no independent shop cost */
+  shopCost: number;
+  /** null for creatures with no ordinary cooldown cast */
+  baseCooldownSeconds: number | null;
+  /**
+   * The creature's published damaging cast, or ABSENT if it has none (2026-10-07, round 7 WI-004).
+   *
+   * Replaces the `(baseDamage, damageType)` pair, which was two nullable fields that had to agree.
+   * Measured over all 596 records they always did — `damageType` was `null` exactly when
+   * `baseDamage` was, zero exceptions either way — so the pair stored one fact in two places and
+   * four representable combinations of which only two were legal. One optional field cannot
+   * disagree with itself, which is the whole point: the illegal state stops being representable
+   * rather than being prevented by a test.
+   *
+   * 240 of 596 records have no cast at all. That is the common case, not an edge case: a shield or
+   * status creature deals no direct damage, and absence says so better than two nulls did.
+   *
+   * A modifier or an ability grant can still CREATE a cast for a creature with none — see
+   * `engine/modifiers.ts`. That now reads as "no `publishedCast`, but a resolved cast", instead of
+   * two nullables that had to be updated together.
+   */
+  publishedCast?: { damage: number; channel: DamageChannel };
+  /**
+   * Number of independent direct-damage events a single cooldown completion fires (2026-10-05
+   * round 2, research.md D3). Default `1` ("no stated Multicast bonus") — backfilled onto all
+   * existing records rather than flagged unconfirmed, since "1 = none" is the reasonable
+   * baseline absent contrary evidence in `abilityText`.
+   */
+  baseMulticast: number;
+  /**
+   * HP restored per cast, resolved after damage in the same tick (2026-10-05 round 4,
+   * research.md F3). Corpus data only — not simulated, same "no modeled target/HP pool" gap as
+   * Shield absorption (tasks.md T037) — until/unless a target entity exists.
+   */
+  healAmount?: number;
+  /** Layers/shield applied per cast, if any */
+  appliesStatus?: { type: StatusEffectType; amount: number }[];
+  abilityText: string;
+  abilityTags: AbilityTag[];
+}
+
+/**
+ * What a level 2-4 entry may restate. Anything omitted is INHERITED from level 1.
+ *
+ * The inheritance rule means absence here cannot express "this creature loses a stat as it levels".
+ * That is deliberate and it is safe against the real corpus: measured across all 596 pre-collapse
+ * records, no species gains or loses its `publishedCast` between levels, and no `appliesStatus`
+ * array changes length. Every observed difference is a change of MAGNITUDE, never of shape. If a
+ * future creature does drop a stat at level 4, this type has to grow an explicit sentinel — it
+ * must not be faked by omission.
+ */
+export type CreatureLevelOverride = Partial<CreatureLevelStats>;
+
+/**
+ * One creature, STORED once (2026-10-08).
+ *
+ * This is the shape `creatures.ts` holds. The level 1 stat line sits inline on the species, and
+ * `levels` carries only what changes at 2, 3 and 4 — which is a small fraction of the whole: 119
+ * of 149 species have identical `abilityTags` at every level, 132 an identical cooldown, and 112
+ * an identical multicast.
+ *
+ * Consumers do NOT read this. They read `CreatureRecord`, the resolved view for one level, which
+ * `data/corpus.ts` materialises. Keeping the stored shape and the read shape as separate types is
+ * what let this collapse happen without touching the renderers and the engine's stat maths.
+ */
+export interface CreatureSpecies extends CreatureIdentity, CreatureLevelStats {
+  /**
+   * Never set. Declared so a `CreatureRecord` is NOT assignable to a `CreatureSpecies`.
+   *
+   * Without it the two types are structurally compatible — `CreatureRecord` is a `CreatureSpecies`
+   * plus a `level` — so a test fixture built as level records could be handed to the engine as a
+   * species list and compile. Three such fixtures existed, and they did not fail loudly: the
+   * engine read the LAST entry for a duplicated id and silently simulated the wrong stat line.
+   */
+  level?: never;
+  levels?: Partial<Record<2 | 3 | 4, CreatureLevelOverride>>;
+}
+
+/**
+ * One creature AT ONE LEVEL — the flat, fully-resolved view everything downstream reads.
+ *
+ * Identical in shape to what the corpus stored directly before the 2026-10-08 collapse, which is
+ * the point: the engine, the cards and the pickers were not rewritten, only the storage was.
+ * Produced by `resolveSpeciesLevel` in `data/corpus.ts`; never written by hand outside tests.
+ */
+export interface CreatureRecord extends CreatureIdentity, CreatureLevelStats {
+  /**
+   * Widened 1-3 -> 1-4 (2026-10-05 round 2, research.md D2): standard merging only reaches
+   * level 3 (3x L1 -> L2, 2x L2 -> L3); level 4 is reachable only via rare in-run events or
+   * consumable level-up items, and is NOT guaranteed for every species.
+   */
+  level: 1 | 2 | 3 | 4;
+}
+
+/** The levels every species publishes a stat line for. */
+export const CREATURE_LEVELS = [1, 2, 3, 4] as const;
+export type CreatureLevel = (typeof CREATURE_LEVELS)[number];
 
 /**
  * Everything a creature emits in one cast — the ONE shape the stat band renders from.
@@ -542,7 +616,14 @@ export interface ItemRecord {
 }
 
 export interface Corpus {
-  creatures: CreatureRecord[];
+  /**
+   * ONE ENTRY PER SPECIES since 2026-10-08, not one per (species, level).
+   *
+   * Code that needs a specific level must go through `findCreature(corpus, id, level)` in
+   * `data/corpus.ts` rather than scanning this array — a `.find(c => c.id === x && c.level === y)`
+   * over these no longer compiles, which is how every such site got found.
+   */
+  creatures: CreatureSpecies[];
   trainers: TrainerRecord[];
   trinkets: TrinketRecord[];
   items: ItemRecord[];

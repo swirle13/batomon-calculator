@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { corpus } from "../../data/corpus";
+import { corpus, getCreatureByIdAndLevel } from "../../data/corpus";
 import { resolveEffects } from "../effects";
 import { simulate } from "../simulate";
 import { placementKey, slotsEqual } from "../grid";
@@ -192,7 +192,7 @@ describe("knocked-out allies, and Shikitsune's revive", () => {
     expect(victim?.cooldownSpeedGrant).toBeCloseTo(0.15);
 
     const rattleghast = resolved.find((r) => r.creature.id === Species.Rattleghast)!;
-    const base = corpus.creatures.find((c) => c.id === Species.Rattleghast && c.level === 1)!;
+    const base = getCreatureByIdAndLevel(Species.Rattleghast, 1)!;
     const basePoison = base.appliesStatus!.find((s) => s.type === "Poison")!.amount;
     expect(rattleghast.appliesStatus.find((s) => s.type === "Poison")!.amount).toBe(basePoison + 4);
   });

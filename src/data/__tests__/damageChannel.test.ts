@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { creatures } from "../creatures";
-import { corpus, applyShinyOverlay } from "../corpus";
-import { SHINY_STATS, type ShinyKey } from "../shiny";
+import { allCreatureRecords, applyShinyOverlay, getCreatureByIdAndLevel, rawCreatureRecords } from "../corpus";
+import { allShinyLines } from "../shiny";
 import { DamageChannel } from "../enums";
 
 /**
@@ -21,7 +20,7 @@ describe("WI-004: the illegal state is gone, not guarded", () => {
   it("has no record carrying a damage without a channel, by construction", () => {
     // Not an assertion about the data so much as a demonstration of the shape: `publishedCast` is
     // present with BOTH fields, or absent. There is no third option to test for.
-    for (const c of creatures) {
+    for (const c of rawCreatureRecords()) {
       if (c.publishedCast === undefined) continue;
       expect(typeof c.publishedCast.damage, `${c.id} L${c.level}`).toBe("number");
       expect(Object.values(DamageChannel)).toContain(c.publishedCast.channel);
@@ -31,18 +30,19 @@ describe("WI-004: the illegal state is gone, not guarded", () => {
   it("preserves the measured split exactly: 356 records with a cast, 240 without", () => {
     // The same two numbers the old correlation test reported, which is the evidence that the
     // migration changed representation and not meaning. 356 + 240 = 596.
-    const withCast = creatures.filter((c) => c.publishedCast !== undefined);
-    const without = creatures.filter((c) => c.publishedCast === undefined);
+    const records = rawCreatureRecords();
+    const withCast = records.filter((c) => c.publishedCast !== undefined);
+    const without = records.filter((c) => c.publishedCast === undefined);
     expect(withCast.length).toBe(356);
     expect(without.length).toBe(240);
-    expect(withCast.length + without.length).toBe(creatures.length);
+    expect(withCast.length + without.length).toBe(records.length);
   });
 
   it("uses only Direct on records, so the other channels stay hit-side", () => {
     // The user's "just null or Direct" was right about the RECORD and wrong about the type: Burn,
     // Poison and Shock are alive at runtime on `TimelineEvent` and in `shield.ts`'s status-vs-shield
     // branch. One type was doing two jobs, which is why it looked half-empty.
-    const channels = new Set(creatures.map((c) => c.publishedCast?.channel).filter(Boolean));
+    const channels = new Set(rawCreatureRecords().map((c) => c.publishedCast?.channel).filter(Boolean));
     expect([...channels]).toEqual([DamageChannel.Direct]);
   });
 
@@ -64,14 +64,14 @@ describe("WI-004: the shiny override is now atomic", () => {
    * that path, not by construction.
    */
   it("still has no channel on the shiny stat line, which is why this needed deciding once", () => {
-    const lines = Object.values(SHINY_STATS).filter((s) => s !== undefined);
+    const lines = allShinyLines().map((entry) => entry.line);
     expect(lines.length).toBeGreaterThan(0);
     expect(lines.some((s) => s.baseDamage !== null)).toBe(true);
     expect(lines.every((s) => !("damageType" in s))).toBe(true);
   });
 
   it("gives a shiny cast a channel, never a damage without one", () => {
-    const shinies = corpus.creatures
+    const shinies = allCreatureRecords()
       .map((c) => applyShinyOverlay(c, true))
       .filter((c): c is NonNullable<typeof c> => c !== null);
 
@@ -85,10 +85,9 @@ describe("WI-004: the shiny override is now atomic", () => {
   it("drops the cast entirely when the shiny line publishes no damage", () => {
     // Shiny can be a DOWNGRADE for a handful of species, so a shiny line with `baseDamage: null`
     // against a normal record that has a cast must remove it rather than keep the normal number.
-    const id = (Object.keys(SHINY_STATS) as ShinyKey[]).find((k) => SHINY_STATS[k]!.baseDamage === null);
-    if (id === undefined) return; // nothing to check in this corpus revision
-    const [species, level] = id.split("|");
-    const base = corpus.creatures.find((c) => c.id === species && c.level === Number(level))!;
+    const castless = allShinyLines().find((entry) => entry.line.baseDamage === null);
+    if (castless === undefined) return; // nothing to check in this corpus revision
+    const base = getCreatureByIdAndLevel(castless.id, castless.line.level)!;
     expect(applyShinyOverlay(base, true)!.publishedCast).toBeUndefined();
   });
 });

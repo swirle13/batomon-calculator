@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { corpus } from "../corpus";
+import { allCreatureRecords, getCreatureByIdAndLevel } from "../corpus";
 import { TRIGGER_DEFINITIONS, manualTriggersFor, modifiersForPress } from "../triggers";
 import { isResolvableTag } from "../../engine/effects";
 import { recipientsOfPress } from "../../engine/manualTriggers";
@@ -13,7 +13,7 @@ describe("manual trigger framework", () => {
     // scaling 20/40/60/120 by level.
     const expected = { 1: 20, 2: 40, 3: 60, 4: 120 };
     for (const [level, amount] of Object.entries(expected)) {
-      const c = corpus.creatures.find((x) => x.id === Species.Craghorn && x.level === Number(level))!;
+      const c = getCreatureByIdAndLevel(Species.Craghorn, Number(level))!;
       const [trigger] = manualTriggersFor(c);
       expect(trigger, `craghorn L${level}`).toBeDefined();
       expect(trigger!.trigger).toBe("On Item Used");
@@ -27,7 +27,7 @@ describe("manual trigger framework", () => {
   it("gives Craghorn an abilityTrigger, which it previously lacked entirely", () => {
     // batodex's own `trigger` field is null for it, so the value had to come from the text. Its
     // absence is why the creature showed no trigger at all.
-    const c = corpus.creatures.find((x) => x.id === Species.Craghorn && x.level === 1)!;
+    const c = getCreatureByIdAndLevel(Species.Craghorn, 1)!;
     expect(c.abilityTrigger).toBe("On Item Used");
   });
 
@@ -35,7 +35,7 @@ describe("manual trigger framework", () => {
     // The double-count hazard: if the engine already applies the effect, a button would let the
     // user bank it again. This is the assertion that keeps the two mechanisms disjoint.
     const offenders: string[] = [];
-    for (const c of corpus.creatures) {
+    for (const c of allCreatureRecords()) {
       if (manualTriggersFor(c).length === 0) continue;
       if (c.abilityTags.some(isResolvableTag)) offenders.push(`${c.id} L${c.level}`);
     }
@@ -44,7 +44,7 @@ describe("manual trigger framework", () => {
 
   it("GUARD: no manual trigger uses a trigger the engine propagates", () => {
     // The same hazard stated at the trigger level rather than the creature level.
-    for (const c of corpus.creatures) {
+    for (const c of allCreatureRecords()) {
       for (const t of manualTriggersFor(c)) {
         expect(
           t.definition.enginePropagated,
@@ -67,7 +67,7 @@ describe("manual trigger framework", () => {
   });
 
   it("a press yields modifiers with no id, for the caller to accumulate", () => {
-    const c = corpus.creatures.find((x) => x.id === Species.Craghorn && x.level === 1)!;
+    const c = getCreatureByIdAndLevel(Species.Craghorn, 1)!;
     const press = modifiersForPress(manualTriggersFor(c)[0]!);
     expect(press).toEqual([
       { stat: ModifierStat.DamageFlatAdd, amount: 20 },
@@ -78,7 +78,7 @@ describe("manual trigger framework", () => {
 
   it("covers the creatures whose triggers the engine cannot fire", () => {
     const withButtons = new Set(
-      corpus.creatures.filter((c) => manualTriggersFor(c).length > 0).map((c) => c.id),
+      allCreatureRecords().filter((c) => manualTriggersFor(c).length > 0).map((c) => c.id),
     );
     for (const id of [
       Species.Craghorn, Species.Guardiant, Species.Dollhime, Species.Ratacomb,
@@ -89,10 +89,10 @@ describe("manual trigger framework", () => {
   });
 
   it("the overwhelming majority of creatures offer nothing, and render nothing", () => {
-    const withButtons = corpus.creatures.filter((c) => manualTriggersFor(c).length > 0);
+    const withButtons = allCreatureRecords().filter((c) => manualTriggersFor(c).length > 0);
     expect(withButtons.length).toBeGreaterThan(0);
-    expect(withButtons.length).toBeLessThan(corpus.creatures.length / 2);
-    expect(manualTriggersFor(corpus.creatures.find((c) => c.id === Species.Bumblebolt)!)).toEqual([]);
+    expect(withButtons.length).toBeLessThan(allCreatureRecords().length / 2);
+    expect(manualTriggersFor(getCreatureByIdAndLevel(Species.Bumblebolt, 1)!)).toEqual([]);
   });
 });
 
@@ -103,7 +103,7 @@ describe("manual trigger framework", () => {
  * banked the bonus on the presser and silently skipped the allies the ability text names.
  */
 describe("manual trigger recipients", () => {
-  const lv1 = (id: Species) => corpus.creatures.find((c) => c.id === id && c.level === 1)!;
+  const lv1 = (id: Species) => allCreatureRecords().find((c) => c.id === id, 1)!;
 
   const SLOTS: GridSlot[] = [
     { row: GridRow.Back, col: 0 },
@@ -126,7 +126,7 @@ describe("manual trigger recipients", () => {
 
   it("Brawlmantis reaches itself and the Common allies, at every level", () => {
     for (const level of [1, 2, 3, 4]) {
-      const c = corpus.creatures.find((x) => x.id === Species.Brawlmantis && x.level === level)!;
+      const c = getCreatureByIdAndLevel(Species.Brawlmantis, level)!;
       const [trigger] = manualTriggersFor(c);
       expect(trigger!.target, `brawlmantis L${level}`).toEqual({ kind: TargetKind.AllAllies, rarityFilter: Rarity.Common });
       expect(trigger!.includeSelf).toBe(true);
@@ -165,7 +165,7 @@ describe("manual trigger recipients", () => {
   it("GUARD: every ally-granting trigger is reachable, i.e. names the presser too", () => {
     // Every "This and ... allies" ability in the corpus includes the presser. An ally-only trigger
     // is legal in the schema but none exists yet, so this states the corpus fact rather than a rule.
-    for (const c of corpus.creatures) {
+    for (const c of allCreatureRecords()) {
       for (const t of manualTriggersFor(c)) {
         if (t.target.kind === TargetKind.Self) continue;
         expect(t.includeSelf, `${c.id} L${c.level} targets allies but excludes itself`).toBe(true);
@@ -182,7 +182,7 @@ describe("manual trigger recipients", () => {
      * gains +3 Burn permanently" mentions an ally as the TRIGGER and grants to itself. Who gains is
      * the only thing a target selector decides.
      */
-    for (const c of corpus.creatures) {
+    for (const c of allCreatureRecords()) {
       for (const t of manualTriggersFor(c)) {
         expect(
           t.target.kind !== TargetKind.Self,

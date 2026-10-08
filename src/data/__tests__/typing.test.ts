@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { corpus } from "../corpus";
+import { allCreatureRecords, getCreatureByIdAndLevel } from "../corpus";
 import { CREATURE_REGIONS, REGION_UNSOURCED } from "../regions";
 import { creatureHasType, isInOppositeRegion, isOutOfRegion, isPainted } from "../typing";
 import { CreatureType, RegionId } from "../enums";
@@ -7,8 +7,8 @@ import { Species } from "../ids";
 
 /** Round 4 orchestration: painting, the "All" type, and region membership. */
 describe("type matching (T230 / FR-086)", () => {
-  const omnichrome = corpus.creatures.find((c) => c.id === Species.Omnichrome && c.level === 1)!;
-  const bumblebolt = corpus.creatures.find((c) => c.id === Species.Bumblebolt && c.level === 1)!;
+  const omnichrome = getCreatureByIdAndLevel(Species.Omnichrome, 1)!;
+  const bumblebolt = getCreatureByIdAndLevel(Species.Bumblebolt, 1)!;
 
   it("a natively-'All' creature matches every type — the pre-existing bug this fixes", () => {
     // Before the single predicate, every call site did `types.includes(t)`, and
@@ -30,7 +30,7 @@ describe("type matching (T230 / FR-086)", () => {
 
   it("painting is by SPECIES, so it is not slot- or level-dependent", () => {
     const cfg = { paintedCreatureIds: [Species.Bumblebolt] };
-    for (const c of corpus.creatures.filter((x) => x.id === Species.Bumblebolt)) {
+    for (const c of allCreatureRecords().filter((x) => x.id === Species.Bumblebolt)) {
       expect(isPainted(c.id, cfg)).toBe(true);
       expect(creatureHasType(c, CreatureType.Rock, cfg)).toBe(true);
     }

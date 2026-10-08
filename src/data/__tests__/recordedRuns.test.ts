@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { RECORDED_RUNS } from "./fixtures/recordedRuns";
 import { buildId, exportBuild, importBuild } from "../share";
 import { simulate } from "../../engine/simulate";
-import { corpus } from "../corpus";
+import { corpus, getCreatureByIdAndLevel } from "../corpus";
 import { timeToKill } from "../enemyHealth";
 import { perCastOutputOf } from "../../ui/shared/BatomonCard/perCastOutput";
 import { StatusEffectType } from "../enums";
@@ -51,7 +51,7 @@ describe("recorded run fixtures", () => {
     // the card must read 40/40, not 20/20 with a separate band showing 40.
     const config = importBuild(RECORDED_RUNS.find((r) => r.id === "r2d2")!.code);
     const craghorn = config.placements.find((p) => p.creatureId === Species.Craghorn)!;
-    const record = corpus.creatures.find((c) => c.id === Species.Craghorn && c.level === 1)!;
+    const record = getCreatureByIdAndLevel(Species.Craghorn, 1)!;
 
     expect(record.publishedCast?.damage ?? null).toBe(20);
     const shown = perCastOutputOf(record, craghorn.modifiers);

@@ -1,4 +1,5 @@
 import type { Corpus, CreatureRecord } from "../data/types";
+import { findCreature } from "../data/corpus";
 
 /**
  * Walks `evolvesInto`/`evolvesAtLevel` chains (contracts/engine-api.md, data-model.md's
@@ -29,13 +30,12 @@ export function resolveLevelUp(
     }
     visited.add(currentId);
 
-    // Find any record for this species id (level-agnostic) purely to read its evolution fields
-    // -- the chain itself (evolvesInto/evolvesAtLevel) doesn't vary by level for a given id in
-    // this corpus's model, only the stats do.
-    const anyRecordForId = corpus.creatures.find((c) => c.id === currentId);
-    if (!anyRecordForId) return null;
+    // The evolution chain lives on the SPECIES, not on a level record -- it never varied by level,
+    // which is why the 2026-10-08 collapse could hoist it without changing what this reads.
+    const species = corpus.creatures.find((c) => c.id === currentId);
+    if (!species) return null;
 
-    const { evolvesInto, evolvesAtLevel } = anyRecordForId;
+    const { evolvesInto, evolvesAtLevel } = species;
     if (evolvesInto !== undefined && evolvesAtLevel !== undefined && targetLevel >= evolvesAtLevel) {
       currentId = evolvesInto;
       continue;
@@ -43,6 +43,6 @@ export function resolveLevelUp(
 
     // No further evolution applies at targetLevel -- resolve the exact (id, level) record,
     // same lookup discipline as simulate()'s teamMembers construction.
-    return corpus.creatures.find((c) => c.id === currentId && c.level === targetLevel) ?? null;
+    return findCreature(corpus, currentId, targetLevel);
   }
 }

@@ -32,7 +32,7 @@ const TYPES: CreatureType[] = [...FILTERABLE_CREATURE_TYPES].sort((a, b) => a.lo
  * here** (FR-030, user-requested). The per-record fields that backed them were dropped from the
  * data model entirely in a later pass — nothing read them. See spec.md's round 6 Amendment.
  *
- * Listings iterate `distinctCreatures` (one record per species), not `corpus.creatures` — since
+ * Listings iterate `distinctCreatures` (one record per species), not every level record — since
  * round 5 the latter holds up to 4 level records per species and would show duplicate cards.
  */
 export function CorpusBrowser() {

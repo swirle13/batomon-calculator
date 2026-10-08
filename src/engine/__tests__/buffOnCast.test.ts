@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { simulate } from "../simulate";
-import type { Corpus, CreatureRecord, TeamConfiguration } from "../../data/types";
+import type { Corpus, CreatureSpecies, TeamConfiguration } from "../../data/types";
 
 import { syntheticSpecies } from "../../data/ids";
 
@@ -14,10 +14,9 @@ import { AbilityTagKind, AbilityTrigger, CreatureType, DamageChannel, GridRow, R
  * On Cast trigger is not a one-off: it fires on every cast, so output grows as the fight goes on.
  * A static reading would be right about the first cast and increasingly wrong after it.
  */
-const base: Omit<CreatureRecord, "id" | "name"> = {
+const base: Omit<CreatureSpecies, "id" | "name"> = {
   rarity: Rarity.Common,
   types: [CreatureType.Fire],
-  level: 1,
   shopCost: 10,
   baseCooldownSeconds: 1,
   publishedCast: { damage: 10, channel: DamageChannel.Direct },
@@ -29,8 +28,8 @@ const base: Omit<CreatureRecord, "id" | "name"> = {
   ],
 };
 
-const grower: CreatureRecord = { ...base, id: syntheticSpecies(syntheticSpecies("grower")), name: "Grower" };
-const flat: CreatureRecord = { ...base, id: syntheticSpecies(syntheticSpecies("flat")), name: "Flat", abilityTags: [], abilityText: "test fixture" };
+const grower: CreatureSpecies = { ...base, id: syntheticSpecies(syntheticSpecies("grower")), name: "Grower" };
+const flat: CreatureSpecies = { ...base, id: syntheticSpecies(syntheticSpecies("flat")), name: "Flat", abilityTags: [], abilityText: "test fixture" };
 const testCorpus: Corpus = { creatures: [grower, flat], trainers: [], trinkets: [], items: [] };
 
 const team = (creatureId: Species, windowSeconds: number): TeamConfiguration => ({

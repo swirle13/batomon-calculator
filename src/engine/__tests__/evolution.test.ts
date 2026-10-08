@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { resolveLevelUp } from "../evolution";
 import { corpus } from "../../data/corpus";
-import type { Corpus, CreatureRecord } from "../../data/types";
+import type { Corpus, CreatureSpecies } from "../../data/types";
 
 import { syntheticSpecies } from "../../data/ids";
 import { CreatureType, DamageChannel, Rarity } from "../../data/enums";
@@ -15,12 +15,11 @@ import { Species } from "../../data/ids";
  * end-to-end, the same pattern already used in simulate.test.ts's synthetic fixtures.
  */
 function evolutionCorpus(): Corpus {
-  const panbudL1: CreatureRecord = {
+  const panbudL1: CreatureSpecies = {
     id: Species.Panbud,
     name: "Panbud",
     rarity: Rarity.Common,
     types: [CreatureType.Grass],
-    level: 1,
     baseMulticast: 1,
     shopCost: 10,
     baseCooldownSeconds: 5.5,
@@ -30,12 +29,11 @@ function evolutionCorpus(): Corpus {
     abilityText: "Evolves at level 3.",
     abilityTags: [],
   };
-  const bambudoL3: CreatureRecord = {
+  const bambudoL3: CreatureSpecies = {
     id: Species.Bambudo,
     name: "Bambudo",
     rarity: Rarity.Common,
     types: [CreatureType.Grass],
-    level: 3,
     baseMulticast: 1,
     shopCost: 10,
     baseCooldownSeconds: 5,
@@ -43,12 +41,11 @@ function evolutionCorpus(): Corpus {
     abilityText: "test fixture",
     abilityTags: [],
   };
-  const nonEvolving: CreatureRecord = {
+  const nonEvolving: CreatureSpecies = {
     id: syntheticSpecies("steadymon"),
     name: "Steadymon",
     rarity: Rarity.Common,
     types: [CreatureType.Rock],
-    level: 2,
     baseMulticast: 1,
     shopCost: 10,
     baseCooldownSeconds: 2,
@@ -75,11 +72,45 @@ describe("resolveLevelUp", () => {
     expect(resolved!.id).toBe("steadymon");
   });
 
-  it("returns null when the resolved species has no record at the requested level (never falls back to a different level)", () => {
+  /**
+   * 2026-10-08: this used to assert that resolving Panbud at level 4 returned `null`, because the
+   * fixture carried a Bambudo record at level 3 only.
+   *
+   * That state is no longer REPRESENTABLE. A `CreatureSpecies` publishes all four levels — level 1
+   * inline and 2-4 as overrides — so a species that exists, exists at every level. The old
+   * assertion was pinning an artefact of how the fixture was written, not a rule the resolver has.
+   *
+   * What the resolver actually guarantees is the half of the lookup-fix discipline that survives:
+   * it resolves the EVOLVED species or nothing, and never falls back to the pre-evolution record
+   * when the evolution target is missing from the corpus.
+   */
+  it("returns null when the species it evolves into is absent from the corpus (never falls back to the pre-evolution record)", () => {
     const synthetic = evolutionCorpus();
-    // Panbud evolves into Bambudo at 3, but this fixture has no Bambudo record at level 4.
-    const resolved = resolveLevelUp(synthetic, "panbud", 4);
-    expect(resolved).toBeNull();
+    const orphan: CreatureSpecies = {
+      id: syntheticSpecies("orphanmon"),
+      name: "Orphanmon",
+      rarity: Rarity.Common,
+      types: [CreatureType.Grass],
+      baseMulticast: 1,
+      shopCost: 10,
+      baseCooldownSeconds: 3,
+      evolvesInto: syntheticSpecies("nowheremon"), // deliberately not in the corpus
+      evolvesAtLevel: 3,
+      abilityText: "Evolves at level 3.",
+      abilityTags: [],
+    };
+    const withOrphan: Corpus = { ...synthetic, creatures: [...synthetic.creatures, orphan] };
+
+    expect(resolveLevelUp(withOrphan, "orphanmon", 3)).toBeNull();
+    // Below the threshold it still resolves to itself, so the null above is the missing TARGET.
+    expect(resolveLevelUp(withOrphan, "orphanmon", 2)?.id).toBe("orphanmon");
+  });
+
+  it("resolves the evolved species at every level at or above the threshold", () => {
+    const synthetic = evolutionCorpus();
+    for (const level of [3, 4] as const) {
+      expect(resolveLevelUp(synthetic, "panbud", level)?.id).toBe("bambudo");
+    }
   });
 
   it("returns null for an unknown species id", () => {
@@ -105,12 +136,11 @@ describe("resolveLevelUp", () => {
    * leveling, at any level, even though evolvesInto is populated.
    */
   it("a species with evolvesInto but no evolvesAtLevel never resolves through evolution at any level", () => {
-    const victoryTriggered: CreatureRecord = {
+    const victoryTriggered: CreatureSpecies = {
       id: syntheticSpecies("victoryMon"),
       name: "Victory Mon",
       rarity: Rarity.SuperRare,
       types: [CreatureType.Fire],
-      level: 1,
       baseMulticast: 1,
       shopCost: 40,
       baseCooldownSeconds: 8,

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { applyModifiers, type ModifierAmounts } from "../modifiers";
 import { simulate } from "../simulate";
-import { corpus } from "../../data/corpus";
+import { allCreatureRecords, corpus } from "../../data/corpus";
 import type { TeamConfiguration } from "../../data/types";
 
 import { syntheticSpecies } from "../../data/ids";
@@ -134,7 +134,7 @@ describe("simulate — modifiers reach a creature that had nothing to scale", ()
   });
 
   it("a creature with no published cooldown still reports its modified per-cast output", () => {
-    const passive = corpus.creatures.find((c) => c.baseCooldownSeconds === null);
+    const passive = allCreatureRecords().find((c) => c.baseCooldownSeconds === null);
     if (!passive) return;
     const config: TeamConfiguration = {
       placements: [

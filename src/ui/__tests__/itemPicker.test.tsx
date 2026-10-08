@@ -6,7 +6,7 @@ import { TeamConfigProvider } from "../../context/TeamConfigContext";
 import type { TeamConfiguration } from "../../data/types";
 import { CreatureType, GridRow } from "../../data/enums";
 import { Species } from "../../data/ids";
-import { corpus } from "../../data/corpus";
+import { allCreatureRecords } from "../../data/corpus";
 import { STAT_COLORS } from "../../data/statColors";
 
 /**
@@ -84,7 +84,7 @@ describe("items that cannot be picked say so", () => {
   it("disables an item no monster on the board matches", () => {
     // Battery Pack is "your Electric monsters"; Pebbler is Rock. A click that applied nothing
     // would look identical to one that worked.
-    const pebbler = corpus.creatures.find((c) => c.id === Species.Pebbler)!;
+    const pebbler = allCreatureRecords().find((c) => c.id === Species.Pebbler)!;
     expect(pebbler.types).not.toContain(CreatureType.Electric);
 
     open(configWith([Species.Pebbler]));

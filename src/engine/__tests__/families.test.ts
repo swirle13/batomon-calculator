@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { corpus } from "../../data/corpus";
+import { allCreatureRecords, corpus, getCreatureByIdAndLevel } from "../../data/corpus";
 import { RESOLVED_TAG_KINDS, isResolvableTag, resolveEffects } from "../effects";
 import type { GridSlot, TeamConfiguration } from "../../data/types";
 import { AbilityTagKind, GridRow, TargetKind } from "../../data/enums";
@@ -58,7 +58,7 @@ describe("selector-based effect families (T219)", () => {
   it("a positional grant reaches the creature behind, and nothing when that slot is empty", () => {
     // Onsetra: "the ally behind applies its Ongoing abilities 1 additional time". `behind` is only
     // defined from the front row, so an Onsetra in the back row grants nothing.
-    const onsetra = corpus.creatures.find((c) => c.id === Species.Onsetra && c.level === 1);
+    const onsetra = getCreatureByIdAndLevel(Species.Onsetra, 1);
     expect(onsetra, "fixture depends on Onsetra existing at level 1").toBeDefined();
 
     const granted = resolveEffects(
@@ -80,7 +80,7 @@ describe("selector-based effect families (T219)", () => {
     // Every selector except `self` excludes the source, so a solo board must resolve to base stats.
     for (const id of ["formiqueen", "onsetra", "miasmaw"]) {
       const solo = resolveEffects(team([{ id: id as Species, slot: BACK1 }]), corpus);
-      const base = corpus.creatures.find((c) => c.id === id && c.level === 1)!;
+      const base = getCreatureByIdAndLevel(id as Species, 1)!;
       expect(solo[0]!.baseDamage, `${id} solo damage`).toBe(base.publishedCast?.damage ?? null);
       expect(solo[0]!.multicast, `${id} solo multicast`).toBe(base.baseMulticast);
       expect(solo[0]!.extraOngoingApplications, `${id} solo ongoing`).toBe(0);
@@ -97,7 +97,7 @@ describe("selector-based effect families (T219)", () => {
     // They are also precisely why "tagged" overstated coverage: they looked like modelled abilities
     // while encoding nothing the data did not already say.
     const offenders: string[] = [];
-    for (const c of corpus.creatures) {
+    for (const c of allCreatureRecords()) {
       for (const tag of c.abilityTags) {
         if (tag.kind !== AbilityTagKind.StatusGrant || tag.target.kind !== TargetKind.Self) continue;
         if ((c.appliesStatus ?? []).some((s) => s.type === tag.status)) {
@@ -180,9 +180,9 @@ describe("coverage reporting is tied to what the engine actually resolves", () =
 
   it("agrees with isResolvableTag for every creature in the corpus", () => {
     // The whole-corpus version: whatever `modelled` claims must match the engine's own predicate.
-    const everySpecies = corpus.creatures.filter((cr) => cr.level === 1).map((cr) => cr.id);
+    const everySpecies = allCreatureRecords().filter((cr) => cr.level === 1).map((cr) => cr.id);
     for (const id of everySpecies) {
-      const creature = corpus.creatures.find((cr) => cr.id === id && cr.level === 1)!;
+      const creature = getCreatureByIdAndLevel(id, 1)!;
       if (!abilityNeedsModelling(creature)) continue;
       const c = analyzePositionalCoverage(board([id]), corpus);
       const resolvable = creature.abilityTags.some(isResolvableTag);

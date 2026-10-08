@@ -1,9 +1,18 @@
-import type { Corpus, CreatureRecord, ItemRecord, Rarity, TeamConfiguration } from "./types";
+import type {
+  Corpus,
+  CreatureLevel,
+  CreatureRecord,
+  CreatureSpecies,
+  ItemRecord,
+  Rarity,
+  TeamConfiguration,
+} from "./types";
+import { CREATURE_LEVELS } from "./types";
 import { creatures } from "./creatures";
 import { trainers } from "./trainers";
 import { trinkets } from "./trinkets";
 import { items } from "./items";
-import { SHINY_STATS, shinyKey } from "./shiny";
+import { getShinyLine } from "./shiny";
 import { creatureHasType } from "./typing";
 import { deriveAbilityTags } from "./deriveTags";
 import { CreatureType } from "./enums";
@@ -45,14 +54,103 @@ function withDerivedTags(record: CreatureRecord): CreatureRecord {
 }
 
 export const corpus: Corpus = {
-  creatures: creatures.map(withDerivedTags),
+  creatures,
   trainers,
   trinkets,
   items,
 };
 
-export function getCreatureById(id: Species) {
+// ---------------------------------------------------------------------------
+// Species -> level records
+// ---------------------------------------------------------------------------
+
+/**
+ * Materialise one level of a species (2026-10-08).
+ *
+ * `creatures.ts` stores level 1 inline and levels 2-4 as overrides; this applies one of those
+ * overrides to produce the flat `CreatureRecord` that the engine, the cards and the pickers have
+ * always read. Pure, so a caller can resolve a fixture it built itself.
+ */
+export function resolveSpeciesLevel(species: CreatureSpecies, level: CreatureLevel): CreatureRecord {
+  const { levels, ...base } = species;
+  return level === 1 ? { ...base, level } : { ...base, ...levels?.[level], level };
+}
+
+/**
+ * Every (species, level) record, resolved once and cached per corpus.
+ *
+ * Tags are derived HERE rather than on the stored species, because `deriveAbilityTags` reads
+ * `abilityText` — which is the single most level-dependent field in the corpus (103 of 149 species
+ * publish different text per level). Deriving before the override was applied would have given all
+ * four levels the level 1 ability.
+ *
+ * Keyed on the corpus OBJECT, not built against the module-level `corpus`, because the engine is
+ * handed its corpus as a parameter and tests inject fixtures — the same reasoning as
+ * `applyShinyOverlay`. A `WeakMap` so an injected fixture is collectable with its test.
+ */
+const recordsByCorpus = new WeakMap<Corpus, Map<string, CreatureRecord>>();
+
+function levelIndex(source: Corpus): Map<string, CreatureRecord> {
+  let index = recordsByCorpus.get(source);
+  if (!index) {
+    index = new Map();
+    for (const species of source.creatures) {
+      for (const level of CREATURE_LEVELS) {
+        index.set(`${species.id}|${level}`, withDerivedTags(resolveSpeciesLevel(species, level)));
+      }
+    }
+    recordsByCorpus.set(source, index);
+  }
+  return index;
+}
+
+/**
+ * The level-aware lookup the ENGINE uses, against whichever corpus it was handed.
+ *
+ * Replaces the `getCreatureByIdAndLevel(x, y)` that was written out by
+ * hand at a dozen call sites. Those stopped compiling when `Corpus.creatures` became one entry per
+ * species, which is how they were all found.
+ */
+export function findCreature(source: Corpus, id: string, level: number): CreatureRecord | null {
+  return levelIndex(source).get(`${id}|${level}`) ?? null;
+}
+
+/** Whether `source` has a record for this exact (species, level). */
+export function hasCreatureRecord(source: Corpus, id: string, level: number): boolean {
+  return levelIndex(source).has(`${id}|${level}`);
+}
+
+/**
+ * All 596 resolved (species, level) records, in species-then-level order.
+ *
+ * For corpus-WIDE passes only — integrity checks, coverage audits, the ability-text and
+ * derived-tag guards. Anything looking up a specific creature wants `findCreature` instead.
+ */
+export function allCreatureRecords(source: Corpus = corpus): CreatureRecord[] {
+  return [...levelIndex(source).values()];
+}
+
+/**
+ * The same records with HAND-AUTHORED tags only — `deriveAbilityTags` not applied.
+ *
+ * Exists so the derivation guard can measure before-and-after: `allCreatureRecords` is the merged
+ * view, and comparing it against itself would report that derivation changed nothing. Before the
+ * collapse that test read the raw `creatures` array directly, which was the 596 records; now that
+ * `creatures` is 149 species, this reproduces what it used to see.
+ */
+export function rawCreatureRecords(source: Corpus = corpus): CreatureRecord[] {
+  return source.creatures.flatMap((species) =>
+    CREATURE_LEVELS.map((level) => resolveSpeciesLevel(species, level)),
+  );
+}
+
+/** The species entry as STORED, without resolving a level. */
+export function getSpeciesById(id: Species): CreatureSpecies | null {
   return corpus.creatures.find((c) => c.id === id) ?? null;
+}
+
+export function getCreatureById(id: Species) {
+  return getCreatureByIdAndLevel(id, 1);
 }
 
 /** One item by id, or `null`. Mirrors `getCreatureById` (T046). */
@@ -63,7 +161,7 @@ export function getItemById(id: ItemId): ItemRecord | null {
 /**
  * 2026-10-06 round 5: one representative record per species, for UI listings (search modal,
  * dropdowns, Corpus Browser search/filter) that must show each species exactly once rather
- * than once per level. `corpus.creatures` now holds up to 4 records per species (one per
+ * than once per level. The corpus holds four level records per species (one per
  * level, since round 5's level 2-4 corpus population) -- level-1 is always present and used as
  * the canonical representative; level-specific stats are resolved separately via
  * `getCreatureByIdAndLevel`/`resolveLevelUp` once a specific placement's level is known.
@@ -78,7 +176,7 @@ export function getItemById(id: ItemId): ItemRecord | null {
  * edit must not be able to reorder the UI.
  */
 export const distinctCreatures: CreatureRecord[] = corpus.creatures
-  .filter((c) => c.level === 1)
+  .map((species) => getCreatureByIdAndLevel(species.id, 1)!)
   .sort((a, b) => a.name.localeCompare(b.name));
 
 /**
@@ -87,7 +185,7 @@ export const distinctCreatures: CreatureRecord[] = corpus.creatures
  * callers that don't yet care about level (every corpus record is still level 1 today).
  */
 export function getCreatureByIdAndLevel(id: Species, level: number): CreatureRecord | null {
-  return corpus.creatures.find((c) => c.id === id && c.level === level) ?? null;
+  return findCreature(corpus, id, level);
 }
 
 /**
@@ -121,7 +219,7 @@ export function applyShinyOverlay(
   shiny?: boolean,
 ): CreatureRecord | null {
   if (!base || !shiny) return base;
-  const line = SHINY_STATS[shinyKey(base.id, base.level)];
+  const line = getShinyLine(base.id, base.level);
   if (!line) return base;
   return {
     ...base,
@@ -155,17 +253,14 @@ export function applyShinyOverlay(
 
 /** True when this species+level has a published shiny stat line to switch to. */
 export function hasShinyVariant(id: Species, level: number): boolean {
-  return SHINY_STATS[shinyKey(id, level)] !== undefined;
+  return getShinyLine(id, level) !== null;
 }
 
 /** Every level the corpus actually has a record for, for a given species id — sorted
  * ascending. Drives the GridPicker level selector so it never offers a level with no backing
  * data (data-model.md: "restricted to levels the corpus actually has a record for"). */
 export function getAvailableLevelsFor(id: string): number[] {
-  return corpus.creatures
-    .filter((c) => c.id === id)
-    .map((c) => c.level)
-    .sort((a, b) => a - b);
+  return corpus.creatures.some((c) => c.id === id) ? [...CREATURE_LEVELS] : [];
 }
 
 export function getTrainerById(id: string) {

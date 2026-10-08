@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { corpus, hasShinyVariant, resolveCreatureVariant } from "../corpus";
+import { allCreatureRecords, corpus, getCreatureByIdAndLevel, hasShinyVariant, resolveCreatureVariant } from "../corpus";
 import { simulate } from "../../engine/simulate";
 import type { TeamConfiguration } from "../types";
-import { SHINY_STATS, type ShinyKey, type ShinyStatLine } from "../shiny";
+import { allShinyLines } from "../shiny";
 import { GridRow, TimelineEventKind } from "../enums";
 import { Species } from "../ids";
 
@@ -17,9 +17,8 @@ describe("shiny variants", () => {
   it("is not a uniform multiplier: most stats are unchanged", () => {
     let unchanged = 0;
     let changed = 0;
-    for (const [key, line] of Object.entries(SHINY_STATS) as [ShinyKey, ShinyStatLine][]) {
-      const [id, lvl] = key.split("|");
-      const base = corpus.creatures.find((c) => c.id === id && c.level === Number(lvl));
+    for (const { id, line } of allShinyLines()) {
+      const base = getCreatureByIdAndLevel(id, line.level);
       if (!base || base.publishedCast === undefined || line.baseDamage == null) continue;
       if (base.publishedCast.damage === line.baseDamage) unchanged++;
       else changed++;
@@ -44,17 +43,16 @@ describe("shiny variants", () => {
     // 7 stat records measured at ratio 0.8. A UI or optimiser that treats shiny as a pure upgrade
     // would mislead on exactly these.
     const worse: string[] = [];
-    for (const [key, line] of Object.entries(SHINY_STATS) as [ShinyKey, ShinyStatLine][]) {
-      const [id, lvl] = key.split("|");
-      const base = corpus.creatures.find((c) => c.id === id && c.level === Number(lvl));
+    for (const { id, line } of allShinyLines()) {
+      const base = getCreatureByIdAndLevel(id, line.level);
       if (base?.publishedCast === undefined || line.baseDamage == null) continue;
-      if (line.baseDamage < base.publishedCast.damage) worse.push(key);
+      if (line.baseDamage < base.publishedCast.damage) worse.push(`${id}|${line.level}`);
     }
     expect(worse.length).toBeGreaterThan(0);
   });
 
   it("falls back to the normal line rather than throwing when a species has no shiny row", () => {
-    const missing = corpus.creatures.find((c) => !hasShinyVariant(c.id, c.level));
+    const missing = allCreatureRecords().find((c) => !hasShinyVariant(c.id, c.level));
     if (!missing) return; // every species has shiny data; nothing to assert
     const resolved = resolveCreatureVariant(missing.id, missing.level, true);
     expect(resolved?.publishedCast?.damage).toBe(missing.publishedCast?.damage);

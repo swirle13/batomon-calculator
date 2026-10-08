@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { resolveEffects } from "../effects";
 import { simulate } from "../simulate";
-import { corpus } from "../../data/corpus";
+import { allCreatureRecords, corpus } from "../../data/corpus";
 import type { TeamConfiguration } from "../../data/types";
 import { GridRow, StatusEffectType } from "../../data/enums";
 import { Species } from "../../data/ids";
@@ -126,7 +126,7 @@ describe("effects resolve at every level (round 9b)", () => {
   it("GUARD: if a species has ability tags at level 1, it has them at every level it exists at", () => {
     // The recurring failure: a creature's ability silently stops working when the user levels it.
     const byId = new Map<string, { level: number; hasTags: boolean }[]>();
-    for (const c of corpus.creatures) {
+    for (const c of allCreatureRecords()) {
       if (!byId.has(c.id)) byId.set(c.id, []);
       byId.get(c.id)!.push({ level: c.level, hasTags: c.abilityTags.length > 0 });
     }

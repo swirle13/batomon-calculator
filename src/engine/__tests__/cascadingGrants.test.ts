@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { simulate } from "../simulate";
-import { corpus } from "../../data/corpus";
+import { corpus, getCreatureByIdAndLevel } from "../../data/corpus";
 import type { TeamConfiguration } from "../../data/types";
 import { GridRow, TimelineEventKind } from "../../data/enums";
 import { Species } from "../../data/ids";
@@ -46,7 +46,7 @@ describe("cascading on-cast grants (T231)", () => {
   });
 
   it("Bonshell: shield 100, 180, 260 on a 7.0s cooldown", () => {
-    expect(corpus.creatures.find((c) => c.id === Species.Bonshell && c.level === 1)?.baseCooldownSeconds).toBe(7);
+    expect(getCreatureByIdAndLevel(Species.Bonshell, 1)?.baseCooldownSeconds).toBe(7);
     expect(grantsOf(Species.Bonshell, 29, "Shield")).toEqual([100, 180, 260, 340]);
   });
 
@@ -54,7 +54,7 @@ describe("cascading on-cast grants (T231)", () => {
     // "First cast grants 100 shield, then updates its state to 80 damage and 180 shield for the
     // next cast." Bonshell's `baseDamage` is null, so this only works because an ability grant may
     // bring a damage effect into existence (FR-093). A user modifier still may not.
-    expect(corpus.creatures.find((c) => c.id === Species.Bonshell && c.level === 1)?.publishedCast?.damage ?? null).toBeNull();
+    expect(getCreatureByIdAndLevel(Species.Bonshell, 1)?.publishedCast?.damage ?? null).toBeNull();
     expect(damageOf(Species.Bonshell, 29)).toEqual([80, 160, 240]);
   });
 

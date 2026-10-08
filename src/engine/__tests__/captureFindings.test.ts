@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { simulate } from "../simulate";
-import { corpus } from "../../data/corpus";
+import { corpus, getCreatureByIdAndLevel } from "../../data/corpus";
 import { resolveEffects } from "../effects";
 import { addFlat, applyMultiplier, read, statValue } from "../statValue";
 import type { GridSlot, TeamConfiguration } from "../../data/types";
@@ -71,7 +71,7 @@ describe("Finding 3 — reactive gains are never scaled (T241)", () => {
 
 describe("Finding 5 — damage from the TARGET's status (T244)", () => {
   it("Fumungus deals damage proportional to accumulated enemy Poison, from a null base", () => {
-    const fumungus = corpus.creatures.find((c) => c.id === Species.Fumungus && c.level === 2)!;
+    const fumungus = getCreatureByIdAndLevel(Species.Fumungus, 2)!;
     expect(fumungus.publishedCast?.damage ?? null, "base damage is null; all of it comes from the target").toBeNull();
 
     // Paired with a Poison applier so stacks accumulate.
@@ -104,7 +104,7 @@ describe("Finding 7b — a reaction must not consume the reactor's cooldown (T24
     const puffloonCasts = r.timeline.filter(
       (e) => e.kind === TimelineEventKind.Attack && e.sourceSlot.row === GridRow.Back && e.sourceSlot.col === 1,
     );
-    const base = corpus.creatures.find((c) => c.id === Species.Puffloon && c.level === 2)!.baseCooldownSeconds!;
+    const base = getCreatureByIdAndLevel(Species.Puffloon, 2)!.baseCooldownSeconds!;
     // More casts than its own cooldown alone could produce in the window — the reactions are extra.
     expect(puffloonCasts.length).toBeGreaterThan(Math.floor(30 / base));
   });

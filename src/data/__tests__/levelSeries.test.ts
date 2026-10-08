@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { corpus } from "../corpus";
+import { allCreatureRecords } from "../corpus";
 
 import sourceSeries from "./fixtures/batodex-level-series.json";
 import { StatusEffectType } from "../enums";
@@ -61,14 +61,14 @@ const PATCHED_AHEAD_OF_SNAPSHOT = new Set([
 
 describe("creature corpus matches the authoritative per-level series (research.md H11)", () => {
   it("covers every species in the source, and adds none that aren't in it", () => {
-    const ours = new Set(corpus.creatures.map((c) => c.name));
+    const ours = new Set(allCreatureRecords().map((c) => c.name));
     const theirs = new Set(Object.keys(series));
     expect([...theirs].filter((n) => !ours.has(n))).toEqual([]);
     expect([...ours].filter((n) => !theirs.has(n))).toEqual([]);
   });
 
   it("every record's cooldown matches the source for its own (species, level)", () => {
-    const mismatches = corpus.creatures
+    const mismatches = allCreatureRecords()
       .map((c) => ({ c, source: sourceFor(c.name, c.level) }))
       .filter(({ c }) => !PATCHED_AHEAD_OF_SNAPSHOT.has(c.id))
       .filter(({ c, source }) => source && Number(c.baseCooldownSeconds) !== Number(source.cooldown))
@@ -77,7 +77,7 @@ describe("creature corpus matches the authoritative per-level series (research.m
   });
 
   it("every record's damage matches the source for its own (species, level)", () => {
-    const mismatches = corpus.creatures
+    const mismatches = allCreatureRecords()
       .map((c) => ({ c, source: sourceFor(c.name, c.level) }))
       .filter(({ c }) => !PATCHED_AHEAD_OF_SNAPSHOT.has(c.id))
       .filter(({ c, source }) => {
@@ -96,7 +96,7 @@ describe("creature corpus matches the authoritative per-level series (research.m
 
   it("every record's applied statuses match the source for its own (species, level)", () => {
     const mismatches: string[] = [];
-    for (const creature of corpus.creatures) {
+    for (const creature of allCreatureRecords()) {
       const source = sourceFor(creature.name, creature.level);
       if (!source) continue;
       const expected = source.stats
@@ -115,7 +115,7 @@ describe("creature corpus matches the authoritative per-level series (research.m
     // Guards the guard: confirms the above comparisons genuinely detect a row shift, rather than
     // passing for some unrelated reason. Shifts a copy of the level-1 records by one and asserts
     // the same comparison logic reports a large number of mismatches.
-    const level1 = corpus.creatures.filter((c) => c.level === 1);
+    const level1 = allCreatureRecords().filter((c) => c.level === 1);
     let shiftedMismatches = 0;
     for (let i = 1; i < level1.length; i++) {
       const record = level1[i]!;

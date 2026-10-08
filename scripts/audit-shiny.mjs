@@ -8,20 +8,19 @@
  *
  * Usage: npx vite-node scripts/audit-shiny.mjs
  */
-import { corpus } from "../src/data/corpus.ts";
-import { SHINY_STATS } from "../src/data/shiny.ts";
+import { getCreatureByIdAndLevel } from "../src/data/corpus.ts";
+import { allShinyLines } from "../src/data/shiny.ts";
 
 const worseBy = new Map();
 let worseRecords = 0;
 
-for (const [key, line] of Object.entries(SHINY_STATS)) {
-  const [id, lvl] = key.split("|");
-  const base = corpus.creatures.find((c) => c.id === id && c.level === Number(lvl));
+for (const { id, line } of allShinyLines()) {
+  const base = getCreatureByIdAndLevel(id, line.level);
   if (!base) continue;
 
   const regressions = [];
   const lower = (b, s, name) => { if (b != null && s != null && s < b) regressions.push(name); };
-  lower(base.baseDamage, line.baseDamage, "damage");
+  lower(base.publishedCast?.damage, line.baseDamage, "damage");
   lower(base.baseMulticast, line.baseMulticast, "multicast");
   lower(base.healAmount, line.healAmount, "heal");
   // Cooldown is inverted: HIGHER is worse.
@@ -43,7 +42,7 @@ for (const [key, line] of Object.entries(SHINY_STATS)) {
 // Aggregate throughput: (damage + statuses + heal) * multicast / cooldown.
 const thr = (c, l) => {
   const pick = (a, b) => (l ? a : b);
-  const dmg = pick(l?.baseDamage, c.baseDamage) ?? 0;
+  const dmg = pick(l?.baseDamage, c.publishedCast?.damage) ?? 0;
   const mc = pick(l?.baseMulticast, c.baseMulticast) ?? 1;
   const cd = pick(l?.baseCooldownSeconds, c.baseCooldownSeconds) ?? 1;
   const st = (pick(l?.appliesStatus, c.appliesStatus) ?? []).reduce((a, s) => a + s.amount, 0);
@@ -51,9 +50,8 @@ const thr = (c, l) => {
   return cd > 0 ? (dmg + st + hl) * mc / cd : 0;
 };
 let better = 0, equal = 0, worseAgg = 0;
-for (const [key, line] of Object.entries(SHINY_STATS)) {
-  const [id, lvl] = key.split("|");
-  const base = corpus.creatures.find((c) => c.id === id && c.level === Number(lvl));
+for (const { id, line } of allShinyLines()) {
+  const base = getCreatureByIdAndLevel(id, line.level);
   if (!base) continue;
   const n = thr(base, null), s = thr(base, line);
   if (s > n + 1e-9) better++; else if (s < n - 1e-9) worseAgg++; else equal++;

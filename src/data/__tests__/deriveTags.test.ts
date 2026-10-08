@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { creatures } from "../creatures";
-import { corpus } from "../corpus";
+import { allCreatureRecords, getCreatureByIdAndLevel, rawCreatureRecords } from "../corpus";
 import { hasAbilityText } from "../display";
 import { deriveAbilityTags, derivedFamilyFor } from "../deriveTags";
 import { manualTriggersFor } from "../triggers";
@@ -16,12 +15,12 @@ import { Species } from "../ids";
  * was that `abilityTags` was hand-maintained, and **424 of 596 records had published ability text
  * and an empty tag array**, so Ninflora was the median case rather than an oversight.
  *
- * `creatures` is the RAW array (hand-authored tags only); `corpus.creatures` is the merged view the
+ * `rawCreatureRecords()` is hand-authored tags only; `allCreatureRecords()` is the merged view the
  * app reads. Several tests below need both, to tell "derived" from "was already there".
  */
 
 const rawById = (id: Species, level: number) =>
-  creatures.find((c) => c.id === id && c.level === level)!;
+  rawCreatureRecords().find((c) => c.id === id && c.level === level)!;
 
 describe("WI-002 acceptance: Ninflora works with no tag written for it", () => {
   it("offers a Win-a-round trigger at every level, scaling with the published text", () => {
@@ -47,7 +46,7 @@ describe("WI-002 acceptance: Ninflora works with no tag written for it", () => {
   });
 
   it("surfaces that trigger through the normal button path, not a special case", () => {
-    const [trigger] = manualTriggersFor(corpus.creatures.find((c) => c.id === Species.Ninflora && c.level === 1)!);
+    const [trigger] = manualTriggersFor(getCreatureByIdAndLevel(Species.Ninflora, 1)!);
     expect(trigger).toBeDefined();
     expect(trigger!.definition.actionLabel).toBe("Win a round");
     expect(trigger!.includeSelf).toBe(true);
@@ -150,7 +149,7 @@ describe("GUARD: the exception list cannot quietly regrow", () => {
 
   it("derives nothing for each irreducible ability, for the recorded reason", () => {
     for (const [id, reason] of Object.entries(IRREDUCIBLE)) {
-      const records = creatures.filter((c) => c.id === id && hasAbilityText(c.abilityText));
+      const records = rawCreatureRecords().filter((c) => c.id === id && hasAbilityText(c.abilityText));
       expect(records.length, `${id} has no records`).toBeGreaterThan(0);
       for (const r of records) {
         expect(deriveAbilityTags(r), `${id} L${r.level} became derivable — ${reason}`).toEqual([]);
@@ -163,7 +162,7 @@ describe("GUARD: the exception list cannot quietly regrow", () => {
     // table reproduces them, the hand-written entries are redundant and should go; if it does not,
     // they are exceptions and must stay. Either way the answer must be explicit, so this test
     // reports which of them the table can now derive rather than asserting a count.
-    const handTagged = creatures.filter((c) => c.abilityTags.some((t) => t.kind === AbilityTagKind.ManualTrigger));
+    const handTagged = rawCreatureRecords().filter((c) => c.abilityTags.some((t) => t.kind === AbilityTagKind.ManualTrigger));
     expect(handTagged.length).toBeGreaterThan(0);
     const reproducible = handTagged.filter((c) => deriveAbilityTags({ ...c, abilityTags: [] }).length > 0);
     // Craghorn/Guardiant/Cawnushi/Emburn (leading trigger clause) and the bare self-grants are
@@ -177,14 +176,14 @@ describe("GUARD: derivation does not break the round-6 invariants", () => {
   it("never gives a creature both a manual button and an engine-resolved tag", () => {
     // The double-count hazard: if the engine already applies the effect, a button would let the user
     // bank it again. Checked against the MERGED corpus, so derived tags are in scope.
-    const offenders = corpus.creatures
+    const offenders = allCreatureRecords()
       .filter((c) => manualTriggersFor(c).length > 0 && c.abilityTags.some(isResolvableTag))
       .map((c) => `${c.id} L${c.level}`);
     expect(offenders).toEqual([]);
   });
 
   it("never derives a trigger the engine already propagates", () => {
-    for (const c of corpus.creatures) {
+    for (const c of allCreatureRecords()) {
       for (const t of manualTriggersFor(c)) {
         expect(
           t.definition.enginePropagated,
@@ -196,7 +195,7 @@ describe("GUARD: derivation does not break the round-6 invariants", () => {
 
   it("targets allies exactly when the ability text says allies GAIN", () => {
     // The WI-002 guard from the earlier ally-propagation fix, now applied to DERIVED tags too.
-    for (const c of corpus.creatures) {
+    for (const c of allCreatureRecords()) {
       for (const t of manualTriggersFor(c)) {
         /*
          * The predicate has to find the RECIPIENT, which is not the same as finding the word "ally".
@@ -233,17 +232,17 @@ describe("GUARD: derivation does not break the round-6 invariants", () => {
      * So the assertion is: the rise equals the number of records that gained a resolvable tag, and
      * nothing else shifted.
      */
-    const resolvedBefore = creatures.filter((c) => c.abilityTags.some(isResolvableTag)).length;
-    const resolvedAfter = corpus.creatures.filter((c) => c.abilityTags.some(isResolvableTag)).length;
+    const resolvedBefore = rawCreatureRecords().filter((c) => c.abilityTags.some(isResolvableTag)).length;
+    const resolvedAfter = allCreatureRecords().filter((c) => c.abilityTags.some(isResolvableTag)).length;
 
-    const gainedResolvable = creatures.filter(
+    const gainedResolvable = rawCreatureRecords().filter(
       (c) => c.abilityTags.length === 0 && deriveAbilityTags(c).some(isResolvableTag),
     ).length;
 
     expect(resolvedAfter - resolvedBefore).toBe(gainedResolvable);
 
     // And the manualTrigger family specifically contributed none of that rise.
-    const manualOnly = creatures.filter(
+    const manualOnly = rawCreatureRecords().filter(
       (c) =>
         c.abilityTags.length === 0 &&
         deriveAbilityTags(c).length > 0 &&
@@ -255,7 +254,7 @@ describe("GUARD: derivation does not break the round-6 invariants", () => {
 
 describe("WI-002 coverage — reported, not implied", () => {
   it("records the measured before/after, per family", () => {
-    const untagged = creatures.filter((c) => c.abilityTags.length === 0 && hasAbilityText(c.abilityText));
+    const untagged = rawCreatureRecords().filter((c) => c.abilityTags.length === 0 && hasAbilityText(c.abilityText));
     const newlyDerived = untagged.filter((c) => deriveAbilityTags(c).length > 0);
 
     const byFamily = new Map<string, number>();
@@ -299,9 +298,9 @@ describe("WI-002 coverage — reported, not implied", () => {
 
   it("raises the number of species offering a manual trigger from 9", () => {
     const before = new Set(
-      creatures.filter((c) => c.abilityTags.some((t) => t.kind === AbilityTagKind.ManualTrigger)).map((c) => c.id),
+      rawCreatureRecords().filter((c) => c.abilityTags.some((t) => t.kind === AbilityTagKind.ManualTrigger)).map((c) => c.id),
     );
-    const after = new Set(corpus.creatures.filter((c) => manualTriggersFor(c).length > 0).map((c) => c.id));
+    const after = new Set(allCreatureRecords().filter((c) => manualTriggersFor(c).length > 0).map((c) => c.id));
     expect(before.size).toBe(9);
     expect(after.size).toBeGreaterThan(before.size);
     // Every previously-working species still works: derivation adds, never removes.

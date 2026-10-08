@@ -3,7 +3,7 @@ import { simulate } from "./simulate";
 import { STABLE_SLOT_ORDER, slotKey } from "./grid";
 import { isResolvableTag } from "./effects";
 import { manualTriggersFor } from "../data/triggers";
-import { applyShinyOverlay } from "../data/corpus";
+import { applyShinyOverlay, findCreature } from "../data/corpus";
 import { abilityNeedsModelling } from "../data/display";
 import { AbilityTagKind, TargetKind } from "../data/enums";
 
@@ -133,7 +133,7 @@ export function analyzePositionalCoverage(config: TeamConfiguration, corpus: Cor
 
   for (const placement of config.placements) {
     const creature = applyShinyOverlay(
-      corpus.creatures.find((c) => c.id === placement.creatureId && c.level === placement.level) ?? null,
+      findCreature(corpus, placement.creatureId, placement.level),
       placement.shiny,
     );
     if (!creature) continue;

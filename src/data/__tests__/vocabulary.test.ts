@@ -16,7 +16,7 @@ import type { VocabularyMember } from "../vocabularies";
 import { RARITIES_ASC, RARITIES_DESC, RARITY_COLORS, rarityLabel } from "../statColors";
 import { TYPE_COLORS } from "../typeColors";
 import { ABILITY_TRIGGERS, TRIGGER_DEFINITIONS } from "../triggers";
-import { corpus } from "../corpus";
+import { allCreatureRecords, getCreatureByIdAndLevel } from "../corpus";
 import { AbilityTrigger, DamageChannel } from "../enums";
 import { CreatureType, Rarity, StatusEffectType } from "../enums";
 import { Species } from "../ids";
@@ -165,12 +165,12 @@ describe("WI-006: the stored key is never the displayed label", () => {
     expect(rarityLabel(Rarity.SuperRare)).toBe("Super Rare");
     // The stored key is deliberately unchanged, which is what makes this a zero-churn change: no
     // corpus record and no cited fixture was edited for it.
-    expect(corpus.creatures.some((c) => c.rarity === Rarity.SuperRare)).toBe(true);
+    expect(allCreatureRecords().some((c) => c.rarity === Rarity.SuperRare)).toBe(true);
     expect(Object.keys(RARITY)).toContain("SuperRare");
   });
 
   it("keeps every corpus rarity value a registry key", () => {
-    for (const c of corpus.creatures) {
+    for (const c of allCreatureRecords()) {
       expect(RARITY[c.rarity], `${c.id} has rarity ${c.rarity}, not a registry key`).toBeDefined();
     }
   });
@@ -213,7 +213,7 @@ describe("WI-003: the wildcard is marked, not guessed", () => {
   it("keeps typeless representable, which is a real state for the egg species", () => {
     // dragonegg and purpleegg carry `types: []` at all four levels. That is a shop item that
     // hatches into a creature rather than being one, not a gap to fill with a placeholder member.
-    const typeless = corpus.creatures.filter((c) => c.types.length === 0);
+    const typeless = allCreatureRecords().filter((c) => c.types.length === 0);
     expect(typeless.length).toBeGreaterThan(0);
     expect(new Set(typeless.map((c) => c.id))).toEqual(new Set(["dragonegg", "purpleegg"]));
   });
@@ -248,7 +248,7 @@ describe("GUARD: the corpus stores enum members, never bare strings", () => {
   it("keeps ability TEXT untouched, which the migration could easily have corrupted", () => {
     // The migration rewrote literals only where a known field name preceded them. A blind
     // find-and-replace of `"Common"` would have mangled this sentence, and 148 others like it.
-    const brawlmantis = corpus.creatures.find((c) => c.id === Species.Brawlmantis && c.level === 1)!;
+    const brawlmantis = getCreatureByIdAndLevel(Species.Brawlmantis, 1)!;
     expect(brawlmantis.abilityText).toBe("This and Common allies gain +10 Damage permanently.");
     expect(brawlmantis.rarity).toBe(Rarity.Uncommon);
     expect(brawlmantis.types).toEqual([CreatureType.Bug, CreatureType.Fighting]);

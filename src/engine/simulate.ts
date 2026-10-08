@@ -5,7 +5,7 @@ import { applyStatusTick, applyShockProc } from "./status";
 import { STABLE_SLOT_ORDER, isAdjacent, slotKey, slotsEqual, stableSlotIndex } from "./grid";
 import { resolveBoard, selectTargets } from "./effects";
 import { creatureHasType } from "../data/typing";
-import { applyShinyOverlay } from "../data/corpus";
+import { applyShinyOverlay, findCreature, hasCreatureRecord } from "../data/corpus";
 import { InvalidTeamConfigurationError } from "./errors";
 
 import { damageChannelOf } from "../data/vocabularies";
@@ -52,35 +52,17 @@ function placeholderTargetSlot(appliedBy: GridSlot): GridSlot {
   return appliedBy;
 }
 
-/**
- * The set of `id|level` keys a corpus holds, built once per corpus object.
- *
+/*
  * `validate()` below asks "does a record exist for this (id, level)?" once per placement, and the
  * placement optimiser calls `simulate()` 721 times for a full board — so as a
  * `corpus.creatures.some()` the answer was re-derived by scanning the corpus up to 4300 times per
  * search, always to the same result, since the optimiser permutes SLOTS and never ids or levels.
+ * It was worth about 4.5ms per search.
  *
- * Worth about 4.5ms per search today (measured worst case, for species late in `creatures.ts`;
- * `some()` exits early for species near the front, so the old cost depended on which creatures
- * you had placed). Small in absolute terms — it is here because the scan is O(corpus) inside the
- * hottest loop in the app, and the corpus only grows.
- *
- * Keyed on the corpus OBJECT rather than built against the module-level `corpus`, because the
- * engine is handed its corpus as a parameter and tests inject fixtures — see the note on
- * `applyShinyOverlay`. A `WeakMap` so an injected fixture is collectable with its test.
- *
- * This caches on the assumption that a `Corpus` is immutable once built, which is what
- * `data/corpus.ts` publishes it as; nothing in the codebase mutates `corpus.creatures`.
+ * The `id|level` key set that replaced the scan now lives in `data/corpus.ts` as part of the level
+ * index — the same map `findCreature` reads — rather than being a second cache here keyed on the
+ * same corpus object. See `hasCreatureRecord` for the WeakMap and why it is keyed that way.
  */
-const creatureKeysByCorpus = new WeakMap<Corpus, Set<string>>();
-function corpusHasRecord(corpus: Corpus, creatureId: string, level: number): boolean {
-  let keys = creatureKeysByCorpus.get(corpus);
-  if (!keys) {
-    keys = new Set(corpus.creatures.map((c) => `${c.id}|${c.level}`));
-    creatureKeysByCorpus.set(corpus, keys);
-  }
-  return keys.has(`${creatureId}|${level}`);
-}
 
 function validate(config: TeamConfiguration, corpus: Corpus): void {
   if (config.placements.length > 6) {
@@ -104,7 +86,7 @@ function validate(config: TeamConfiguration, corpus: Corpus): void {
     // the same id. Every existing corpus record is still level 1 today, so this is latent
     // against the current corpus, but is enforced now so widening the corpus to real
     // level-2/3/4 records (tasks.md T075) can never silently resolve the wrong one.
-    if (!corpusHasRecord(corpus, placement.creatureId, placement.level)) {
+    if (!hasCreatureRecord(corpus, placement.creatureId, placement.level)) {
       throw new InvalidTeamConfigurationError(
         "placements",
         `No corpus record for creatureId "${placement.creatureId}" at level ${placement.level}.`,
@@ -287,10 +269,7 @@ export function simulate(
     // Dribblet's card showed Heal 18 while "Effective this battle" showed 15, and the same split
     // would have mis-simulated Furnadon's shiny cooldown (5s vs 4s) and Velocect's multicast
     // (2 vs 4). One lookup, one answer.
-    const creature = applyShinyOverlay(
-      corpus.creatures.find((c) => c.id === p.creatureId && c.level === p.level)!,
-      p.shiny,
-    )!;
+    const creature = applyShinyOverlay(findCreature(corpus, p.creatureId, p.level), p.shiny)!;
     /*
      * NOT one resolved entry per placement, and this used to assert that it was (2026-10-08,
      * user-reported crash).

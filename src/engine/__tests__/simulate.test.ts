@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { simulate } from "../simulate";
 import { corpus } from "../../data/corpus";
-import type { Corpus, CreatureRecord, GridSlot, TeamConfiguration, TrinketRecord } from "../../data/types";
+import type { Corpus, CreatureSpecies, GridSlot, TeamConfiguration, TeamPlacement, TrinketRecord } from "../../data/types";
 import { InvalidTeamConfigurationError } from "../errors";
 
 import { syntheticSpecies , syntheticTrinketId } from "../../data/ids";
@@ -10,12 +10,11 @@ import { Species } from "../../data/ids";
 
 /** Minimal synthetic corpus for isolating "facilitated damage" attribution from real game data. */
 function syntheticCorpus(): Corpus {
-  const shockApplier: CreatureRecord = {
+  const shockApplier: CreatureSpecies = {
     id: syntheticSpecies("shockApplier"),
     name: "Shock Applier",
     rarity: Rarity.Common,
     types: [CreatureType.Electric],
-    level: 1,
     shopCost: 10,
     baseCooldownSeconds: 1,
     baseMulticast: 1,
@@ -23,12 +22,11 @@ function syntheticCorpus(): Corpus {
     abilityText: "test fixture",
     abilityTags: [],
   };
-  const attacker: CreatureRecord = {
+  const attacker: CreatureSpecies = {
     id: syntheticSpecies("attacker"),
     name: "Attacker",
     rarity: Rarity.Common,
     types: [CreatureType.Fire],
-    level: 1,
     shopCost: 10,
     baseCooldownSeconds: 1,
     publishedCast: { damage: 5, channel: DamageChannel.Direct },
@@ -45,12 +43,11 @@ function syntheticCorpus(): Corpus {
  * (id, level) lookup test).
  */
 function multicastCorpus(): Corpus {
-  const multiCaster: CreatureRecord = {
+  const multiCaster: CreatureSpecies = {
     id: syntheticSpecies("multiCaster"),
     name: "Multi Caster",
     rarity: Rarity.Common,
     types: [CreatureType.Fire],
-    level: 1,
     shopCost: 10,
     baseCooldownSeconds: 1,
     publishedCast: { damage: 5, channel: DamageChannel.Direct },
@@ -63,12 +60,11 @@ function multicastCorpus(): Corpus {
 }
 
 function driftCorpus(): Corpus {
-  const driftCreature: CreatureRecord = {
+  const driftCreature: CreatureSpecies = {
     id: syntheticSpecies("driftCreature"),
     name: "Drift Creature",
     rarity: Rarity.Common,
     types: [CreatureType.Fire],
-    level: 1,
     shopCost: 10,
     baseCooldownSeconds: 4.9,
     publishedCast: { damage: 1, channel: DamageChannel.Direct },
@@ -80,21 +76,20 @@ function driftCorpus(): Corpus {
 }
 
 function multiLevelCorpus(): Corpus {
-  const level1: CreatureRecord = {
+  const leveledMon: CreatureSpecies = {
     id: syntheticSpecies("leveledMon"),
     name: "Leveled Mon",
     rarity: Rarity.Common,
     types: [CreatureType.Fire],
-    level: 1,
     shopCost: 10,
     baseCooldownSeconds: 2,
     publishedCast: { damage: 5, channel: DamageChannel.Direct },
     baseMulticast: 1,
     abilityText: "test fixture",
     abilityTags: [],
+    levels: { 2: { publishedCast: { damage: 10, channel: DamageChannel.Direct } } },
   };
-  const level2: CreatureRecord = { ...level1, level: 2, publishedCast: { damage: 10, channel: DamageChannel.Direct } };
-  return { creatures: [level1, level2], trainers: [], trinkets: [], items: [] };
+  return { creatures: [leveledMon], trainers: [], trinkets: [], items: [] };
 }
 
 /**
@@ -487,16 +482,37 @@ describe("simulate", () => {
     expect(Object.values(level2Result.perCreatureDps)[0]).toBeCloseTo(10 / 2, 5);
   });
 
-  it("throws InvalidTeamConfigurationError when no record exists for the exact (id, level) pair", () => {
-    const synthetic = multiLevelCorpus(); // only has level 1 and 2 records
-    const config: TeamConfiguration = {
-      placements: [{ slot: { row: GridRow.Front, col: 0 }, creatureId: syntheticSpecies("leveledMon"), level: 3 }],
+  /**
+   * 2026-10-08: this used to place `leveledMon` at level 3 against a fixture holding levels 1 and 2
+   * only. A `CreatureSpecies` now publishes all four levels, so "a species that exists but not at
+   * this level" is unrepresentable and the old setup no longer throws.
+   *
+   * The validation it was guarding is still real — `validate()` must reject a placement it cannot
+   * resolve rather than simulating a hole — so these are the two ways that is still reachable.
+   */
+  it("throws InvalidTeamConfigurationError for a placement it cannot resolve", () => {
+    const synthetic = multiLevelCorpus();
+    const place = (creatureId: Species, level: TeamPlacement["level"]): TeamConfiguration => ({
+      placements: [{ slot: { row: GridRow.Front, col: 0 }, creatureId, level }],
       trainerId: null,
       trinketIds: [],
       itemIds: [],
       simulationWindowSeconds: 2,
-    };
-    expect(() => simulate(config, synthetic)).toThrow(InvalidTeamConfigurationError);
+    });
+
+    // An id no species in the corpus publishes.
+    expect(() => simulate(place(syntheticSpecies("ghostMon"), 1), synthetic)).toThrow(
+      InvalidTeamConfigurationError,
+    );
+    // A level outside 1-4. Only reachable past the type, which is the point: `validate()` is the
+    // runtime backstop for a config that arrived from storage or a share link, not from the UI.
+    expect(() => simulate(place(syntheticSpecies("leveledMon"), 5 as TeamPlacement["level"]), synthetic)).toThrow(
+      InvalidTeamConfigurationError,
+    );
+    // And the levels it does publish all resolve.
+    for (const level of [1, 2, 3, 4] as const) {
+      expect(() => simulate(place(syntheticSpecies("leveledMon"), level), synthetic)).not.toThrow();
+    }
   });
 
   /**
@@ -572,12 +588,11 @@ describe("slot-permutation invariance (FR-040)", () => {
    * the per-timestamp snapshot alone does not fix it.
    */
   function collidingCorpus(multicast: number): Corpus {
-    const shockHitter: CreatureRecord = {
+    const shockHitter: CreatureSpecies = {
       id: syntheticSpecies("shockHitter"),
       name: "Shock Hitter",
       rarity: Rarity.Common,
       types: [CreatureType.Electric],
-      level: 1,
       shopCost: 10,
       baseCooldownSeconds: 2,
       publishedCast: { damage: 3, channel: DamageChannel.Direct },
@@ -586,12 +601,11 @@ describe("slot-permutation invariance (FR-040)", () => {
       abilityText: "test fixture -- no positional ability",
       abilityTags: [],
     };
-    const bigHitter: CreatureRecord = {
+    const bigHitter: CreatureSpecies = {
       id: syntheticSpecies("bigHitter"),
       name: "Big Hitter",
       rarity: Rarity.Common,
       types: [CreatureType.Fire],
-      level: 1,
       shopCost: 10,
       baseCooldownSeconds: 4,
       publishedCast: { damage: 25, channel: DamageChannel.Direct },

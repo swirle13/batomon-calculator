@@ -17,7 +17,7 @@ import { BatomonCard } from "../shared/BatomonCard/BatomonCard";
 import { buildStatLines, perCastOutputOf } from "../shared/BatomonCard/perCastOutput";
 import { GridPicker } from "../GridPicker/GridPicker";
 import { simulate } from "../../engine/simulate";
-import { corpus } from "../../data/corpus";
+import { allCreatureRecords, corpus, getCreatureByIdAndLevel } from "../../data/corpus";
 import { RARITIES_ASC } from "../../data/statColors";
 import type { TeamConfiguration } from "../../data/types";
 
@@ -196,7 +196,7 @@ describe("TrinketPicker duplicates and the Selected section (2026-10-07)", () =>
  * could not report even if it applied to a flex container, which it does not.
  */
 describe("the card's output band overflows into a second column (WI-003)", () => {
-  const shelldra = corpus.creatures.find((c) => c.id === Species.Shelldra && c.level === 1)!;
+  const shelldra = getCreatureByIdAndLevel(Species.Shelldra, 1)!;
 
   function statLinesElement(modifiers: TeamConfiguration["teamModifiers"]): HTMLElement {
     render(<BatomonCard creature={shelldra} modifiers={modifiers} />);
@@ -637,7 +637,7 @@ describe("effective band renders healing (2026-10-06)", () => {
   });
 
   it("GUARD: no creature whose only output is healing can produce an empty effective band", () => {
-    const healOnly = corpus.creatures.filter(
+    const healOnly = allCreatureRecords().filter(
       (c) =>
         c.level === 1 &&
         (c.healAmount ?? 0) > 0 &&
@@ -756,7 +756,7 @@ describe("region never blocks a selection (2026-10-07)", () => {
   it("an out-of-region creature is still selectable in the picker", () => {
     // The actual bug: searching for an event-granted creature returned nothing, because the pool
     // excluded other regions outright.
-    const jintoOnly = corpus.creatures.find(
+    const jintoOnly = allCreatureRecords().find(
       (c) => c.level === 1 && regionsOf(c.id).length === 1 && regionsOf(c.id)[0] === RegionId.Jinto,
     )!;
     render(

@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { render } from "@testing-library/react";
 import { CreatureSprite } from "../shared/CreatureSprite";
 import { BatomonCard } from "../shared/BatomonCard/BatomonCard";
-import { corpus } from "../../data/corpus";
+import { getCreatureByIdAndLevel } from "../../data/corpus";
 import { Species } from "../../data/ids";
 
 /**
@@ -16,7 +16,7 @@ import { Species } from "../../data/ids";
  * 3. The drift ran north-west instead of south-east.
  */
 describe("CreatureSprite", () => {
-  const magmite = corpus.creatures.find((c) => c.id === Species.Magmite && c.level === 1)!;
+  const magmite = getCreatureByIdAndLevel(Species.Magmite, 1)!;
 
   it("puts the painted treatment on the sprite, not on an enclosing frame", () => {
     const { container } = render(
