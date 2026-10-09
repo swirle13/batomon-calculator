@@ -29,7 +29,7 @@ function TotalDpsHarness({
 }
 
 const team: TeamConfiguration = {
-  placements: [{ slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Bumblebolt, level: 1 }],
+  placements: [{ slot: { row: GridRow.Top, col: 0 }, creatureId: Species.Bumblebolt, level: 1 }],
   trainerId: null,
   trinketIds: [],
   itemIds: [],
@@ -105,8 +105,8 @@ describe("placeholder ability text never reaches the UI (2026-10-06)", () => {
 describe("TTK figure (2026-10-07)", () => {
   const poisonTeam: TeamConfiguration = {
     placements: [
-      { slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Venopuff, level: 1 },
-      { slot: { row: GridRow.Back, col: 1 }, creatureId: Species.Magmite, level: 1 },
+      { slot: { row: GridRow.Top, col: 0 }, creatureId: Species.Venopuff, level: 1 },
+      { slot: { row: GridRow.Top, col: 1 }, creatureId: Species.Magmite, level: 1 },
     ],
     trainerId: null,
     trinketIds: [],
@@ -155,7 +155,7 @@ describe("TTK figure (2026-10-07)", () => {
     // is the board that earns it: the Venopuff pair above clears even day 25, at 17 minutes.
     const trickle: TeamConfiguration = {
       ...poisonTeam,
-      placements: [{ slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Magmite, level: 1 }],
+      placements: [{ slot: { row: GridRow.Top, col: 0 }, creatureId: Species.Magmite, level: 1 }],
     };
     const { container } = render(
       <TotalDpsHarness config={trickle} result={simulate(trickle, corpus)} />,

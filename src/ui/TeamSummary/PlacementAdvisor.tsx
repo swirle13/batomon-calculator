@@ -12,7 +12,7 @@ import { BenchAdvice } from "./BenchAdvice";
 import styles from "./PlacementAdvisor.module.css";
 
 /** The grid renders `Back` above `Front`, so name the rows the way the user sees them. */
-const rowLabel = (row: GridRow) => (row === GridRow.Back ? "top" : "bottom");
+const rowLabel = (row: GridRow) => (row === GridRow.Top ? "top" : "bottom");
 
 /**
  * The creatures and abilities contributing nothing to the simulated battle, moved here from under

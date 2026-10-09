@@ -21,10 +21,10 @@ import { Species } from "../../data/ids";
  * nothing.
  */
 
-const BACK0: GridSlot = { row: GridRow.Back, col: 0 };
-const BACK1: GridSlot = { row: GridRow.Back, col: 1 };
-const BACK2: GridSlot = { row: GridRow.Back, col: 2 };
-const FRONT1: GridSlot = { row: GridRow.Front, col: 1 };
+const BACK0: GridSlot = { row: GridRow.Top, col: 0 };
+const BACK1: GridSlot = { row: GridRow.Top, col: 1 };
+const BACK2: GridSlot = { row: GridRow.Top, col: 2 };
+const FRONT1: GridSlot = { row: GridRow.Bottom, col: 1 };
 
 const team = (placements: { id: Species; slot: GridSlot }[]): TeamConfiguration => ({
   placements: placements.map((p) => ({ slot: p.slot, creatureId: p.id, level: 1 })),

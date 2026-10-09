@@ -19,8 +19,8 @@ import { Species } from "../../data/ids";
  * against the broken version, which is exactly what the 460 existing tests did.
  */
 
-const BACK = [0, 1, 2].map((col) => ({ row: GridRow.Back, col }) as GridSlot);
-const FRONT = [0, 1, 2].map((col) => ({ row: GridRow.Front, col }) as GridSlot);
+const BACK = [0, 1, 2].map((col) => ({ row: GridRow.Top, col }) as GridSlot);
+const FRONT = [0, 1, 2].map((col) => ({ row: GridRow.Bottom, col }) as GridSlot);
 const ALL = [...BACK, ...FRONT];
 const label = (s: GridSlot) => `${s.row}${s.col}`;
 

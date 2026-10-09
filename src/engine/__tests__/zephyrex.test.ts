@@ -42,11 +42,11 @@ describe("Zephyrex's Flying-only Multicast grant", () => {
   it("grants to a Flying ally in front", () => {
     // Humbolt is Electric/Flying on a 4s cooldown with a base Multicast of 2 — 7 casts in 30s.
     const flying = board([
-      [GridRow.Back, 0, Species.Zephyrex],
-      [GridRow.Front, 0, Species.Humbolt],
+      [GridRow.Top, 0, Species.Zephyrex],
+      [GridRow.Top, 1, Species.Humbolt],
     ]);
-    const alone = hitCount(board([[GridRow.Front, 0, Species.Humbolt]]), GridRow.Front, 0);
-    expect(hitCount(flying, GridRow.Front, 0)).toBeGreaterThan(alone);
+    const alone = hitCount(board([[GridRow.Top, 1, Species.Humbolt]]), GridRow.Top, 1);
+    expect(hitCount(flying, GridRow.Top, 1)).toBeGreaterThan(alone);
   });
 
   it("grants NOTHING to a non-Flying ally in front", () => {
@@ -55,11 +55,11 @@ describe("Zephyrex's Flying-only Multicast grant", () => {
      * right past it — and before the filter existed it was picking up a Multicast every 10s.
      */
     const rock = board([
-      [GridRow.Back, 0, Species.Zephyrex],
-      [GridRow.Front, 0, Species.Pebbler],
+      [GridRow.Top, 0, Species.Zephyrex],
+      [GridRow.Top, 1, Species.Pebbler],
     ]);
-    const alone = hitCount(board([[GridRow.Front, 0, Species.Pebbler]]), GridRow.Front, 0);
-    expect(hitCount(rock, GridRow.Front, 0)).toBe(alone);
+    const alone = hitCount(board([[GridRow.Top, 1, Species.Pebbler]]), GridRow.Top, 1);
+    expect(hitCount(rock, GridRow.Top, 1)).toBe(alone);
   });
 
   it("leaves Saberhorn's genuinely unfiltered grant alone", () => {
@@ -69,11 +69,11 @@ describe("Zephyrex's Flying-only Multicast grant", () => {
      * support must not start filtering it. A Rock Pebbler in front of it still gets the Multicast.
      */
     const saber = board([
-      [GridRow.Back, 0, Species.Saberhorn],
-      [GridRow.Front, 0, Species.Pebbler],
+      [GridRow.Top, 0, Species.Saberhorn],
+      [GridRow.Top, 1, Species.Pebbler],
     ]);
-    const alone = hitCount(board([[GridRow.Front, 0, Species.Pebbler]]), GridRow.Front, 0);
-    expect(hitCount(saber, GridRow.Front, 0)).toBeGreaterThan(alone);
+    const alone = hitCount(board([[GridRow.Top, 1, Species.Pebbler]]), GridRow.Top, 1);
+    expect(hitCount(saber, GridRow.Top, 1)).toBeGreaterThan(alone);
   });
 
   it("refuses to give Multicast to another Zephyrex — '(Zephyrex can't have Multicast)'", () => {
@@ -84,13 +84,13 @@ describe("Zephyrex's Flying-only Multicast grant", () => {
      * recommended it: the front Zephyrex would gain a Multicast every 10 seconds.
      */
     const stacked = board([
-      [GridRow.Back, 0, Species.Zephyrex],
-      [GridRow.Front, 0, Species.Zephyrex],
+      [GridRow.Top, 0, Species.Zephyrex],
+      [GridRow.Top, 1, Species.Zephyrex],
     ]);
-    const alone = hitCount(board([[GridRow.Front, 0, Species.Zephyrex]]), GridRow.Front, 0);
-    expect(hitCount(stacked, GridRow.Front, 0)).toBe(alone);
+    const alone = hitCount(board([[GridRow.Top, 1, Species.Zephyrex]]), GridRow.Top, 1);
+    expect(hitCount(stacked, GridRow.Top, 1)).toBe(alone);
     // And the grant really was being emitted at it — the refusal is on the recipient's side, not
     // an accident of the Flying filter. Three casts from the back one, every one of them wasted.
-    expect(hitCount(stacked, GridRow.Back, 0)).toBe(ZEPHYREX_GRANTS);
+    expect(hitCount(stacked, GridRow.Top, 0)).toBe(ZEPHYREX_GRANTS);
   });
 });

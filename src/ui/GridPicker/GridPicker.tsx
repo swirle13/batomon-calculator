@@ -45,7 +45,7 @@ import { GridRow, StatColorKey } from "../../data/enums";
  * badge, colour-coded per-cast stat badges along the bottom matching the in-game team panel
  * (FR-035), and a clear control (FR-033). The BACK ROW / FRONT ROW labels are gone (FR-034).
  */
-const ROWS: GridRow[] = [GridRow.Back, GridRow.Front];
+const ROWS: GridRow[] = [GridRow.Top, GridRow.Bottom];
 const COLS: GridCol[] = [0, 1, 2];
 
 /**

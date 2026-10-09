@@ -8,7 +8,7 @@ import type {
   TargetSelector,
   TeamConfiguration,
 } from "../data/types";
-import { aboveSlot, behindSlot, isAdjacent, slotsEqual } from "./grid";
+import { aboveSlot, adjacentUnder, behindSlot, inFrontSlot, slotsEqual } from "./grid";
 import type { AbilityTag, PlacementKey } from "../data/types";
 import { applyShinyOverlay, findCreature } from "../data/corpus";
 import { creatureHasType } from "../data/typing";
@@ -16,7 +16,7 @@ import { isWildcardType } from "../data/vocabularies";
 import { hasAbilityText } from "../data/display";
 import { addFlat, addPostMultiplier, applyMultiplier, readRounded, statValue, type StatValue } from "./statValue";
 import { TYPE_COLORS } from "../data/typeColors";
-import { AbilityTagKind, EventLabel, GridRow, StatChangeStat } from "../data/enums";
+import { AbilityTagKind, EventLabel, StatChangeStat } from "../data/enums";
 import { placementKey } from "./grid";
 
 /**
@@ -220,7 +220,9 @@ export function selectTargets<T extends { slot: GridSlot; key: string; creature:
   selector: TargetSelector,
   source: T,
   all: T[],
-  config?: Pick<TeamConfiguration, "paintedCreatureIds">,
+  // `trinketIds` joins `paintedCreatureIds` as of 2026-10-09: Link Cable redefines `adjacent`, so
+  // the selector cannot be resolved from the board alone.
+  config?: Pick<TeamConfiguration, "paintedCreatureIds" | "trinketIds">,
 ): T[] {
   const others = all.filter((m) => m.key !== source.key);
 
@@ -239,19 +241,20 @@ export function selectTargets<T extends { slot: GridSlot; key: string; creature:
     case "self":
       return [source];
     case "adjacent":
-      return filtered(others.filter((m) => isAdjacent(source.slot, m.slot)));
+      // Link Cable widens this to the whole team (2026-10-09) — see `adjacentUnder`.
+      return filtered(others.filter((m) => adjacentUnder(config, source.slot, m.slot)));
     case "row":
       return filtered(others.filter((m) => m.slot.row === source.slot.row));
     case "inFront": {
-      // The mirror of `behind`: defined only from the back row, looking forward.
-      if (source.slot.row !== GridRow.Back) return [];
-      // `filtered` as of 2026-10-08 — see `TargetSelector`'s `inFront` member. Saberhorn's tag is
-      // unfiltered and unaffected; Zephyrex's "Flying ally in front" depends on it entirely.
-      return filtered(others.filter((m) => m.slot.row === GridRow.Front && m.slot.col === source.slot.col));
+      // One column RIGHT, same row (2026-10-09). This read "the front row, same column" — see
+      // `engine/grid.ts` for the correction and `GridRow` for the rename that removes the
+      // name collision that caused it.
+      const slot = inFrontSlot(source.slot);
+      return slot ? filtered(others.filter((m) => slotsEqual(m.slot, slot))) : [];
     }
     case "behind": {
       const slot = behindSlot(source.slot);
-      return slot ? others.filter((m) => slotsEqual(m.slot, slot)) : [];
+      return slot ? filtered(others.filter((m) => slotsEqual(m.slot, slot))) : [];
     }
     case "above": {
       const slot = aboveSlot(source.slot);

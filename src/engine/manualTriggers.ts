@@ -26,7 +26,7 @@ export function recipientsOfPress<
   trigger: ManualTrigger,
   source: T,
   board: readonly T[],
-  config?: Pick<TeamConfiguration, "paintedCreatureIds">,
+  config?: Pick<TeamConfiguration, "paintedCreatureIds" | "trinketIds">,
 ): T[] {
   const selected = selectTargets(trigger.target, source, [...board], config);
   const withSelf = trigger.includeSelf ? [source, ...selected] : selected;

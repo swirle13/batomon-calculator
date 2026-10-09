@@ -48,8 +48,8 @@ function openOverlay(): HTMLElement {
 }
 
 const TWO_PLACEMENTS = configWith([
-  { slot: { row: GridRow.Front, col: 0 }, creatureId: Species.Bumblebolt, level: 1 },
-  { slot: { row: GridRow.Back, col: 1 }, creatureId: Species.Panbud, level: 1 },
+  { slot: { row: GridRow.Bottom, col: 0 }, creatureId: Species.Bumblebolt, level: 1 },
+  { slot: { row: GridRow.Top, col: 1 }, creatureId: Species.Panbud, level: 1 },
 ]);
 
 describe("ModifierEditor (FR-039)", () => {

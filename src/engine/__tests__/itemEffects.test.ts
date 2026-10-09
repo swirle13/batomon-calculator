@@ -28,9 +28,9 @@ function member(slot: GridSlot, creature: Partial<CreatureRecord> & { id: Specie
   };
 }
 
-const BACK_0: GridSlot = { row: GridRow.Back, col: 0 };
-const BACK_1: GridSlot = { row: GridRow.Back, col: 1 };
-const FRONT_2: GridSlot = { row: GridRow.Front, col: 2 };
+const BACK_0: GridSlot = { row: GridRow.Top, col: 0 };
+const BACK_1: GridSlot = { row: GridRow.Top, col: 1 };
+const FRONT_2: GridSlot = { row: GridRow.Bottom, col: 2 };
 
 const keys = (slots: GridSlot[]) => slots.map(slotKey).sort();
 
@@ -184,7 +184,7 @@ describe("the item corpus", () => {
     for (const item of corpus.items) {
       const target = item.effect?.target;
       if (target?.kind !== ItemTargetKind.FixedSlot) continue;
-      expect([GridRow.Back, GridRow.Front], item.name).toContain(target.slot.row);
+      expect([GridRow.Top, GridRow.Bottom], item.name).toContain(target.slot.row);
       expect([0, 1, 2], item.name).toContain(target.slot.col);
     }
   });

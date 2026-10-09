@@ -17,7 +17,7 @@ import { Species, TrainerId } from "../../../data/ids";
  * being out of the fight rather than quietly looking like part of the team.
  */
 
-const FRONT_0 = { row: GridRow.Front, col: 0 } as const;
+const FRONT_0 = { row: GridRow.Bottom, col: 0 } as const;
 
 function renderBoard(config: Partial<TeamConfiguration> = {}) {
   const full: TeamConfiguration = {

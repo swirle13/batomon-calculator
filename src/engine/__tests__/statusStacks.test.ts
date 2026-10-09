@@ -6,7 +6,7 @@ import { GridRow, TimelineEventKind } from "../../data/enums";
 import { Species } from "../../data/ids";
 
 const solo = (creatureId: Species, windowSeconds = 10): TeamConfiguration => ({
-  placements: [{ slot: { row: GridRow.Back, col: 0 }, creatureId, level: 1 }],
+  placements: [{ slot: { row: GridRow.Top, col: 0 }, creatureId, level: 1 }],
   trainerId: null,
   trinketIds: [],
   itemIds: [],
@@ -162,8 +162,8 @@ describe("statuses tick as ONE pool on a GLOBAL clock", () => {
     // parts must sum to it (FR-056).
     const team: TeamConfiguration = {
       placements: [
-        { slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Venopuff, level: 1 },
-        { slot: { row: GridRow.Back, col: 1 }, creatureId: Species.Miasmaw, level: 1 },
+        { slot: { row: GridRow.Top, col: 0 }, creatureId: Species.Venopuff, level: 1 },
+        { slot: { row: GridRow.Top, col: 1 }, creatureId: Species.Miasmaw, level: 1 },
       ],
       trainerId: null,
       trinketIds: [],
@@ -203,9 +203,9 @@ describe("observed battle: Venopuff + Magmite + shiny Dribblet vs 300 HP", () =>
 
   const team: TeamConfiguration = {
     placements: [
-      { slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Venopuff, level: 1 },
-      { slot: { row: GridRow.Back, col: 1 }, creatureId: Species.Magmite, level: 1 },
-      { slot: { row: GridRow.Back, col: 2 }, creatureId: Species.Dribblet, level: 1, shiny: true },
+      { slot: { row: GridRow.Top, col: 0 }, creatureId: Species.Venopuff, level: 1 },
+      { slot: { row: GridRow.Top, col: 1 }, creatureId: Species.Magmite, level: 1 },
+      { slot: { row: GridRow.Top, col: 2 }, creatureId: Species.Dribblet, level: 1, shiny: true },
     ],
     trainerId: null,
     trinketIds: [],

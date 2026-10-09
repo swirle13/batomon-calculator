@@ -5,7 +5,7 @@ import { RARITIES_ASC, rarityLabel } from "../../data/statColors";
 import { GridRow } from "../../data/enums";
 import { gridRef } from "../../engine/roster";
 
-const SLOT = { row: GridRow.Back, col: 0 } as const;
+const SLOT = { row: GridRow.Top, col: 0 } as const;
 
 function openPicker(onSelect = () => {}, onClose = () => {}) {
   return render(<CreatureSearchModal target={gridRef(SLOT)} onClose={onClose} onSelect={onSelect} />);
@@ -90,7 +90,7 @@ describe("creature picker keyboard + filters (2026-10-07)", () => {
     fireEvent.change(screen.getByLabelText("Search by name"), { target: { value: "bumble" } });
 
     // Re-open for a different slot.
-    rerender(<CreatureSearchModal target={gridRef({ row: GridRow.Front, col: 2 })} onClose={() => {}} onSelect={() => {}} />);
+    rerender(<CreatureSearchModal target={gridRef({ row: GridRow.Bottom, col: 2 })} onClose={() => {}} onSelect={() => {}} />);
 
     expect((screen.getByLabelText("Filter by rarity") as HTMLSelectElement).value).toBe("Common");
     expect((screen.getByLabelText("Search by name") as HTMLInputElement).value).toBe("");

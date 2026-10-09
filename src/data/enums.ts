@@ -147,10 +147,34 @@ export enum RegionId {
 // Board geometry
 // ---------------------------------------------------------------------------
 
-/** B5: back row = "A" row, front row = "B" row in the wiki's own labeling. */
+/**
+ * The two rows of the board, named for WHERE THEY ARE DRAWN (2026-10-09, user-instructed).
+ *
+ * ## Why the names changed
+ *
+ * They were `Back` and `Front`, and the names caused a bug rather than merely describing one.
+ * "Give the ally **in front** +1 Multicast" reads, against a row called `Front`, as "the ally in
+ * the front row" — so that is what the engine computed, for every `inFront` and `behind` ability
+ * in the corpus. `behindSlot` and `aboveSlot` had independently converged on the same body.
+ *
+ * "In front" actually means one column to the RIGHT (the enemy is off to the right); the rows are
+ * simply the top and bottom halves of the board, which is what the UI has always called them.
+ * Naming them for their position removes the collision: there is no longer a row whose name is
+ * also a direction. See the directional helpers in `engine/grid.ts`.
+ *
+ * ## The STRING VALUES are frozen, deliberately
+ *
+ * `"back"` and `"front"` are in the share format and in every build saved to local storage, and
+ * `share.ts` hashes them into `buildId`. Renaming the values would invalidate every link the user
+ * has pasted and every team in their library, and re-fingerprint boards nobody edited — the same
+ * compatibility rule `canonicalBench` and the run day are held to. The NAME is what was wrong; the
+ * wire format was only ever opaque.
+ */
 export enum GridRow {
-  Back = "back",
-  Front = "front",
+  /** Drawn on top. Serialised as `"back"` — see above; do not "fix" this. */
+  Top = "back",
+  /** Drawn underneath. Serialised as `"front"`. */
+  Bottom = "front",
 }
 
 /**

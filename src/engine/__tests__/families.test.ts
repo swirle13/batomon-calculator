@@ -26,10 +26,10 @@ const team = (placements: { id: Species; slot: GridSlot }[]): TeamConfiguration 
   teamModifiers: [],
 });
 
-const BACK0: GridSlot = { row: GridRow.Back, col: 0 };
-const BACK1: GridSlot = { row: GridRow.Back, col: 1 };
-const BACK2: GridSlot = { row: GridRow.Back, col: 2 };
-const FRONT0: GridSlot = { row: GridRow.Front, col: 0 };
+const BACK0: GridSlot = { row: GridRow.Top, col: 0 };
+const BACK1: GridSlot = { row: GridRow.Top, col: 1 };
+const BACK2: GridSlot = { row: GridRow.Top, col: 2 };
+const FRONT0: GridSlot = { row: GridRow.Bottom, col: 0 };
 
 describe("selector-based effect families (T219)", () => {
   it("adjacency is orthogonal only, so a gap in the row breaks the aura", () => {
@@ -56,19 +56,24 @@ describe("selector-based effect families (T219)", () => {
   });
 
   it("a positional grant reaches the creature behind, and nothing when that slot is empty", () => {
-    // Onsetra: "the ally behind applies its Ongoing abilities 1 additional time". `behind` is only
-    // defined from the front row, so an Onsetra in the back row grants nothing.
+    /*
+     * Onsetra: "the ally behind applies its Ongoing abilities 1 additional time".
+     *
+     * 2026-10-09: "behind" is ONE COLUMN LEFT, same row — not the back row. This test used to put
+     * the pair in two different rows and pass, which is the clearest evidence that the old
+     * geometry was indistinguishable from the row names. See `engine/grid.ts`.
+     */
     const onsetra = getCreatureByIdAndLevel(Species.Onsetra, 1);
     expect(onsetra, "fixture depends on Onsetra existing at level 1").toBeDefined();
 
     const granted = resolveEffects(
-      team([{ id: Species.Onsetra, slot: FRONT0 }, { id: Species.Bumblebolt, slot: BACK0 }]),
+      team([{ id: Species.Onsetra, slot: BACK1 }, { id: Species.Bumblebolt, slot: BACK0 }]),
       corpus,
     );
     const bumble = granted.find((r) => r.creature.id === Species.Bumblebolt)!;
     expect(bumble.extraOngoingApplications).toBe(1);
 
-    // Same pair, Onsetra in the back row: nothing is behind it.
+    // Onsetra at the leftmost column: nothing is behind it, whatever else is on the board.
     const nothingBehind = resolveEffects(
       team([{ id: Species.Onsetra, slot: BACK0 }, { id: Species.Bumblebolt, slot: FRONT0 }]),
       corpus,
@@ -133,7 +138,7 @@ describe("selector-based effect families (T219)", () => {
 describe("coverage reporting is tied to what the engine actually resolves", () => {
   const board = (picks: Species[]): TeamConfiguration => ({
     placements: picks.map((creatureId, i) => ({
-      slot: { row: i < 3 ? GridRow.Back : GridRow.Front, col: (i % 3) as 0 | 1 | 2 },
+      slot: { row: i < 3 ? GridRow.Top : GridRow.Bottom, col: (i % 3) as 0 | 1 | 2 },
       creatureId,
       level: 1 as const,
     })),

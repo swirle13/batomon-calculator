@@ -7,6 +7,7 @@ import { manualTriggersFor } from "../data/triggers";
 import { applyShinyOverlay, findCreature } from "../data/corpus";
 import { abilityNeedsModelling } from "../data/display";
 import { AbilityTagKind, TargetKind } from "../data/enums";
+import { TrinketId } from "../data/ids";
 
 /**
  * Placement optimiser (FR-069, WI-018, 2026-10-06 round 8).
@@ -114,6 +115,20 @@ export interface PositionalCoverage {
 
 /** Text fragments that mark a trinket effect as slot- or position-scoped. */
 const POSITIONAL_TRINKET_PATTERN = /column|leftmost|rightmost|adjacent|slot|behind|in front/i;
+
+/**
+ * Positional trinkets the engine DOES model, despite carrying no `abilityTags` (2026-10-09).
+ *
+ * Link Cable ("all of your team's monsters are now considered adjacent to each other") is read by
+ * `adjacentUnder`, so listing it as an effect that "may invalidate this result entirely" is no
+ * longer true — and it is the one trinket where that warning mattered most, since it is also the
+ * one that makes "no arrangement scored higher" the genuinely correct answer rather than a
+ * disclaimer: with every monster adjacent, moving them cannot change an adjacency effect.
+ *
+ * A list of ids rather than a tag because the trinket's effect is not an `AbilityTag` — it does
+ * not grant anything, it redefines a relation the selectors are evaluated against.
+ */
+const MODELLED_POSITIONAL_TRINKETS: readonly string[] = [TrinketId.LinkCable];
 
 /**
  * Time-weighted damage: each timeline event's damage discounted by how late it lands.
@@ -225,7 +240,12 @@ export function analyzePositionalCoverage(config: TeamConfiguration, corpus: Cor
   const unmodelledTrinkets = [...new Set(config.trinketIds)]
     .map((id) => corpus.trinkets.find((t) => t.id === id))
     .filter((t): t is NonNullable<typeof t> => t !== undefined)
-    .filter((t) => POSITIONAL_TRINKET_PATTERN.test(t.effectText) && (t.abilityTags?.length ?? 0) === 0)
+    .filter(
+      (t) =>
+        POSITIONAL_TRINKET_PATTERN.test(t.effectText) &&
+        (t.abilityTags?.length ?? 0) === 0 &&
+        !MODELLED_POSITIONAL_TRINKETS.includes(t.id),
+    )
     .map((t) => t.name);
 
   return {

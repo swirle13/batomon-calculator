@@ -111,7 +111,8 @@ export type TargetSelector =
   | { kind: TargetKind.Self }
   | ({ kind: TargetKind.Adjacent; sameTeamOnly?: boolean } & SelectorFilters)
   | ({ kind: TargetKind.Row; sameTeamOnly?: boolean } & SelectorFilters)
-  | { kind: TargetKind.Behind }
+  /** One column LEFT, same row. Carries `SelectorFilters` for Blixie's "the Fire ally behind". */
+  | ({ kind: TargetKind.Behind } & SelectorFilters)
   /**
    * Carries `SelectorFilters` as of 2026-10-08, for Cicadence's "Trigger the **Bug** ally above"
    * and Dryadell's "**Grass** ally above". A no-op for the nine existing `above` tags, which are

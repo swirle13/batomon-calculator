@@ -36,7 +36,7 @@ export interface TeamPreview {
   broken: boolean;
 }
 
-const ROW_ORDER = [GridRow.Back, GridRow.Front] as const;
+const ROW_ORDER = [GridRow.Top, GridRow.Bottom] as const;
 const COLS = [0, 1, 2] as const;
 
 const cache = new Map<string, TeamPreview>();

@@ -21,12 +21,12 @@ import type { TeamConfiguration } from "../../../data/types";
  */
 const CONFIG: TeamConfiguration = {
   placements: [
-    { slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Venopuff, level: 1 },
-    { slot: { row: GridRow.Back, col: 1 }, creatureId: Species.Rattleghast, level: 1 },
-    { slot: { row: GridRow.Back, col: 2 }, creatureId: Species.Shikitsune, level: 1 },
-    { slot: { row: GridRow.Front, col: 0 }, creatureId: Species.Pebbler, level: 2 },
-    { slot: { row: GridRow.Front, col: 1 }, creatureId: Species.Brawlmantis, level: 1 },
-    { slot: { row: GridRow.Front, col: 2 }, creatureId: Species.Craghorn, level: 1 },
+    { slot: { row: GridRow.Top, col: 0 }, creatureId: Species.Venopuff, level: 1 },
+    { slot: { row: GridRow.Top, col: 1 }, creatureId: Species.Rattleghast, level: 1 },
+    { slot: { row: GridRow.Top, col: 2 }, creatureId: Species.Shikitsune, level: 1 },
+    { slot: { row: GridRow.Bottom, col: 0 }, creatureId: Species.Pebbler, level: 2 },
+    { slot: { row: GridRow.Bottom, col: 1 }, creatureId: Species.Brawlmantis, level: 1 },
+    { slot: { row: GridRow.Bottom, col: 2 }, creatureId: Species.Craghorn, level: 1 },
   ],
   trainerId: null,
   trinketIds: [],
@@ -104,7 +104,7 @@ describe("PlacementAdvisor apply (FR-069)", () => {
     for (const text of items) {
       const tellsItToStay = CONFIG.placements.some((p) => {
         const name = corpus.creatures.find((c) => c.id === p.creatureId)!.name;
-        const row = p.slot.row === GridRow.Back ? "top" : "bottom";
+        const row = p.slot.row === GridRow.Top ? "top" : "bottom";
         return text.includes(name) && text.includes(`${row} row, slot ${p.slot.col + 1}`);
       });
       expect(tellsItToStay).toBe(false);

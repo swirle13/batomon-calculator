@@ -21,8 +21,8 @@ import { Species } from "../../data/ids";
  * So the assertions below come in pairs: the number is right, AND it is right on the base figure.
  */
 
-const BACK0: GridSlot = { row: GridRow.Back, col: 0 };
-const FRONT0: GridSlot = { row: GridRow.Front, col: 0 };
+const BACK0: GridSlot = { row: GridRow.Top, col: 0 };
+const FRONT0: GridSlot = { row: GridRow.Bottom, col: 0 };
 
 const team = (
   placements: { id: Species; slot: GridSlot; level?: 1 | 2 | 3 | 4; modifiers?: StatModifier[] }[],
@@ -134,7 +134,7 @@ describe("the battle uses the same number the card shows", () => {
       { id: Species.Magmalith, slot: FRONT0 },
     ]);
     const hits = simulate(config, corpus)
-      .timeline.filter((e) => e.kind === TimelineEventKind.Attack && e.sourceSlot.row === GridRow.Back)
+      .timeline.filter((e) => e.kind === TimelineEventKind.Attack && e.sourceSlot.row === GridRow.Top)
       .map((e) => (e as { tSeconds: number; damage?: number }).damage);
 
     // Lignite casts at 5/10/15/20; Magmalith's land at 9 and 18.

@@ -20,7 +20,7 @@ function renderWithPlacement(
   modifiers?: StatModifier[],
 ) {
   const config: TeamConfiguration = {
-    placements: [{ slot: { row: GridRow.Front, col: 0 }, creatureId, level: 1, modifiers }],
+    placements: [{ slot: { row: GridRow.Bottom, col: 0 }, creatureId, level: 1, modifiers }],
     trainerId: null,
     trinketIds: [],
     itemIds: [],

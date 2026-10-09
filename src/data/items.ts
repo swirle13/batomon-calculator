@@ -150,7 +150,7 @@ export const items: ItemRecord[] = [
     rarity: Rarity.Uncommon,
     cost: 1,
     effect: {
-      target: { kind: ItemTargetKind.FixedSlot, slot: { row: GridRow.Front, col: 2 } },
+      target: { kind: ItemTargetKind.FixedSlot, slot: { row: GridRow.Bottom, col: 2 } },
       stats: [{ stat: ModifierStat.CooldownSpeedAdd, amount: 0.05 }],
     },
     abilityTags: [],
@@ -163,7 +163,7 @@ export const items: ItemRecord[] = [
     rarity: Rarity.Uncommon,
     cost: 1,
     effect: {
-      target: { kind: ItemTargetKind.FixedSlot, slot: { row: GridRow.Front, col: 2 } },
+      target: { kind: ItemTargetKind.FixedSlot, slot: { row: GridRow.Bottom, col: 2 } },
       stats: [{ stat: ModifierStat.DamageFlatAdd, amount: 8 }],
     },
     abilityTags: [],

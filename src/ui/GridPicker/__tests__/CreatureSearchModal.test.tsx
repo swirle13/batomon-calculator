@@ -18,7 +18,7 @@ describe("CreatureSearchModal", () => {
   });
 
   it("autofocuses the search input and starts with an empty query when opened", async () => {
-    render(<CreatureSearchModal target={gridRef({ row: GridRow.Front, col: 0 })} onClose={vi.fn()} onSelect={vi.fn()} />);
+    render(<CreatureSearchModal target={gridRef({ row: GridRow.Bottom, col: 0 })} onClose={vi.fn()} onSelect={vi.fn()} />);
     const input = screen.getByLabelText("Search by name") as HTMLInputElement;
     expect(input.value).toBe("");
     await waitFor(() => expect(input).toHaveFocus());
@@ -26,7 +26,7 @@ describe("CreatureSearchModal", () => {
 
   it("clears a previously-typed query and re-focuses when reopened for a different slot", async () => {
     const { rerender } = render(
-      <CreatureSearchModal target={gridRef({ row: GridRow.Front, col: 0 })} onClose={vi.fn()} onSelect={vi.fn()} />,
+      <CreatureSearchModal target={gridRef({ row: GridRow.Bottom, col: 0 })} onClose={vi.fn()} onSelect={vi.fn()} />,
     );
     const input = screen.getByLabelText("Search by name") as HTMLInputElement;
     await waitFor(() => expect(input).toHaveFocus());
@@ -36,7 +36,7 @@ describe("CreatureSearchModal", () => {
     // Blur it, simulating the user clicking a result and the modal closing/reopening for a
     // different slot -- the regression this test guards against.
     input.blur();
-    rerender(<CreatureSearchModal target={gridRef({ row: GridRow.Front, col: 1 })} onClose={vi.fn()} onSelect={vi.fn()} />);
+    rerender(<CreatureSearchModal target={gridRef({ row: GridRow.Bottom, col: 1 })} onClose={vi.fn()} onSelect={vi.fn()} />);
 
     const reopenedInput = screen.getByLabelText("Search by name") as HTMLInputElement;
     expect(reopenedInput.value).toBe("");
@@ -46,7 +46,7 @@ describe("CreatureSearchModal", () => {
   it("calls onSelect with the creature id and onClose when a result is clicked", () => {
     const onSelect = vi.fn();
     const onClose = vi.fn();
-    render(<CreatureSearchModal target={gridRef({ row: GridRow.Front, col: 0 })} onClose={onClose} onSelect={onSelect} />);
+    render(<CreatureSearchModal target={gridRef({ row: GridRow.Bottom, col: 0 })} onClose={onClose} onSelect={onSelect} />);
     fireEvent.change(screen.getByLabelText("Search by name"), { target: { value: "Bumblebolt" } });
     fireEvent.click(screen.getByText("Bumblebolt"));
     expect(onSelect).toHaveBeenCalledWith("bumblebolt");
@@ -55,7 +55,7 @@ describe("CreatureSearchModal", () => {
 
   it("Escape key closes the modal", () => {
     const onClose = vi.fn();
-    render(<CreatureSearchModal target={gridRef({ row: GridRow.Front, col: 0 })} onClose={onClose} onSelect={vi.fn()} />);
+    render(<CreatureSearchModal target={gridRef({ row: GridRow.Bottom, col: 0 })} onClose={onClose} onSelect={vi.fn()} />);
     fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
     expect(onClose).toHaveBeenCalled();
   });

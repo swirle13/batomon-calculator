@@ -74,8 +74,8 @@ describe("projected days", () => {
 describe("timeToKill", () => {
   const team = (windowSeconds: number): TeamConfiguration => ({
     placements: [
-      { slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Venopuff, level: 1 },
-      { slot: { row: GridRow.Back, col: 1 }, creatureId: Species.Magmite, level: 1 },
+      { slot: { row: GridRow.Top, col: 0 }, creatureId: Species.Venopuff, level: 1 },
+      { slot: { row: GridRow.Top, col: 1 }, creatureId: Species.Magmite, level: 1 },
     ],
     trainerId: null,
     trinketIds: [],

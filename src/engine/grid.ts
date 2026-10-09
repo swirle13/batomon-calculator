@@ -1,6 +1,6 @@
-import type { GridSlot } from "../data/types";
+import type { GridSlot, TeamConfiguration } from "../data/types";
 import { GridRow } from "../data/enums";
-import type { Species } from "../data/ids";
+import { TrinketId, type Species } from "../data/ids";
 import type { PlacementKey } from "../data/types";
 
 /**
@@ -16,12 +16,12 @@ import type { PlacementKey } from "../data/types";
 
 /** Stable iteration order used for tie-breaking simultaneous timeline events (contracts/engine-api.md). */
 export const STABLE_SLOT_ORDER: GridSlot[] = [
-  { row: GridRow.Back, col: 0 },
-  { row: GridRow.Back, col: 1 },
-  { row: GridRow.Back, col: 2 },
-  { row: GridRow.Front, col: 0 },
-  { row: GridRow.Front, col: 1 },
-  { row: GridRow.Front, col: 2 },
+  { row: GridRow.Top, col: 0 },
+  { row: GridRow.Top, col: 1 },
+  { row: GridRow.Top, col: 2 },
+  { row: GridRow.Bottom, col: 0 },
+  { row: GridRow.Bottom, col: 1 },
+  { row: GridRow.Bottom, col: 2 },
 ];
 
 export function slotKey(slot: GridSlot): string {
@@ -64,20 +64,70 @@ export function isAdjacent(a: GridSlot, b: GridSlot): boolean {
   return rowDistance + Math.abs(a.col - b.col) === 1;
 }
 
-/** The slot directly "behind" `slot` — same column, the other row, oriented back-of-board. */
-export function behindSlot(slot: GridSlot): GridSlot | null {
-  if (slot.row === GridRow.Front) {
-    return { row: GridRow.Back, col: slot.col };
-  }
-  return null; // back row has nothing behind it
+/**
+ * Link Cable: "All of your team's monsters are now considered adjacent to each other."
+ *
+ * 2026-10-09, user-instructed. The trinket carried no `abilityTags` and nothing read its text, so
+ * it was listed among the effects the placement advisor warns it CANNOT model — which was honest
+ * and is now unnecessary. It is the single most consequential trinket for this engine: it makes
+ * every adjacency effect on the board reach everybody, and it flattens the one dimension the
+ * placement optimiser can actually see, so holding it should make "no arrangement scored higher"
+ * the true answer rather than a disclaimer.
+ *
+ * Read everywhere `isAdjacent` is, which is two places — `selectTargets` and the cooldown-speed
+ * aura sum in `simulate.ts` — through {@link adjacentUnder} so neither can forget it.
+ */
+export function hasUniversalAdjacency(config: Pick<TeamConfiguration, "trinketIds"> | undefined): boolean {
+  return (config?.trinketIds ?? []).includes(TrinketId.LinkCable);
 }
 
-/** The slot "above" `slot` — toward the back row, same column (research.md B5's "above"). */
+/** `isAdjacent`, except that Link Cable makes it true for every distinct pair. */
+export function adjacentUnder(
+  config: Pick<TeamConfiguration, "trinketIds"> | undefined,
+  a: GridSlot,
+  b: GridSlot,
+): boolean {
+  if (slotsEqual(a, b)) return false;
+  return hasUniversalAdjacency(config) || isAdjacent(a, b);
+}
+
+/*
+ * --- THE THREE DIRECTIONAL WORDS, CORRECTED 2026-10-09 (user-reported) ------------------------
+ *
+ * "in front" means THE COLUMN TO THE RIGHT, in the same row. Not the front row.
+ *
+ * Every one of these was wrong, and wrong in a way the row names actively encouraged: with rows
+ * called `Back` and `Front`, "the ally in front" reads as "the ally in the front row", and that is
+ * exactly what the code did. `behindSlot` and `aboveSlot` had even converged on the identical
+ * body — both returned "back row, same column" — which is the clearest possible sign that the
+ * vocabulary had stopped meaning anything. The rows are named `Top`/`Bottom` now for that reason;
+ * see `GridRow`.
+ *
+ * The board is two rows of three, with the enemy off to the RIGHT. So:
+ *
+ *   - **in front** = one column right, same row. The rightmost of each row has nothing in front.
+ *   - **behind**   = one column left, same row. The leftmost of each row has nothing behind.
+ *   - **above**    = same column, top row — and therefore only meaningful from the BOTTOM row. A
+ *     monster already in the top row points at a slot that does not exist, and its ability is
+ *     simply moot.
+ *
+ * `null` from any of these means "there is no such slot", which every caller already treats as
+ * "this ability does nothing here" — the correct reading of an ability aimed off the board.
+ */
+
+/** One column LEFT, same row. `null` at the leftmost column. */
+export function behindSlot(slot: GridSlot): GridSlot | null {
+  return slot.col === 0 ? null : { row: slot.row, col: (slot.col - 1) as GridSlot["col"] };
+}
+
+/** One column RIGHT, same row. `null` at the rightmost column. */
+export function inFrontSlot(slot: GridSlot): GridSlot | null {
+  return slot.col === 2 ? null : { row: slot.row, col: (slot.col + 1) as GridSlot["col"] };
+}
+
+/** Same column, top row. `null` from the top row, which has nothing above it. */
 export function aboveSlot(slot: GridSlot): GridSlot | null {
-  if (slot.row === GridRow.Front) {
-    return { row: GridRow.Back, col: slot.col };
-  }
-  return null; // back row is already the topmost row
+  return slot.row === GridRow.Bottom ? { row: GridRow.Top, col: slot.col } : null;
 }
 
 /**

@@ -21,7 +21,7 @@ import { STAT_COLORS } from "../../data/statColors";
 function configWith(species: Species[]): TeamConfiguration {
   return {
     placements: species.map((creatureId, i) => ({
-      slot: { row: i < 3 ? GridRow.Back : GridRow.Front, col: (i % 3) as 0 | 1 | 2 },
+      slot: { row: i < 3 ? GridRow.Top : GridRow.Bottom, col: (i % 3) as 0 | 1 | 2 },
       creatureId,
       level: 1,
     })),

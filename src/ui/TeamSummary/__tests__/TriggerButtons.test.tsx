@@ -20,12 +20,12 @@ import { Species, TrinketId } from "../../../data/ids";
 
 /** The reported board: two Commons that should gain, and three non-Commons that must not. */
 const BOARD: { name: string; id: Species; slot: GridSlot }[] = [
-  { name: "Shikitsune", id: Species.Shikitsune, slot: { row: GridRow.Back, col: 0 } }, // Rare
-  { name: "Pyronade", id: Species.Pyronade, slot: { row: GridRow.Back, col: 1 } }, // Uncommon
-  { name: "Pebbler", id: Species.Pebbler, slot: { row: GridRow.Back, col: 2 } }, // Common
-  { name: "Brawlmantis", id: Species.Brawlmantis, slot: { row: GridRow.Front, col: 0 } }, // Uncommon, the presser
-  { name: "Venopuff", id: Species.Venopuff, slot: { row: GridRow.Front, col: 1 } }, // Common
-  { name: "Craghorn", id: Species.Craghorn, slot: { row: GridRow.Front, col: 2 } }, // Uncommon
+  { name: "Shikitsune", id: Species.Shikitsune, slot: { row: GridRow.Top, col: 0 } }, // Rare
+  { name: "Pyronade", id: Species.Pyronade, slot: { row: GridRow.Top, col: 1 } }, // Uncommon
+  { name: "Pebbler", id: Species.Pebbler, slot: { row: GridRow.Top, col: 2 } }, // Common
+  { name: "Brawlmantis", id: Species.Brawlmantis, slot: { row: GridRow.Bottom, col: 0 } }, // Uncommon, the presser
+  { name: "Venopuff", id: Species.Venopuff, slot: { row: GridRow.Bottom, col: 1 } }, // Common
+  { name: "Craghorn", id: Species.Craghorn, slot: { row: GridRow.Bottom, col: 2 } }, // Uncommon
 ];
 
 function configWith(placements: TeamPlacement[], trinketIds: TrinketId[] = []): TeamConfiguration {

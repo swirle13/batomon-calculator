@@ -70,7 +70,7 @@ describe("shiny variants", () => {
 
 describe("shiny reaches the ENGINE, not just the card (2026-10-06)", () => {
   const place = (creatureId: Species, shiny: boolean): TeamConfiguration => ({
-    placements: [{ slot: { row: GridRow.Back, col: 0 }, creatureId, level: 1, shiny }],
+    placements: [{ slot: { row: GridRow.Top, col: 0 }, creatureId, level: 1, shiny }],
     trainerId: null,
     trinketIds: [],
     itemIds: [],

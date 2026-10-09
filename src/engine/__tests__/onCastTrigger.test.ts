@@ -38,16 +38,16 @@ function castTimes(config: TeamConfiguration, row: GridRow, col: GridCol): numbe
 describe("On Cast: Trigger <target>", () => {
   /** Bumblebolt is Bug and casts every 2.5s; Cicadence is Bug and casts every 6s. */
   const bugAbove = board([
-    [GridRow.Front, 0, Species.Cicadence],
-    [GridRow.Back, 0, Species.Bumblebolt],
+    [GridRow.Bottom, 0, Species.Cicadence],
+    [GridRow.Top, 0, Species.Bumblebolt],
   ]);
 
   it("gives the ally above an extra cast each time the trigger-er casts", () => {
     // Cicadence casts at 6, 12 and 18; each lands on the ally one step later (FR-040's rule that
     // a consequence resolves after the instant that caused it).
-    expect(castTimes(bugAbove, GridRow.Back, 0)).toContain(6.1);
-    expect(castTimes(bugAbove, GridRow.Back, 0)).toContain(12.1);
-    expect(castTimes(bugAbove, GridRow.Back, 0)).toContain(18.1);
+    expect(castTimes(bugAbove, GridRow.Top, 0)).toContain(6.1);
+    expect(castTimes(bugAbove, GridRow.Top, 0)).toContain(12.1);
+    expect(castTimes(bugAbove, GridRow.Top, 0)).toContain(18.1);
   });
 
   it("leaves the triggered ally's own cooldown completely alone (FR-099)", () => {
@@ -57,7 +57,7 @@ describe("On Cast: Trigger <target>", () => {
      * if triggering reset its cooldown, 7.5 and 12.5 would be missing.
      */
     const own = [2.5, 5, 7.5, 10, 12.5, 15, 17.5, 20];
-    expect(castTimes(bugAbove, GridRow.Back, 0)).toEqual(
+    expect(castTimes(bugAbove, GridRow.Top, 0)).toEqual(
       [...own, 6.1, 12.1, 18.1].sort((a, b) => a - b),
     );
   });
@@ -67,21 +67,21 @@ describe("On Cast: Trigger <target>", () => {
     // carried no filters at all before this, so an unfiltered selector would have triggered
     // whoever happened to be standing there.
     const rockAbove = board([
-      [GridRow.Front, 0, Species.Cicadence],
-      [GridRow.Back, 0, Species.Pebbler],
+      [GridRow.Bottom, 0, Species.Cicadence],
+      [GridRow.Top, 0, Species.Pebbler],
     ]);
     // Pebbler's own 5s cycle, and not one cast more.
-    expect(castTimes(rockAbove, GridRow.Back, 0)).toEqual([5, 10, 15, 20]);
+    expect(castTimes(rockAbove, GridRow.Top, 0)).toEqual([5, 10, 15, 20]);
   });
 
   it("reaches adjacent allies for Torrantler, not just the one above", () => {
     const water = board([
-      [GridRow.Front, 0, Species.Torrantler],
-      [GridRow.Front, 1, Species.Dribblet],
+      [GridRow.Bottom, 0, Species.Torrantler],
+      [GridRow.Bottom, 1, Species.Dribblet],
     ]);
     // Torrantler casts at 7 and 14.
-    expect(castTimes(water, GridRow.Front, 1)).toContain(7.1);
-    expect(castTimes(water, GridRow.Front, 1)).toContain(14.1);
+    expect(castTimes(water, GridRow.Bottom, 1)).toContain(7.1);
+    expect(castTimes(water, GridRow.Bottom, 1)).toContain(14.1);
   });
 
   it("honours '(Except other Torrantler)' — a pair does not trigger each other", () => {
@@ -92,25 +92,25 @@ describe("On Cast: Trigger <target>", () => {
      * pair's output.
      */
     const pair = board([
-      [GridRow.Front, 0, Species.Torrantler],
-      [GridRow.Front, 1, Species.Torrantler],
+      [GridRow.Bottom, 0, Species.Torrantler],
+      [GridRow.Bottom, 1, Species.Torrantler],
     ]);
-    expect(castTimes(pair, GridRow.Front, 0)).toEqual([7, 14]);
-    expect(castTimes(pair, GridRow.Front, 1)).toEqual([7, 14]);
+    expect(castTimes(pair, GridRow.Bottom, 0)).toEqual([7, 14]);
+    expect(castTimes(pair, GridRow.Bottom, 1)).toEqual([7, 14]);
   });
 
   describe("Opalion's '1 random Rock allies'", () => {
     const rockAllies = board([
-      [GridRow.Front, 0, Species.Opalion],
-      [GridRow.Front, 1, Species.Pebbler],
-      [GridRow.Back, 0, Species.Runerock],
+      [GridRow.Bottom, 0, Species.Opalion],
+      [GridRow.Bottom, 1, Species.Pebbler],
+      [GridRow.Top, 0, Species.Runerock],
     ]);
 
     it("triggers exactly one of them, not all of them", () => {
       // The count is the part that has to be right: two Rock allies and one extra cast per
       // Opalion cast. Opalion casts at 6, 12, 18.
-      const pebbler = castTimes(rockAllies, GridRow.Front, 1);
-      const runerock = castTimes(rockAllies, GridRow.Back, 0);
+      const pebbler = castTimes(rockAllies, GridRow.Bottom, 1);
+      const runerock = castTimes(rockAllies, GridRow.Top, 0);
       const extras = [...pebbler, ...runerock].filter((t) => !Number.isInteger(t));
       expect(extras).toEqual([6.1, 12.1, 18.1]);
     });
@@ -130,12 +130,12 @@ describe("On Cast: Trigger <target>", () => {
        * casts WITH the monster rather than leaving them on the slot.
        */
       const swapped = board([
-        [GridRow.Front, 0, Species.Opalion],
-        [GridRow.Front, 1, Species.Runerock],
-        [GridRow.Back, 0, Species.Pebbler],
+        [GridRow.Bottom, 0, Species.Opalion],
+        [GridRow.Bottom, 1, Species.Runerock],
+        [GridRow.Top, 0, Species.Pebbler],
       ]);
-      const pebblerBefore = castTimes(rockAllies, GridRow.Front, 1);
-      const pebblerAfter = castTimes(swapped, GridRow.Back, 0);
+      const pebblerBefore = castTimes(rockAllies, GridRow.Bottom, 1);
+      const pebblerAfter = castTimes(swapped, GridRow.Top, 0);
       expect(pebblerAfter).toEqual(pebblerBefore);
     });
   });
@@ -148,12 +148,12 @@ describe("On Cast: Trigger <target>", () => {
      * the shape `MAX_CHAIN_DEPTH` was written for and has never been reached by.
      */
     const facing = board([
-      [GridRow.Front, 0, Species.Cicadence],
-      [GridRow.Back, 0, Species.Cicadence],
+      [GridRow.Bottom, 0, Species.Cicadence],
+      [GridRow.Top, 0, Species.Cicadence],
     ]);
     // The front one triggers the back one (Cicadence is Bug); the back one is in the back row, so
     // it has nothing above it and triggers nobody. Three scheduled casts plus three triggered.
-    expect(castTimes(facing, GridRow.Front, 0)).toEqual([6, 12, 18]);
-    expect(castTimes(facing, GridRow.Back, 0)).toEqual([6, 6.1, 12, 12.1, 18, 18.1]);
+    expect(castTimes(facing, GridRow.Bottom, 0)).toEqual([6, 12, 18]);
+    expect(castTimes(facing, GridRow.Top, 0)).toEqual([6, 6.1, 12, 12.1, 18, 18.1]);
   });
 });

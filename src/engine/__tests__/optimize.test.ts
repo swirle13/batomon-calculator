@@ -13,8 +13,8 @@ describe("placement optimiser (FR-069)", () => {
   /** Formiqueen buffs ADJACENT Common allies. Bumblebolt is Common, so adjacency matters here. */
   const adjacent: TeamConfiguration = {
     placements: [
-      { slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Formiqueen, level: 1 },
-      { slot: { row: GridRow.Back, col: 1 }, creatureId: Species.Bumblebolt, level: 1 },
+      { slot: { row: GridRow.Top, col: 0 }, creatureId: Species.Formiqueen, level: 1 },
+      { slot: { row: GridRow.Top, col: 1 }, creatureId: Species.Bumblebolt, level: 1 },
     ],
     trainerId: null,
     trinketIds: [],
@@ -25,7 +25,7 @@ describe("placement optimiser (FR-069)", () => {
   it("weights earlier damage more heavily than later damage", () => {
     // The user's requirement: raw totals over-reward a slow ramp that may arrive after death.
     const early = scoreConfiguration(
-      { ...adjacent, placements: [{ slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Bumblebolt, level: 1 }] },
+      { ...adjacent, placements: [{ slot: { row: GridRow.Top, col: 0 }, creatureId: Species.Bumblebolt, level: 1 }] },
       corpus,
     );
     const rawTotal = 3 * 8; // Bumblebolt: 3 damage x 8 casts in 20s
@@ -39,8 +39,8 @@ describe("placement optimiser (FR-069)", () => {
     const withOnsetra: TeamConfiguration = {
       ...adjacent,
       placements: [
-        { slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Formiqueen, level: 1 },
-        { slot: { row: GridRow.Back, col: 1 }, creatureId: Species.Onsetra, level: 1 },
+        { slot: { row: GridRow.Top, col: 0 }, creatureId: Species.Formiqueen, level: 1 },
+        { slot: { row: GridRow.Top, col: 1 }, creatureId: Species.Onsetra, level: 1 },
       ],
     };
     const coverage = analyzePositionalCoverage(withOnsetra, corpus);
@@ -58,11 +58,22 @@ describe("placement optimiser (FR-069)", () => {
   });
 
   it("flags selected trinkets whose positional effect the engine cannot model", () => {
+    // Quick Flag's slot-scoped bonus is still unread, and a result computed while it is selected
+    // must say so. Asserted on a trinket the engine genuinely cannot model, which Link Cable
+    // stopped being on 2026-10-09 — see the case below.
+    const withQuickFlag: TeamConfiguration = { ...adjacent, trinketIds: [TrinketId.QuickFlag] };
+    expect(analyzePositionalCoverage(withQuickFlag, corpus).unmodelledTrinkets).toContain("Quick Flag");
+  });
+
+  it("no longer caveats Link Cable, which it now models (2026-10-09)", () => {
+    /*
+     * This asserted the opposite until the trinket was wired into `adjacentUnder`. Leaving the
+     * warning in place would be its own dishonesty: Link Cable makes every monster adjacent, so
+     * an arrangement search that holds it is reporting a genuinely position-independent board
+     * rather than confessing a blind spot.
+     */
     const withLinkCable: TeamConfiguration = { ...adjacent, trinketIds: [TrinketId.LinkCable] };
-    const coverage = analyzePositionalCoverage(withLinkCable, corpus);
-    // Link Cable makes every monster adjacent, which would invalidate the one interaction the
-    // optimiser CAN see -- so a result computed while it is selected must be caveated.
-    expect(coverage.unmodelledTrinkets).toContain("Link Cable");
+    expect(analyzePositionalCoverage(withLinkCable, corpus).unmodelledTrinkets).not.toContain("Link Cable");
   });
 
   it("searches every arrangement and never claims an improvement it did not find", () => {
@@ -85,9 +96,9 @@ describe("placement optimiser (FR-069)", () => {
     const inSlotOrder: TeamConfiguration = {
       ...adjacent,
       placements: [
-        { slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Formiqueen, level: 1 },
-        { slot: { row: GridRow.Back, col: 1 }, creatureId: Species.Aristobat, level: 1 },
-        { slot: { row: GridRow.Back, col: 2 }, creatureId: Species.Bumblebolt, level: 1 },
+        { slot: { row: GridRow.Top, col: 0 }, creatureId: Species.Formiqueen, level: 1 },
+        { slot: { row: GridRow.Top, col: 1 }, creatureId: Species.Aristobat, level: 1 },
+        { slot: { row: GridRow.Top, col: 2 }, creatureId: Species.Bumblebolt, level: 1 },
       ],
     };
     // Formiqueen's aura only reaches an ADJACENT Common ally. Aristobat is Rare, so it wastes the
@@ -101,7 +112,7 @@ describe("placement optimiser (FR-069)", () => {
   it("is a no-op for a team too small to rearrange", () => {
     const solo: TeamConfiguration = {
       ...adjacent,
-      placements: [{ slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Bumblebolt, level: 1 }],
+      placements: [{ slot: { row: GridRow.Top, col: 0 }, creatureId: Species.Bumblebolt, level: 1 }],
     };
     expect(suggestPlacement(solo, corpus).placements).toBeNull();
   });

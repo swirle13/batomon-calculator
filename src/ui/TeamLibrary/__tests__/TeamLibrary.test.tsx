@@ -19,7 +19,7 @@ import type { TeamConfiguration } from "../../../data/types";
 function board(...species: Species[]): TeamConfiguration {
   return {
     placements: species.map((creatureId, index) => ({
-      slot: { row: GridRow.Front, col: index as 0 | 1 | 2 },
+      slot: { row: GridRow.Bottom, col: index as 0 | 1 | 2 },
       creatureId,
       level: 1,
     })),

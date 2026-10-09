@@ -77,8 +77,8 @@ describe("Finding 5 — damage from the TARGET's status (T244)", () => {
     // Paired with a Poison applier so stacks accumulate.
     const r = simulate(
       team([
-        { id: Species.Fumungus, slot: { row: GridRow.Front, col: 0 }, level: 2 },
-        { id: Species.Miasmaw, slot: { row: GridRow.Front, col: 1 } },
+        { id: Species.Fumungus, slot: { row: GridRow.Bottom, col: 0 }, level: 2 },
+        { id: Species.Miasmaw, slot: { row: GridRow.Bottom, col: 1 } },
       ]),
       corpus,
     );
@@ -96,13 +96,13 @@ describe("Finding 7b — a reaction must not consume the reactor's cooldown (T24
     // reactor, so a reaction consumed the cast it should have been additional to.
     const r = simulate(
       team([
-        { id: Species.Puffloon, slot: { row: GridRow.Back, col: 1 }, level: 2 },
-        { id: Species.Miasmaw, slot: { row: GridRow.Back, col: 2 } },
+        { id: Species.Puffloon, slot: { row: GridRow.Top, col: 1 }, level: 2 },
+        { id: Species.Miasmaw, slot: { row: GridRow.Top, col: 2 } },
       ], 30),
       corpus,
     );
     const puffloonCasts = r.timeline.filter(
-      (e) => e.kind === TimelineEventKind.Attack && e.sourceSlot.row === GridRow.Back && e.sourceSlot.col === 1,
+      (e) => e.kind === TimelineEventKind.Attack && e.sourceSlot.row === GridRow.Top && e.sourceSlot.col === 1,
     );
     const base = getCreatureByIdAndLevel(Species.Puffloon, 2)!.baseCooldownSeconds!;
     // More casts than its own cooldown alone could produce in the window — the reactions are extra.
@@ -118,8 +118,8 @@ describe("Finding 1 — phase ordering (T242)", () => {
     // guess as a fixture.
     const resolved = resolveEffects(
       team([
-        { id: Species.Miasmaw, slot: { row: GridRow.Front, col: 1 } },
-        { id: Species.Cobrex, slot: { row: GridRow.Front, col: 2 } },
+        { id: Species.Miasmaw, slot: { row: GridRow.Bottom, col: 1 } },
+        { id: Species.Cobrex, slot: { row: GridRow.Bottom, col: 2 } },
       ]),
       corpus,
     );

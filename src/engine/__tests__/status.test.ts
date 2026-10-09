@@ -9,8 +9,8 @@ import { DamageChannel, GridRow, StatusEffectType } from "../../data/enums";
  * "Batomon Showdown Shock Builds Guide" https://batomonshowdowngame.wiki/guides/shock-build/
  */
 
-const baseSlot = { row: GridRow.Front as const, col: 0 as const };
-const sourceSlot = { row: GridRow.Back as const, col: 0 as const };
+const baseSlot = { row: GridRow.Bottom as const, col: 0 as const };
+const sourceSlot = { row: GridRow.Top as const, col: 0 as const };
 
 describe("applyStatusTick", () => {
   it("Burn: tick damage equals current layers, then loses 1 layer", () => {

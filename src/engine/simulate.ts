@@ -3,7 +3,7 @@ import { STATUS_TYPES, applyModifiers } from "./modifiers";
 import { applySelfScaling, selfScaledAmount } from "./selfScaling";
 import { effectiveCooldown } from "./cooldown";
 import { applyStatusTick, applyShockProc } from "./status";
-import { STABLE_SLOT_ORDER, isAdjacent, slotKey, slotsEqual, stableSlotIndex } from "./grid";
+import { STABLE_SLOT_ORDER, adjacentUnder, slotKey, slotsEqual, stableSlotIndex } from "./grid";
 import { cannotGain, resolveBoard, selectTargets } from "./effects";
 import { trainerModifiersFor } from "./trainerEffects";
 import { creatureHasType } from "../data/typing";
@@ -130,7 +130,10 @@ function resolveCooldownSpeedTotal(
       const target = tag.target;
       let reaches = false;
       if (target.kind === TargetKind.Adjacent) {
-        reaches = isAdjacent(member.slot, targetSlot);
+        // Link Cable (2026-10-09): see `adjacentUnder`. This is the second of the two places that
+        // ask the adjacency question, and a trinket honoured in only one of them would make
+        // Formiqueen's aura reach the whole team for damage purposes but not for cooldown.
+        reaches = adjacentUnder(config, member.slot, targetSlot);
       } else if (target.kind === TargetKind.AllAllies) {
         reaches = true;
       }
@@ -981,7 +984,10 @@ export function simulate(
       if (!sourceResolved) continue;
       for (const tag of entry.creature.abilityTags) {
         if (tag.kind !== AbilityTagKind.BuffOnCast) continue;
-        for (const target of selectTargets(tag.target, sourceResolved, resolved)) {
+        // `config` passed as of 2026-10-09. Without it this selector saw neither Painter's granted
+        // typing nor Link Cable's universal adjacency — the one `buffOnCast` call site of eleven
+        // that was omitting it.
+        for (const target of selectTargets(tag.target, sourceResolved, resolved, config)) {
           const b = buffFor(target.key);
           if (tag.effect.statChange?.stat === "damage") b.damage += tag.effect.statChange.amount;
           // "(Zephyrex can't have Multicast)", checked on the RECIPIENT. This is the path Zephyrex's

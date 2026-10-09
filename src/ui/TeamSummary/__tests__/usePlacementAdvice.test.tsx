@@ -38,8 +38,8 @@ class FakeWorker {
 function configWith(windowSeconds: number): TeamConfiguration {
   return {
     placements: [
-      { slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Venopuff, level: 1 },
-      { slot: { row: GridRow.Back, col: 1 }, creatureId: Species.Pebbler, level: 1 },
+      { slot: { row: GridRow.Top, col: 0 }, creatureId: Species.Venopuff, level: 1 },
+      { slot: { row: GridRow.Top, col: 1 }, creatureId: Species.Pebbler, level: 1 },
     ],
     trainerId: null,
     trinketIds: [],
@@ -114,7 +114,7 @@ describe("usePlacementAdvice worker path", () => {
     vi.stubGlobal("Worker", FakeWorker);
     const lonely: TeamConfiguration = {
       ...configWith(1),
-      placements: [{ slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Venopuff, level: 1 }],
+      placements: [{ slot: { row: GridRow.Top, col: 0 }, creatureId: Species.Venopuff, level: 1 }],
     };
     render(<Harness config={lonely} />);
     // `suggestPlacement` has nothing to permute below two creatures and the advisor renders

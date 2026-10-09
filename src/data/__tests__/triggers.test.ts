@@ -108,12 +108,12 @@ describe("manual trigger recipients", () => {
   const lv1 = (id: Species) => allCreatureRecords().find((c) => c.id === id, 1)!;
 
   const SLOTS: GridSlot[] = [
-    { row: GridRow.Back, col: 0 },
-    { row: GridRow.Back, col: 1 },
-    { row: GridRow.Back, col: 2 },
-    { row: GridRow.Front, col: 0 },
-    { row: GridRow.Front, col: 1 },
-    { row: GridRow.Front, col: 2 },
+    { row: GridRow.Top, col: 0 },
+    { row: GridRow.Top, col: 1 },
+    { row: GridRow.Top, col: 2 },
+    { row: GridRow.Bottom, col: 0 },
+    { row: GridRow.Bottom, col: 1 },
+    { row: GridRow.Bottom, col: 2 },
   ];
 
   /** A full board in the shape the selectors read, `source` first. */

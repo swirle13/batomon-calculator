@@ -11,8 +11,8 @@ const base: TeamConfiguration = {
   selectedRegion: RegionId.Pantra,
   trainerId: TrainerId.Painter,
   placements: [
-    { slot: { row: GridRow.Front, col: 1 }, creatureId: Species.Miasmaw, level: 2, shiny: true },
-    { slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Cobrex, level: 1,
+    { slot: { row: GridRow.Bottom, col: 1 }, creatureId: Species.Miasmaw, level: 2, shiny: true },
+    { slot: { row: GridRow.Top, col: 0 }, creatureId: Species.Cobrex, level: 1,
       modifiers: [{ id: syntheticSpecies("x1"), stat: ModifierStat.DamageFlatAdd, amount: 10 }] },
   ],
   trinketIds: [TrinketId.LinkCable, TrinketId.GoldNugget],
@@ -57,7 +57,7 @@ describe("build export/import", () => {
     const variants: [string, TeamConfiguration][] = [
       ["level", { ...base, placements: base.placements.map((p, i) => (i === 0 ? { ...p, level: 3 as const } : p)) }],
       ["shiny", { ...base, placements: base.placements.map((p, i) => (i === 0 ? { ...p, shiny: false } : p)) }],
-      ["slot", { ...base, placements: base.placements.map((p, i) => (i === 0 ? { ...p, slot: { row: GridRow.Back as const, col: 2 } } : p)) }],
+      ["slot", { ...base, placements: base.placements.map((p, i) => (i === 0 ? { ...p, slot: { row: GridRow.Top as const, col: 2 } } : p)) }],
       ["creature", { ...base, placements: base.placements.map((p, i) => (i === 0 ? { ...p, creatureId: Species.Drumire } : p)) }],
       ["region", { ...base, selectedRegion: RegionId.Jinto }],
       ["trainer", { ...base, trainerId: TrainerId.Smuggler }],

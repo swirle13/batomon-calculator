@@ -12,7 +12,7 @@ const WINDOW = 30;
 function board(...creatureIds: Species[]): TeamConfiguration {
   return {
     placements: creatureIds.map((creatureId, i) => ({
-      slot: { row: i < 3 ? GridRow.Back : GridRow.Front, col: (i % 3) as GridCol },
+      slot: { row: i < 3 ? GridRow.Top : GridRow.Bottom, col: (i % 3) as GridCol },
       creatureId,
       level: 1,
     })),

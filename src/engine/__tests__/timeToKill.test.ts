@@ -22,8 +22,8 @@ const team = (
 const poisonPair = (windowSeconds = 30) =>
   team(
     [
-      { slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Venopuff, level: 1 },
-      { slot: { row: GridRow.Back, col: 1 }, creatureId: Species.Magmite, level: 1 },
+      { slot: { row: GridRow.Top, col: 0 }, creatureId: Species.Venopuff, level: 1 },
+      { slot: { row: GridRow.Top, col: 1 }, creatureId: Species.Magmite, level: 1 },
     ],
     windowSeconds,
   );
@@ -68,7 +68,7 @@ describe("time to kill past the simulation window", () => {
 
   it("returns null for a board that cannot get there within the search limit", () => {
     const trickle = team([
-      { slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Magmite, level: 1 },
+      { slot: { row: GridRow.Top, col: 0 }, creatureId: Species.Magmite, level: 1 },
     ]);
     expect(ttk(trickle, 19)).toBeNull();
   });

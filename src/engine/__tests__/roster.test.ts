@@ -13,8 +13,8 @@ import { Species } from "../../data/ids";
  * somewhere else here, the advisor quotes a DPS the board does not produce.
  */
 
-const BACK_0 = { row: GridRow.Back, col: 0 } as const;
-const BACK_1 = { row: GridRow.Back, col: 1 } as const;
+const BACK_0 = { row: GridRow.Top, col: 0 } as const;
+const BACK_1 = { row: GridRow.Top, col: 1 } as const;
 
 function creatureMod(amount: number): StatModifier {
   return { id: `c${amount}`, stat: ModifierStat.DamageFlatAdd, amount, scope: ModifierScope.Creature };
@@ -129,6 +129,6 @@ describe("rosterRefsEqual", () => {
   it("never equates a grid slot with a bench position", () => {
     expect(rosterRefsEqual(gridRef(BACK_0), benchRef(0))).toBe(false);
     expect(rosterRefsEqual(benchRef(0), benchRef(0))).toBe(true);
-    expect(rosterRefsEqual(gridRef(BACK_0), gridRef({ row: GridRow.Back, col: 0 }))).toBe(true);
+    expect(rosterRefsEqual(gridRef(BACK_0), gridRef({ row: GridRow.Top, col: 0 }))).toBe(true);
   });
 });

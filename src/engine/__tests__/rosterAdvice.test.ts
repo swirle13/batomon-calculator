@@ -16,9 +16,9 @@ import { Species } from "../../data/ids";
  * candidate's positional ability would be worse than no advice, because it would look confident.
  */
 
-const BACK_0 = { row: GridRow.Back, col: 0 } as const;
-const BACK_1 = { row: GridRow.Back, col: 1 } as const;
-const BACK_2 = { row: GridRow.Back, col: 2 } as const;
+const BACK_0 = { row: GridRow.Top, col: 0 } as const;
+const BACK_1 = { row: GridRow.Top, col: 1 } as const;
+const BACK_2 = { row: GridRow.Top, col: 2 } as const;
 
 function config(overrides: Partial<TeamConfiguration> = {}): TeamConfiguration {
   return {
@@ -60,7 +60,7 @@ describe("the bench is inert", () => {
 
 /** Six of one species, which is what forces a candidate to displace somebody rather than add. */
 function fullBoardOf(creatureId: Species, level: 1 | 2 | 3 | 4) {
-  return [GridRow.Back, GridRow.Front].flatMap((row) =>
+  return [GridRow.Top, GridRow.Bottom].flatMap((row) =>
     ([0, 1, 2] as const).map((col) => ({ slot: { row, col }, creatureId, level })),
   );
 }
@@ -201,9 +201,9 @@ describe("best lineup", () => {
         { slot: BACK_0, creatureId: Species.Thorntail, level: 4 },
         { slot: BACK_1, creatureId: Species.Thorntail, level: 4 },
         { slot: BACK_2, creatureId: Species.Thorntail, level: 4 },
-        { slot: { row: GridRow.Front, col: 0 }, creatureId: Species.Thorntail, level: 4 },
-        { slot: { row: GridRow.Front, col: 1 }, creatureId: Species.Thorntail, level: 4 },
-        { slot: { row: GridRow.Front, col: 2 }, creatureId: Species.Thorntail, level: 4 },
+        { slot: { row: GridRow.Bottom, col: 0 }, creatureId: Species.Thorntail, level: 4 },
+        { slot: { row: GridRow.Bottom, col: 1 }, creatureId: Species.Thorntail, level: 4 },
+        { slot: { row: GridRow.Bottom, col: 2 }, creatureId: Species.Thorntail, level: 4 },
       ],
       bench: [{ index: 0, creatureId: Species.Bumblebolt, level: 1 }],
     });
@@ -240,9 +240,9 @@ describe("best lineup", () => {
         { slot: BACK_0, creatureId: Species.Bumblebolt, level: 1 },
         { slot: BACK_1, creatureId: Species.Formiqueen, level: 1 },
         { slot: BACK_2, creatureId: Species.Onsetra, level: 1 },
-        { slot: { row: GridRow.Front, col: 0 }, creatureId: Species.Thorntail, level: 2 },
-        { slot: { row: GridRow.Front, col: 1 }, creatureId: Species.Mosslug, level: 1 },
-        { slot: { row: GridRow.Front, col: 2 }, creatureId: Species.Bumblebolt, level: 2 },
+        { slot: { row: GridRow.Bottom, col: 0 }, creatureId: Species.Thorntail, level: 2 },
+        { slot: { row: GridRow.Bottom, col: 1 }, creatureId: Species.Mosslug, level: 1 },
+        { slot: { row: GridRow.Bottom, col: 2 }, creatureId: Species.Bumblebolt, level: 2 },
       ],
       bench: [
         { index: 0, creatureId: Species.Thorntail, level: 4 },

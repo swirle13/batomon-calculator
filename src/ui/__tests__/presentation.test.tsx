@@ -40,7 +40,7 @@ import { placementKey } from "../../engine/grid";
  */
 
 const CONFIG: TeamConfiguration = {
-  placements: [{ slot: { row: GridRow.Front, col: 0 }, creatureId: Species.Bumblebolt, level: 1 }],
+  placements: [{ slot: { row: GridRow.Bottom, col: 0 }, creatureId: Species.Bumblebolt, level: 1 }],
   trainerId: null,
   trinketIds: [],
   itemIds: [],
@@ -252,7 +252,7 @@ describe("the card's output band overflows into a second column (WI-003)", () =>
 
 describe("CreatureSearchModal heading (FR-034, item 13)", () => {
   it("shows no slot position in the visible heading, but keeps it for assistive tech", () => {
-    render(<CreatureSearchModal target={gridRef({ row: GridRow.Back, col: 1 })} onClose={() => {}} onSelect={() => {}} />);
+    render(<CreatureSearchModal target={gridRef({ row: GridRow.Top, col: 1 })} onClose={() => {}} onSelect={() => {}} />);
     expect(screen.getByRole("heading", { name: "Choose a Batomon" })).toBeTruthy();
     expect(screen.queryByRole("heading", { name: /back row, slot/i })).toBeNull();
     // The user clicked the slot so they know which it is; a screen-reader user may not have.
@@ -312,7 +312,7 @@ describe("round 7 presentation fixes", () => {
         <PlacedCreatureDetails result={simulate(CONFIG, corpus)} highlighted={null} />
       </TeamConfigProvider>,
     );
-    render(<CreatureSearchModal target={gridRef({ row: GridRow.Back, col: 1 })} onClose={() => {}} onSelect={() => {}} />);
+    render(<CreatureSearchModal target={gridRef({ row: GridRow.Top, col: 1 })} onClose={() => {}} onSelect={() => {}} />);
     expect(screen.getByRole("heading", { name: "Choose a Batomon" })).toBeTruthy();
     expect(document.body.textContent).not.toMatch(/Banto\b/);
   });
@@ -333,7 +333,7 @@ describe("round 7 presentation fixes", () => {
   });
 
   it("renders the split type background without a gradient (FR-049, item 11)", () => {
-    render(<CreatureSearchModal target={gridRef({ row: GridRow.Back, col: 0 })} onClose={() => {}} onSelect={() => {}} />);
+    render(<CreatureSearchModal target={gridRef({ row: GridRow.Top, col: 0 })} onClose={() => {}} onSelect={() => {}} />);
     // The sliver came from a linear-gradient painted across the border box. Two explicit halves
     // cannot reproduce it, so the absence of any gradient is the structural guarantee.
     const withGradient = Array.from(document.querySelectorAll<HTMLElement>("[style]")).filter((el) =>
@@ -343,7 +343,7 @@ describe("round 7 presentation fixes", () => {
   });
 
   it("groups picker results into rarity sections and puts no rarity text on the cards (FR-048, item 10)", () => {
-    render(<CreatureSearchModal target={gridRef({ row: GridRow.Back, col: 0 })} onClose={() => {}} onSelect={() => {}} />);
+    render(<CreatureSearchModal target={gridRef({ row: GridRow.Top, col: 0 })} onClose={() => {}} onSelect={() => {}} />);
     expect(screen.getAllByRole("heading", { level: 4 }).length).toBeGreaterThan(1);
     // Rarity is structure now, not a per-card label; the only "Common" text should be headings
     // and the filter <option>, never inside a result card.
@@ -394,7 +394,7 @@ describe("round 7 presentation fixes", () => {
     // bonus are part of what the monster IS for this run, so they belong on the card.
     const chefTeam: TeamConfiguration = {
       ...CONFIG,
-      placements: [{ slot: { row: GridRow.Front, col: 0 }, creatureId: Species.Pebbler, level: 1 }],
+      placements: [{ slot: { row: GridRow.Bottom, col: 0 }, creatureId: Species.Pebbler, level: 1 }],
       trainerId: TrainerId.Chef,
     };
     render(
@@ -520,14 +520,14 @@ describe("round 7 presentation fixes", () => {
   });
 
   it("reports Shield without the over-qualifying parenthetical (FR-046, item 7)", () => {
-    const shieldConfig = { ...CONFIG, placements: [{ slot: { row: GridRow.Back, col: 0 as const }, creatureId: syntheticSpecies("opalion"), level: 1 as const }] };
+    const shieldConfig = { ...CONFIG, placements: [{ slot: { row: GridRow.Top, col: 0 as const }, creatureId: syntheticSpecies("opalion"), level: 1 as const }] };
     render(<TeamSummary config={shieldConfig} result={simulate(shieldConfig, corpus)} />);
     expect(screen.queryByText(/Shield \(granted\)/)).toBeNull();
     expect(screen.getByText("Shield")).toBeTruthy();
   });
 
   it("reports second-order status metrics, not just one averaged figure (FR-055, item 20)", () => {
-    const poison = { ...CONFIG, placements: [{ slot: { row: GridRow.Back, col: 0 as const }, creatureId: syntheticSpecies("drumire"), level: 1 as const }] };
+    const poison = { ...CONFIG, placements: [{ slot: { row: GridRow.Top, col: 0 as const }, creatureId: syntheticSpecies("drumire"), level: 1 as const }] };
     render(<TeamSummary config={poison} result={simulate(poison, corpus)} />);
     // getAllByText: earlier cases in this file also render a TeamSummary, so the header text can
     // legitimately appear more than once in the shared DOM.
@@ -549,10 +549,10 @@ describe("round 9: total DPS and grid sizing", () => {
   /** The user's own team: four Poison creatures, zero direct damage. */
   const poisonTeam: TeamConfiguration = {
     placements: [
-      { slot: { row: GridRow.Front, col: 1 }, creatureId: Species.Miasmaw, level: 1 },
-      { slot: { row: GridRow.Front, col: 2 }, creatureId: Species.Cobrex, level: 1 },
-      { slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Drumire, level: 1 },
-      { slot: { row: GridRow.Back, col: 1 }, creatureId: Species.Fumungus, level: 1 },
+      { slot: { row: GridRow.Bottom, col: 1 }, creatureId: Species.Miasmaw, level: 1 },
+      { slot: { row: GridRow.Bottom, col: 2 }, creatureId: Species.Cobrex, level: 1 },
+      { slot: { row: GridRow.Top, col: 0 }, creatureId: Species.Drumire, level: 1 },
+      { slot: { row: GridRow.Top, col: 1 }, creatureId: Species.Fumungus, level: 1 },
     ],
     trainerId: null,
     trinketIds: [],
@@ -635,8 +635,8 @@ describe("round 9: total DPS and grid sizing", () => {
     const team: TeamConfiguration = {
       ...poisonTeam,
       placements: [
-        { slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Reapra, level: 1 },
-        { slot: { row: GridRow.Back, col: 1 }, creatureId: Species.Craghorn, level: 1 },
+        { slot: { row: GridRow.Top, col: 0 }, creatureId: Species.Reapra, level: 1 },
+        { slot: { row: GridRow.Top, col: 1 }, creatureId: Species.Craghorn, level: 1 },
       ],
     };
     render(<TotalDps config={team} result={simulate(team, corpus)} day={1} onDayChange={() => {}} />);
@@ -649,11 +649,11 @@ describe("round 9: total DPS and grid sizing", () => {
     const team: TeamConfiguration = {
       ...poisonTeam,
       placements: [
-        { slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Miasmaw, level: 1 },
+        { slot: { row: GridRow.Top, col: 0 }, creatureId: Species.Miasmaw, level: 1 },
         // "Knockout the enemy opposite of this" — there is no enemy board to pick an opposite
         // from, so this is a genuine gap rather than a timing or input problem.
-        { slot: { row: GridRow.Back, col: 1 }, creatureId: Species.Reapra, level: 1 },
-        { slot: { row: GridRow.Back, col: 2 }, creatureId: Species.Pebbler, level: 1 },
+        { slot: { row: GridRow.Top, col: 1 }, creatureId: Species.Reapra, level: 1 },
+        { slot: { row: GridRow.Top, col: 2 }, creatureId: Species.Pebbler, level: 1 },
       ],
     };
     renderAdvisor(team);
@@ -668,9 +668,9 @@ describe("round 9: total DPS and grid sizing", () => {
     const team: TeamConfiguration = {
       ...poisonTeam,
       placements: [
-        { slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Ninflora, level: 1 },
-        { slot: { row: GridRow.Back, col: 1 }, creatureId: Species.Brawlmantis, level: 1 },
-        { slot: { row: GridRow.Back, col: 2 }, creatureId: Species.Craghorn, level: 1 },
+        { slot: { row: GridRow.Top, col: 0 }, creatureId: Species.Ninflora, level: 1 },
+        { slot: { row: GridRow.Top, col: 1 }, creatureId: Species.Brawlmantis, level: 1 },
+        { slot: { row: GridRow.Top, col: 2 }, creatureId: Species.Craghorn, level: 1 },
       ],
     };
     renderAdvisor(team);
@@ -691,8 +691,8 @@ describe("round 9: total DPS and grid sizing", () => {
     const team: TeamConfiguration = {
       ...poisonTeam,
       placements: [
-        { slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Reapra, level: 1 },
-        { slot: { row: GridRow.Back, col: 1 }, creatureId: Species.Craghorn, level: 1 },
+        { slot: { row: GridRow.Top, col: 0 }, creatureId: Species.Reapra, level: 1 },
+        { slot: { row: GridRow.Top, col: 1 }, creatureId: Species.Craghorn, level: 1 },
       ],
     };
     const { container } = renderAdvisor(team);
@@ -711,9 +711,9 @@ describe("round 9: total DPS and grid sizing", () => {
     const team: TeamConfiguration = {
       ...poisonTeam,
       placements: [
-        { slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Shikitsune, level: 1 },
-        { slot: { row: GridRow.Back, col: 1 }, creatureId: Species.Rattleghast, level: 1 },
-        { slot: { row: GridRow.Back, col: 2 }, creatureId: Species.Brawlmantis, level: 1 },
+        { slot: { row: GridRow.Top, col: 0 }, creatureId: Species.Shikitsune, level: 1 },
+        { slot: { row: GridRow.Top, col: 1 }, creatureId: Species.Rattleghast, level: 1 },
+        { slot: { row: GridRow.Top, col: 2 }, creatureId: Species.Brawlmantis, level: 1 },
       ],
     };
     renderAdvisor(team);
@@ -742,7 +742,7 @@ describe("round 9: total DPS and grid sizing", () => {
     render(<TeamSummary config={poisonTeam} result={result} />);
 
     const row = screen.getByRole("row", { name: /^Miasmaw/ });
-    const key = placementKey(Species.Miasmaw, { row: GridRow.Front, col: 1 });
+    const key = placementKey(Species.Miasmaw, { row: GridRow.Bottom, col: 1 });
     const expected =
       (result.perCreatureDps[key] ?? 0) + (result.perCreatureFacilitatedDps[key] ?? 0);
     // The row's last cell, which is the combined figure.
@@ -763,7 +763,7 @@ describe("effective band renders healing (2026-10-06)", () => {
   // `perCreatureEffectiveStats` carried no heal field at all, and the band's `buildStatLines` call
   // omitted it. 9 species were fully blank this way and 20 were missing a heal line.
   const healerTeam: TeamConfiguration = {
-    placements: [{ slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Dribblet, level: 1 }],
+    placements: [{ slot: { row: GridRow.Top, col: 0 }, creatureId: Species.Dribblet, level: 1 }],
     trainerId: null,
     trinketIds: [],
     itemIds: [],
@@ -773,11 +773,11 @@ describe("effective band renders healing (2026-10-06)", () => {
 
   it("carries heal through to the effective stats", () => {
     const result = simulate(healerTeam, corpus);
-    expect(result.perCreatureEffectiveStats[placementKey(Species.Dribblet, { row: GridRow.Back, col: 0 })]!.output.heal).toBe(15);
+    expect(result.perCreatureEffectiveStats[placementKey(Species.Dribblet, { row: GridRow.Top, col: 0 })]!.output.heal).toBe(15);
   });
 
   it("renders a Heal line rather than an empty band", () => {
-    const effective = simulate(healerTeam, corpus).perCreatureEffectiveStats[placementKey(Species.Dribblet, { row: GridRow.Back, col: 0 })]!;
+    const effective = simulate(healerTeam, corpus).perCreatureEffectiveStats[placementKey(Species.Dribblet, { row: GridRow.Top, col: 0 })]!;
     // The point of `PerCastOutput`: the band passes the engine's shape straight through, with no
     // field list to forget a stat in.
     const lines = buildStatLines(effective.output);
@@ -804,7 +804,7 @@ describe("effective band renders healing (2026-10-06)", () => {
 
 describe("modifier amount input (2026-10-07)", () => {
   const CFG: TeamConfiguration = {
-    placements: [{ slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Bumblebolt, level: 1 }],
+    placements: [{ slot: { row: GridRow.Top, col: 0 }, creatureId: Species.Bumblebolt, level: 1 }],
     trainerId: null,
     trinketIds: [],
     itemIds: [],
@@ -915,7 +915,7 @@ describe("region never blocks a selection (2026-10-07)", () => {
         simulationWindowSeconds: 30, teamModifiers: [], selectedRegion: RegionId.Pantra,
       }}>
         <CreatureSearchModal
-          target={gridRef({ row: GridRow.Back, col: 0 })}
+          target={gridRef({ row: GridRow.Top, col: 0 })}
           onClose={() => {}}
           onSelect={() => {}}
           config={{ selectedRegion: RegionId.Pantra }}

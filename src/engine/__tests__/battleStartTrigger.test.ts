@@ -8,7 +8,7 @@ import type { CreatureLevel, GridCol, TeamConfiguration } from "../../data/types
 function board(creatureIds: Species[], level: CreatureLevel = 1, windowSeconds = 30): TeamConfiguration {
   return {
     placements: creatureIds.map((creatureId, i) => ({
-      slot: { row: GridRow.Back, col: i as GridCol },
+      slot: { row: GridRow.Top, col: i as GridCol },
       creatureId,
       level,
     })),

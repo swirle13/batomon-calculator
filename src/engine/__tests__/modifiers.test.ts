@@ -110,7 +110,7 @@ describe("applyModifiers — null still means nothing is there", () => {
 describe("simulate — modifiers reach a creature that had nothing to scale", () => {
   function pebblerTeam(modifiers: TeamConfiguration["placements"][number]["modifiers"]): TeamConfiguration {
     return {
-      placements: [{ slot: { row: GridRow.Front, col: 0 }, creatureId: Species.Pebbler, level: 1, modifiers }],
+      placements: [{ slot: { row: GridRow.Bottom, col: 0 }, creatureId: Species.Pebbler, level: 1, modifiers }],
       trainerId: null,
       trinketIds: [],
       itemIds: [],
@@ -139,7 +139,7 @@ describe("simulate — modifiers reach a creature that had nothing to scale", ()
     const config: TeamConfiguration = {
       placements: [
         {
-          slot: { row: GridRow.Front, col: 0 },
+          slot: { row: GridRow.Bottom, col: 0 },
           creatureId: passive.id,
           level: passive.level,
           modifiers: [{ id: syntheticSpecies("m1"), stat: ModifierStat.DamageFlatAdd, amount: 25, label: "trinket" }],

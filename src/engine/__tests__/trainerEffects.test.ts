@@ -11,8 +11,8 @@ import { placementKey } from "../grid";
  * Chef (2026-10-08, user-reported: "Chef trainer's ability doesn't actually apply to any mons").
  * The ability was card text with no code behind it; these pin both halves of it.
  */
-const PEBBLER_SLOT = { row: GridRow.Front, col: 0 } as const; // Rock — single-typed
-const BUMBLEBOLT_SLOT = { row: GridRow.Front, col: 1 } as const; // Bug/Electric — dual, not Fire
+const PEBBLER_SLOT = { row: GridRow.Bottom, col: 0 } as const; // Rock — single-typed
+const BUMBLEBOLT_SLOT = { row: GridRow.Bottom, col: 1 } as const; // Bug/Electric — dual, not Fire
 
 function team(trainerId: TrainerId | null): TeamConfiguration {
   return {

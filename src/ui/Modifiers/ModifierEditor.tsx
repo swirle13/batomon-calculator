@@ -153,7 +153,7 @@ function chipText(stat: ModifierStat, amount: number, label?: string): string {
  * overlay is where a modifier is read and removed now, which is also where it is created — one
  * place for the whole job, and one that can grow without displacing anything.
  */
-const ROWS: GridRow[] = [GridRow.Back, GridRow.Front];
+const ROWS: GridRow[] = [GridRow.Top, GridRow.Bottom];
 const COLS: GridCol[] = [0, 1, 2];
 
 export function ModifierEditor() {

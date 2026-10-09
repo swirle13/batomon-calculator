@@ -18,7 +18,7 @@ import { Species } from "../../data/ids";
  * here so the answer cannot be re-litigated by a future refactor.
  */
 const solo = (creatureId: Species, windowSeconds: number): TeamConfiguration => ({
-  placements: [{ slot: { row: GridRow.Back, col: 0 }, creatureId, level: 1 }],
+  placements: [{ slot: { row: GridRow.Top, col: 0 }, creatureId, level: 1 }],
   trainerId: null,
   trinketIds: [],
   itemIds: [],

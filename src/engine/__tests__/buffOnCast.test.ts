@@ -33,7 +33,7 @@ const flat: CreatureSpecies = { ...base, id: syntheticSpecies(syntheticSpecies("
 const testCorpus: Corpus = { creatures: [grower, flat], trainers: [], trinkets: [], items: [] };
 
 const team = (creatureId: Species, windowSeconds: number): TeamConfiguration => ({
-  placements: [{ slot: { row: GridRow.Back, col: 0 }, creatureId, level: 1 }],
+  placements: [{ slot: { row: GridRow.Top, col: 0 }, creatureId, level: 1 }],
   trainerId: null,
   trinketIds: [],
   itemIds: [],
