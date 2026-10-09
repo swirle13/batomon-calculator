@@ -325,10 +325,19 @@
 }
 
 /* ---------- Disclosure ---------- */
+/*
+ * The outer margin matters as much as the padding, 2026-10-09 user-reported: collapsed, this sat
+ * flush against the bench cards above it, so the panel read as a strip attached to the grid rather
+ * than as its own section. Nothing between `builderRow` and this set any vertical space.
+ *
+ * Symmetric, and in normal flow, so it collapses against the neighbouring row's own margin instead
+ * of stacking with it.
+ */
 .disclosure {
   border: 1px solid var(--line-subtle);
   border-radius: var(--radius-md);
   padding: var(--space-sm) var(--space-md);
+  margin: var(--space-lg) 0;
   text-align: left;
 }
 
