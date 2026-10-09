@@ -520,8 +520,13 @@ describe("round 9: total DPS and grid sizing", () => {
     // 2026-10-06 (global tick grid): ticks now run on a clock anchored to battle start rather than
     // to first application, and a tick sharing a cast's instant reads the PRE-cast stack. Both are
     // from frame-by-frame play (research.md B2a); for this board they net back to 1774.40.
-    // Rates are shown whole at three digits and up, so 1774.40 reads as "1774".
-    expect(screen.getByText("1774")).toBeTruthy();
+    //
+    // 2026-10-08: 1774.40 -> 1795.35. Direct DPS is now measured up to a creature's last hit
+    // instead of to the window edge, so Fumungus's 11,174 damage is divided by 19.09s (its last
+    // cast) rather than 20s. Only the direct column moves; the status damage that makes up most of
+    // this board is still window-averaged, because Poison keeps ticking after the last cast.
+    // Rates are shown whole at three digits and up, so 1795.35 reads as "1795".
+    expect(screen.getByText("1795")).toBeTruthy();
   });
 
   /**

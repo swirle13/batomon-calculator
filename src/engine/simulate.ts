@@ -221,6 +221,13 @@ interface StatusPool {
  * The headline "DPS average" figure: direct damage plus facilitated (status-tick and Shock-proc)
  * damage, which together partition all damage with no overlap and no remainder.
  *
+ * A sum of RATES, not total damage divided by the window — the two differ slightly now that each
+ * creature's direct rate is measured over the span up to its last hit rather than to the window
+ * edge (2026-10-08; see Phase C in `simulate`). The difference is each creature's unfinished
+ * cooldown at the bell, and excluding it is the point: otherwise a cooldown buff too small to buy
+ * another cast inside the window moves nothing. `cumulativeSeries` is still literal damage, so
+ * time-to-kill is unaffected.
+ *
  * Shared so the headline readout and the placement advisor's before/after figures cannot disagree
  * — the advisor quoting a differently-derived DPS than the number above it would be worse than
  * quoting none.
@@ -499,6 +506,8 @@ export function simulate(
   }
   snapshotStacks(0);
   const perCreatureDamage = new Map<string, number>();
+  /** When each creature last landed a direct hit — the denominator of its DPS. See Phase C. */
+  const lastDirectHitAt = new Map<string, number>();
   const perStatusDamage: Record<StatusEffectType, number> = { Burn: 0, Poison: 0, Shock: 0, Shield: 0 };
 
   function runTicksUpTo(limit: number) {
@@ -800,6 +809,7 @@ export function simulate(
         }
         timeline.push({ tSeconds, kind: TimelineEventKind.Attack, sourceSlot, damage: effectiveDamage, damageType: DamageChannel.Direct });
         perCreatureDamage.set(sourceKey, (perCreatureDamage.get(sourceKey) ?? 0) + effectiveDamage);
+        lastDirectHitAt.set(sourceKey, tSeconds);
       } else {
         timeline.push({ tSeconds, kind: TimelineEventKind.Attack, sourceSlot });
       }
@@ -1026,9 +1036,29 @@ export function simulate(
   timeline.sort((a, b) => a.tSeconds - b.tSeconds || stableSlotIndex(a.sourceSlot) - stableSlotIndex(b.sourceSlot));
 
   // --- Phase C: derived summary + cumulative series ---
+  /*
+   * Direct DPS is damage over the span that PRODUCED it — up to the creature's last hit — not over
+   * the whole window (2026-10-08, user-reported).
+   *
+   * Dividing by the window counts the unfinished cooldown at the end of the fight as time the
+   * creature was failing to deal damage, which quantises the figure to whole casts and hides any
+   * improvement smaller than one. The report: a Panbud on 50 damage per cast reads exactly 10.0
+   * both with and without Tempo Charm's +4% Cooldown Speed, because 6 casts fit in 30 seconds at
+   * 5.0s and also at 4.8s — the charm is in the schedule (the casts visibly move to 4.81, 9.62,
+   * 14.42, …) and changes no number anywhere. At 4% on a 5s cooldown it takes a ~125s window
+   * before the speed-up buys a whole extra cast.
+   *
+   * Ending the span at the last hit removes the partial cycle from both sides of the division, so
+   * evenly-spaced casts give exactly `damage per cast / cooldown` — Panbud now reads 10.4 — and
+   * nothing has to re-derive a cooldown that charges and ally buffs may have changed mid-battle.
+   *
+   * FACILITATED DPS keeps the window, deliberately. Its span really is the whole window: Burn and
+   * Poison go on ticking long after the creature that applied them last cast, so the damage is
+   * still being produced in exactly the stretch this would cut off.
+   */
   const perCreatureDps: Record<string, number> = {};
   for (const [key, totalDamage] of perCreatureDamage.entries()) {
-    perCreatureDps[key] = totalDamage / windowSeconds;
+    perCreatureDps[key] = totalDamage / (lastDirectHitAt.get(key) ?? windowSeconds);
   }
 
   const perCreatureFacilitatedDps: Record<string, number> = {};

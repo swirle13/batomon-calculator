@@ -3,6 +3,7 @@ import { simulate } from "../simulate";
 import { corpus } from "../../data/corpus";
 import type { Corpus, CreatureSpecies, GridSlot, TeamConfiguration, TeamPlacement, TrinketRecord } from "../../data/types";
 import { InvalidTeamConfigurationError } from "../errors";
+import { placementKey } from "../grid";
 
 import { syntheticSpecies , syntheticTrinketId } from "../../data/ids";
 import { CreatureType, DamageChannel, GridRow, ModifierStat, Rarity, StatusEffectType, TimelineEventKind } from "../../data/enums";
@@ -266,7 +267,40 @@ describe("simulate", () => {
     const result = simulate(config, corpus);
     // Venopuff casts every 3.5s, so a 10s window holds two casts — 3.5 and 7.0, with the third at
     // 10.5 falling outside — at 99 damage each.
-    expect(Object.values(result.perCreatureDps)[0]).toBeCloseTo((99 * 2) / 10, 5);
+    //
+    // Divided by 7.0, the time of the last hit, NOT by the 10s window: the 3 seconds spent part
+    // way through a cast that never lands are not seconds this creature was producing nothing, and
+    // counting them quantises DPS to whole casts. See Phase C in `simulate`.
+    expect(Object.values(result.perCreatureDps)[0]).toBeCloseTo((99 * 2) / 7, 5);
+    // Which is exactly its per-cast damage over its cooldown.
+    expect(Object.values(result.perCreatureDps)[0]).toBeCloseTo(99 / 3.5, 5);
+  });
+
+  it("moves a creature's DPS for a cooldown buff too small to buy another cast", () => {
+    /*
+     * 2026-10-08, user-reported. A Panbud holding Tempo Charm (+4% Cooldown Speed) read exactly
+     * 10.0 with and without the charm: 50 damage per cast and 6 casts fit in 30 seconds at both
+     * 5.0s and 4.8s, so dividing by the window quantised the figure to whole casts and the trinket
+     * changed no number on the page. It was always in the schedule — the casts move — which is
+     * what made it look like the charm was being dropped somewhere.
+     */
+    const base: TeamConfiguration = {
+      placements: [{ slot: { row: GridRow.Back, col: 2 }, creatureId: Species.Panbud, level: 2 }],
+      trainerId: null,
+      trinketIds: [],
+      itemIds: [],
+      simulationWindowSeconds: 30,
+      teamModifiers: [],
+    };
+    const charmed: TeamConfiguration = {
+      ...base,
+      teamModifiers: [{ id: syntheticSpecies("m1"), label: "Tempo Charm", stat: ModifierStat.CooldownSpeedAdd, amount: 0.04 }],
+    };
+    const key = placementKey(Species.Panbud, { row: GridRow.Back, col: 2 });
+
+    // Both run 6 casts of 50 damage inside the window — the whole reason the window average tied.
+    expect(simulate(base, corpus).perCreatureDps[key]).toBeCloseTo(50 / 5, 5);
+    expect(simulate(charmed, corpus).perCreatureDps[key]).toBeCloseTo(50 / (5 / 1.04), 4);
   });
 
   it("status-amount modifiers increase the applied layer count for a creature that already applies that status", () => {
