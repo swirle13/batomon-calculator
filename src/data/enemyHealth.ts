@@ -57,6 +57,15 @@ export const ENEMY_HP_BY_DAY: Readonly<Record<number, number>> = {
 export const MAX_RECORDED_DAY = 19;
 
 /**
+ * The day a build is assumed to be for when it does not say (2026-10-08).
+ *
+ * Day 1 because it is the only day with an observed battle to check a figure against, and because
+ * a build that predates `TeamConfiguration.runDay` recorded no day at all — reading that as "day
+ * 1" is the one choice that cannot silently re-target an old saved board at a harder fight.
+ */
+export const DEFAULT_RUN_DAY = 1;
+
+/**
  * Exponent of the power law fitted to the late curve, anchored at the last observation:
  *
  *     HP(d) = HP(19) · (d / 19) ^ 3.833

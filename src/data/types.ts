@@ -836,6 +836,31 @@ export interface TeamConfiguration {
   itemIds: ItemId[];
   /** Configurable per FR-007/FR-008 */
   simulationWindowSeconds: number;
+  /**
+   * Which day of the run this board is being built for (2026-10-08, user-reported).
+   *
+   * ## A deliberate reversal
+   *
+   * This lived in `CalculatorView`'s local state, under an explicit comment saying it must NOT be
+   * here: "it describes who you are fighting, not what your team is, so it must not travel in a
+   * shared build or be saved with one." That reasoning is sound about what a day MEANS and wrong
+   * about what the user needs, which is the report: "I keep having to set that value back to day 7
+   * every time I save." A field you must re-enter after every save is not neutral about the team,
+   * it is a recurring cost.
+   *
+   * It also turned out to be the SAME number the library's save form was tracking separately, so
+   * keeping it out of the config meant the app held two unconnected ideas of what day it was.
+   *
+   * ## It is build CONTEXT, not build CONTENT
+   *
+   * Which is why `share.ts` carries it in the code but deliberately leaves it out of `canonicalize`
+   * and therefore out of `buildId`. Two boards identical except for the day you fought them are the
+   * same board, and the fingerprint has to go on saying so — see that module.
+   *
+   * Optional, defaulting to {@link DEFAULT_RUN_DAY}, because every build that predates this has no
+   * day recorded and day 1 is the right reading of that.
+   */
+  runDay?: number;
   /** Applies to every placement's creature when resolving its effective stats */
   teamModifiers?: StatModifier[];
 }

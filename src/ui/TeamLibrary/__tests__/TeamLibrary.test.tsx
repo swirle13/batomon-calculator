@@ -36,15 +36,22 @@ const TEAM_B = board(Species.Brawlmantis);
 
 /** The live board, plus the two controls a test needs to put something on it. */
 function Harness() {
-  const { config, replaceConfig } = useTeamConfig();
+  const { config, replaceConfig, setRunDay } = useTeamConfig();
   return (
     <>
       <div data-testid="board">{config.placements.map((p) => p.creatureId).join(",")}</div>
+      {/* The run day as the CALCULATOR sees it — `TotalDps` and the cumulative chart read exactly
+          this. Rendered here so a test can assert that the library's Day field and the TTK day are
+          one value rather than two that happen to agree. */}
+      <div data-testid="run-day">{config.runDay}</div>
       <button type="button" onClick={() => replaceConfig(TEAM_A)}>
         set A
       </button>
       <button type="button" onClick={() => replaceConfig(TEAM_B)}>
         set B
+      </button>
+      <button type="button" onClick={() => setRunDay(12)}>
+        set day 12
       </button>
     </>
   );
@@ -266,6 +273,70 @@ describe("runs", () => {
     expect(within(group!).getByText("Opener")).toBeInTheDocument();
     expect(within(group!).getByText("Day 1")).toBeInTheDocument();
     expect(within(group!).getByText("Day 2")).toBeInTheDocument();
+  });
+
+  /**
+   * 2026-10-08, user-reported, two asks that turned out to be one: "can we also make the TTK on
+   * day X tie into the saved UUID? I keep having to set that value back to day 7 every time I
+   * save" and "can the library's Day counter also be tied to the same value".
+   *
+   * They are the same field now. These drive it from both ends, because the bug that would matter
+   * is the two drifting apart again.
+   */
+  describe("the day is one value, shared with the calculator", () => {
+    it("moves the library's Day field when the calculator's day changes", () => {
+      setup();
+      fireEvent.click(screen.getByRole("button", { name: "New run" }));
+      fireEvent.click(screen.getByRole("button", { name: "Create" }));
+
+      fireEvent.click(screen.getByRole("button", { name: "set day 12" }));
+      expect(screen.getByLabelText("Day")).toHaveValue(12);
+    });
+
+    it("moves the calculator's day when the library's Day field changes", () => {
+      setup();
+      fireEvent.click(screen.getByRole("button", { name: "New run" }));
+      fireEvent.click(screen.getByRole("button", { name: "Create" }));
+
+      const field = screen.getByLabelText("Day");
+      fireEvent.change(field, { target: { value: "9" } });
+      fireEvent.blur(field);
+      expect(screen.getByTestId("run-day")).toHaveTextContent("9");
+    });
+
+    it("advances the calculator's day on save, so the TTK aims at the next fight", () => {
+      setup();
+      fireEvent.click(screen.getByRole("button", { name: "New run" }));
+      fireEvent.click(screen.getByRole("button", { name: "Create" }));
+      fireEvent.click(screen.getByRole("button", { name: "set A" }));
+      fireEvent.click(screen.getByRole("button", { name: "Save this board" }));
+
+      expect(screen.getByTestId("run-day")).toHaveTextContent("2");
+    });
+
+    it("restores the day a board was saved on when that board is loaded back", () => {
+      setup();
+      fireEvent.click(screen.getByRole("button", { name: "New run" }));
+      fireEvent.click(screen.getByRole("button", { name: "Create" }));
+      fireEvent.click(screen.getByRole("button", { name: "set A" }));
+      fireEvent.click(screen.getByRole("button", { name: "set day 12" }));
+      fireEvent.click(screen.getByRole("button", { name: "Save this board" }));
+
+      // Saving moved us on to day 13; loading the board back has to return to the day it was for.
+      expect(screen.getByTestId("run-day")).toHaveTextContent("13");
+      fireEvent.click(screen.getByRole("button", { name: "Load" }));
+      expect(screen.getByTestId("run-day")).toHaveTextContent("12");
+    });
+
+    it("does not reset the day when the board is replaced without one", () => {
+      // `replaceConfig` is how a whole board arrives. A caller with no opinion about the day must
+      // not silently re-aim the TTK readout at day 1 — the run has not ended.
+      setup();
+      fireEvent.click(screen.getByRole("button", { name: "set day 12" }));
+      fireEvent.click(screen.getByRole("button", { name: "set B" }));
+
+      expect(screen.getByTestId("run-day")).toHaveTextContent("12");
+    });
   });
 
   it("keeps the teams when the run holding them is deleted", () => {

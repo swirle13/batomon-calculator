@@ -1,5 +1,6 @@
 import type { BenchedCreature, StatModifier, TeamConfiguration, TeamPlacement } from "./types";
 import { ModifierScope } from "./enums";
+import { DEFAULT_RUN_DAY } from "./enemyHealth";
 import { scopeOf } from "./modifierScope";
 
 /**
@@ -130,6 +131,37 @@ export function canonicalize(config: TeamConfiguration) {
 }
 
 /**
+ * The canonical form PLUS the build's context — what actually gets encoded (2026-10-08).
+ *
+ * ## Why the code and the fingerprint stopped being the same object
+ *
+ * They were the same object, and `runDay` is the first field where that would have been wrong.
+ * The header above already draws the distinction this needs: the code IS the build, the id is a
+ * fingerprint OF the build. A run day belongs in the first and not the second.
+ *
+ * - In the code, because the user has to stop re-entering it: "I keep having to set that value
+ *   back to day 7 every time I save."
+ * - Out of the fingerprint, because two boards identical except for the day you fought them are
+ *   the same board. Hashing the day would mean advancing to day 8 made the library stop
+ *   recognising the team you saved on day 7 — the duplicate warning would clear and the Save
+ *   button would offer to save it again.
+ *
+ * ## Why no `FORMAT_VERSION` bump
+ *
+ * Same argument as `canonicalBench`, and it needs both halves to hold. Emitted only when the day
+ * is not the default, so every code written before this is byte-identical to what it was. And a
+ * code carrying a day still decodes in a reader that predates it: that reader ignores the field
+ * and shows day 1, which costs the day and no part of the team.
+ */
+function toTransport(config: TeamConfiguration) {
+  const day = config.runDay ?? DEFAULT_RUN_DAY;
+  return {
+    ...canonicalize(config),
+    ...(day === DEFAULT_RUN_DAY ? {} : { day }),
+  };
+}
+
+/**
  * FNV-1a, 32 bits, run over the canonical JSON and rendered as 8 hex characters.
  *
  * Chosen over a cryptographic hash because this is an identity check between humans, not a
@@ -172,7 +204,7 @@ function fromBase64Url(code: string): string {
  * — which means a user can tell at a glance whether two codes are the same build without decoding.
  */
 export function exportBuild(config: TeamConfiguration): string {
-  return PREFIX + toBase64Url(JSON.stringify(canonicalize(config)));
+  return PREFIX + toBase64Url(JSON.stringify(toTransport(config)));
 }
 
 /** The query parameter a shared link carries, e.g. `?b=bat1:...`. */
@@ -239,7 +271,7 @@ export function importBuild(code: string): TeamConfiguration {
     throw new InvalidBuildCodeError(`Not a build code — expected it to start with "${PREFIX}".`);
   }
 
-  let parsed: ReturnType<typeof canonicalize>;
+  let parsed: ReturnType<typeof toTransport>;
   try {
     parsed = JSON.parse(fromBase64Url(trimmed.slice(PREFIX.length)));
   } catch {
@@ -256,6 +288,9 @@ export function importBuild(code: string): TeamConfiguration {
     selectedRegion: parsed.region ?? undefined,
     trainerId: parsed.trainer ?? null,
     simulationWindowSeconds: parsed.window,
+    // Absent in every code written before the run day existed, and day 1 is the right reading of
+    // that — see `DEFAULT_RUN_DAY`.
+    runDay: parsed.day ?? DEFAULT_RUN_DAY,
     placements: parsed.placements.map((p) => ({
       slot: { row: p.row, col: p.col },
       creatureId: p.creatureId,

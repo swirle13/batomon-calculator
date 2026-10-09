@@ -3,6 +3,7 @@ import { InvalidBuildCodeError, buildId, canonicalize, exportBuild, importBuild,
 import type { TeamConfiguration } from "../types";
 
 import { syntheticSpecies } from "../ids";
+import { DEFAULT_RUN_DAY } from "../enemyHealth";
 import { GridRow, ModifierStat, RegionId } from "../enums";
 import { Species, TrainerId, TrinketId } from "../ids";
 
@@ -157,6 +158,48 @@ describe("sharing by URL", () => {
 
     it("reads a code that predates the bench as having an empty one, not an unknown one", () => {
       expect(importBuild(exportBuild(base)).bench).toEqual([]);
+    });
+  });
+
+  /**
+   * 2026-10-08, user-reported: "I keep having to set that value back to day 7 every time I save."
+   *
+   * The run day is the first field that is build CONTEXT rather than build CONTENT, so it is the
+   * first to travel in the code while staying out of the fingerprint. Both halves are load-bearing
+   * and both are pinned here.
+   */
+  describe("the run day", () => {
+    const day7: TeamConfiguration = { ...base, runDay: 7 };
+
+    it("survives a round trip, which is the whole point", () => {
+      expect(importBuild(exportBuild(day7)).runDay).toBe(7);
+    });
+
+    it("does NOT change the build id — the same board on two days is one board", () => {
+      /*
+       * If the day were hashed, advancing from day 7 to day 8 would make the library stop
+       * recognising the board you saved yesterday: the duplicate warning would clear and Save
+       * would offer to store a second copy of a team you already have.
+       */
+      expect(buildId(day7)).toBe(buildId(base));
+      expect(canonicalize(day7)).not.toHaveProperty("day");
+    });
+
+    it("leaves the code of a build on the default day byte-identical", () => {
+      // The compatibility guarantee that let `FORMAT_VERSION` stay at 1, same as the bench's.
+      expect(exportBuild({ ...base, runDay: DEFAULT_RUN_DAY })).toBe(exportBuild(base));
+      expect(exportBuild({ ...base, runDay: undefined })).toBe(exportBuild(base));
+    });
+
+    it("reads a code that predates the field as day 1, not as unknown", () => {
+      expect(importBuild(exportBuild(base)).runDay).toBe(DEFAULT_RUN_DAY);
+    });
+
+    it("produces a different CODE for a different day, even at the same id", () => {
+      // The id and the code answer different questions, and this is the one case where they
+      // visibly disagree. Worth stating as a property rather than leaving it to be inferred.
+      expect(exportBuild(day7)).not.toBe(exportBuild(base));
+      expect(buildId(day7)).toBe(buildId(base));
     });
   });
 

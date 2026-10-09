@@ -72,6 +72,12 @@ export interface TeamConfigContextValue {
    * behavioural gain.
    */
   setSimulationWindowSeconds: (seconds: number) => void;
+  /**
+   * Which day of the run the board is for (2026-10-08). Drives the TTK readout, the cumulative
+   * chart's enemy-HP threshold and the library's save form — one number, three consumers, where
+   * there used to be two unconnected ones. See `TeamConfiguration.runDay`.
+   */
+  setRunDay: (day: number) => void;
   addTeamModifier: (modifier: Omit<StatModifier, "id">) => void;
   removeTeamModifier: (id: string) => void;
   /** FR-087 (round 11, WI-R11-001): toggle this placement's SHINY variant, independent of level. */

@@ -57,6 +57,7 @@ function ChartPlaceholder({ height }: { height: number }) {
 import { CorpusBrowser } from "./ui/CorpusBrowser/CorpusBrowser";
 import { Button, ClampedNumberField, Field } from "./ui/primitives";
 import { corpus } from "./data/corpus";
+import { DEFAULT_RUN_DAY } from "./data/enemyHealth";
 import { simulate } from "./engine/simulate";
 import type { GridSlot } from "./data/types";
 import layout from "./App.module.css";
@@ -75,7 +76,7 @@ import "./App.css";
 type View = "calculator" | "corpus";
 
 function CalculatorView() {
-  const { config, setSimulationWindowSeconds } = useTeamConfig();
+  const { config, setSimulationWindowSeconds, setRunDay } = useTeamConfig();
   const result = useMemo(() => simulate(config, corpus), [config]);
   /*
    * THE CHARTS RENDER A PASS LATE, ON PURPOSE (2026-10-08, performance).
@@ -107,15 +108,18 @@ function CalculatorView() {
   // a display concern, never read by simulate() or persisted with the team configuration.
   const [highlightedSlot, setHighlightedSlot] = useState<GridSlot | null>(null);
   /*
-   * The run day, lifted here for the same reason as `highlightedSlot` and NOT put in
-   * `TeamConfigContext`: it describes who you are fighting, not what your team is, so it must not
-   * travel in a shared build or be saved with one.
+   * The run day now lives in `TeamConfigContext` (2026-10-08, user-reported), REVERSING the note
+   * that used to stand here: "NOT put in `TeamConfigContext` … it must not travel in a shared
+   * build or be saved with one."
    *
-   * It lives above both consumers because `TotalDps` reads it for the TTK figure and
-   * `CumulativeChart` draws the same day's HP as a threshold. Day 1 by default — the day most
-   * boards are built against, and the only one with an observed battle to check against.
+   * That was right about what a day means and wrong about what it costs. The report — "I keep
+   * having to set that value back to day 7 every time I save" — is a field being re-entered after
+   * every save, and the library's own save form was separately tracking the same number, so the
+   * app held two unconnected ideas of what day it was. `TeamConfiguration.runDay` records the
+   * reversal in full; `share.ts` keeps it out of the build FINGERPRINT, which is the half of the
+   * old reasoning that survives.
    */
-  const [day, setDay] = useState(1);
+  const day = config.runDay ?? DEFAULT_RUN_DAY;
 
   return (
     <div>
@@ -146,7 +150,7 @@ function CalculatorView() {
         </div>
       </div>
       <PlacementAdvisor result={result} />
-      <TotalDps config={config} result={result} day={day} onDayChange={setDay} />
+      <TotalDps config={config} result={result} day={day} onDayChange={setRunDay} />
       <TeamSummary config={config} result={result} />
       {/* FR-037: the simulation window governs the chart's time axis, not the per-second summary
           values, so it sits immediately above the chart and below the tables. */}

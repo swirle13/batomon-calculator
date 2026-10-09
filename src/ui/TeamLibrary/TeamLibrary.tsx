@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type PointerEvent as ReactPointerEvent } from "react";
 import { useTeamConfig } from "../../context/teamConfig";
+import { DEFAULT_RUN_DAY } from "../../data/enemyHealth";
 import { formatRate } from "../../data/format";
 import { importBuild } from "../../data/share";
 import {
@@ -82,7 +83,7 @@ function useIsSheet(): boolean {
 }
 
 export function TeamLibrary() {
-  const { config, replaceConfig } = useTeamConfig();
+  const { config, replaceConfig, setRunDay } = useTeamConfig();
   const [library, setLibrary] = useState<Library>(() => readLibrary());
   const [open, setOpen] = useState(false);
   /**
@@ -254,7 +255,7 @@ export function TeamLibrary() {
 
         {opened && (
           <div className={styles.body}>
-            <SaveForm library={library} commit={commit} config={config} />
+            <SaveForm library={library} commit={commit} config={config} setRunDay={setRunDay} />
 
             <div className={styles.groups}>
               {entries.map((entry) =>
@@ -293,7 +294,16 @@ export function TeamLibrary() {
 
   function handleLoad(team: SavedTeam) {
     try {
-      replaceConfig(importBuild(team.code));
+      const loaded = importBuild(team.code);
+      /*
+       * The SAVED ENTRY's day wins over the code's (2026-10-08).
+       *
+       * They agree for anything saved since the day joined the build, and they cannot for anything
+       * saved before it: those codes carry no day and decode as day 1, while the entry has filed
+       * the board under the day it was actually played. Loading your day 12 board and having the
+       * TTK readout quietly re-aim at day 1 is the failure this orders around.
+       */
+      replaceConfig(team.day === undefined ? loaded : { ...loaded, runDay: team.day });
     } catch {
       // `TeamCard` already marks an unreadable code, so the button is effectively dead by then.
       return;
@@ -311,24 +321,30 @@ function SaveForm({
   library,
   commit,
   config,
+  setRunDay,
 }: {
   library: Library;
   commit: (next: Library) => void;
   config: TeamConfiguration;
+  setRunDay: (day: number) => void;
 }) {
   /**
-   * Each of these is `null` for "whatever the library suggests" rather than being seeded with the
-   * suggestion. Seeded state would freeze at the value it was created with, so the round and day
-   * would stop advancing after the first save and the name would keep yesterday's label — and
-   * there would be no way to tell a user's "1" from a stale default.
+   * `null` for "whatever the library suggests" rather than being seeded with the suggestion.
+   * Seeded state would freeze at the value it was created with, so the name would keep yesterday's
+   * label and there would be no way to tell a user's input from a stale default.
+   *
+   * 2026-10-08: `dayEdit` is GONE from this pattern, because the day is no longer this form's to
+   * own. It is `config.runDay` — the same number the TTK readout and the cumulative chart's enemy
+   * threshold read — so that advancing the day here advances what the calculator measures against,
+   * which is the reported ask. A local `dayEdit` shadowing it would be a second source of truth
+   * for the one value the whole point was to stop having two of.
    */
   const [nameEdit, setNameEdit] = useState<string | null>(null);
-  const [dayEdit, setDayEdit] = useState<number | null>(null);
   const [newRunName, setNewRunName] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
 
   const activeRunId = library.activeRunId;
-  const day = dayEdit ?? nextDay(library, activeRunId);
+  const day = config.runDay ?? DEFAULT_RUN_DAY;
   const suggestedName = activeRunId ? `Day ${day}` : "Untitled team";
   const name = nameEdit ?? suggestedName;
   const duplicate = findDuplicate(library, config);
@@ -341,7 +357,15 @@ function SaveForm({
     });
     commit(next);
     setNameEdit(null);
-    setDayEdit(null);
+    /*
+     * The day ADVANCES on save, which `nextDay` used to do implicitly by reading the run back out
+     * of the library after the write. Done explicitly now that the value is shared: saving day 7's
+     * board means you are on to day 8, and the TTK figure and the chart's enemy-HP line should
+     * both move with you rather than staying pointed at the fight you have finished.
+     *
+     * Only inside a run. A board saved on its own has no day to advance.
+     */
+    if (activeRunId) setRunDay(nextDay(next, activeRunId));
     setSaved(true);
     setTimeout(() => setSaved(false), 1500);
   }
@@ -372,7 +396,17 @@ function SaveForm({
             block
             size="sm"
             value={activeRunId ?? ""}
-            onChange={(e) => commit(setActiveRun(library, e.target.value === "" ? undefined : e.target.value))}
+            onChange={(e) => {
+              const runId = e.target.value === "" ? undefined : e.target.value;
+              commit(setActiveRun(library, runId));
+              /*
+               * Switching runs re-seeds the day, which `nextDay` used to do for free by being
+               * recomputed on every render. With the day held in the config it has to be an
+               * explicit write, or picking up a run you left on day 12 would leave the TTK figure
+               * on whatever day the run you just left was on.
+               */
+              if (runId) setRunDay(nextDay(library, runId));
+            }}
           >
             <option value="">— not part of a run —</option>
             {library.runs.map((run) => (
@@ -423,7 +457,7 @@ function SaveForm({
       {activeRunId && (
         <div className={styles.positionRow}>
           <Field label="Day" inline className={styles.positionField}>
-            <ClampedNumberField size="sm" min={1} width="3.5rem" value={day} onCommit={setDayEdit} />
+            <ClampedNumberField size="sm" min={1} width="3.5rem" value={day} onCommit={setRunDay} />
           </Field>
         </div>
       )}

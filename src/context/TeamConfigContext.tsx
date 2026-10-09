@@ -2,6 +2,7 @@ import { useMemo, useState, type ReactNode } from "react";
 import type { BenchedCreature, StatModifier, TeamConfiguration, TeamPlacement } from "../data/types";
 import type { Species } from "../data/ids";
 import { corpus } from "../data/corpus";
+import { DEFAULT_RUN_DAY } from "../data/enemyHealth";
 import { isSlotScoped, scopeOf } from "../data/modifierScope";
 import { resolveLevelUp } from "../engine/evolution";
 import { slotsEqual } from "../engine/grid";
@@ -40,6 +41,7 @@ function emptyConfig(): TeamConfiguration {
     trinketIds: [],
     itemIds: [],
     simulationWindowSeconds: DEFAULT_WINDOW_SECONDS,
+    runDay: DEFAULT_RUN_DAY,
     teamModifiers: [],
   };
 }
@@ -201,6 +203,7 @@ export function TeamConfigProvider({
         }),
       setSimulationWindowSeconds: (seconds) =>
         setConfig((prev) => ({ ...prev, simulationWindowSeconds: seconds })),
+      setRunDay: (day) => setConfig((prev) => ({ ...prev, runDay: day })),
       addTeamModifier: (modifier) =>
         setConfig((prev) => ({
           ...prev,
@@ -247,7 +250,19 @@ export function TeamConfigProvider({
             };
           }),
         })),
-      replaceConfig: (next) => setConfig(next),
+      /*
+       * The run day SURVIVES a replacement that does not mention one (2026-10-08).
+       *
+       * Every real caller states it — `importBuild` always writes a `runDay`, and the library's
+       * load prefers the saved entry's day over it — so this clause never fires for an import or a
+       * load, and those still win outright. It exists for the other kind of caller: anything that
+       * swaps the BOARD wholesale without having an opinion about which day of the run you are on.
+       * Defaulting those to day 1 would silently re-aim the TTK readout and the chart's enemy-HP
+       * line at the wrong fight, which is a worse failure than the one it would be guarding
+       * against, since "what day is it" is run context and a new board does not end the run.
+       */
+      replaceConfig: (next) =>
+        setConfig((prev) => ({ ...next, runDay: next.runDay ?? prev.runDay ?? DEFAULT_RUN_DAY })),
       setSelectedRegion: (region) => setConfig((prev) => ({ ...prev, selectedRegion: region })),
       setPaintedCreatureIds: (ids) => setConfig((prev) => ({ ...prev, paintedCreatureIds: ids })),
       setSmuggledCreatureIds: (ids) => setConfig((prev) => ({ ...prev, smuggledCreatureIds: ids })),
