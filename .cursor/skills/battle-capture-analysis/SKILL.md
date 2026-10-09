@@ -9,10 +9,15 @@ disable-model-invocation: true
 Turns a screen recording of a fight into two files that answer mechanics questions without
 touching the video again.
 
-**Extract once, query many times.** The video pass is slow (~1 minute per 10 seconds of
-footage) and every follow-up question would otherwise re-run it. So the pipeline front-loads
-everything into `frames.csv` — one row per frame, every stat badge and cooldown bar on the
-board — and all later analysis is a query against that file.
+**Extract once, query many times.** The pipeline front-loads everything into `frames.csv` — one
+row per frame, every stat badge and cooldown bar on the board — and all later analysis is a
+query against that file. A full run on a 30-second recording takes about twenty seconds, most
+of it the one-off glyph harvest; re-deriving events from the dataset takes a second.
+
+The scan stops at the frame the battle ends and, after a three-second probe, stops measuring
+slots that have no mon in them. Both are reported in its output, and both are things the
+recording guarantees: a mon absent at the start never arrives, and everything past the final
+blow is the results screen.
 
 ## Quick start
 
@@ -124,9 +129,11 @@ These limits are not incidental; they decide which conclusions the footage can s
   is more than a frame or two the later mon may simply have become ready later. Check the gap
   column. Proving a tie-break rule needs a recording where two mons become ready on the *same*
   frame.
-- **Analysis stops at battle end.** The frame where a side's health hits zero is detected and
-  everything after is dropped, because the post-battle screen puts unrelated artwork under the
-  layout rectangles. On the reference recording that removed 151 of 397 "events".
+- **Analysis stops at battle end.** The scan stops at the frame a side's health hits zero, and
+  `bcevents` discards anything past it, because the post-battle screen puts unrelated artwork
+  under the layout rectangles. On the reference recording that removed 151 of 397 "events".
+- **An unoccupied slot reads blank, not zero**, once the occupancy probe has ruled it out. Its
+  columns are still in the CSV so the shape never changes between recordings.
 - **Spell effects hide badges.** Expect gaps during heavy VFX. If a value changes while hidden,
   you see the total change, not the individual steps.
 - **Large numbers lose precision.** The game abbreviates past ~10000, so `16K` is parsed as
@@ -141,7 +148,8 @@ Check `layout-check.png` first — a shifted box explains most bad data. Then:
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| A mon appears to cast twice, a fraction of a second apart | A cast animation's flash crossed its own bar | Already rejected by the ramp test; if one survives, check `<slot>_cd` — a real cast is preceded by a ramp, a flash by a near-empty bar |
+| A mon appears to cast twice, a fraction of a second apart | A spell effect crossed its bar — a bright one reads as full, a dark one as empty | Already rejected: a cast needs a ramp before it and a bar that stays spent after it. If one survives, read `<slot>_cd` directly |
+| A slot you know was occupied reads blank | Occupancy probe missed it | Its bar must reach 2px or its badges must be readable within the first 3s; check `layout-check.png` sits on the right mon |
 | All badges blank | Glyph set unlabelled or wrong frame size | `bcscan glyphdump`, then `autolabel` (see reference.md) |
 | Badges blank for one mon | Band misplaced | `bcscan findtext` to re-measure, edit the layout |
 | `cd` stuck at 0 | Bar column off by a pixel or two | `bcscan findbars` to re-measure |

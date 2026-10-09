@@ -28,11 +28,28 @@ import UniformTypeIdentifiers
 struct Bitmap {
     let w: Int
     let h: Int
-    var px: [UInt8]  // RGBA
+    /// Bytes per row. A CVPixelBuffer pads its rows out to an alignment boundary, so this is not
+    /// always `w * 4`.
+    let rowBytes: Int
+    /// Byte offsets of red and blue inside a pixel. A decoder hands back BGRA, a CGContext draw
+    /// hands back RGBA; green and alpha sit in the same place either way, so swapping these two
+    /// offsets is the whole difference and costs no branch in the hot path.
+    let rOff: Int
+    let bOff: Int
+    var px: [UInt8]
+
+    init(w: Int, h: Int, px: [UInt8], rowBytes: Int? = nil, bgra: Bool = false) {
+        self.w = w
+        self.h = h
+        self.px = px
+        self.rowBytes = rowBytes ?? w * 4
+        self.rOff = bgra ? 2 : 0
+        self.bOff = bgra ? 0 : 2
+    }
 
     func rgb(_ x: Int, _ y: Int) -> (Int, Int, Int) {
-        let i = (y * w + x) * 4
-        return (Int(px[i]), Int(px[i + 1]), Int(px[i + 2]))
+        let i = y * rowBytes + x * 4
+        return (Int(px[i + rOff]), Int(px[i + 1]), Int(px[i + bOff]))
     }
     func lum(_ x: Int, _ y: Int) -> Double {
         let (r, g, b) = rgb(x, y)
@@ -59,6 +76,9 @@ final class Video {
     var size: CGSize = .zero
     var fps: Double = 0
     var duration: Double = 0
+    /// Sequential decode cannot apply a track's rotation, so a rotated recording has to fall back
+    /// to the seeking path. Screen recordings are never rotated, but a phone capture could be.
+    var upright: Bool = true
 
     init(_ path: String) {
         asset = AVURLAsset(url: URL(fileURLWithPath: path))
@@ -72,6 +92,7 @@ final class Video {
             if let tracks = try? await asset.loadTracks(withMediaType: .video), let t = tracks.first {
                 if let s = try? await t.load(.naturalSize) { size = s }
                 if let f = try? await t.load(.nominalFrameRate) { fps = Double(f) }
+                if let m = try? await t.load(.preferredTransform) { upright = m.isIdentity }
             }
             sem.signal()
         }
@@ -99,6 +120,77 @@ final class Video {
                                   bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return nil }
         ctx.draw(cg, in: CGRect(x: 0, y: 0, width: w, height: h))
         return Bitmap(w: w, h: h, px: px)
+    }
+
+    /// Every frame in `[t0, t1]`, decoded in presentation order. `body` returns false to stop.
+    ///
+    /// This exists because `cgImage(at:)` issues a zero-tolerance seek per frame, and on a
+    /// long-GOP recording the decoder then walks forward from the preceding keyframe every time.
+    /// Measured on a 115 fps H.264 capture that is 20.8 ms per frame against 0.8 ms for reading
+    /// the file forwards — a 27x difference that dominated the whole pipeline. Both full-range
+    /// passes (`scan`, `learn`) go through here; the single-frame inspection commands still seek,
+    /// which is what a seeking API is actually good at.
+    ///
+    /// The timestamp handed to `body` is the frame's real presentation time rather than a
+    /// nominal `t0 + n/fps`, so it no longer drifts against a fractional frame rate.
+    func forEachFrame(from t0: Double, to t1: Double, _ body: (Double, Bitmap) -> Bool) {
+        guard upright else {
+            // Rotated source: fall back to seeking, which applies the track transform for us.
+            let rate = fps > 0 ? fps : 60
+            var frame = 0
+            while true {
+                let t = t0 + Double(frame) / rate
+                if t > t1 { break }
+                frame += 1
+                guard let bm = bitmap(at: t) else { continue }
+                if !body(t, bm) { break }
+            }
+            return
+        }
+        guard let track = firstVideoTrack(), let reader = try? AVAssetReader(asset: asset) else { return }
+        let out = AVAssetReaderTrackOutput(track: track, outputSettings: [
+            kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA,
+        ])
+        out.alwaysCopiesSampleData = false
+        guard reader.canAdd(out) else { return }
+        reader.add(out)
+        if t0 > 0 {
+            reader.timeRange = CMTimeRange(
+                start: CMTime(seconds: t0, preferredTimescale: 1_000_000),
+                duration: .positiveInfinity)
+        }
+        reader.startReading()
+        while let sb = out.copyNextSampleBuffer() {
+            let t = CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(sb))
+            if t > t1 { break }
+            guard t >= t0, let pb = CMSampleBufferGetImageBuffer(sb), let bm = Bitmap(pb) else { continue }
+            if !body(t, bm) { break }
+        }
+        reader.cancelReading()
+    }
+
+    private func firstVideoTrack() -> AVAssetTrack? {
+        let sem = DispatchSemaphore(value: 0)
+        var out: AVAssetTrack? = nil
+        Task {
+            out = (try? await asset.loadTracks(withMediaType: .video))?.first
+            sem.signal()
+        }
+        sem.wait()
+        return out
+    }
+}
+
+extension Bitmap {
+    init?(_ pb: CVPixelBuffer) {
+        CVPixelBufferLockBaseAddress(pb, .readOnly)
+        defer { CVPixelBufferUnlockBaseAddress(pb, .readOnly) }
+        guard let base = CVPixelBufferGetBaseAddress(pb) else { return nil }
+        let h = CVPixelBufferGetHeight(pb)
+        let rowBytes = CVPixelBufferGetBytesPerRow(pb)
+        self.init(w: CVPixelBufferGetWidth(pb), h: h,
+                  px: [UInt8](UnsafeRawBufferPointer(start: base, count: rowBytes * h)),
+                  rowBytes: rowBytes, bgra: true)
     }
 }
 
@@ -304,6 +396,35 @@ func alignedDistance(_ a: [Bool], _ b: [Bool], maxShift: Int = 3) -> Int {
     return best
 }
 
+// A mask as packed bits. Comparing two glyphs is the innermost loop of the whole pipeline —
+// every character cell is measured against every template at seven offsets — and as `[Bool]`
+// that is 468 byte comparisons per distance. Packed into eight words it is eight XORs and eight
+// popcounts for exactly the same answer.
+let GLYPH_WORDS = (GW * GH + 63) / 64
+
+func packMask(_ m: [Bool]) -> [UInt64] {
+    var out = [UInt64](repeating: 0, count: GLYPH_WORDS)
+    for i in 0..<min(m.count, GW * GH) where m[i] { out[i >> 6] |= 1 << UInt64(i & 63) }
+    return out
+}
+
+/// The seven shifted forms of one cell, packed. Built once per cell rather than once per
+/// (cell, template) pair, which is where the shifting cost used to go.
+func packedShifts(_ cell: [Bool], maxShift: Int = 3) -> [[UInt64]] {
+    (-maxShift...maxShift).map { packMask(shifted(cell, $0)) }
+}
+
+@inline(__always)
+func packedAlignedDistance(_ template: [UInt64], _ variants: [[UInt64]]) -> Int {
+    var best = Int.max
+    for v in variants {
+        var d = 0
+        for i in 0..<GLYPH_WORDS { d += (template[i] ^ v[i]).nonzeroBitCount }
+        if d < best { best = d }
+    }
+    return best
+}
+
 /// Distance below which two observations are the same character. Tuned against this font: real
 /// digit pairs sit 30+ apart, while compression variants of one digit sit under 10.
 let GLYPH_MERGE_DISTANCE = 10
@@ -463,7 +584,11 @@ func sliceCells(_ run: TextRun, advance: Double, inkWidth: Int) -> [[Bool]] {
 
 final class Matcher {
     private var labels: [String] = []
-    private var masks: [[Bool]] = []
+    private var masks: [[UInt64]] = []
+    private var dists: [Int] = []
+    /// Badge values barely change, so the same character cell is recognised thousands of times
+    /// over a recording. Keying on the exact bits makes every repeat a dictionary lookup.
+    private var memo: [[UInt64]: String?] = [:]
     let advance: Double
     let inkWidth: Int
 
@@ -472,8 +597,9 @@ final class Matcher {
         inkWidth = set.inkWidth
         for t in set.templates where !t.label.isEmpty {
             labels.append(t.label)
-            masks.append(maskBools(t.mask))
+            masks.append(packMask(maskBools(t.mask)))
         }
+        dists = [Int](repeating: 0, count: masks.count)
     }
     var isEmpty: Bool { labels.isEmpty }
 
@@ -481,18 +607,30 @@ final class Matcher {
     /// closest candidates carry different labels and are close enough that picking one would be a
     /// coin flip.
     func match(_ cell: [Bool]) -> String? {
-        var best = Int.max, bestIdx = -1, secondDifferent = Int.max
-        for (i, m) in masks.enumerated() {
-            let d = alignedDistance(m, cell)
+        let key = packMask(cell)
+        if let hit = memo[key] { return hit }
+
+        // Distances are kept so the runner-up scan below is a pass over integers. Measuring
+        // every template twice — once for the winner, once for the nearest other label — used to
+        // double the cost of the most expensive loop in the program.
+        let variants = packedShifts(cell)
+        var best = Int.max, bestIdx = -1
+        for i in 0..<masks.count {
+            let d = packedAlignedDistance(masks[i], variants)
+            dists[i] = d
             if d < best { best = d; bestIdx = i }
         }
-        guard bestIdx >= 0, best <= GLYPH_MATCH_DISTANCE else { return nil }
-        let bestLabel = labels[bestIdx]
-        for (i, m) in masks.enumerated() where labels[i] != bestLabel {
-            secondDifferent = min(secondDifferent, alignedDistance(m, cell))
+        var result: String? = nil
+        if bestIdx >= 0, best <= GLYPH_MATCH_DISTANCE {
+            let bestLabel = labels[bestIdx]
+            var secondDifferent = Int.max
+            for i in 0..<masks.count where labels[i] != bestLabel {
+                secondDifferent = min(secondDifferent, dists[i])
+            }
+            if secondDifferent - best >= 4 { result = bestLabel }
         }
-        guard secondDifferent - best >= 4 else { return nil }
-        return bestLabel
+        memo[key] = result
+        return result
     }
 
     /// A badge run -> its text, or nil if any character failed. A partial read is worse than no
@@ -722,18 +860,21 @@ case "learn":
     var allRuns: [TextRun] = []
     var singleWidths: [Int: Int] = [:]
     var heights: [Int: Int] = [:]
-    var t = t0
-    while t <= t1 {
-        if let bm = v.bitmap(at: t) {
-            for band in bands {
-                for run in textRuns(bm, band) {
-                    allRuns.append(run)
-                    heights[run.h, default: 0] += 1
-                    if run.w <= 14 { singleWidths[run.w, default: 0] += 1 }
-                }
+    // Decoding is sequential, so `stride` now selects which decoded frames to *measure* rather
+    // than which to seek to. Reading every frame and skipping most of them is still far cheaper
+    // than seeking to a few hundred.
+    var nextT = t0
+    v.forEachFrame(from: t0, to: t1) { t, bm in
+        guard t >= nextT else { return true }
+        nextT = t + stride
+        for band in bands {
+            for run in textRuns(bm, band) {
+                allRuns.append(run)
+                heights[run.h, default: 0] += 1
+                if run.w <= 14 { singleWidths[run.w, default: 0] += 1 }
             }
         }
-        t += stride
+        return true
     }
     let inkWidth = singleWidths.max(by: { $0.value < $1.value })?.key ?? 11
     let modalHeight = heights.max(by: { $0.value < $1.value })?.key ?? 18
@@ -759,18 +900,20 @@ case "learn":
     // Pass 2: slice every run into fixed-pitch cells and cluster them. Compression means no two
     // observations are bit-identical, so cluster by distance rather than by exact mask.
     var clusterMask: [[Bool]] = []
+    var clusterPacked: [[UInt64]] = []
     var clusterCount: [Int] = []
     var cellCount = 0
     for run in runs {
         for cell in sliceCells(run, advance: advance, inkWidth: inkWidth) {
             cellCount += 1
+            let variants = packedShifts(cell)
             var best = Int.max, bestIdx = -1
-            for (i, m) in clusterMask.enumerated() {
-                let d = alignedDistance(m, cell)
+            for (i, m) in clusterPacked.enumerated() {
+                let d = packedAlignedDistance(m, variants)
                 if d < best { best = d; bestIdx = i }
             }
             if bestIdx >= 0 && best <= GLYPH_MERGE_DISTANCE { clusterCount[bestIdx] += 1 }
-            else { clusterMask.append(cell); clusterCount.append(1) }
+            else { clusterMask.append(cell); clusterPacked.append(packMask(cell)); clusterCount.append(1) }
         }
     }
 
@@ -828,7 +971,6 @@ case "scan":
     if matcher.isEmpty { die("glyphs.json has no labelled templates — run `learn` and label them first") }
     let outPath = args[5]
     let t0 = Double(args[6])!, t1 = Double(args[7])!
-    let fps = layout.fps > 0 ? layout.fps : (v.fps > 0 ? v.fps : 60)
 
     // Canvas is detected once: it is a property of the recording, not of the frame.
     let canvas = detectCanvas(v, t0, t1)
@@ -853,16 +995,41 @@ case "scan":
     }
     for k in layout.hpBars.keys.sorted() { header.append("hp_\(k)_px"); header.append("hp_\(k)_width") }
 
+    // Two things are always true of a battle recording, and both cut the work substantially.
+    //
+    // A mon that is not on the board when the fight starts never arrives later, so once a short
+    // probe has shown which slots are empty, the rest of the pass can leave them alone — usually
+    // more than half the board. Their columns stay in the CSV and read blank, which everything
+    // downstream already treats as "not measured" rather than as a zero.
+    //
+    // And nothing after the battle ends is battle data. The results screen puts unrelated
+    // artwork under every layout rectangle, and `bcevents` throws those rows away regardless.
+    let probeSeconds = 3.0
+    var probing = true
+    var occupied = [Bool](repeating: false, count: mappedSlots.count)
+    var active = [Bool](repeating: true, count: mappedSlots.count)
+    var battleStarted = false
+    var endedAt: Double? = nil
+    let blankSlot = [String](repeating: "", count: BADGE_KINDS.count + 2).joined(separator: ",")
+
     var lines = [header.joined(separator: ",")]
     var frame = 0
-    while true {
-        let t = t0 + Double(frame) / fps
-        if t > t1 { break }
-        defer { frame += 1 }
-        guard let bm = v.bitmap(at: t) else { continue }
-        var row = [String(format: "%.4f", t), String(frame)]
+    v.forEachFrame(from: t0, to: t1) { t, bm in
+        if probing && t > t0 + probeSeconds {
+            probing = false
+            active = occupied
+            let skipped = mappedSlots.indices.filter { !active[$0] }.map { mappedSlots[$0].slot.id }
+            print(skipped.isEmpty
+                ? "    all \(mappedSlots.count) slots occupied"
+                : "    \(mappedSlots.count - skipped.count) slots occupied; not measuring \(skipped.joined(separator: ", "))")
+        }
 
-        for m in mappedSlots {
+        var row = [String(format: "%.4f", t), String(frame)]
+        frame += 1
+
+        for (i, m) in mappedSlots.enumerated() {
+            guard active[i] else { row.append(blankSlot); continue }
+
             // cooldown bar: count filled rows, bottom-up. normalized so bar.h == full cooldown.
             var filled = 0
             let need = max(1, m.bar.w / 2)
@@ -887,8 +1054,13 @@ case "scan":
             }
             for k in BADGE_KINDS { row.append(byKind[k] ?? "") }
             row.append(raw.joined(separator: "|"))
+
+            // Occupancy wants either signal: a mon whose cooldown is long enough that its bar is
+            // still near-empty after the probe will still be showing its stat badges.
+            if probing && (filled >= 2 || !raw.isEmpty) { occupied[i] = true }
         }
 
+        var hpFill: [String: Int] = [:]
         for k in mappedHP.keys.sorted() {
             let r = mappedHP[k]!
             // Rightmost green column = the fill boundary. Counting green pixels would undercount,
@@ -899,13 +1071,30 @@ case "scan":
                 for y in r.y..<min(r.y + r.h, bm.h) where bm.isHealthGreen(x, y) { green = true; break }
                 if green { fill = x - r.x + 1; break }
             }
+            hpFill[k] = fill
             row.append(String(fill))
             row.append(String(r.w))
         }
 
         lines.append(row.joined(separator: ","))
+
+        // Same test `bcevents` applies: the battle has begun once both bars read substantially
+        // full, and is over at the first zero after that. Stopping here saves the tail of the
+        // recording; the zero frame itself is kept so the end is still detectable downstream.
+        if !battleStarted, !mappedHP.isEmpty,
+           mappedHP.allSatisfy({ (hpFill[$0.key] ?? 0) > $0.value.w / 2 }) {
+            battleStarted = true
+        }
+        if battleStarted, mappedHP.contains(where: { (hpFill[$0.key] ?? 0) == 0 }) {
+            endedAt = t
+            return false
+        }
+        return true
     }
     writeText(lines.joined(separator: "\n") + "\n", to: outPath)
+    if let endedAt {
+        print(String(format: "    stopped at the end of the battle, t=%.4f of %.4f available", endedAt, t1))
+    }
     print("wrote \(outPath) — \(lines.count - 1) frames x \(header.count) columns")
 
 // MARK: glyphdump

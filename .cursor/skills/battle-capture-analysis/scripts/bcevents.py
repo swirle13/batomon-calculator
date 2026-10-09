@@ -45,6 +45,13 @@ CAST_LOOKBACK = 6
 # A real cast is preceded by a ramp, so the typical level this far back is already well up the bar.
 CAST_RAMP_LOOKBACK = 24
 CAST_RAMP_FRAC = 0.5
+# Mirror of the ramp test, looking forward: a bar that was spent stays spent and refills
+# gradually, so its typical level over the next fraction of a second is still near empty. This
+# is what rejects a dark spell effect *covering* a bar, which reads as a drop to zero and then a
+# jump back to where it was. Compared as a median, so a bright flash in the same window does not
+# throw it. Expressed in seconds rather than frames because it is bounded by the shortest real
+# cooldown, not by the capture rate; at very high fast-forward it may need lowering.
+CAST_SPENT_SECONDS = 0.6
 # A charge grant shows as the bar jumping further in one frame than it could have filled.
 CHARGE_MIN_PX = 4
 # Frames the new bar level must hold for a jump to count as a charge rather than a VFX flash.
@@ -152,6 +159,12 @@ def detect(rows, cluster_ms, charge_slots):
     times = [float(r["t"]) for r in rows]
     events = []
 
+    # Frame interval from the data rather than from a declared frame rate: recordings are often
+    # variable rate, and the declared one has been wrong before.
+    steps = sorted(b - a for a, b in zip(times, times[1:]) if b > a)
+    frame_dt = steps[len(steps) // 2] if steps else 1 / 60
+    spent_frames = max(1, round(CAST_SPENT_SECONDS / frame_dt))
+
     # ---- cooldown bars: casts and charge grants ----
     bar_stats = {}
     for slot in slots:
@@ -163,14 +176,18 @@ def detect(rows, cluster_ms, charge_slots):
         full, empty = height * FULL_FRAC, height * EMPTY_FRAC
 
         casts = []
+        # One cast per descent, enforced by the invariant rather than by a time window: a mon
+        # cannot cast again until its bar has refilled. An earlier version collapsed repeats
+        # within 50 ms, which depended on the capture's frame rate and let a second "cast"
+        # through whenever the frames either side of `CAST_LOOKBACK` happened to straddle it.
+        armed = True
         for i in range(1, len(cd)):
-            if cd[i] > empty:
+            if cd[i] >= full:
+                armed = True
+            if cd[i] > empty or not armed:
                 continue
             back = cd[max(0, i - CAST_LOOKBACK) : i]
             if back and max(back) >= full:
-                # collapse repeats: one cast per descent
-                if casts and times[i] - casts[-1] < 0.05:
-                    continue
                 # Reject the flash case: the bar read full, but it was near-empty a moment
                 # earlier and near-empty again afterwards, so nothing was ever spent.
                 # The median, not the maximum: a flash can run long enough to reach into this
@@ -178,6 +195,10 @@ def detect(rows, cluster_ms, charge_slots):
                 ramp = sorted(cd[max(0, i - CAST_LOOKBACK - CAST_RAMP_LOOKBACK) : max(0, i - CAST_LOOKBACK)])
                 if ramp and ramp[len(ramp) // 2] < height * CAST_RAMP_FRAC:
                     continue
+                spent = sorted(cd[i : i + spent_frames])
+                if spent and spent[len(spent) // 2] > empty:
+                    continue
+                armed = False
                 casts.append(times[i])
                 events.append(
                     {

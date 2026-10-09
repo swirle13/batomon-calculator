@@ -10,6 +10,32 @@ packages, because this machine has neither and installing them is a worse depend
 lines of Swift. `swiftc` ships with Xcode's command line tools. `analyze.sh` rebuilds the binary
 automatically when the source is newer, and the binary is gitignored.
 
+## Why the full-range passes read sequentially
+
+`scan` and `learn` decode through `Video.forEachFrame`, which drives an `AVAssetReader` forwards
+through the file. Everything else — `probe`, `palette`, `overlay`, `sheet`, canvas detection,
+`autolabel` — still uses `AVAssetImageGenerator` to seek to one frame, which is what a seeking
+API is for.
+
+The split exists because a zero-tolerance seek makes the decoder walk forward from the preceding
+keyframe every single time. Measured on a 115 fps H.264 capture that is **20.8 ms per frame
+against 0.8 ms sequentially**, and it was close to 90% of the pipeline's total runtime.
+
+Two consequences:
+
+- **Timestamps are now the frame's real presentation time.** Previously `scan` stepped a nominal
+  `t0 + n/fps` grid using `layout.fps`, which is the frame rate of whichever recording the layout
+  was calibrated against — on a capture with a different rate that both mislabelled and skipped
+  frames. Variable-rate recordings are now handled correctly too.
+- **A rotated source falls back to seeking**, because a track output cannot apply the track's
+  preferred transform. Screen recordings are never rotated, so this should not fire.
+
+Glyph matching is the other hot loop: every character cell is compared against every template at
+seven horizontal offsets. Masks are packed into `UInt64` words and compared with popcount rather
+than walking 468 `Bool`s, the runner-up search reuses the distances from the winner search
+instead of recomputing them, and results are memoised on the exact cell bits — which pays well,
+because badge values rarely change and the same cell recurs thousands of times.
+
 ## Subcommands
 
 ```
@@ -175,7 +201,7 @@ A badge is only emitted if every one of its characters matched.
 |---|---|
 | `t` | Video timestamp, seconds, 4dp |
 | `frame` | Frame index from `t0` |
-| `<slot>_cd` | Cooldown bar fill, px. Full height = that mon's whole cooldown |
+| `<slot>_cd` | Cooldown bar fill, px. Full height = that mon's whole cooldown. Blank once the slot has been ruled unoccupied |
 | `<slot>_dmg` | Damage badge (crimson fill) |
 | `<slot>_poison` | Poison badge (purple fill) |
 | `<slot>_heal` | Heal badge (blue fill) |
@@ -213,7 +239,8 @@ than dropped.
 | `EMPTY_FRAC` | 0.25 | How empty it must then be to count as a cast |
 | `CAST_LOOKBACK` | 6 | Frames to look back for the "was full" half |
 | `CAST_RAMP_LOOKBACK` | 24 | Frames before that whose median level proves the bar really filled |
-| `CAST_RAMP_FRAC` | 0.5 | How far up the bar that median must be. This is what stops a spell effect crossing a bar from being reported as a second cast moments after the real one |
+| `CAST_RAMP_FRAC` | 0.5 | How far up the bar that median must be. This is what stops a *bright* spell effect crossing a bar from being reported as a second cast moments after the real one |
+| `CAST_SPENT_SECONDS` | 0.6 | How long after a cast the bar's median level must stay below `EMPTY_FRAC`. The mirror of the ramp test, and what rejects a *dark* effect covering a bar. Bounded below by the shortest real cooldown, so lower it at very high fast-forward |
 | `CHARGE_MIN_PX` | 4 | Smallest bar jump treated as a charge |
 | `CHARGE_PERSIST` | 3 | Frames the new level must hold (VFX rejection) |
 | `CHARGE_HOLD` | 25 | Longer window over which the level must not fall back towards where it started. A flash can outlast `CHARGE_PERSIST`; a granted charge is never given back |
