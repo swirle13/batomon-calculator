@@ -1,7 +1,7 @@
 import { resolveCreatureVariant } from "../../data/corpus";
 import { VariantToggles } from "../shared/VariantToggles/VariantToggles";
 import { TriggerButtons } from "./TriggerButtons";
-import { hasChefFireTyping, isChefAffected, isPainted } from "../../data/typing";
+import { hasChefFireTyping, isPainted } from "../../data/typing";
 import { trainerModifiersFor } from "../../engine/trainerEffects";
 import { CreatureType } from "../../data/enums";
 import { useTeamConfig } from "../../context/teamConfig";
@@ -108,7 +108,9 @@ export function PlacedCreatureDetails({ result, highlightedSlot }: PlacedCreatur
       levelLabel={`Lv.${placement.level}${placement.shiny ? " ✦" : ""}`}
       fixedHeight="panel"
       painted={isPainted(creature.id, config)}
-      chefFire={isChefAffected(creature, config)}
+      // Both key off the GRANT, not off "Chef affects this monster": the marking and the extra
+      // type chip say the same thing, and a monster that was already Fire has neither to say.
+      chefFire={hasChefFireTyping(creature, config)}
       grantedTypes={hasChefFireTyping(creature, config) ? [CreatureType.Fire] : undefined}
       modifiers={displayModifiers}
       meta={

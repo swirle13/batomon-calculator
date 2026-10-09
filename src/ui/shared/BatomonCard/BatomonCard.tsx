@@ -93,7 +93,7 @@ interface BatomonCardProps {
   meta?: ReactNode;
   /** True when Painter has painted this species this run (T236/FR-092). */
   painted?: boolean;
-  /** True when Chef's ability reaches this creature — a prop for the same reason `painted` is. */
+  /** True when Chef GRANTED this creature Fire — a prop for the same reason `painted` is. */
   chefFire?: boolean;
   /**
    * Types the RUN gave this creature that its record does not carry — Chef's Fire today

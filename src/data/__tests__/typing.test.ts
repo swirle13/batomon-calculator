@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { allCreatureRecords, getCreatureByIdAndLevel } from "../corpus";
 import { CREATURE_REGIONS, REGION_UNSOURCED } from "../regions";
-import { creatureHasType, isChefAffected, isInOppositeRegion, isOutOfRegion, isPainted, isSingleTyped } from "../typing";
+import { creatureHasType, hasChefFireTyping, isInOppositeRegion, isOutOfRegion, isPainted, isSingleTyped } from "../typing";
 import { CreatureType, RegionId } from "../enums";
 import { Species, TrainerId } from "../ids";
 
@@ -45,6 +45,7 @@ describe("type matching (T230 / FR-086)", () => {
 describe("Chef's Fire typing", () => {
   const pebbler = getCreatureByIdAndLevel(Species.Pebbler, 1)!; // Rock — single-typed
   const magmite = getCreatureByIdAndLevel(Species.Magmite, 1)!; // Fire/Rock — dual, already Fire
+  const scorchimp = getCreatureByIdAndLevel(Species.Scorchimp, 1)!; // Fire — single-typed, already Fire
   const bumblebolt = getCreatureByIdAndLevel(Species.Bumblebolt, 1)!; // Bug/Electric — dual, not Fire
   const omnichrome = getCreatureByIdAndLevel(Species.Omnichrome, 1)!;
   const chef = { trainerId: TrainerId.Chef };
@@ -60,18 +61,22 @@ describe("Chef's Fire typing", () => {
     expect(creatureHasType(bumblebolt, CreatureType.Fire, chef), "Bug/Electric").toBe(false);
   });
 
-  it("affects the single-typed and the already-Fire, and nobody else", () => {
-    expect(isChefAffected(pebbler, chef), "gains Fire").toBe(true);
-    expect(isChefAffected(magmite, chef), "dual-typed but Fire, so it gets the Burn").toBe(true);
-    expect(isChefAffected(bumblebolt, chef), "dual-typed and not Fire").toBe(false);
-    expect(isChefAffected(pebbler, { trainerId: TrainerId.Painter })).toBe(false);
+  it("marks only the monsters whose typing CHANGED, not everything Chef reaches", () => {
+    // The sprite treatment and the extra type chip both key off this. Magmite takes the +2 Burn
+    // like everyone else Fire, but nothing about what it IS changed, so it is not marked.
+    expect(hasChefFireTyping(pebbler, chef), "Rock, gains Fire").toBe(true);
+    expect(hasChefFireTyping(magmite, chef), "dual-typed, already Fire").toBe(false);
+    expect(hasChefFireTyping(scorchimp, chef), "single-typed but already Fire").toBe(false);
+    expect(hasChefFireTyping(bumblebolt, chef), "dual-typed and not Fire").toBe(false);
+    expect(hasChefFireTyping(pebbler, { trainerId: TrainerId.Painter })).toBe(false);
   });
 
   it("counts a wildcard-typed monster as every type rather than as single-typed", () => {
     // `types: ["All"]` has length 1, so a naive count would call Omnichrome single-typed. It is
-    // the opposite — it is already every type, Fire included.
+    // the opposite — it is already every type, Fire included, so Chef grants it nothing.
     expect(isSingleTyped(omnichrome)).toBe(false);
-    expect(isChefAffected(omnichrome, chef), "already Fire").toBe(true);
+    expect(hasChefFireTyping(omnichrome, chef)).toBe(false);
+    expect(creatureHasType(omnichrome, CreatureType.Fire, chef), "already Fire").toBe(true);
   });
 });
 

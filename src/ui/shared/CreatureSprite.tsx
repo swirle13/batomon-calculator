@@ -31,10 +31,12 @@ interface CreatureSpriteProps {
   /** Painted by Painter, or natively `All`-typed. */
   painted?: boolean;
   /**
-   * Touched by Chef — single-typed and so granted Fire, or Fire already and so carrying the +2
-   * Burn (2026-10-08). Yields to `painted`: a creature that is every type is already wearing an
-   * overlay that says its typing is not what the card says, and stacking a second one over it
-   * would only make both harder to read.
+   * GRANTED Fire typing by Chef (2026-10-08). Like `painted`, the treatment marks a creature whose
+   * typing is not what its card says — so a creature that was already Fire does not get it, even
+   * though Chef's Burn reaches it too.
+   *
+   * Yields to `painted`: that overlay already says this creature's typing is not its own, and
+   * stacking a second one over it would only make both harder to read.
    */
   chefFire?: boolean;
   className?: string;

@@ -67,29 +67,22 @@ export function isSingleTyped(creature: Pick<CreatureRecord, "types">): boolean 
  *
  * Note that this grant is by RULE, not by designation: it is derived from the monster's own typing
  * and the trainer, so there is nothing for the user to pick (see `setDesignatingTrainers.ts`).
+ *
+ * This is also what the sprite treatment and the extra type chip key off, and deliberately not
+ * "Chef affects this monster" (2026-10-08, user-reported: the overlay "should only affect mons
+ * that have had the fire type ADDED to them"). Both markings say the same thing — this monster's
+ * typing is not what its card says — and a Scorchimp that was already Fire takes the Burn with no
+ * change to what it is.
  */
 export function hasChefFireTyping(
   creature: Pick<CreatureRecord, "types">,
   config?: TypingConfig,
 ): boolean {
-  return config?.trainerId === TrainerId.Chef && isSingleTyped(creature);
-}
-
-/**
- * Whether Chef's ability reaches this monster at all — the grant above, the "+2 Burn" that follows
- * from it, or both.
- *
- * A single-typed monster gains Fire and is therefore also one of "your Fire monsters", so the two
- * clauses overlap by design and the set is the union: single-typed, or Fire already. Drives the
- * sprite treatment as well as the Burn, so what the board shows and what the engine applies are
- * the same set.
- */
-export function isChefAffected(
-  creature: Pick<CreatureRecord, "id" | "types">,
-  config?: TypingConfig,
-): boolean {
   if (config?.trainerId !== TrainerId.Chef) return false;
-  return isSingleTyped(creature) || creatureHasType(creature, CreatureType.Fire, config);
+  // A single-typed FIRE monster is granted nothing: it is already what the ability would make it.
+  // Without this the treatment landed on Scorchimp and Lignite, which is the "all 6 mons have the
+  // fire sprite effect" report — being single-typed is not the same as having gained something.
+  return isSingleTyped(creature) && !creature.types.includes(CreatureType.Fire);
 }
 
 /** True when this species is painted in the given configuration. Drives the chip and the overlay. */

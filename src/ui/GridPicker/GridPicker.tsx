@@ -13,7 +13,7 @@ import {
 } from "@dnd-kit/core";
 import type { CreatureRecord, CreatureType, GridCol, StatModifier, GridSlot } from "../../data/types";
 import { resolveCreatureVariant } from "../../data/corpus";
-import { isChefAffected, isPainted } from "../../data/typing";
+import { hasChefFireTyping, isPainted } from "../../data/typing";
 import { trainerModifiersFor } from "../../engine/trainerEffects";
 import { useTeamConfig } from "../../context/teamConfig";
 import { typeBackground } from "../../data/typeColors";
@@ -342,7 +342,7 @@ export const GridPicker = memo(function GridPicker({ onHighlightSlot }: GridPick
       // to show up rather than living only in the simulation.
       modifiers: [...(placement.modifiers ?? []), ...trainerModifiersFor(creature, config)],
       painted: creature.types.some(isWildcardType) || isPainted(creature.id, config),
-      chefFire: isChefAffected(creature, config),
+      chefFire: hasChefFireTyping(creature, config),
     };
   }
 
