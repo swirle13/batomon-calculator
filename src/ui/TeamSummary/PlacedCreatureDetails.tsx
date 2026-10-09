@@ -5,8 +5,9 @@ import { hasChefFireTyping, isPainted } from "../../data/typing";
 import { trainerModifiersFor } from "../../engine/trainerEffects";
 import { CreatureType } from "../../data/enums";
 import { useTeamConfig } from "../../context/teamConfig";
-import type { GridSlot, SimulationResult } from "../../data/types";
-import {  } from "../../engine/grid";
+import type { RosterRef, SimulationResult } from "../../data/types";
+import { RosterZone } from "../../data/types";
+import { gridRef, rosterMemberAt } from "../../engine/roster";
 import { formatCooldown } from "../../data/format";
 import { BatomonCard, CooldownBlock, StatLines } from "../shared/BatomonCard/BatomonCard";
 import { buildStatLines, cooldownWithModifiers, perCastOutputOf } from "../shared/BatomonCard/perCastOutput";
@@ -16,13 +17,20 @@ interface PlacedCreatureDetailsProps {
   result: SimulationResult;
   /**
    * 2026-10-05 round 3 (FR-021 / data-model.md's "Persistent side-panel... is UI state, not
-   * team data" amendment): which placement's details to show. `null` means "no slot has been
+   * team data" amendment): which monster's details to show. `null` means "nothing has been
    * hovered/focused yet" -- falls back to the first placement, not to nothing, so the panel is
    * never blank while a team exists. Owned by `CalculatorView` (src/App.tsx), updated by
    * `GridPicker` on hover/focus of a card -- crucially, hover/focus *leaving* a card does NOT
    * reset this back to `null` (sticky), so the panel never disappears.
+   *
+   * 2026-10-08: a `RosterRef`, not a `GridSlot`, so hovering a BENCH monster opens its card too
+   * (user-requested). The bench used to pass an empty handler under a comment arguing that a
+   * benched monster "has none to show — it is in no simulation", which confused the one band that
+   * needs a simulation for the whole card: the sprite, the typing, the ability text and the
+   * published stat line are all properties of the monster and are exactly what you want while
+   * deciding whether to field it.
    */
-  highlightedSlot: GridSlot | null;
+  highlighted: RosterRef | null;
 }
 
 /**
@@ -41,10 +49,23 @@ interface PlacedCreatureDetailsProps {
  * Values come from `result.perCreatureEffectiveStats` only; this component never recomputes a
  * modifier total of its own (data-model.md's single-source-of-truth rule).
  */
-export function PlacedCreatureDetails({ result, highlightedSlot }: PlacedCreatureDetailsProps) {
+export function PlacedCreatureDetails({ result, highlighted }: PlacedCreatureDetailsProps) {
   const { config } = useTeamConfig();
 
-  if (config.placements.length === 0) {
+  /*
+   * The fallback is still the first PLACED monster, never a benched one.
+   *
+   * A bench entry only becomes the subject by being pointed at. Letting one be the default would
+   * mean a board with an empty grid and a full bench opened on a monster that is not fighting,
+   * which is not what this panel is for — it just also answers questions about the bench now.
+   */
+  const fallback = config.placements[0];
+  const where = highlighted ?? (fallback ? gridRef(fallback.slot) : null);
+  // The highlighted position may have just been emptied by a drag or a clear, so this resolves
+  // through `rosterMemberAt` and then falls back rather than rendering nothing.
+  const member = (where ? rosterMemberAt(config, where) : undefined) ?? fallback;
+
+  if (!member || !where) {
     return (
       <p>
         <em>Place a Batomon in the grid to see its stats here.</em>
@@ -52,12 +73,9 @@ export function PlacedCreatureDetails({ result, highlightedSlot }: PlacedCreatur
     );
   }
 
-  const activeSlot = highlightedSlot ?? config.placements[0]!.slot;
-  const placement =
-    config.placements.find((p) => p.slot.row === activeSlot.row && p.slot.col === activeSlot.col) ??
-    // The previously-highlighted slot's placement may have just been cleared/moved by a drag;
-    // fall back to the first remaining placement rather than rendering nothing.
-    config.placements[0]!;
+  /** Where the monster we actually resolved is standing — not where the hover pointed. */
+  const at: RosterRef = rosterMemberAt(config, where) === undefined ? gridRef(fallback!.slot) : where;
+  const placement = member;
 
   const creature = resolveCreatureVariant(placement.creatureId, placement.level, placement.shiny);
 
@@ -69,7 +87,16 @@ export function PlacedCreatureDetails({ result, highlightedSlot }: PlacedCreatur
     );
   }
 
-  const effective = result.perCreatureEffectiveStats[placementKey(creature.id, placement.slot)];
+  /*
+   * Only a PLACED monster has resolved stats: `simulate()` never reads `config.bench`, so there is
+   * no entry to look up for a benched one. The "Effective this battle" band below is already
+   * conditional on this being present, so a bench card simply renders without it — which is the
+   * truth. It is in no battle, so there is nothing this battle does to it.
+   */
+  const effective =
+    at.zone === RosterZone.Grid
+      ? result.perCreatureEffectiveStats[placementKey(creature.id, at.slot)]
+      : undefined;
 
   /*
    * The trainer's own per-monster bonus is shown as part of what the creature IS, alongside the
@@ -119,9 +146,17 @@ export function PlacedCreatureDetails({ result, highlightedSlot }: PlacedCreatur
       modifiers={displayModifiers}
       meta={
         <>
-          <VariantToggles placement={placement} />
-          {/* Renders nothing unless this creature has a manualTrigger tag. */}
-          <TriggerButtons creature={creature} placement={placement} />
+          <VariantToggles member={placement} where={at} />
+          {/*
+            Renders nothing unless this creature has a manualTrigger tag — and nothing at all for a
+            benched monster (2026-10-08). A press banks a permanent bonus on a set of RECIPIENTS
+            that `recipientsOfPress` picks out by board position ("This and Common allies"), which
+            cannot be resolved for a monster that is not on the board. Offering the button and
+            banking it on the presser alone is the exact bug that selector was written to fix.
+          */}
+          {at.zone === RosterZone.Grid && (
+            <TriggerButtons creature={creature} placement={{ ...placement, slot: at.slot }} />
+          )}
         </>
       }
     >

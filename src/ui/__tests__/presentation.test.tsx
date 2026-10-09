@@ -21,6 +21,7 @@ import { formatRate } from "../../data/format";
 import { allCreatureRecords, corpus, getCreatureByIdAndLevel } from "../../data/corpus";
 import { RARITIES_ASC } from "../../data/statColors";
 import type { TeamConfiguration } from "../../data/types";
+import { RosterZone } from "../../data/types";
 import { gridRef } from "../../engine/roster";
 
 import { syntheticSpecies } from "../../data/ids";
@@ -308,7 +309,7 @@ describe("round 7 presentation fixes", () => {
   it("names the creatures 'Batomon', positively (FR-042, items 2 + 9)", () => {
     render(
       <TeamConfigProvider initialConfig={CONFIG}>
-        <PlacedCreatureDetails result={simulate(CONFIG, corpus)} highlightedSlot={null} />
+        <PlacedCreatureDetails result={simulate(CONFIG, corpus)} highlighted={null} />
       </TeamConfigProvider>,
     );
     render(<CreatureSearchModal target={gridRef({ row: GridRow.Back, col: 1 })} onClose={() => {}} onSelect={() => {}} />);
@@ -353,7 +354,7 @@ describe("round 7 presentation fixes", () => {
   it("renders grid sprites at the shared token size, not a per-call-site literal (FR-053, item 18)", () => {
     render(
       <TeamConfigProvider initialConfig={CONFIG}>
-        <GridPicker onHighlightSlot={() => {}} />
+        <GridPicker onHighlight={() => {}} />
       </TeamConfigProvider>,
     );
     const sprite = screen.getByRole("img", { name: "Bumblebolt" });
@@ -378,7 +379,7 @@ describe("round 7 presentation fixes", () => {
     };
     render(
       <TeamConfigProvider initialConfig={modified}>
-        <PlacedCreatureDetails result={simulate(modified, corpus)} highlightedSlot={null} />
+        <PlacedCreatureDetails result={simulate(modified, corpus)} highlighted={null} />
       </TeamConfigProvider>,
     );
     // Bumblebolt's cooldown is 2.5s. Both bands must agree; they used to render 2.5 and 2.50 one
@@ -398,7 +399,7 @@ describe("round 7 presentation fixes", () => {
     };
     render(
       <TeamConfigProvider initialConfig={chefTeam}>
-        <PlacedCreatureDetails result={simulate(chefTeam, corpus)} highlightedSlot={null} />
+        <PlacedCreatureDetails result={simulate(chefTeam, corpus)} highlighted={null} />
       </TeamConfigProvider>,
     );
 
@@ -424,7 +425,7 @@ describe("round 7 presentation fixes", () => {
     };
     render(
       <TeamConfigProvider initialConfig={charmed}>
-        <PlacedCreatureDetails result={simulate(charmed, corpus)} highlightedSlot={null} />
+        <PlacedCreatureDetails result={simulate(charmed, corpus)} highlighted={null} />
       </TeamConfigProvider>,
     );
     // Bumblebolt: 2.5 / 1.04 = 2.403..., one decimal 2.4.
@@ -439,10 +440,83 @@ describe("round 7 presentation fixes", () => {
     // which is worse than no panel: it implies something changed.
     render(
       <TeamConfigProvider initialConfig={CONFIG}>
-        <PlacedCreatureDetails result={simulate(CONFIG, corpus)} highlightedSlot={null} />
+        <PlacedCreatureDetails result={simulate(CONFIG, corpus)} highlighted={null} />
       </TeamConfigProvider>,
     );
     expect(screen.queryByText(/Effective this battle/i)).toBeNull();
+  });
+
+  /**
+   * 2026-10-08, user-requested: "The mon details card should also work when hovering over bench
+   * pokemon too."
+   */
+  describe("the detail card on a benched monster", () => {
+    const benched: TeamConfiguration = {
+      ...CONFIG,
+      bench: [{ index: 1, creatureId: Species.Pebbler, level: 1 }],
+    };
+
+    it("shows the benched monster, not the placed one", () => {
+      render(
+        <TeamConfigProvider initialConfig={benched}>
+          <PlacedCreatureDetails
+            result={simulate(benched, corpus)}
+            highlighted={{ zone: RosterZone.Bench, index: 1 }}
+          />
+        </TeamConfigProvider>,
+      );
+      expect(screen.getByRole("heading", { name: /Pebbler/ })).toBeTruthy();
+    });
+
+    it("omits the 'Effective this battle' band, because it is in no battle", () => {
+      // The honest half of the old objection to this feature. `simulate()` never reads the bench,
+      // so there are no resolved stats to show — and the card says nothing about them rather than
+      // showing the published figures under a heading that claims they are resolved.
+      const modified: TeamConfiguration = {
+        ...benched,
+        teamModifiers: [{ id: syntheticSpecies("m1"), stat: ModifierStat.DamageFlatAdd, amount: 5 }],
+      };
+      render(
+        <TeamConfigProvider initialConfig={modified}>
+          <PlacedCreatureDetails
+            result={simulate(modified, corpus)}
+            highlighted={{ zone: RosterZone.Bench, index: 1 }}
+          />
+        </TeamConfigProvider>,
+      );
+      expect(screen.queryByText(/Effective this battle/i)).toBeNull();
+    });
+
+    it("still offers the level bubbles, which nothing else could reach", () => {
+      // Before this the search modal wrote level 1 and no control could change it, so a benched
+      // monster's level was fixed for as long as it stayed benched — on the one surface whose job
+      // is weighing candidates you have not committed to.
+      render(
+        <TeamConfigProvider initialConfig={benched}>
+          <PlacedCreatureDetails
+            result={simulate(benched, corpus)}
+            highlighted={{ zone: RosterZone.Bench, index: 1 }}
+          />
+        </TeamConfigProvider>,
+      );
+      const levels = screen.getByRole("radiogroup", { name: "Level" });
+      fireEvent.click(within(levels).getByRole("radio", { name: "3" }));
+      expect(within(levels).getByRole("radio", { name: "3" })).toHaveAttribute("aria-checked", "true");
+    });
+
+    it("falls back to the first placed monster when the bench position empties", () => {
+      // A drag or a clear can remove whatever was being pointed at mid-hover. Rendering nothing
+      // there would make the panel blink out; the panel is deliberately sticky.
+      render(
+        <TeamConfigProvider initialConfig={CONFIG}>
+          <PlacedCreatureDetails
+            result={simulate(CONFIG, corpus)}
+            highlighted={{ zone: RosterZone.Bench, index: 3 }}
+          />
+        </TeamConfigProvider>,
+      );
+      expect(screen.getByRole("heading", { name: /Bumblebolt/ })).toBeTruthy();
+    });
   });
 
   it("reports Shield without the over-qualifying parenthetical (FR-046, item 7)", () => {

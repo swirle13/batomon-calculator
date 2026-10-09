@@ -274,6 +274,13 @@ export function TeamConfigProvider({
           // because it can change species entirely via evolution.)
           placements: prev.placements.map((p) => (slotsEqual(p.slot, slot) ? { ...p, shiny } : p)),
         })),
+      // Same rule as the grid's, one line down: shiny swaps the published stat line and leaves the
+      // monster's own modifiers alone.
+      setBenchShiny: (index, shiny) =>
+        setConfig((prev) => ({
+          ...prev,
+          bench: benchOf(prev).map((b) => (b.index === index ? { ...b, shiny } : b)),
+        })),
       removePlacementModifier: (slot, id) =>
         setConfig((prev) => ({
           ...prev,

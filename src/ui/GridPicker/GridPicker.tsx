@@ -55,9 +55,13 @@ const COLS: GridCol[] = [0, 1, 2];
  */
 
 interface GridPickerProps {
-  /** 2026-10-05 round 3 (FR-021): hovering/focusing an occupied card reports its slot upward so
-   * the persistent side panel (PlacedCreatureDetails, lifted state in App.tsx) can update. */
-  onHighlightSlot: (slot: GridSlot) => void;
+  /**
+   * 2026-10-05 round 3 (FR-021): hovering/focusing an occupied card reports its position upward so
+   * the persistent side panel (PlacedCreatureDetails, lifted state in App.tsx) can update.
+   *
+   * A `RosterRef` rather than a `GridSlot` since 2026-10-08, so bench cards report too.
+   */
+  onHighlight: (ref: RosterRef) => void;
   /*
    * 2026-10-06 round 9b: the `result` prop is gone. Round 6 threaded the simulation in so the slot
    * badges could show modifier-adjusted values; those badges now show BASE stats (matching the
@@ -297,11 +301,11 @@ function DroppableZone({ target, children }: { target: RosterRef; children: Reac
 
 /*
  * Memoized because the grid is what you hover, and hovering it sets `CalculatorView`'s
- * highlighted-slot state — so without this, moving the pointer across the board re-rendered the
- * board. `onHighlightSlot` is a `useState` setter, whose identity is stable, so the bail-out
+ * highlighted-position state — so without this, moving the pointer across the board re-rendered
+ * the board. `onHighlight` is a `useState` setter, whose identity is stable, so the bail-out
  * actually holds; passing an inline arrow from the parent would silently defeat it.
  */
-export const GridPicker = memo(function GridPicker({ onHighlightSlot }: GridPickerProps) {
+export const GridPicker = memo(function GridPicker({ onHighlight }: GridPickerProps) {
   const { config, setPlacement, setBenchCreature, moveRoster } = useTeamConfig();
   const [searchTarget, setSearchTarget] = useState<RosterRef | null>(null);
   /** The position being dragged, so `<DragOverlay>` knows which card to draw under the pointer. */
@@ -437,7 +441,7 @@ export const GridPicker = memo(function GridPicker({ onHighlightSlot }: GridPick
                           modifiers={card.modifiers}
                           painted={card.painted}
                           chefFire={card.chefFire}
-                          onHighlight={() => onHighlightSlot(slot)}
+                          onHighlight={() => onHighlight(ref)}
                           onOpenSearch={() => setSearchTarget(ref)}
                           onClear={() => setPlacement(slot, null)}
                         />
@@ -494,12 +498,18 @@ export const GridPicker = memo(function GridPicker({ onHighlightSlot }: GridPick
                         painted={card.painted}
                         chefFire={card.chefFire}
                         /*
-                         * No `onHighlightSlot`: the detail panel shows a PLACED monster's resolved
-                         * stats, and a benched one has none to show — it is in no simulation. A
-                         * hover that swapped the panel to a card whose "Effective this battle"
-                         * band could never appear would read as the panel breaking.
+                         * 2026-10-08, user-requested: "The mon details card should also work when
+                         * hovering over bench pokemon too."
+                         *
+                         * This was an empty handler, argued for on the grounds that the panel
+                         * shows a placed monster's RESOLVED stats and a benched one has none. True
+                         * of one band and of nothing else on the card — the sprite, the typing,
+                         * the ability text and the published stat line are properties of the
+                         * monster, and they are precisely what you are reading while deciding
+                         * whether to field it. The band now just does not render; see
+                         * `PlacedCreatureDetails`.
                          */
-                        onHighlight={() => { }}
+                        onHighlight={() => onHighlight(ref)}
                         onOpenSearch={() => setSearchTarget(ref)}
                         onClear={() => setBenchCreature(index, null)}
                       />

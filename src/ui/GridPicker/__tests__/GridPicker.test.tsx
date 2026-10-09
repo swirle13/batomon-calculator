@@ -28,7 +28,7 @@ function renderWithPlacement(
   };
   return render(
     <TeamConfigProvider initialConfig={config}>
-      <GridPicker onHighlightSlot={vi.fn()} />
+      <GridPicker onHighlight={vi.fn()} />
     </TeamConfigProvider>,
   );
 }

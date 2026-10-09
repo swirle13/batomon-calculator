@@ -31,7 +31,7 @@ function renderBoard(config: Partial<TeamConfiguration> = {}) {
   };
   return render(
     <TeamConfigProvider initialConfig={full}>
-      <GridPicker onHighlightSlot={vi.fn()} />
+      <GridPicker onHighlight={vi.fn()} />
     </TeamConfigProvider>,
   );
 }
@@ -120,5 +120,33 @@ describe("the bench", () => {
     renderBoard({ trainerId: null, bench: [{ index: 0, creatureId: Species.Scorchimp, level: 1 }] });
     expect(within(bench()).getByTitle("Burn: 5")).toBeTruthy();
     expect(bench().querySelector("[class*='chefFire']")).toBeNull();
+  });
+
+  /**
+   * 2026-10-08, user-requested: "The mon details card should also work when hovering over bench
+   * pokemon too."
+   */
+  it("reports a hovered bench monster upward, so the detail panel can open on it", () => {
+    const onHighlight = vi.fn();
+    render(
+      <TeamConfigProvider
+        initialConfig={{
+          placements: [],
+          bench: [{ index: 2, creatureId: Species.Bumblebolt, level: 1 }],
+          trainerId: null,
+          trinketIds: [],
+          itemIds: [],
+          simulationWindowSeconds: 20,
+        }}
+      >
+        <GridPicker onHighlight={onHighlight} />
+      </TeamConfigProvider>,
+    );
+
+    fireEvent.mouseEnter(within(bench()).getByRole("button", { name: /^Bumblebolt, level 1/ }));
+
+    // The bench POSITION, not a fabricated grid slot — the panel has to be able to tell the two
+    // apart, because only a placed monster has resolved stats to show.
+    expect(onHighlight).toHaveBeenCalledWith({ zone: "bench", index: 2 });
   });
 });

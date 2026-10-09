@@ -59,7 +59,7 @@ import { Button, ClampedNumberField, Field } from "./ui/primitives";
 import { corpus } from "./data/corpus";
 import { DEFAULT_RUN_DAY } from "./data/enemyHealth";
 import { simulate } from "./engine/simulate";
-import type { GridSlot } from "./data/types";
+import type { RosterRef } from "./data/types";
 import layout from "./App.module.css";
 import "./App.css";
 
@@ -106,7 +106,8 @@ function CalculatorView() {
   // 2026-10-05 round 3 (FR-021 / data-model.md's "Persistent side-panel... is UI state, not
   // team data" amendment): transient, lifted here (not TeamConfigContext) because it's purely
   // a display concern, never read by simulate() or persisted with the team configuration.
-  const [highlightedSlot, setHighlightedSlot] = useState<GridSlot | null>(null);
+  // A `RosterRef` since 2026-10-08, so the detail panel opens on a hovered BENCH monster too.
+  const [highlighted, setHighlighted] = useState<RosterRef | null>(null);
   /*
    * The run day now lives in `TeamConfigContext` (2026-10-08, user-reported), REVERSING the note
    * that used to stand here: "NOT put in `TeamConfigContext` … it must not travel in a shared
@@ -142,11 +143,11 @@ function CalculatorView() {
             <ItemPicker />
             <ModifierEditor />
           </div>
-          <GridPicker onHighlightSlot={setHighlightedSlot} />
+          <GridPicker onHighlight={setHighlighted} />
         </div>
         <div className={layout.detailColumn}>
           <ShareBuild />
-          <PlacedCreatureDetails result={result} highlightedSlot={highlightedSlot} />
+          <PlacedCreatureDetails result={result} highlighted={highlighted} />
         </div>
       </div>
       <PlacementAdvisor result={result} />

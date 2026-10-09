@@ -82,6 +82,12 @@ export interface TeamConfigContextValue {
   removeTeamModifier: (id: string) => void;
   /** FR-087 (round 11, WI-R11-001): toggle this placement's SHINY variant, independent of level. */
   setPlacementShiny: (slot: GridSlot, shiny: boolean) => void;
+  /**
+   * The bench's counterpart (2026-10-08), added when the detail card learned to open on a hovered
+   * bench monster: the card carries the level/shiny bubbles, and half a roster that could not use
+   * them would read as the panel being broken.
+   */
+  setBenchShiny: (index: BenchIndex, shiny: boolean) => void;
   /** T229/T235 (FR-087, FR-090). */
   /** Replaces the entire team, for build import (item 5). Not a merge — see `ShareBuild`. */
   replaceConfig: (next: TeamConfiguration) => void;

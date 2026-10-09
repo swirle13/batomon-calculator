@@ -1,7 +1,9 @@
 import { corpus, hasShinyVariant } from "../../../data/corpus";
 import { resolveLevelUp } from "../../../engine/evolution";
 import { useTeamConfig } from "../../../context/teamConfig";
-import type { TeamPlacement } from "../../../data/types";
+import type { RosteredCreature, RosterRef } from "../../../data/types";
+import { RosterZone } from "../../../data/types";
+import type { Species } from "../../../data/ids";
 import styles from "./VariantToggles.module.css";
 
 /**
@@ -27,14 +29,37 @@ import styles from "./VariantToggles.module.css";
  * published shiny stat line (batodex lists them for 134 of ours) — the alternative, letting it
  * toggle to no effect, is the "control that does nothing" failure this project keeps finding.
  */
+/**
+ * 2026-10-08: takes a `RosterRef` rather than a `TeamPlacement`, so the bench gets these controls
+ * too.
+ *
+ * The detail card now opens on a hovered BENCH monster as well as a placed one (user-requested),
+ * and a card whose level bubbles were missing on half the roster would read as the panel being
+ * broken rather than as a deliberate limit. It was also a real dead end: nothing anywhere could
+ * change a benched monster's level — the search modal writes level 1 and there was no other
+ * control — which is a poor state for the one surface whose whole job is weighing candidates you
+ * have not committed to.
+ *
+ * The two zones differ only in which setter runs, so the ref is resolved to a pair of writes here
+ * and the rest of the component does not know which it is on.
+ */
 interface VariantTogglesProps {
-  placement: TeamPlacement;
+  member: RosteredCreature;
+  where: RosterRef;
 }
 
 const LEVELS = [1, 2, 3, 4] as const;
 
-export function VariantToggles({ placement }: VariantTogglesProps) {
-  const { setPlacement, setPlacementShiny } = useTeamConfig();
+export function VariantToggles({ member: placement, where }: VariantTogglesProps) {
+  const { setPlacement, setPlacementShiny, setBenchCreature, setBenchShiny } = useTeamConfig();
+  const setCreature = (creatureId: Species, level: 1 | 2 | 3 | 4) =>
+    where.zone === RosterZone.Grid
+      ? setPlacement(where.slot, creatureId, level)
+      : setBenchCreature(where.index, creatureId, level);
+  const setShiny = (shiny: boolean) =>
+    where.zone === RosterZone.Grid
+      ? setPlacementShiny(where.slot, shiny)
+      : setBenchShiny(where.index, shiny);
 
   // FR-022: a level is offered only if it resolves to a real record, checked through the SAME
   // resolver that performs the swap — so a level is never selectable into a dead end. Evolutions
@@ -61,7 +86,7 @@ export function VariantToggles({ placement }: VariantTogglesProps) {
               disabled={!target}
               className={`${styles.bubble} ${active ? styles.bubbleActive : ""}`}
               title={target ? `Level ${level}` : `No corpus record at level ${level}`}
-              onClick={() => target && setPlacement(placement.slot, target.id, level)}
+              onClick={() => target && setCreature(target.id, level)}
             >
               {level}
             </button>
@@ -79,7 +104,7 @@ export function VariantToggles({ placement }: VariantTogglesProps) {
             ? "Shiny — a different published stat line, not a flat bonus (it is lower for a few species)"
             : "No published shiny stats for this species at this level"
         }
-        onClick={() => setPlacementShiny(placement.slot, !placement.shiny)}
+        onClick={() => setShiny(!placement.shiny)}
       >
         Shiny
       </button>
