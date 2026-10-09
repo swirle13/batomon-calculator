@@ -71,6 +71,14 @@
   font-weight: 700;
 }
 
+/* The combined per-creature figure. Emphasised because it is the column being read to rank the
+   board; the two beside it are the breakdown of it. A `td`, not a `th` — the row already has one
+   header (the creature's name) and a second confuses the row's reading order. */
+.combined {
+  font-weight: 700;
+  color: var(--text-strong);
+}
+
 .note {
   max-width: 48rem;
   margin: var(--space-sm) auto 0;

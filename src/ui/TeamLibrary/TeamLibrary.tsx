@@ -22,7 +22,7 @@ import {
   type SavedTeam,
 } from "../../data/library";
 import type { TeamConfiguration } from "../../data/types";
-import { Button, Field, NumberField, Select, TextField } from "../primitives";
+import { Button, ClampedNumberField, Field, Select, TextField } from "../primitives";
 import { CreatureSprite } from "../shared/CreatureSprite";
 import { previewFor } from "./teamPreview";
 import styles from "./TeamLibrary.module.css";
@@ -423,13 +423,7 @@ function SaveForm({
       {activeRunId && (
         <div className={styles.positionRow}>
           <Field label="Day" inline className={styles.positionField}>
-            <NumberField
-              size="sm"
-              min={1}
-              width="3.5rem"
-              value={day}
-              onChange={(e) => setDayEdit(Math.max(1, Number(e.target.value) || 1))}
-            />
+            <ClampedNumberField size="sm" min={1} width="3.5rem" value={day} onCommit={setDayEdit} />
           </Field>
         </div>
       )}

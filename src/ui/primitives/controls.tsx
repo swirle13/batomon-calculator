@@ -1,4 +1,4 @@
-import type { ComponentPropsWithRef, ReactNode } from "react";
+import { useState, type ComponentPropsWithRef, type ReactNode } from "react";
 import styles from "./controls.module.css";
 
 /**
@@ -165,6 +165,59 @@ export function NumberField({ size = "md", width, className = "", style, ...rest
       className={`${styles.control} ${styles.input} ${styles.number} ${sizeClass(size)} ${className}`}
       style={width ? { ...style, width } : style}
       {...rest}
+    />
+  );
+}
+
+interface ClampedNumberFieldProps extends Omit<NumberFieldProps, "value" | "defaultValue" | "onChange" | "onBlur"> {
+  value: number;
+  min: number;
+  max?: number;
+  /** Called only with a value inside `[min, max]`. */
+  onCommit: (value: number) => void;
+}
+
+/**
+ * A number field you can empty while typing (2026-10-08, user-reported).
+ *
+ * A `NumberField` driven straight off state — `value={window}` with
+ * `onChange={(e) => set(Number(e.target.value) || 1)}` — cannot be cleared: emptying it parses as
+ * `0`, falls through `|| 1` to the minimum, and React immediately writes `1` back into the box. So
+ * changing 10 to 30 meant typing 30 in front of the 1 to get 130 and then deleting the 1. The
+ * simulation window and the library's day field both worked this way.
+ *
+ * The fix is a DRAFT: while the field is focused it shows what was typed, including nothing at
+ * all, and the committed value only moves when the draft is a number in range. Blur drops the
+ * draft, so an empty or out-of-range field reverts to the last good value rather than silently
+ * becoming the minimum.
+ *
+ * Committing on every valid keystroke, rather than on blur, is deliberate: these drive a live
+ * recomputation, and making the user leave the field to see it would be its own annoyance.
+ */
+export function ClampedNumberField({ value, min, max, onCommit, ...rest }: ClampedNumberFieldProps) {
+  const [draft, setDraft] = useState<string | null>(null);
+  const inRange = (n: number) => Number.isFinite(n) && n >= min && (max === undefined || n <= max);
+
+  return (
+    <NumberField
+      {...rest}
+      min={min}
+      max={max}
+      // `draft ?? value`: null means "not being edited", which is not the same as an empty draft.
+      value={draft ?? value}
+      onChange={(e) => {
+        const raw = e.target.value;
+        setDraft(raw);
+        const parsed = Number(raw);
+        if (raw.trim() !== "" && inRange(parsed)) onCommit(parsed);
+      }}
+      onBlur={() => {
+        const parsed = Number(draft);
+        if (draft !== null && draft.trim() !== "" && Number.isFinite(parsed) && !inRange(parsed)) {
+          onCommit(Math.min(max ?? parsed, Math.max(min, parsed)));
+        }
+        setDraft(null);
+      }}
     />
   );
 }

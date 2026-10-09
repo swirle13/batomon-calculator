@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { createRef } from "react";
-import { render, screen } from "@testing-library/react";
-import { Button, Field, NumberField, Select, TextField } from "../primitives";
+import { createRef, useState } from "react";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { Button, ClampedNumberField, Field, NumberField, Select, TextField } from "../primitives";
 
 /**
  * The control primitives (2026-10-07).
@@ -77,6 +77,51 @@ describe("text fields", () => {
 
     search.current?.focus();
     expect(document.activeElement).toBe(search.current);
+  });
+});
+
+describe("ClampedNumberField", () => {
+  /** Renders the field against real state, the way every call site drives it. */
+  function Harness({ min = 1, max = 120, start = 10 }: { min?: number; max?: number; start?: number }) {
+    const [value, setValue] = useState(start);
+    return (
+      <Field label="Simulation window (seconds)" inline>
+        <ClampedNumberField min={min} max={max} value={value} onCommit={setValue} />
+      </Field>
+    );
+  }
+
+  const windowField = () => screen.getByLabelText(/simulation window/i) as HTMLInputElement;
+  const type = (text: string) => fireEvent.change(windowField(), { target: { value: text } });
+
+  it("can be emptied, which a value-bound NumberField cannot", () => {
+    // The report: changing 10 to 30 was impossible by typing. Backspacing to empty parsed as 0,
+    // fell through `|| 1` to the minimum, and React wrote `1` straight back into the box — so the
+    // only way through was to type 30 in front of it, get 130, and then delete the 1.
+    render(<Harness />);
+    type("");
+    expect(windowField().value).toBe("");
+    type("3");
+    type("30");
+    expect(windowField().value).toBe("30");
+  });
+
+  it("reverts to the last good value when left empty, rather than snapping to the minimum", () => {
+    render(<Harness />);
+    type("");
+    fireEvent.blur(windowField());
+    expect(windowField().value).toBe("10");
+  });
+
+  it("clamps an out-of-range entry on blur instead of committing it mid-type", () => {
+    // "200" is out of range, so it is held as a draft and resolved only when the user leaves —
+    // clamping rather than reverting, since someone who typed 200 into a field capped at 120 wants
+    // the cap, not their old value.
+    render(<Harness />);
+    type("200");
+    expect(windowField().value).toBe("200");
+    fireEvent.blur(windowField());
+    expect(windowField().value).toBe("120");
   });
 });
 

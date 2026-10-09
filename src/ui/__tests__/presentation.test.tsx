@@ -16,7 +16,8 @@ import { regionsOf } from "../../data/typing";
 import { BatomonCard } from "../shared/BatomonCard/BatomonCard";
 import { buildStatLines, perCastOutputOf } from "../shared/BatomonCard/perCastOutput";
 import { GridPicker } from "../GridPicker/GridPicker";
-import { simulate } from "../../engine/simulate";
+import { simulate, windowAverageDps } from "../../engine/simulate";
+import { formatRate } from "../../data/format";
 import { allCreatureRecords, corpus, getCreatureByIdAndLevel } from "../../data/corpus";
 import { RARITIES_ASC } from "../../data/statColors";
 import type { TeamConfiguration } from "../../data/types";
@@ -656,6 +657,28 @@ describe("round 9: total DPS and grid sizing", () => {
     const result = simulate(poisonTeam, corpus);
     render(<TeamSummary config={poisonTeam} result={result} />);
     expect(screen.getByRole("rowheader", { name: "Total" })).toBeTruthy();
+  });
+
+  it("gives each creature a combined Total DPS, summing to the headline (2026-10-08)", () => {
+    // Neither column alone is a creature's output — the argument FR-072 already makes for the
+    // headline figure, which applies per row too. The user was adding the two by hand to rank
+    // their own monsters.
+    const result = simulate(poisonTeam, corpus);
+    render(<TeamSummary config={poisonTeam} result={result} />);
+
+    const row = screen.getByRole("row", { name: /^Miasmaw/ });
+    const key = placementKey(Species.Miasmaw, { row: GridRow.Front, col: 1 });
+    const expected =
+      (result.perCreatureDps[key] ?? 0) + (result.perCreatureFacilitatedDps[key] ?? 0);
+    // The row's last cell, which is the combined figure.
+    expect(within(row).getAllByRole("cell").at(-1)?.textContent).toBe(formatRate(expected));
+
+    // And the table's own grand total is the same number the headline readout shows, because both
+    // are the sum of the same two records.
+    const totalRow = screen.getByRole("row", { name: /^Total/ });
+    expect(within(totalRow).getAllByRole("columnheader").at(-1)?.textContent).toBe(
+      formatRate(windowAverageDps(result)),
+    );
   });
 });
 

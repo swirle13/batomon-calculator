@@ -12,7 +12,7 @@ import styles from "./primitives.module.css";
  * primitives from one place (`../primitives`) and no call site has to know which file a given
  * primitive is declared in.
  */
-export { Button, Field, NumberField, Range, Select, TextArea, TextField } from "./controls";
+export { Button, ClampedNumberField, Field, NumberField, Range, Select, TextArea, TextField } from "./controls";
 
 /**
  * The shared UI primitives layer (2026-10-06 round 7, Constitution Principle VII, FR-058).

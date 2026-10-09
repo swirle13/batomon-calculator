@@ -55,7 +55,7 @@ function ChartPlaceholder({ height }: { height: number }) {
   return <div style={{ height }} aria-hidden />;
 }
 import { CorpusBrowser } from "./ui/CorpusBrowser/CorpusBrowser";
-import { Button, Field, NumberField } from "./ui/primitives";
+import { Button, ClampedNumberField, Field } from "./ui/primitives";
 import { corpus } from "./data/corpus";
 import { simulate } from "./engine/simulate";
 import type { GridSlot } from "./data/types";
@@ -142,12 +142,12 @@ function CalculatorView() {
           values, so it sits immediately above the chart and below the tables. */}
       <div className={layout.windowControl}>
         <Field label="Simulation window (seconds)" inline>
-          <NumberField
+          <ClampedNumberField
             min={1}
             max={120}
             width="5rem"
             value={config.simulationWindowSeconds}
-            onChange={(e) => setSimulationWindowSeconds(Number(e.target.value) || 1)}
+            onCommit={setSimulationWindowSeconds}
           />
         </Field>
       </div>

@@ -75,14 +75,24 @@ export const TeamSummary = memo(function TeamSummary({ config, result }: TeamSum
               >
                 Facilitated DPS
               </th>
+              {/* FR-072's argument applied per ROW (2026-10-08, user-reported). The headline figure
+                  exists because neither column alone is a creature's output; the same is true of
+                  each row, and the user was adding the two by hand to rank their own monsters. */}
+              <th
+                className={styles.numeric}
+                title="Everything this creature is worth per second: its own hits plus the damage its statuses caused. The two never overlap, so adding them double-counts nothing."
+              >
+                Total DPS
+              </th>
             </tr>
           </thead>
           <tbody>
             {dpsRows.length === 0 && (
               <tr>
                 {/* 2026-10-05 round 4 (FR-024): slot position is no longer shown as text here --
-                    the grid itself already shows it, so this is 3 columns now, not 4. */}
-                <td colSpan={3}>No creatures placed yet.</td>
+                    the grid itself already shows it, so this is the creature column plus the
+                    three figures. */}
+                <td colSpan={4}>No creatures placed yet.</td>
               </tr>
             )}
             {dpsRows.map((row) => (
@@ -91,6 +101,11 @@ export const TeamSummary = memo(function TeamSummary({ config, result }: TeamSum
                 <td className={styles.numeric}>{formatRate(row.dps)}</td>
                 <td className={styles.numeric}>
                   {row.facilitatedDps > 0 ? formatRate(row.facilitatedDps) : "—"}
+                </td>
+                {/* No em-dash fallback here, unlike the column beside it: a creature really can be
+                    worth 0.0/s, and that is an answer rather than an absence. */}
+                <td className={`${styles.numeric} ${styles.combined}`}>
+                  {formatRate(row.dps + row.facilitatedDps)}
                 </td>
               </tr>
             ))}
@@ -105,6 +120,11 @@ export const TeamSummary = memo(function TeamSummary({ config, result }: TeamSum
                 </th>
                 <th className={styles.numeric}>
                   {formatRate(dpsRows.reduce((sum, r) => sum + r.facilitatedDps, 0))}
+                </th>
+                {/* The whole team's output, and the same figure the headline "DPS average" shows --
+                    both are `windowAverageDps`'s sum, reached from the same two records. */}
+                <th className={styles.numeric}>
+                  {formatRate(dpsRows.reduce((sum, r) => sum + r.dps + r.facilitatedDps, 0))}
                 </th>
               </tr>
             )}
