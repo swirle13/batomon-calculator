@@ -283,14 +283,19 @@ describe("WI-002 coverage — reported, not implied", () => {
      * So the deliverable here is the MECHANISM — per-family rules instead of per-creature edits,
      * which is what the ask was about — plus the reported case fixed, plus a measured, justified
      * residue. 16 of research.md L1's 17 families are still hand-tagged.
+     *
+     * 2026-10-08: 15 -> 19, all four of them Lignite, the only species in the corpus whose ability
+     * scales off its own stat. A one-species family is still worth a rule row rather than a
+     * hand-written tag, because the rule is what keeps the four LEVELS from being four edits.
      */
     expect(untagged.length).toBe(414);
-    expect(newlyDerived.length).toBe(15);
-    expect(untagged.length - newlyDerived.length).toBe(399);
+    expect(newlyDerived.length).toBe(19);
+    expect(untagged.length - newlyDerived.length).toBe(395);
 
     expect(Object.fromEntries([...byFamily].sort())).toEqual({
       // Engine-resolved: the counter rises by these, correctly (see the FR-114 test above).
       "ongoing/aura-grant": 8,
+      "ongoing/self-scaling": 4,
       // Manual buttons: outside RESOLVED_TAG_KINDS, so they move no coverage figure.
       "manualTrigger/self": 3,
       "manualTrigger/this-and-allies": 4,

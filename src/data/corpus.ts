@@ -1,4 +1,5 @@
 import type {
+  AbilityTag,
   Corpus,
   CreatureLevel,
   CreatureRecord,
@@ -207,6 +208,31 @@ export function resolveCreatureVariant(
 }
 
 /**
+ * The tags a shiny record should carry when its stat line publishes text but no tags of its own.
+ *
+ * Inheriting the normal form's tags is right for a HAND-AUTHORED tag: those encode something no
+ * rule can read, so the normal one is the best available reading of the shiny text too. It is
+ * wrong for a DERIVED tag, which is by definition a reading of the normal text — and the shiny
+ * line has just replaced that text. Shiny magnitudes differ from normal ones almost everywhere, so
+ * the inherited tag is not merely stale but numerically wrong: shiny Lignite published "24 times
+ * this monster's Burn" while carrying the normal form's 20, and the same gap sat on Brawlmantis,
+ * Ginsage, Kickrane and Ninflora. This is the `abilityText`/`abilityTags` split that T252b fixed
+ * for the species `scripts/tag-shiny-abilities.mjs` reached, reaching the rest of them.
+ *
+ * Falls back to the normal tags when the shiny text derives nothing — Aster's does — because
+ * dropping a working tag would be a worse answer than keeping an approximate one.
+ */
+function shinyAbilityTags(base: CreatureRecord, shinyText: string | undefined): AbilityTag[] {
+  if (shinyText === undefined || shinyText === base.abilityText) return base.abilityTags;
+  const fromNormal = deriveAbilityTags({ ...base, abilityTags: [] });
+  const wasDerived =
+    fromNormal.length > 0 && JSON.stringify(fromNormal) === JSON.stringify(base.abilityTags);
+  if (!wasDerived) return base.abilityTags;
+  const fromShiny = deriveAbilityTags({ ...base, abilityTags: [], abilityText: shinyText });
+  return fromShiny.length > 0 ? fromShiny : base.abilityTags;
+}
+
+/**
  * The shiny overlay as a PURE function of a record you already hold.
  *
  * Kept separate from `resolveCreatureVariant` because the engine is given its corpus as a
@@ -245,7 +271,7 @@ export function applyShinyOverlay(
     // the tags a shiny Bunchop would read "+60 HP" while the engine computed +50.
     // `?? base.x` not `||`: a species with no published shiny ability keeps its normal one.
     abilityText: line.abilityText ?? base.abilityText,
-    abilityTags: line.abilityTags ?? base.abilityTags,
+    abilityTags: line.abilityTags ?? shinyAbilityTags(base, line.abilityText),
     // T254: the shiny sprite where one exists; 10 species have none and keep the normal art.
     spriteFile: line.spriteFile ?? base.spriteFile,
   };

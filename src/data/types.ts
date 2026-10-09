@@ -310,6 +310,32 @@ export type AbilityTag =
       sourceStat: StatusEffectType | StatChangeStat.Damage | StatChangeStat.Multicast;
       multiplier: number;
       effect: EffectDescriptor;
+    }
+  /**
+   * 2026-10-08. "Has additional Damage equal to 20 times this monster's Burn" — Lignite.
+   *
+   * The third member of the stat-scaling trio, which previously had a hole in the middle:
+   * `StatFromStat` reads a selector over ALLIES and `StatFromTargetStatus` reads the enemy, so a
+   * monster scaling off its OWN stat had nowhere to be written.
+   *
+   * ## This is not an "Effective this battle" effect, and that is the point
+   *
+   * Every other resolvable tag describes something the BATTLE does — an ally's aura, a trinket, an
+   * on-battle-start grant — so the Calculator shows it in the "Effective this battle" band and
+   * leaves the card and grid chip reading the published figure. The game does the opposite with
+   * this family: a Lignite holding 5 Burn shows a **100 Damage chip** on its team-pane tile and
+   * 100 on its ability card, because the ability is a restatement of what the monster IS rather
+   * than something happening to it. So this tag resolves in `engine/selfScaling.ts`, which runs on
+   * the card and chip path as well as the engine's, and deliberately NOT in `resolveBoard`.
+   *
+   * `sourceStat` is a status and never a stat this tag can itself write, so the scaling cannot
+   * feed itself: the value is a fixed point by construction rather than by iteration limit.
+   */
+  | {
+      kind: AbilityTagKind.StatFromOwnStat;
+      sourceStat: StatusEffectType;
+      stat: StatChangeStat.Damage | StatChangeStat.Heal;
+      multiplier: number;
     };
 
 // ---------------------------------------------------------------------------

@@ -1,6 +1,7 @@
 import type { CreatureRecord, PerCastOutput, StatModifier, StatusEffectType } from "../../../data/types";
 import { STATUS_COLOR_KEY } from "../../../data/format";
 import { applyModifiers } from "../../../engine/modifiers";
+import { applySelfScaling } from "../../../engine/selfScaling";
 import { ModifierStat, StatColorKey } from "../../../data/enums";
 
 /**
@@ -50,7 +51,7 @@ export function perCastOutputOf(creature: CreatureRecord, modifiers?: StatModifi
 
   // Shared with the engine so the card and the simulation cannot disagree about what a modifier
   // does. This is also where "a modifier may CREATE an effect" lives -- see engine/modifiers.ts.
-  const output = applyModifiers(
+  const modified = applyModifiers(
     {
       damage: creature.publishedCast?.damage ?? null,
       damageType: creature.publishedCast?.channel ?? null,
@@ -66,7 +67,11 @@ export function perCastOutputOf(creature: CreatureRecord, modifiers?: StatModifi
     },
   );
 
-  return output;
+  // Ongoing self-scaling ("additional Damage equal to 20 times this monster's Burn") belongs in
+  // the BASE figure for the same reason manual modifiers do, and the game agrees: it shows the
+  // scaled number on the team-pane chip and the ability card, not as a battle effect. Last, so it
+  // reads the Burn the modifiers above produced -- see engine/selfScaling.ts.
+  return applySelfScaling(creature.abilityTags, modified);
 }
 
 /**

@@ -108,6 +108,10 @@ function sharedAmountEffects(clause: string): { stat: ModifierStat; amount: numb
   return a && b ? [a, b] : [];
 }
 
+const STATUS_BY_NAME = new Map(
+  Object.values(StatusEffectType).map((s) => [s.toLowerCase(), s]),
+);
+
 const TYPE_BY_NAME = new Map(Object.keys(CREATURE_TYPE).map((t) => [t.toLowerCase(), t as CreatureType]));
 const RARITY_BY_NAME = new Map(Object.keys(RARITY).map((r) => [r.toLowerCase(), r as Rarity]));
 
@@ -312,6 +316,33 @@ const RULES: DerivationRule[] = [
       "i",
     ),
     build: (m, r) => ongoingGrant(m[1]!, m[2], m[3]!, r),
+  },
+
+  /*
+   * ONGOING SELF-SCALING — "Has additional Damage equal to 20 times this monster's Burn." (Lignite)
+   *
+   * Reads the monster's OWN stat, which is what separates it from the two neighbouring shapes the
+   * table must not swallow: "...equal to 100% of the total Damage of adjacent allies" (Gaiadrasil)
+   * reads a selector over allies, and "...equal to 200% of the Poison stacks on the enemy"
+   * (Fumungus) reads the shared target. Both are spelled differently and neither matches here.
+   *
+   * The multiplier is a bare "N times", not a percentage, and the corpus uses both forms for the
+   * same idea — so the `%` suffix is accepted and divided, matching `effect()` above.
+   */
+  {
+    family: "ongoing/self-scaling",
+    pattern:
+      /^Has additional (Damage|Heal) equal to (\d+(?:\.\d+)?)(%?) times this monster's (Burn|Poison|Shock|Shield)\.$/i,
+    build: (m) => {
+      const sourceStat = STATUS_BY_NAME.get(m[4]!.toLowerCase());
+      if (!sourceStat) return null;
+      return {
+        kind: AbilityTagKind.StatFromOwnStat,
+        sourceStat,
+        stat: m[1]!.toLowerCase() === "heal" ? StatChangeStat.Heal : StatChangeStat.Damage,
+        multiplier: m[3] === "%" ? Number(m[2]) / 100 : Number(m[2]),
+      };
+    },
   },
 
   // "+4 Burn and +4 Poison permanently." / "+50 Damage permanently." — the bare self-grant.

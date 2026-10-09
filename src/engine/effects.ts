@@ -148,6 +148,18 @@ export const RESOLVED_TAG_KINDS = [
   "statFromTargetStatus",
   "triggerOnAllyTrigger",
   "gainOnAllyStatus",
+  /*
+   * 2026-10-08. Resolved in `engine/selfScaling.ts`, which the CARD runs as well as the engine —
+   * not here, and not anywhere else, or it would be counted twice.
+   *
+   * An Ongoing ability that scales off the monster's own stat is folded into its displayed stats
+   * by the game rather than shown as a battle effect, so it cannot live in the resolver whose
+   * output the UI labels "Effective this battle". It is listed here regardless because the engine
+   * genuinely computes it, and `RESOLVED_TAG_KINDS` is the coverage report's definition of
+   * "supported" — omitting it would under-report a modelled family, which is the mirror of the
+   * dishonesty this constant exists to prevent.
+   */
+  "statFromOwnStat",
 ] as const;
 
 /** True when `tag` is one this resolver understands. Keeps the "can we act on it?" test in one place. */

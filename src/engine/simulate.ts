@@ -1,5 +1,6 @@
 import type { PerCastOutput, Corpus, CreatureRecord, GridSlot, PlacementKey, StatModifier, StatusEffectInstance, TeamConfiguration, TimelineEvent } from "../data/types";
 import { applyModifiers } from "./modifiers";
+import { applySelfScaling, selfScaledAmount } from "./selfScaling";
 import { effectiveCooldown } from "./cooldown";
 import { applyStatusTick, applyShockProc } from "./status";
 import { STABLE_SLOT_ORDER, isAdjacent, slotKey, slotsEqual, stableSlotIndex } from "./grid";
@@ -174,6 +175,14 @@ interface Cast {
     /** 2026-10-07 round 7 (WI-002) */
     healAmountAdd: number;
   };
+}
+
+/** The one of `Cast.modifiers`' four per-status fields that `status` names. */
+function statusModifierAdd(modifiers: Cast["modifiers"], status: StatusEffectType): number {
+  if (status === StatusEffectType.Burn) return modifiers.burnAmountAdd;
+  if (status === StatusEffectType.Poison) return modifiers.poisonAmountAdd;
+  if (status === StatusEffectType.Shock) return modifiers.shockAmountAdd;
+  return modifiers.shieldAmountAdd;
 }
 
 /**
@@ -381,7 +390,7 @@ export function simulate(
      * baseDamage !== null`, which silently dropped a damage modifier on every damage-less creature
      * AND on every Burn/Poison/Shock-type attacker.
      */
-    const output = applyModifiers(
+    const modified = applyModifiers(
       {
         damage: member.resolved.baseDamage,
         damageType: creature.publishedCast?.channel ?? null,
@@ -395,6 +404,10 @@ export function simulate(
       },
       { damageFlatAdd, multicastAdd, healAmountAdd, status: statusAmountAdd },
     );
+    // Applied here and on the card path both, so the two produce the same number and the
+    // "Effective this battle" band correctly stays hidden for a creature whose only ability is
+    // this one. See `engine/selfScaling.ts` for why it is not resolved in `resolveBoard`.
+    const output = applySelfScaling(creature.abilityTags, modified);
     perCreatureEffectiveStats[key] = { cooldownSeconds: cooldown, output };
 
     // Modifiers are reported above whether or not this creature casts; only the SCHEDULE depends on
@@ -743,7 +756,21 @@ export function simulate(
         const stacks = rule.status === "Poison" ? poisonLayers : rule.status === "Shock" ? shockLayers : 0;
         targetScaled += stacks * rule.multiplier;
       }
-      const extra = accruedDamage + Math.round(targetScaled) + modifiers.damageFlatAdd;
+      /*
+       * Damage scaled off this creature's OWN status (Lignite). Recomputed per cast for the same
+       * reason `targetScaled` is: `accrued` grows as the battle runs, so a Lignite whose Burn an
+       * On Cast trigger raises hits harder from the cast after it.
+       *
+       * Reads the PER-APPLICATION amount, not the amount applied this instant. Onsetra's "applies
+       * its Ongoing abilities 1 additional time" repeats the application without changing the
+       * monster's Burn, so multiplying by `ongoingReps` here would pay the grant twice.
+       */
+      const selfScaled = selfScaledAmount(creature.abilityTags, StatChangeStat.Damage, (status) =>
+        (effective?.appliesStatus.find((s) => s.type === status)?.amount ?? 0) +
+        (accrued?.status.get(status) ?? 0) +
+        statusModifierAdd(modifiers, status),
+      );
+      const extra = accruedDamage + Math.round(targetScaled) + selfScaled + modifiers.damageFlatAdd;
       const resolvedDamage =
         resolvedBase === null ? (extra !== 0 ? extra : null) : resolvedBase + extra;
       // A creature with NO published cast that has ACCRUED damage hits directly: Bonshell publishes
