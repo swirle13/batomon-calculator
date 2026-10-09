@@ -113,6 +113,16 @@ describe("tokenizeAbilityText — typings", () => {
   });
 });
 
+describe("tokenizeAbilityText — words the game leaves plain", () => {
+  it("does not colour 'day'", () => {
+    // It was in the mechanic tier on the assumption that a unit of run time is a mechanic noun.
+    // The in-game Swim Coach card colours the typing and nothing else (2026-10-08), so this pins
+    // the removal: re-adding "days?" turns a plain word amber on eight trainer cards.
+    const swimCoach = getTrainerById(TrainerId.SwimCoach)!;
+    expect(render(swimCoach.abilityText)).toBe("Gain a random [Water|Water] monster each day.");
+  });
+});
+
 describe("tokenizeAbilityText — it must not change the text", () => {
   it("round-trips EVERY record with ability text, exactly", () => {
     // The assertion that matters most: a highlighter that drops or duplicates a character is worse
@@ -125,7 +135,7 @@ describe("tokenizeAbilityText — it must not change the text", () => {
 
   it("round-trips every TRAINER's ability text too", () => {
     // Trainers render through this since 2026-10-08, and their prose is a different shape from a
-    // creature's — "day/round", "$30", "1 rarity tier higher".
+    // creature's — "$30", "shop rank +2", "1 rarity tier higher".
     const broken = trainers.filter(
       (t) => tokenizeAbilityText(t.abilityText).map((r) => r.text).join("") !== t.abilityText,
     );

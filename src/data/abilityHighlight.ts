@@ -97,7 +97,10 @@ const KEYWORDS: { pattern: string; colorKey: RunColorKey }[] = [
   { pattern: "Trigger(?:s|ed)?", colorKey: "mechanic" },
   { pattern: "HP", colorKey: "mechanic" },
   { pattern: "level", colorKey: "mechanic" },
-  { pattern: "days?", colorKey: "mechanic" },
+  // "day" is NOT here, and the omission is deliberate (2026-10-08). It was added on the assumption
+  // that a unit of run time is a mechanic noun; the in-game trainer cards leave it plain — "Gain a
+  // random Water monster each day." colours the typing and nothing else — so it was colouring a
+  // word the game does not. Evidence over inference, the same rule `shield` was corrected under.
   { pattern: "shop", colorKey: "mechanic" },
   // "Cooldown" alone is a real stat and appears without "Speed" ("increase this monster's Cooldown
   // by 6"). It MUST lose to "Cooldown Speed", which the length sort guarantees — this pair is the

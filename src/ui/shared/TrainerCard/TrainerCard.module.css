@@ -65,8 +65,10 @@
   /*
    * MEASURED, not estimated (FR-043): every one of the 23 trainers was selected in a real browser at
    * this card's width and its footer measured. The worst case is Painter — two lines of ability text
-   * plus the affected-species button — at 4.32rem; Musician is the wordiest at three lines and
-   * 3.48rem. 4.5rem covers both, so the card holds one height for every trainer and for the empty
+   * plus the affected-species button — at 4.32rem; Musician was the wordiest at three lines and
+   * 3.48rem, and is now one line after its text was corrected to the game's wording (2026-10-08),
+   * so the reserve is looser than measured rather than tighter. 4.5rem covers Painter, which was
+   * always the binding case, so the card holds one height for every trainer and for the empty
    * state, and nothing below it moves when a trainer is chosen.
    */
   min-height: 4.5rem;

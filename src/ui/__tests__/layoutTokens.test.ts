@@ -319,8 +319,10 @@ describe("the trainer card holds one height for every trainer", () => {
 
   it("reserves the measured worst-case footer height", () => {
     // 4.5rem covers Painter (two lines plus the affected-species button, 4.32rem measured in a real
-    // browser) and Musician (three lines, 3.48rem). Deleting this makes the card resize again, which
-    // no unit test in jsdom can see — jsdom does no layout.
+    // browser), which is the worst case; Musician was the runner-up at three lines and 3.48rem
+    // until its text was corrected to the game's one-line wording (2026-10-08), so the reserve now
+    // has more slack than when it was measured, not less. Deleting it makes the card resize again,
+    // which no unit test in jsdom can see — jsdom does no layout.
     expect(card).toMatch(/min-height:\s*4\.5rem/);
   });
 
