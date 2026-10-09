@@ -1,13 +1,32 @@
+import { useState } from "react";
 import { describe, expect, it } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { TotalDps } from "../TeamSummary/TotalDps";
 import { simulate } from "../../engine/simulate";
 import { allCreatureRecords, corpus } from "../../data/corpus";
 import { hasAbilityText } from "../../data/display";
-import { MAX_RECORDED_DAY } from "../../data/enemyHealth";
-import type { TeamConfiguration } from "../../data/types";
+import { MAX_PROJECTED_DAY, MAX_RECORDED_DAY } from "../../data/enemyHealth";
+import type { SimulationResult, TeamConfiguration } from "../../data/types";
 import { GridRow } from "../../data/enums";
 import { Species } from "../../data/ids";
+
+/**
+ * Supplies the day state `CalculatorView` now owns.
+ *
+ * The selector became controlled when the cumulative chart started drawing the same day's HP as a
+ * threshold — one piece of state, two readers. Changing the select is still the gesture under
+ * test, so the harness holds the value rather than the tests asserting on a spy.
+ */
+function TotalDpsHarness({
+  config,
+  result,
+}: {
+  config: TeamConfiguration;
+  result: SimulationResult;
+}) {
+  const [day, setDay] = useState(1);
+  return <TotalDps config={config} result={result} day={day} onDayChange={setDay} />;
+}
 
 const team: TeamConfiguration = {
   placements: [{ slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Bumblebolt, level: 1 }],
@@ -39,7 +58,7 @@ describe("DPS scrubber indexes the series, not seconds (2026-10-06)", () => {
     // Both are always visible (item 4), so comparing "right now" against "the whole fight" needs no
     // toggling — and the "Whole window" button is gone, since "window" was never defined for users.
     const result = simulate(team, corpus);
-    render(<TotalDps config={team} result={result} />);
+    render(<TotalDpsHarness config={team} result={result} />);
     expect(screen.getByText("DPS average")).toBeTruthy();
     expect(screen.getByText("DPS at t=0s")).toBeTruthy();
     expect(screen.queryByText("Whole window")).toBeNull();
@@ -98,26 +117,29 @@ describe("TTK figure (2026-10-07)", () => {
 
   it("defaults to day 1 and shows a time", () => {
     const result = simulate(poisonTeam, corpus);
-    render(<TotalDps config={poisonTeam} result={result} />);
+    render(<TotalDpsHarness config={poisonTeam} result={result} />);
     expect(screen.getByLabelText("Day to compute time-to-kill against")).toHaveProperty("value", "1");
     expect(screen.getByText(/TTK on day/)).toBeTruthy();
   });
 
-  it("offers every day the HP table actually has", () => {
-    // Bounded by the data rather than an arbitrary range: offering day 25 would imply we know its
-    // HP, and `enemyHpForDay` deliberately returns null past the recording.
+  it("offers every day the module can produce a figure for, marking the projected ones", () => {
+    // Bounded by `MAX_PROJECTED_DAY`, not by the recording: runs go past day 19, and a fitted
+    // power law reproduces days 9-19 within 2.9%, so refusing to offer day 20 withholds a usable
+    // answer. The "(est.)" suffix is what keeps the offer honest — see `enemyHealth.ts`.
     const result = simulate(poisonTeam, corpus);
-    render(<TotalDps config={poisonTeam} result={result} />);
+    render(<TotalDpsHarness config={poisonTeam} result={result} />);
     const select = screen.getByLabelText("Day to compute time-to-kill against") as HTMLSelectElement;
-    expect(select.options.length).toBe(MAX_RECORDED_DAY);
-    expect(select.options[MAX_RECORDED_DAY - 1]!.value).toBe(String(MAX_RECORDED_DAY));
+    expect(select.options.length).toBe(MAX_PROJECTED_DAY);
+    expect(select.options[MAX_RECORDED_DAY - 1]!.textContent).toBe(String(MAX_RECORDED_DAY));
+    expect(select.options[MAX_RECORDED_DAY]!.textContent).toBe(`${MAX_RECORDED_DAY + 1} (est.)`);
+    expect(select.options[MAX_PROJECTED_DAY - 1]!.value).toBe(String(MAX_PROJECTED_DAY));
   });
 
   it("renders '>window' rather than a dash when the team cannot finish in time", () => {
     // A late day this pair cannot clear. "Not within this window" is a real answer and reads
     // differently from missing data.
     const result = simulate(poisonTeam, corpus);
-    const { container } = render(<TotalDps config={poisonTeam} result={result} />);
+    const { container } = render(<TotalDpsHarness config={poisonTeam} result={result} />);
     fireEvent.change(screen.getByLabelText("Day to compute time-to-kill against"), {
       target: { value: "10" },
     });

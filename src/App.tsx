@@ -106,6 +106,16 @@ function CalculatorView() {
   // team data" amendment): transient, lifted here (not TeamConfigContext) because it's purely
   // a display concern, never read by simulate() or persisted with the team configuration.
   const [highlightedSlot, setHighlightedSlot] = useState<GridSlot | null>(null);
+  /*
+   * The run day, lifted here for the same reason as `highlightedSlot` and NOT put in
+   * `TeamConfigContext`: it describes who you are fighting, not what your team is, so it must not
+   * travel in a shared build or be saved with one.
+   *
+   * It lives above both consumers because `TotalDps` reads it for the TTK figure and
+   * `CumulativeChart` draws the same day's HP as a threshold. Day 1 by default — the day most
+   * boards are built against, and the only one with an observed battle to check against.
+   */
+  const [day, setDay] = useState(1);
 
   return (
     <div>
@@ -136,7 +146,7 @@ function CalculatorView() {
         </div>
       </div>
       <PlacementAdvisor result={result} />
-      <TotalDps config={config} result={result} />
+      <TotalDps config={config} result={result} day={day} onDayChange={setDay} />
       <TeamSummary config={config} result={result} />
       {/* FR-037: the simulation window governs the chart's time axis, not the per-second summary
           values, so it sits immediately above the chart and below the tables. */}
@@ -154,7 +164,7 @@ function CalculatorView() {
       {/* One boundary each, so a chart appears as soon as its own chunk is ready and each one
           reserves only the space it will actually occupy. */}
       <Suspense fallback={<ChartPlaceholder height={316} />}>
-        <CumulativeChart result={deferredResult} />
+        <CumulativeChart result={deferredResult} day={day} />
       </Suspense>
       <Suspense fallback={<ChartPlaceholder height={370} />}>
         <DpsRateChart result={deferredResult} />

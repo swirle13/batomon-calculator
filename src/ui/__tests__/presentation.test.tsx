@@ -496,7 +496,7 @@ describe("round 9: total DPS and grid sizing", () => {
     // board is no longer a pure-status team. The headline figure still matters (3 of 4 creatures
     // contribute nothing to the direct column), so the test's point survives; its premise moved.
     expect(Object.keys(result.perCreatureDps).length).toBe(1);
-    render(<TotalDps config={poisonTeam} result={result} />);
+    render(<TotalDps config={poisonTeam} result={result} day={1} onDayChange={() => {}} />);
     // RE-DERIVED round 9 (T202/T200b), not re-baselined. This read 136.60 while every creature
     // ability on this board was inert. With the effect resolver and the event-driven scheduler,
     // Miasmaw applies Poison 336 instead of 10 and Cobrex fires at t=9.1 instead of t=15, so the
@@ -564,7 +564,7 @@ describe("round 9: total DPS and grid sizing", () => {
         { slot: { row: GridRow.Back, col: 1 }, creatureId: Species.Craghorn, level: 1 },
       ],
     };
-    render(<TotalDps config={team} result={simulate(team, corpus)} />);
+    render(<TotalDps config={team} result={simulate(team, corpus)} day={1} onDayChange={() => {}} />);
     expect(screen.queryByText(/Not counted in this calculation/)).toBeNull();
     expect(screen.queryByText(/does not compute/)).toBeNull();
     expect(screen.queryByText(/between battles/)).toBeNull();
@@ -647,7 +647,7 @@ describe("round 9: total DPS and grid sizing", () => {
 
   it("reads 'DPS average' until the scrubber is moved (WI-R11-003)", () => {
     const result = simulate(poisonTeam, corpus);
-    render(<TotalDps config={poisonTeam} result={result} />);
+    render(<TotalDps config={poisonTeam} result={result} day={1} onDayChange={() => {}} />);
     expect(screen.getByText("DPS average")).toBeTruthy();
     // The direct-vs-facilitated explanation is gone; only the figure and its caption remain.
     expect(screen.queryByText(/status\/facilitated/)).toBeNull();

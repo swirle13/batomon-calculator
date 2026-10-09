@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { ENEMY_HP_BY_DAY, MAX_RECORDED_DAY, enemyHpForDay, timeToKill } from "../enemyHealth";
+import {
+  ENEMY_HP_BY_DAY,
+  MAX_PROJECTED_DAY,
+  MAX_RECORDED_DAY,
+  enemyHpEntryForDay,
+  enemyHpForDay,
+  timeToKill,
+} from "../enemyHealth";
 import { simulate } from "../../engine/simulate";
 import { corpus } from "../corpus";
 import type { TeamConfiguration } from "../types";
@@ -22,11 +29,45 @@ describe("enemy HP by day", () => {
     expect(ENEMY_HP_BY_DAY[19]! * 1.25).toBe(259_625);
   });
 
-  it("returns null beyond the recording rather than extrapolating", () => {
-    // The growth ratio is still falling at the last sample (1.67 -> 1.25 and dropping), so the
-    // curve has not settled. Projecting it would produce a confident number with nothing behind it.
-    expect(enemyHpForDay(MAX_RECORDED_DAY + 1)).toBeNull();
+  it("returns null before day 1 and past the projection limit", () => {
     expect(enemyHpForDay(0)).toBeNull();
+    expect(enemyHpForDay(MAX_PROJECTED_DAY + 1)).toBeNull();
+    expect(enemyHpForDay(19.5)).toBeNull();
+  });
+});
+
+describe("projected days", () => {
+  it("marks observed days as observed and projected days as projected", () => {
+    expect(enemyHpEntryForDay(19)).toEqual({ hp: 207_700, source: "observed" });
+    expect(enemyHpEntryForDay(20)?.source).toBe("projected");
+  });
+
+  it("reproduces the recorded curve from day 9 on, which is what licenses the projection", () => {
+    // The exponent is fitted, so this is the fit's own accuracy claim held to. If someone retunes
+    // it against new observations and this still passes, the projection is still earned.
+    for (let day = 9; day <= MAX_RECORDED_DAY; day++) {
+      const fitted = 207_700 * (day / MAX_RECORDED_DAY) ** 3.833;
+      expect(Math.abs(fitted / ENEMY_HP_BY_DAY[day]! - 1), `day ${day}`).toBeLessThan(0.029);
+    }
+  });
+
+  it("continues the curve without a step or a kink at the day 19 boundary", () => {
+    // Anchoring at the last observation is the point: a free-floating fit undershoots day 19 by
+    // 2.4%, so day 20 would have grown by only 1.19x where the observed trend says ~1.22x.
+    const ratios: number[] = [];
+    let prev = ENEMY_HP_BY_DAY[MAX_RECORDED_DAY]!;
+    for (let day = MAX_RECORDED_DAY + 1; day <= MAX_PROJECTED_DAY; day++) {
+      const hp = enemyHpForDay(day)!;
+      ratios.push(hp / prev);
+      prev = hp;
+    }
+    // Still growing, still decelerating, and starting below the last observed ratio of 1.236.
+    expect(ratios[0]!).toBeGreaterThan(1.2);
+    expect(ratios[0]!).toBeLessThan(ENEMY_HP_BY_DAY[19]! / ENEMY_HP_BY_DAY[18]!);
+    for (let i = 1; i < ratios.length; i++) {
+      expect(ratios[i]!).toBeGreaterThan(1);
+      expect(ratios[i]!).toBeLessThan(ratios[i - 1]!);
+    }
   });
 });
 

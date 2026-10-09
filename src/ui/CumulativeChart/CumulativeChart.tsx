@@ -4,7 +4,11 @@ import { STAT_COLORS } from "../../data/statColors";
 
 interface CumulativeChartProps {
   result: SimulationResult;
+  /** Day whose enemy HP is drawn as a threshold. Shares the selector in `TotalDps`. */
+  day: number;
 }
+
+const THRESHOLD_COLOR = "#ef5350";
 
 /**
  * FR-010: cumulative total damage + per-status-effect value over the simulated window.
@@ -13,6 +17,8 @@ interface CumulativeChartProps {
  */
 import { SeriesChart } from "./SeriesChart";
 import { sameSeries } from "./sameSeries";
+import { enemyThresholdFor } from "./enemyThreshold";
+import styles from "./CumulativeChart.module.css";
 /*
  * `memo` is load-bearing, not a reflex. `CalculatorView` holds the hovered-slot state that drives
  * the detail panel, so every pointer move across the grid re-renders the whole view — and a
@@ -23,12 +29,25 @@ import { sameSeries } from "./sameSeries";
  * a new result object holding an identical damage curve, and this chart was rebuilding every path
  * in it to draw the same line. See `sameSeries` — including its rule about reading a second field.
  */
-export const CumulativeChart = memo(function CumulativeChart({ result }: CumulativeChartProps) {
+export const CumulativeChart = memo(function CumulativeChart({ result, day }: CumulativeChartProps) {
   const series = result.cumulativeSeries;
   const xValues = series.map((p) => p.tSeconds);
   // FR-017 / research.md D4: the window end is always the last sample, used as an explicit numeric
   // domain so Recharts picks clean ticks instead of a category axis keyed off raw timestamps.
   const windowSeconds = xValues.length > 0 ? xValues[xValues.length - 1]! : 0;
+
+  /*
+   * THE ENEMY'S HP AS A LINE TO CROSS (2026-10-08).
+   *
+   * `timeToKill` has existed since the HP table was recorded, but only ever as a figure in
+   * `TotalDps` — "14.5s" with no way to see how it was arrived at, or how close a build that
+   * misses came. Drawing the threshold puts the kill back where it happens: the instant the Total
+   * line crosses the dashes. It also makes the SHAPE legible, which the number cannot — a curve
+   * that crosses while still steepening has headroom, one that crosses as it flattens is finished.
+   */
+  const threshold = enemyThresholdFor(series, day);
+  const hpText = threshold === null ? "" : `${threshold.hp.toLocaleString()} HP`;
+  const estimated = threshold?.source === "projected" ? " (est.)" : "";
 
   return (
     <section>
@@ -67,13 +86,55 @@ export const CumulativeChart = memo(function CumulativeChart({ result }: Cumulat
           { name: "Poison", values: series.map((p) => p.byStatus.Poison), color: STAT_COLORS.poison, lineType: "stepAfter" },
           { name: "Shock", values: series.map((p) => p.byStatus.Shock), color: STAT_COLORS.shock, lineType: "stepAfter" },
         ]}
+        referenceLines={
+          threshold?.drawable
+            ? [
+                {
+                  y: threshold.hp,
+                  label:
+                    threshold.killSeconds === null
+                      ? `Day ${day} · ${hpText}${estimated}`
+                      : `Day ${day} · ${hpText}${estimated} — cleared at ${threshold.killSeconds}s`,
+                  color: THRESHOLD_COLOR,
+                },
+              ]
+            : []
+        }
         xLabel="seconds (0.5s increments)"
         yLabel="cumulative damage"
         xMax={windowSeconds}
         xTickInterval={1}
-        ariaLabel="Line chart of cumulative damage by source over the simulated time window, sampled every 0.5 seconds"
+        ariaLabel={
+          threshold?.drawable
+            ? `Line chart of cumulative damage by source over the simulated time window, sampled every 0.5 seconds, with day ${day}'s enemy team health of ${hpText} marked as a threshold`
+            : "Line chart of cumulative damage by source over the simulated time window, sampled every 0.5 seconds"
+        }
         formatValue={(v) => v.toFixed(0)}
       />
+      {/* The caption carries whatever the line cannot: either why it is not drawn, or the standing
+          caveat that the HP table assumes an enemy that never heals, shields or clears status. */}
+      {/* `peakDamage > 0` keeps the empty board quiet. With nothing placed the ratio is a division
+          by zero dressed up as a fact — "300x the 0 this team deals" — and an empty chart does not
+          need telling that it cannot kill anything. */}
+      {threshold !== null && !threshold.drawable && threshold.peakDamage > 0 && (
+        <p className={styles.note}>
+          Day {day}&apos;s {hpText}
+          {estimated} is {(threshold.hp / Math.max(threshold.peakDamage, 1)).toFixed(1)}× the{" "}
+          {threshold.peakDamage.toLocaleString(undefined, { maximumFractionDigits: 0 })} this team
+          deals in {windowSeconds}s, so the threshold is left off the chart rather than flattening
+          the curve into the axis.
+        </p>
+      )}
+      {threshold?.drawable && (
+        <p className={styles.note}>
+          The threshold is a <strong>floor</strong>: it assumes an enemy that never heals, shields
+          or clears status, all of which exist, so a real fight runs longer.
+          {estimated !== "" && " This day's HP is projected from the recorded curve, not observed."}
+        </p>
+      )}
     </section>
   );
-}, (prev, next) => sameSeries(prev.result.cumulativeSeries, next.result.cumulativeSeries));
+}, (prev, next) =>
+  // The comparator MUST cover `day` as well — see `sameSeries` on exactly this rule. Without it a
+  // day change leaves the old threshold on screen, since the series it is drawn over is unchanged.
+  prev.day === next.day && sameSeries(prev.result.cumulativeSeries, next.result.cumulativeSeries));

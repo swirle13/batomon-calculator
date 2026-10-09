@@ -57,14 +57,69 @@ export const ENEMY_HP_BY_DAY: Readonly<Record<number, number>> = {
 export const MAX_RECORDED_DAY = 19;
 
 /**
- * Enemy HP for a day, or `null` beyond what was recorded.
+ * Exponent of the power law fitted to the late curve, anchored at the last observation:
  *
- * Returns `null` rather than extrapolating. The growth ratio is still falling at the last sample
- * (1.67 → 1.25 and dropping), so it has not settled, and projecting from an unsettled curve would
- * produce a confident-looking number with nothing behind it.
+ *     HP(d) = HP(19) · (d / 19) ^ 3.833
+ *
+ * ## Why this supersedes "do not extrapolate"
+ *
+ * This file used to refuse to project, on the grounds that the day-over-day growth ratio was
+ * "still falling at the last sample" and so had not settled. That reasoning held while the ratio
+ * was all anyone had looked at. Fitted on a log-log axis the curve is not unsettled at all — it is
+ * a clean power law from day 9 on, and the falling ratio is simply what a power law DOES
+ * (1.236 at day 18 is just (19/18)^3.833).
+ *
+ * The fit reproduces every recorded day from 9 to 19 within 2.9%, and the anchor makes day 20
+ * continuous with the day-19 observation rather than stepping off it. The implied ratios continue
+ * the observed trend without a kink: …1.251, 1.236 observed, then 1.217, 1.206, 1.195 projected.
+ *
+ * ## Where it fails
+ *
+ * Day 8 is off by 9% and everything below it is off by far more — days 1 to 7 are clearly
+ * hand-authored and no curve through the late game describes them. That does not matter here,
+ * since those days are all observed, but it is why the exponent must never be used to interpolate
+ * BACKWARDS as a sanity check on the table.
  */
+const LATE_GROWTH_EXPONENT = 3.833;
+
+/**
+ * The last day this module will produce a figure for.
+ *
+ * The recorded run reached day 20, so one day past the table is a near-certain real day and the
+ * rest are a guess at how long a run goes. 25 is where the projection stops being useful rather
+ * than where it stops being arithmetically possible: at ~1.17× per day the error bar on an
+ * unvalidated exponent compounds past anything a build decision should rest on.
+ */
+export const MAX_PROJECTED_DAY = 25;
+
+/** Whether a day's HP was read off the battle UI or produced by {@link LATE_GROWTH_EXPONENT}. */
+export type EnemyHpSource = "observed" | "projected";
+
+export interface EnemyHpEntry {
+  hp: number;
+  source: EnemyHpSource;
+}
+
+/**
+ * Enemy HP for a day with its provenance, or `null` past {@link MAX_PROJECTED_DAY}.
+ *
+ * Callers that show the number to a user should show the source alongside it. A projected figure
+ * that looks like an observed one is the failure this return shape exists to prevent.
+ */
+export function enemyHpEntryForDay(day: number): EnemyHpEntry | null {
+  const recorded = ENEMY_HP_BY_DAY[day];
+  if (recorded !== undefined) return { hp: recorded, source: "observed" };
+  if (!Number.isInteger(day) || day <= MAX_RECORDED_DAY || day > MAX_PROJECTED_DAY) return null;
+
+  const raw = ENEMY_HP_BY_DAY[MAX_RECORDED_DAY]! * (day / MAX_RECORDED_DAY) ** LATE_GROWTH_EXPONENT;
+  // Rounded to the hundred, which is the granularity the observed rows are recorded at. Carrying
+  // the raw float would print "252799.7" and claim a precision the fit does not have.
+  return { hp: Math.round(raw / 100) * 100, source: "projected" };
+}
+
+/** Enemy HP for a day, observed or projected, or `null` past {@link MAX_PROJECTED_DAY}. */
 export function enemyHpForDay(day: number): number | null {
-  return ENEMY_HP_BY_DAY[day] ?? null;
+  return enemyHpEntryForDay(day)?.hp ?? null;
 }
 
 /**

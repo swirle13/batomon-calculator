@@ -1,0 +1,12 @@
+/* Matches `TeamSummary`'s `.note` — this is the same kind of thing, a caption qualifying the
+   figure above it, and the two sit close enough on the page to be compared. */
+.note {
+  max-width: 48rem;
+  margin: var(--space-sm) 0 0;
+  font-size: var(--font-sm);
+  color: var(--text-muted);
+  line-height: 1.45;
+  /* The section inherits the page's centring; a two-line caption centred under a left-aligned
+     plot has a ragged left edge that reads as a different column. */
+  text-align: left;
+}

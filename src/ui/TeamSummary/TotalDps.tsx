@@ -2,13 +2,24 @@ import { memo, useState } from "react";
 import type { SimulationResult, TeamConfiguration } from "../../data/types";
 import { windowAverageDps } from "../../engine/simulate";
 import { formatRate } from "../../data/format";
-import { MAX_RECORDED_DAY, enemyHpForDay, timeToKill } from "../../data/enemyHealth";
+import {
+  MAX_PROJECTED_DAY,
+  MAX_RECORDED_DAY,
+  enemyHpEntryForDay,
+  timeToKill,
+} from "../../data/enemyHealth";
 import { Range, Select } from "../primitives";
 import styles from "./TotalDps.module.css";
 
 interface TotalDpsProps {
   config: TeamConfiguration;
   result: SimulationResult;
+  /**
+   * Lifted to `CalculatorView` (2026-10-08) because the cumulative chart draws this day's HP as a
+   * threshold. Two selectors for one concept would let the figure and the line disagree.
+   */
+  day: number;
+  onDayChange: (day: number) => void;
 }
 
 /**
@@ -40,10 +51,14 @@ interface TotalDpsProps {
  * footnotes to a number.
  */
 /** Memoized for the same reason as `CumulativeChart` — see the note there. */
-export const TotalDps = memo(function TotalDps({ config, result }: TotalDpsProps) {
+export const TotalDps = memo(function TotalDps({
+  config,
+  result,
+  day,
+  onDayChange,
+}: TotalDpsProps) {
   // An index into `dpsRateSeries`, never a count of seconds — see the lookup below.
   const [scrubIndex, setScrubIndex] = useState(0);
-  const [day, setDay] = useState(1);
 
   const windowAverage = windowAverageDps(result);
 
@@ -71,6 +86,14 @@ export const TotalDps = memo(function TotalDps({ config, result }: TotalDpsProps
    * rather than a missing one, so it renders as "> <window>s" instead of a dash.
    */
   const ttkSeconds = timeToKill(result.cumulativeSeries, day);
+  const dayHp = enemyHpEntryForDay(day);
+  const hpText = dayHp === null ? "unknown" : `${dayHp.hp.toLocaleString()} HP`;
+  // Days past the recording carry their own caveat on top of the floor caveat, and the tooltip is
+  // where it belongs: the `(est.)` in the option text says a figure is projected, not by how much.
+  const projectedNote =
+    dayHp?.source === "projected"
+      ? " That HP is PROJECTED from the recorded day 1-19 curve, not observed."
+      : "";
 
   return (
     <section className={styles.wrap}>
@@ -97,8 +120,8 @@ export const TotalDps = memo(function TotalDps({ config, result }: TotalDpsProps
             className={`${styles.value} ${styles.secondary}`}
             title={
               ttkSeconds === null
-                ? `This team does not clear day ${day}'s ${enemyHpForDay(day)?.toLocaleString()} HP within the ${config.simulationWindowSeconds}s window.`
-                : `Clears day ${day}'s ${enemyHpForDay(day)?.toLocaleString()} HP at ${ttkSeconds}s. Assumes an enemy that never heals, shields or clears statuses, so this is a FLOOR on the real time.`
+                ? `This team does not clear day ${day}'s ${hpText} within the ${config.simulationWindowSeconds}s window.${projectedNote}`
+                : `Clears day ${day}'s ${hpText} at ${ttkSeconds}s. Assumes an enemy that never heals, shields or clears statuses, so this is a FLOOR on the real time.${projectedNote}`
             }
           >
             {ttkSeconds === null ? `>${config.simulationWindowSeconds}s` : `${ttkSeconds}s`}
@@ -109,12 +132,16 @@ export const TotalDps = memo(function TotalDps({ config, result }: TotalDpsProps
               size="sm"
               className={styles.daySelect}
               value={day}
-              onChange={(e) => setDay(Number(e.target.value))}
+              onChange={(e) => onDayChange(Number(e.target.value))}
               aria-label="Day to compute time-to-kill against"
             >
-              {Array.from({ length: MAX_RECORDED_DAY }, (_, i) => i + 1).map((d) => (
+              {/* Runs past day 19, so the selector does too. Days beyond the recording are marked
+                  in the option itself rather than only in the tooltip — the marking has to survive
+                  the select being closed, which is when it is read. */}
+              {Array.from({ length: MAX_PROJECTED_DAY }, (_, i) => i + 1).map((d) => (
                 <option key={d} value={d}>
                   {d}
+                  {d > MAX_RECORDED_DAY ? " (est.)" : ""}
                 </option>
               ))}
             </Select>

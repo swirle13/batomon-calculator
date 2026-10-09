@@ -3,6 +3,7 @@ import {
   Legend,
   Line,
   LineChart,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -45,10 +46,30 @@ export interface ChartSeries {
   lineType?: "linear" | "stepAfter";
 }
 
+/**
+ * A horizontal threshold drawn across the plot, e.g. the enemy's HP for a day.
+ *
+ * Unlike a series it has no x extent and takes no part in the tooltip — it is a line you read the
+ * series AGAINST, so the crossing is the information, not the line itself.
+ */
+export interface ChartReferenceLine {
+  /** Position on the y axis, in data units. */
+  y: number;
+  /** Drawn above the line, inside the plot. */
+  label: string;
+  color: string;
+}
+
 export interface SeriesChartProps {
   /** Shared x positions, in seconds. */
   xValues: number[];
   series: ChartSeries[];
+  /**
+   * Thresholds drawn across the plot. The y domain EXTENDS to include them, so a caller passing a
+   * line far above its data will flatten its own series — see `CumulativeChart` on the guard that
+   * decides when a line is worth that cost.
+   */
+  referenceLines?: ChartReferenceLine[];
   xLabel: string;
   yLabel: string;
   /** Upper bound of each axis. Omit for Recharts' auto-domain. */
@@ -81,6 +102,7 @@ function ticksFor(max: number | undefined, interval: number | undefined): number
 export function SeriesChart({
   xValues,
   series,
+  referenceLines = [],
   xLabel,
   yLabel,
   xMax,
@@ -101,7 +123,13 @@ export function SeriesChart({
    * the stat chips use — and no precision is lost, because hovering still gives the exact figure.
    */
   const formatTick = (v: number) => formatCompactValue(v, formatValue);
-  const yAxisWidth = yAxisWidthFor(series, formatTick, yMax);
+  // Reference lines are measured too: they extend the y domain, so a threshold above every sample
+  // is what sets the widest tick, and leaving them out would size the gutter for the series alone.
+  const yAxisWidth = yAxisWidthFor(
+    [...series, { values: referenceLines.map((r) => r.y) }],
+    formatTick,
+    yMax,
+  );
 
   const data = xValues.map((x, i) => {
     const row: Record<string, number> = { x };
@@ -176,6 +204,39 @@ export function SeriesChart({
             the axis and cannot move far from it.
           */}
           <Legend verticalAlign="top" height={24} wrapperStyle={{ color: AXIS, lineHeight: "24px" }} />
+          {/*
+            Before the lines, so a series always draws ON TOP of a threshold it crosses. The
+            crossing point is the thing being read, and a 2px reference stroke over a 1px series
+            stroke hides exactly the pixels that carry it.
+
+            `ifOverflow="extendDomain"` rather than the default `discard`: a threshold the team
+            does not reach is not a mistake to hide, it is the answer — "this board does not get
+            there" has to be visible as distance, which means the axis has to grow to show it.
+          */}
+          {referenceLines.map((r) => (
+            <ReferenceLine
+              key={r.label}
+              y={r.y}
+              stroke={r.color}
+              strokeDasharray="6 4"
+              ifOverflow="extendDomain"
+              /*
+                `insideBottomLeft`, which for a horizontal reference line means ABOVE it.
+
+                A reference line's label box is the line itself — zero height — so `insideTopLeft`
+                anchors the text's top at the stroke and the dashes run straight through the
+                digits the label exists to state. `insideBottomLeft` anchors its BOTTOM there
+                instead, lifting the whole string clear. `offset` is the gap.
+              */
+              label={{
+                value: r.label,
+                position: "insideBottomLeft",
+                offset: 6,
+                fill: r.color,
+                fontSize: 12,
+              }}
+            />
+          ))}
           {series.map((s) => (
             <Line
               key={s.name}
