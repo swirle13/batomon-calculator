@@ -7,13 +7,65 @@
  * rules are otherwise the ones it had there, minus the centring — the advisor's body is a
  * left-aligned column, not a centred panel.
  */
+/*
+ * The arrangement advice: the panel's lead, and the only part at body weight.
+ *
+ * 2026-10-09, user-reported ("no hierarchy of information … a wall of text"). Everything in this
+ * panel used to render at one of two sizes with one of two colours, so the scoring method, the
+ * recommendation and the engine's blind spots all read as equally necessary. The sizes below are
+ * the hierarchy: answer at `--font-md`, basis lines at `--font-2xs`, footnotes smaller still.
+ */
+.arrangement {
+  font-size: var(--font-md);
+  line-height: 1.45;
+}
+
+.headline {
+  margin: 0;
+  color: var(--text-body);
+}
+
+.headline strong {
+  color: var(--text-strong);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The gain is the reason to read the list below it, so it is the one accented figure on the line. */
+.gainPercent {
+  color: var(--text-accent);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.moves {
+  margin: var(--space-2xs) 0 var(--space-sm);
+  padding-left: var(--space-lg);
+  font-size: var(--font-sm);
+  color: var(--text-strong);
+}
+
+.moves li {
+  margin: 0;
+}
+
 .coverage {
   font-size: var(--font-xs);
   color: var(--text-warn);
   border-top: 1px solid var(--line-subtle);
-  padding-top: var(--space-xs);
-  margin: var(--space-sm) 0 0;
+  padding-top: var(--space-sm);
+  margin: var(--space-md) 0 0;
   line-height: 1.4;
+}
+
+/*
+ * No separator when this is the first thing in the panel — the `<summary>` above is already the
+ * boundary, and a rule immediately under the heading read as a second, emptier heading. `summary`
+ * is child 1, so child 2 is whichever block the branch rendered first.
+ */
+.coverage:nth-child(2) {
+  border-top: none;
+  padding-top: 0;
+  margin-top: 0;
 }
 
 .coverageHeading {
@@ -34,4 +86,36 @@
 .coverageNames {
   color: var(--text-warn);
   font-weight: 600;
+}
+
+/*
+ * Method and blind spots, at the smallest size the panel uses.
+ *
+ * Deliberately not a `Disclosure` of its own: FR-069's honesty requirement is that the limits are
+ * visible, and a second collapsed panel would hide them behind two clicks. Small and last is the
+ * compromise — present, skippable, and not competing with the recommendation.
+ */
+.footer {
+  border-top: 1px solid var(--line-subtle);
+  padding-top: var(--space-sm);
+  margin-top: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3xs);
+}
+
+.footerLine,
+.footerWarn {
+  margin: 0;
+  font-size: var(--font-2xs);
+  line-height: 1.4;
+}
+
+.footerLine {
+  color: var(--text-muted);
+}
+
+/* A limit that can make the figures above simply wrong, rather than merely approximate. */
+.footerWarn {
+  color: var(--text-warn);
 }

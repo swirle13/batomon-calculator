@@ -8,10 +8,17 @@
  */
 .bench {
   border-top: 1px solid var(--line-subtle);
-  padding-top: var(--space-xs);
-  margin-top: var(--space-sm);
+  padding-top: var(--space-sm);
+  margin-top: var(--space-md);
   font-size: var(--font-sm);
   line-height: 1.45;
+}
+
+/* See `PlacementAdvisor.module.css`: no rule directly under the panel's own heading. */
+.bench:nth-child(2) {
+  border-top: none;
+  padding-top: 0;
+  margin-top: 0;
 }
 
 .heading {
@@ -94,8 +101,7 @@
   font-size: var(--font-xs);
 }
 
-.basis,
-.searched {
+.basis {
   margin: var(--space-2xs) 0 0;
   font-size: var(--font-2xs);
   color: var(--text-muted);
@@ -103,7 +109,7 @@
 }
 
 .lineup {
-  margin-top: var(--space-sm);
+  margin-top: var(--space-md);
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -112,6 +118,49 @@
 
 .lineup p {
   margin: 0;
+}
+
+/* The lineup's own sub-heading: it is a second answer, not a continuation of the swap table. */
+.lineupHeading {
+  font-weight: 600;
+  color: var(--text-muted);
+  font-size: var(--font-2xs);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.lineupDps {
+  margin-left: var(--space-2xs);
+  color: var(--text-accent);
+  font-variant-numeric: tabular-nums;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: var(--font-sm);
+}
+
+/*
+ * Bring on / Bench / Move as a two-column list. The labels are what makes each line skimmable —
+ * without them the three kinds of change read as one list of names — so they get their own column
+ * rather than being folded into the sentence.
+ */
+.plan {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: var(--space-3xs) var(--space-sm);
+  margin: 0;
+}
+
+.plan dt {
+  color: var(--text-muted);
+  font-size: var(--font-2xs);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  line-height: 1.5;
+}
+
+.plan dd {
+  margin: 0;
+  color: var(--text-strong);
 }
 
 /* The same warning treatment as the advisor's own blind-spot disclosure, because it is one. */

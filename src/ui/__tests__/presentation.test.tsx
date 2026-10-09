@@ -628,7 +628,7 @@ describe("round 9: total DPS and grid sizing", () => {
   it("says NOTHING when every placed ability is actually modelled (FR-075)", () => {
     renderAdvisor(poisonTeam);
     // The old counter rendered "1 of 4 abilities not yet modelled" here. It was wrong.
-    expect(screen.queryByText(/Not counted in this calculation/)).toBeNull();
+    expect(screen.queryByText(/Not counted/)).toBeNull();
   });
 
   it("keeps the caveats out of the headline DPS figures", () => {
@@ -640,8 +640,8 @@ describe("round 9: total DPS and grid sizing", () => {
       ],
     };
     render(<TotalDps config={team} result={simulate(team, corpus)} day={1} onDayChange={() => {}} />);
-    expect(screen.queryByText(/Not counted in this calculation/)).toBeNull();
-    expect(screen.queryByText(/does not compute/)).toBeNull();
+    expect(screen.queryByText(/Not counted/)).toBeNull();
+    expect(screen.queryByText(/not modelled yet/)).toBeNull();
     expect(screen.queryByText(/between battles/)).toBeNull();
   });
 
@@ -659,9 +659,7 @@ describe("round 9: total DPS and grid sizing", () => {
     renderAdvisor(team);
     // 2026-10-08: the NAME, not a count. "1 of 3 abilities not yet modelled" told the user a gap
     // existed and hid which creature it was behind a tooltip.
-    expect(screen.getByText(/the engine does not compute this ability yet/).textContent).toContain(
-      "Reapra",
-    );
+    expect(screen.getByText(/ability not modelled yet/).textContent).toContain("Reapra");
   });
 
   it("separates abilities that fire OUTSIDE the battle from ones it cannot model", () => {
@@ -676,9 +674,9 @@ describe("round 9: total DPS and grid sizing", () => {
     renderAdvisor(team);
     // All three are fully representable — the engine just has no occurrence of their trigger to
     // count — so "not modelled" is the wrong thing to say about them.
-    expect(screen.queryByText(/does not compute/)).toBeNull();
+    expect(screen.queryByText(/not modelled yet/)).toBeNull();
     expect(screen.getByText("Ninflora, Brawlmantis, Craghorn")).toBeTruthy();
-    expect(screen.getByText(/these abilities trigger between battles, not during one/)).toBeTruthy();
+    expect(screen.getByText(/trigger between battles, not during one/)).toBeTruthy();
   });
 
   /**

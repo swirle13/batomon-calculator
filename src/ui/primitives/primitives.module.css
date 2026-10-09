@@ -328,14 +328,27 @@
 .disclosure {
   border: 1px solid var(--line-subtle);
   border-radius: var(--radius-md);
-  padding: var(--space-xs) var(--space-md);
+  padding: var(--space-sm) var(--space-md);
   text-align: left;
+}
+
+/*
+ * Breathing room on three sides once there is a body, 2026-10-09 at the user's request. Collapsed,
+ * this is a single row and the tighter block padding above is right for it; expanded, the content
+ * ran to the border on the left and bottom with the heading sitting directly on top of it.
+ */
+.disclosure[open] {
+  padding: var(--space-md) var(--space-lg) var(--space-lg);
 }
 
 .disclosureSummary {
   cursor: pointer;
   font-size: var(--font-2xl);
   font-weight: 700;
+}
+
+.disclosure[open] > .disclosureSummary {
+  margin-bottom: var(--space-md);
 }
 
 .disclosureHint {

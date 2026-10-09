@@ -57,7 +57,7 @@ function renderNotCounted(config: TeamConfiguration, result: SimulationResult) {
 
   return (
     <div className={styles.coverage}>
-      <p className={styles.coverageHeading}>Not counted in this calculation</p>
+      <p className={styles.coverageHeading}>Not counted</p>
       {/*
         2026-10-08, user-reported. Placing a Rattleghast beside two allies removed both from the
         simulation — correctly, that is what its ability does — but removed them SILENTLY, which
@@ -75,8 +75,8 @@ function renderNotCounted(config: TeamConfiguration, result: SimulationResult) {
       )}
       {unmodelled.length > 0 && (
         <p className={styles.coverageLine}>
-          <span className={styles.coverageNames}>{unmodelled.join(", ")}</span> — the engine does not
-          compute {unmodelled.length === 1 ? "this ability" : "these abilities"} yet
+          <span className={styles.coverageNames}>{unmodelled.join(", ")}</span> —{" "}
+          {unmodelled.length === 1 ? "ability" : "abilities"} not modelled yet
         </p>
       )}
       {/*
@@ -87,8 +87,7 @@ function renderNotCounted(config: TeamConfiguration, result: SimulationResult) {
       {banked.length > 0 && (
         <p className={styles.coverageLine}>
           <span className={styles.coverageNames}>{banked.join(", ")}</span> —{" "}
-          {banked.length === 1 ? "this ability triggers" : "these abilities trigger"} between battles, not
-          during one
+          {banked.length === 1 ? "triggers" : "trigger"} between battles, not during one
         </p>
       )}
     </div>
@@ -175,20 +174,16 @@ function renderSurvivability(s: PlacementAdvice["survivability"]) {
 
   return (
     <div className={styles.coverage}>
-      <p className={styles.coverageHeading}>Survivability counted in this ranking</p>
+      <p className={styles.coverageHeading}>Survivability counted</p>
       <p className={styles.coverageLine}>
-        {parts.join(", ")} — <strong>{formatRate(s.mitigationPerSecond)}</strong> effective HP per
-        second. Against an enemy assumed to deal what you deal ({formatRate(s.assumedIncomingDps)}{" "}
-        DPS) that is {s.factor.toFixed(2)}× the survival time, so damage{" "}
-        {(TIME_WEIGHT_HALF_LIFE_SECONDS * s.factor).toFixed(0)}s in now counts half as much
-        instead of damage at {TIME_WEIGHT_HALF_LIFE_SECONDS}s.
+        <strong>{formatRate(s.mitigationPerSecond)}</strong> effective HP/s ({parts.join(", ")}) —{" "}
+        {s.factor.toFixed(2)}× survival time against an enemy dealing your{" "}
+        {formatRate(s.assumedIncomingDps)} DPS.
       </p>
       {s.cleansers.length > 0 && (
         <p className={styles.coverageLine}>
-          <span className={styles.coverageNames}>{s.cleansers.join(", ")}</span> — debuff removal is
-          priced against an enemy assumed to apply debuffs at your own team&rsquo;s rate. Against
-          an opponent that applies none it is worth <strong>nothing</strong>, and that is the
-          single biggest assumption in this panel.
+          <span className={styles.coverageNames}>{s.cleansers.join(", ")}</span> — cleansing is worth{" "}
+          <strong>nothing</strong> against an enemy that applies no debuffs.
         </p>
       )}
     </div>
@@ -319,22 +314,18 @@ export const PlacementAdvisor = memo(function PlacementAdvisor({ result }: Place
        */
       hint={isStale ? "(recalculating…)" : bestOutcomeHint(advice)}
     >
-      <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", lineHeight: 1.45 }}>
-        Searched <strong>{suggestion.evaluated}</strong> arrangements of your placed Batomon, scoring
-        each by damage weighted toward the start of the fight — damage {TIME_WEIGHT_HALF_LIFE_SECONDS}s
-        in counts half as much as damage at the opening, since a slow ramp may arrive after you are
-        already dead. Shielding, healing and cleansing push that half-way point back rather than
-        scoring as damage, so a tanky board earns its keep by making your late damage count.
-      </p>
-
-      <div style={{ fontSize: "0.85rem" }}>
-        <p>
-          Moving {moves.length === 1 ? "one Batomon" : `these ${moves.length} Batomon`} takes your{" "}
-          DPS average from <strong>{formatRate(currentDps)}</strong> to{" "}
-          <strong>{formatRate(suggestedDps ?? currentDps)}</strong> ({gainPercent.toFixed(1)}% more
-          weighted output):
+      <div className={styles.arrangement}>
+        {/*
+          The lead. Previously this sat under a two-sentence paragraph about the scoring method,
+          which meant the first thing read was methodology and the answer was third — the method is
+          now a footnote at the bottom, where a reader who wants it can still find it.
+        */}
+        <p className={styles.headline}>
+          Rearranging {moves.length === 1 ? "one Batomon" : `${moves.length} Batomon`}:{" "}
+          <strong>{formatRate(currentDps)}</strong> → <strong>{formatRate(suggestedDps ?? currentDps)}</strong>{" "}
+          DPS average <span className={styles.gainPercent}>+{gainPercent.toFixed(1)}%</span>
         </p>
-        <ul>
+        <ul className={styles.moves}>
           {moves.map((p) => (
             <li key={`${p.creatureId}-${p.slot.row}${p.slot.col}`}>
               {getCreatureById(p.creatureId)?.name ?? p.creatureId} → {rowLabel(p.slot.row)} row,
@@ -379,48 +370,41 @@ export const PlacementAdvisor = memo(function PlacementAdvisor({ result }: Place
 
       {benchSection}
 
-      {/* The blind-spot disclosure. This is mandatory, not a nicety (FR-069). */}
-      <p
-        style={{
-          fontSize: "0.78rem",
-          color: "var(--text-warn)",
-          borderTop: "1px solid var(--line-subtle)",
-          paddingTop: "0.5rem",
-          marginTop: "0.5rem",
-          lineHeight: 1.45,
-        }}
-      >
-        <strong>What this search can actually see:</strong>{" "}
+      {/*
+        Method and blind spots, demoted to a footer (2026-10-09, user's "wall of text").
+
+        Both were body prose at full weight, so the panel presented how it scored and what it
+        cannot see as being as worth reading as what to do. They are kept — FR-069's honesty
+        requirement is not optional, and the trinket line can invalidate the whole result — but at
+        the size of a footnote and below the answer, not above it.
+      */}
+      <div className={styles.footer}>
+        <p className={styles.footerLine}>
+          Scored on damage weighted toward the opening: damage {TIME_WEIGHT_HALF_LIFE_SECONDS}s in
+          counts half, and defence pushes that back. Searched{" "}
+          {suggestion.evaluated.toLocaleString()} arrangements
+          {advice.bench?.lineup ? ` and ${advice.bench.lineup.evaluated.toLocaleString()} lineups` : ""}.
+        </p>
         {coverage.actionable.length === 0 ? (
-          <>
-            <strong>none of your placed Batomon</strong> have a positional ability this engine can
-            reason about, so a result of &ldquo;no improvement&rdquo; reflects that limit rather than
-            your placement being optimal.
-          </>
+          <p className={styles.footerWarn}>
+            No placed Batomon has a positional ability this engine reads, so &ldquo;no
+            improvement&rdquo; is a limit of the tool rather than a verdict on your board.
+          </p>
         ) : (
-          <>
-            {coverage.actionable.length} of {placementCount} placed Batomon (
-            {coverage.actionable.join(", ")}) have a positional ability the engine acts on.
-          </>
-        )}
-        {blindTags.length > 0 && (
-          <>
-            {" "}
-            {blindTags.join(", ")} {blindTags.length === 1 ? "has" : "have"} a positional ability
-            recorded in the corpus that the engine does <strong>not</strong> yet read, so it was
-            ignored here.
-          </>
+          <p className={styles.footerLine}>
+            Positional abilities read for {coverage.actionable.length} of {placementCount} placed
+            Batomon ({coverage.actionable.join(", ")})
+            {blindTags.length > 0 ? `; not read for ${blindTags.join(", ")}` : ""}.
+          </p>
         )}
         {coverage.unmodelledTrinkets.length > 0 && (
-          <>
-            {" "}
-            Your selected {coverage.unmodelledTrinkets.join(", ")}{" "}
-            {coverage.unmodelledTrinkets.length === 1 ? "has a" : "have"} slot-based effect
-            {coverage.unmodelledTrinkets.length === 1 ? "" : "s"} the engine cannot model, which may
-            invalidate this result entirely.
-          </>
+          <p className={styles.footerWarn}>
+            {coverage.unmodelledTrinkets.join(", ")}{" "}
+            {coverage.unmodelledTrinkets.length === 1 ? "has a slot-based effect" : "have slot-based effects"}{" "}
+            the engine cannot model, which may invalidate this result entirely.
+          </p>
         )}
-      </p>
+      </div>
     </Disclosure>
   );
 });

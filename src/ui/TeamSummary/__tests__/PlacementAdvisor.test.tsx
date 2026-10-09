@@ -147,7 +147,7 @@ describe("PlacementAdvisor bench advice", () => {
     expect(screen.getByText(/from your bench/i)).toBeTruthy();
     expect(screen.getByText("Thorntail Lv.4")).toBeTruthy();
     // The number has to be a DELTA against the current board, or it is not a comparison.
-    expect(screen.getByText(/nothing else moving/i)).toBeTruthy();
+    expect(screen.getByText(/one swap at a time/i)).toBeTruthy();
   });
 
   it("summarises the bench's gain in the COLLAPSED header, not only inside the panel", () => {

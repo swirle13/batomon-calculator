@@ -72,48 +72,40 @@ export function BenchAdvice({
       </ul>
 
       <p className={styles.basis}>
-        Each row is that one swap alone, with nothing else moving, against your current{" "}
-        <strong>{formatRate(currentDps)}</strong> DPS average.
+        One swap at a time, against <strong>{formatRate(currentDps)}</strong> now.
       </p>
 
       {lineup && (
         <div className={styles.lineup}>
-          <p>
-            The best lineup from everything you own reaches{" "}
-            <strong>{formatRate(lineup.dps)}</strong> DPS average
+          {/*
+            A labelled row per kind of change rather than one sentence listing all three.
+            The sentence version named up to six monsters and six slots inside a single clause, so
+            working out what to actually do meant parsing it; the question here is "what moves
+            where", and that is a table.
+          */}
+          <p className={styles.lineupHeading}>
+            Best lineup you own <strong className={styles.lineupDps}>{formatRate(lineup.dps)} DPS</strong>
+          </p>
+          <dl className={styles.plan}>
             {lineup.bringIn.length > 0 && (
               <>
-                {" "}
-                by bringing on{" "}
-                <strong>{lineup.bringIn.map((b) => `${b.name} (${slotLabel(b.slot)})`).join(", ")}</strong>
+                <dt>Bring on</dt>
+                <dd>{lineup.bringIn.map((b) => `${b.name} → ${slotLabel(b.slot)}`).join(" · ")}</dd>
               </>
             )}
-            {lineup.sendOut.length > 0 && <> and benching {lineup.sendOut.join(", ")}</>}
+            {lineup.sendOut.length > 0 && (
+              <>
+                <dt>Bench</dt>
+                <dd>{lineup.sendOut.join(" · ")}</dd>
+              </>
+            )}
             {lineup.moves.length > 0 && (
               <>
-                , moving {lineup.moves.map((m) => `${m.name} to ${slotLabel(m.slot)}`).join(", ")}
+                <dt>Move</dt>
+                <dd>{lineup.moves.map((m) => `${m.name} → ${slotLabel(m.slot)}`).join(" · ")}</dd>
               </>
             )}
-            .
-          </p>
-          {/*
-            2026-10-08. The lineup is chosen on a score that counts survivability, so it can
-            reach a LOWER DPS than the board you already have and still be the right answer. The
-            user's own board is the case: the best lineup used to bench Runerock for a 201 DPS
-            board and now keeps him for a 172 DPS one.
-
-            Quoting only the DPS there reads as the advisor recommending a downgrade. This line is
-            the other half of the trade, and it is shown only when there IS a trade — a lineup
-            that wins on damage alone needs no defending.
-          */}
-          {lineup.mitigationPerSecond > currentMitigation + 1e-9 && (
-            <p className={styles.basis}>
-              That is {lineup.dps < currentDps ? "less" : "more"} damage with{" "}
-              <strong>{formatRate(lineup.mitigationPerSecond)}</strong> effective HP per second of
-              shielding, healing and cleansing behind it, against{" "}
-              <strong>{formatRate(currentMitigation)}</strong> now — which is why it scored higher.
-            </p>
-          )}
+          </dl>
           {/*
             Applies the placements AND the bench together. They are one plan: writing the board
             without the bench would leave the monsters it displaced nowhere, which is the one
@@ -122,20 +114,29 @@ export function BenchAdvice({
           <Button variant="primary" disabled={isStale} onClick={() => onApplyLineup(lineup)}>
             Apply this lineup
           </Button>
-          <p className={styles.searched}>
-            Searched {lineup.evaluated} lineups — the selections first, then arrangements of the
-            best few, rather than every arrangement of every selection. Exhausting both is hundreds
-            of thousands of boards.
-          </p>
+          {/*
+            2026-10-08. The lineup is chosen on a score that counts survivability, so it can
+            reach a LOWER DPS than the board you already have and still be the right answer.
+
+            Quoting only the DPS there reads as the advisor recommending a downgrade, so the other
+            half of the trade is stated — but only when there IS a trade, since a lineup that wins
+            on damage alone needs no defending.
+          */}
+          {lineup.mitigationPerSecond > currentMitigation + 1e-9 && (
+            <p className={styles.basis}>
+              {lineup.dps < currentDps ? "Less" : "More"} damage behind{" "}
+              <strong>{formatRate(lineup.mitigationPerSecond)}</strong> effective HP/s of defence,
+              against <strong>{formatRate(currentMitigation)}</strong> now.
+            </p>
+          )}
         </div>
       )}
 
       {unreadablePositional.length > 0 && (
         <p className={styles.caveat}>
-          <strong>{unreadablePositional.join(", ")}</strong>{" "}
-          {unreadablePositional.length === 1 ? "has a positional ability" : "have positional abilities"}{" "}
-          the engine does not read, so {unreadablePositional.length === 1 ? "its" : "their"} figures
-          above are understated by whatever that ability is worth.
+          {unreadablePositional.join(", ")} {unreadablePositional.length === 1 ? "has a" : "have"}{" "}
+          positional {unreadablePositional.length === 1 ? "ability" : "abilities"} the engine does not
+          read, so the figures above are understated.
         </p>
       )}
     </div>
