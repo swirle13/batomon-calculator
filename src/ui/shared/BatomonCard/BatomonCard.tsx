@@ -141,9 +141,11 @@ export function BatomonCard({ creature, children, levelLabel, fixedHeight, meta,
         <div className={styles.spriteFrame}>
           <CreatureSprite
             spriteFile={creature.spriteFile}
-            /* 96 = 2x the source art. 72 was 1.5x, which renders unevenly under
-               `image-rendering: pixelated` — see the note in Sprite.tsx. */
-            size={96}
+            /* The token, not the number: the well around this sprite is derived from the same
+               value, so a literal here is how the two came to disagree. 96 = 2x the source art;
+               72 was 1.5x, which renders unevenly under `image-rendering: pixelated` — see the
+               note in Sprite.tsx. */
+            sizeVar="--card-sprite-size"
             alt={creature.name}
             painted={isAllType}
             chefFire={chefFire}

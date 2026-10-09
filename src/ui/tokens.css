@@ -272,9 +272,22 @@
   /* The header and meta bands are deliberately tighter: they are labels around the card's content,
      not content themselves. */
   --card-band-pad-tight: var(--space-xs) var(--space-md);
-  /* The sprite well in band 2. Must EXCEED --sprite-card or the art is clipped by its own frame. */
-  --card-sprite-frame-width: 6.5rem;
-  --card-sprite-frame-height: 5.25rem;
+  /*
+   * Band 2's sprite, and the well around it.
+   *
+   * The well is SQUARE and DERIVED from the sprite, which is the whole point of this pair. It used
+   * to be two independent `rem` values (6.5 x 5.25) holding a hard-coded 96px sprite, and `rem`
+   * here is 18px on a desktop and 16px below 1024px — so the well rendered 117 x 94.5, was not
+   * square, and did not keep a fixed relationship to the art inside it at either size. A sprite
+   * measured in px cannot be framed by a box measured in rem.
+   *
+   * The gap is therefore a real, stated inset rather than whatever the arithmetic left over. The
+   * tallest artwork in the corpus fills 94 of the sprite's 96px and the widest fills all 96, so
+   * every creature clears the border by at least this much, and the median one by about twice it.
+   */
+  --card-sprite-size: 96px;
+  --card-sprite-well-gap: 8px;
+  --card-sprite-frame: calc(var(--card-sprite-size) + 2 * var(--card-sprite-well-gap));
   /* The boxed cooldown in band 3. An intrinsic size on purpose (FR-059): the block is placed in two
      bands with different heights, and a primitive sized by its container renders at two sizes. */
   --cooldown-block-width: 3.75rem;

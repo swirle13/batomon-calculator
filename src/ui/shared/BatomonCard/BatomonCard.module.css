@@ -34,11 +34,29 @@
 .cardFixedPanel .meta {
 	min-height: 2.5rem;
 }
+/*
+ * A SUM of the two units this card is made of, not a single rem figure (2026-10-09).
+ *
+ * The sprite well is measured in px, because it frames px artwork; every band below it is text and
+ * scales with rem. A flat `21rem` therefore tracked neither: it was tuned when the well happened to
+ * be 94.5px tall, and squeezing the well's true size into it cost the wordiest cards 9.3px of the
+ * ability band — `.card` is a fixed-height flex column, so the bands compress silently rather than
+ * overflowing visibly, which is why this needs measuring rather than eyeballing.
+ *
+ * 15.75rem is what the old figure reserved for everything under the well — 21rem less the 5.25rem
+ * the well used to take — so the bands below are untouched and the card grows by exactly the well's
+ * growth. The wordiest ability text still clips a little here, as it did before; that is what
+ * `.ability { overflow: hidden }` below is for, and it is a separate question from this one.
+ */
 .cardFixedBrowser {
-	height: 21rem;
+	height: calc(var(--card-sprite-frame) + 15.75rem);
 }
-.cardFixedBrowser .identity {
-	min-height: 6.5rem;
+/* This band's `min-height: 6.5rem` is gone: the well is taller than it at both font sizes, so the
+   reservation was inert. A min-height in a fixed-height flex column is also a shrink floor, though,
+   which is a real job and the only one it was still doing — so that is now stated as itself rather
+   than as a number that has to be kept larger than the well it is protecting. */
+.identity {
+	flex-shrink: 0;
 }
 .cardFixedBrowser .output {
 	min-height: 4.5rem;
@@ -90,13 +108,12 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	/* item 15: was 3.25rem, which left the two-type column looking half-empty because the chips set
-     a taller band than the sprite filled. Widened again 2026-10-07 to hold a 96px sprite.
-     The well is deliberately SHORTER than that sprite and does not clip it: what hangs over the
-     edge is the canvas's transparent padding, which `opticalCenter` then shifts further still. The
-     creature itself is centred here, which is the thing this box is sized around. */
-	width: var(--card-sprite-frame-width);
-	height: var(--card-sprite-frame-height);
+	/* Square, and sized from the sprite it holds rather than independently of it — see
+     --card-sprite-frame. The creature, not its canvas, is what is centred here: `opticalCenter`
+     lifts the artwork off the canvas's bottom edge, and the well's gap is measured against the
+     artwork's own extent. */
+	width: var(--card-sprite-frame);
+	height: var(--card-sprite-frame);
 	border: 1px solid var(--line);
 	border-radius: var(--radius-md);
 	background: var(--surface-1);

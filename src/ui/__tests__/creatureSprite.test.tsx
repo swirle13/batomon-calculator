@@ -4,7 +4,7 @@ import { render } from "@testing-library/react";
 import { CreatureSprite } from "../shared/CreatureSprite";
 import { BatomonCard } from "../shared/BatomonCard/BatomonCard";
 import { getCreatureByIdAndLevel } from "../../data/corpus";
-import { spriteVerticalOffset } from "../../data/spriteOffsets";
+import { SPRITE_VERTICAL_OFFSETS, spriteVerticalOffset } from "../../data/spriteOffsets";
 import { Species } from "../../data/ids";
 
 /**
@@ -75,10 +75,25 @@ describe("optical centring of ground-anchored sprites", () => {
   it("lifts the card's sprite by the artwork's own lean", () => {
     const { container } = render(<BatomonCard creature={panbud} />);
     const wrap = container.querySelector('[class*="wrap"]') as HTMLElement;
-    // A WHOLE pixel, which is the point of expressing the lean against the sprite's own box: a
-    // fractional offset would resample art that `image-rendering: pixelated` keeps sharp.
-    expect(wrap.style.top).toContain("-11px");
-    expect(spriteVerticalOffset(panbud.spriteFile) * 96).toBeCloseTo(11, 3);
+    // Against the sprite's OWN box, which is the token the well is also derived from. A percentage
+    // would resolve against the containing block — the well — and the two are not the same size.
+    expect(wrap.style.top).toBe(
+      `calc(var(--card-sprite-size) * ${-spriteVerticalOffset(panbud.spriteFile)})`,
+    );
+  });
+
+  it("lands every 48x48 sprite's lean on a whole pixel at the card's 2x render", () => {
+    // `image-rendering: pixelated` is only crisp on whole pixels, and a lean is always a whole
+    // number of HALF source pixels — so 2x of the 48x48 source is exactly where it comes out even.
+    //
+    // The two Aviarab sprites are the corpus's only 44x44 art. 96px is a 2.18x scale of those, so
+    // they are resampled by the <img> before any offset is applied and there is no crispness left
+    // for a whole-pixel lean to protect. They are named rather than filtered by a tolerance, so a
+    // THIRD odd-sized sprite entering the corpus fails this instead of slipping through.
+    const fractional = Object.entries(SPRITE_VERTICAL_OFFSETS)
+      .filter(([, lean]) => Math.abs(lean * 96 - Math.round(lean * 96)) > 1e-3)
+      .map(([file]) => file);
+    expect(fractional).toEqual(["aviarab.png", "aviarab_shiny.png"]);
   });
 
   it("leaves a sprite alone unless the call site opts in", () => {
