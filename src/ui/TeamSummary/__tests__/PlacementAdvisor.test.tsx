@@ -150,6 +150,43 @@ describe("PlacementAdvisor bench advice", () => {
     expect(screen.getByText(/nothing else moving/i)).toBeTruthy();
   });
 
+  it("summarises the bench's gain in the COLLAPSED header, not only inside the panel", () => {
+    /*
+     * 2026-10-08, user-reported. The header read "(none)" while the panel underneath it listed
+     * four swaps and an Apply button taking the board from 116 to 201 DPS. The header was not
+     * wrong about its own search — rearranging really did gain nothing — it had just never been
+     * told a second search existed.
+     *
+     * This matters more than a cosmetic mismatch: the panel is collapsed by default, so a header
+     * saying "(none)" is a panel nobody opens, and a correct answer behind a wrong summary is the
+     * same as no answer at all.
+     *
+     * A board with NO better arrangement is the case that exposed it, so the fixture pins that:
+     * `suggestPlacement` must find nothing, leaving the bench as the only thing to report.
+     */
+    const settled = suggestPlacement(CONFIG, corpus).placements ?? CONFIG.placements;
+    const noRearrangement: TeamConfiguration = {
+      ...CONFIG,
+      placements: settled,
+      bench: [{ index: 0, creatureId: Species.Thorntail, level: 4 }],
+    };
+    expect(suggestPlacement(noRearrangement, corpus).placements).toBeNull();
+
+    renderWithBench(noRearrangement);
+
+    const header = document.querySelector("summary")!;
+    expect(header.textContent).not.toMatch(/\(none/);
+    expect(header.textContent).toMatch(/DPS average/);
+  });
+
+  it("still says so plainly when nothing anywhere beats the current board", () => {
+    // The honesty requirement is not traded away for the fix above: an empty bench and a settled
+    // board must still read as "(none)" rather than quoting a gain of zero as if it were one.
+    const settled = suggestPlacement(CONFIG, corpus).placements ?? CONFIG.placements;
+    renderWithBench({ ...CONFIG, placements: settled, bench: [] });
+    expect(document.querySelector("summary")!.textContent).toMatch(/\(none/);
+  });
+
   it("applies a lineup as one write, moving the displaced Batomon to the bench", () => {
     /*
      * The failure this guards is the bench's version of the apply bug above: writing

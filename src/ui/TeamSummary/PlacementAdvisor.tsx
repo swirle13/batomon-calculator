@@ -7,6 +7,7 @@ import { Button, Disclosure } from "../primitives";
 import { GridRow } from "../../data/enums";
 import type { SimulationResult, TeamConfiguration } from "../../data/types";
 import { usePlacementAdvice } from "./usePlacementAdvice";
+import type { PlacementAdvice } from "../../engine/placementAdvice";
 import { BenchAdvice } from "./BenchAdvice";
 import styles from "./PlacementAdvisor.module.css";
 
@@ -92,6 +93,50 @@ function renderNotCounted(config: TeamConfiguration, result: SimulationResult) {
       )}
     </div>
   );
+}
+
+/**
+ * The collapsed header's hint, derived from EVERYTHING the panel is offering (2026-10-08).
+ *
+ * ## Why this is a function rather than two expressions
+ *
+ * It was two, and they disagreed. The no-rearrangement branch computed its hint from the
+ * arrangement search alone and wrote "(none)" — while the body underneath it listed four bench
+ * swaps and an "Apply this lineup" button taking the board from 116 to 201 DPS (user-reported).
+ * The header was not stale or wrong about its own search; it simply had never been told the panel
+ * had gained a second one.
+ *
+ * A collapsed panel saying "(none)" is a panel nobody opens, so a correct answer hidden behind a
+ * wrong summary is the same as no answer. Every return path now reads this, so a THIRD kind of
+ * advice cannot reintroduce the same defect by being added to the body and nowhere else.
+ *
+ * ## What "best" means here
+ *
+ * The highest window-average DPS any single action in the panel reaches: rearranging, applying
+ * the lineup, or performing one of the listed swaps by hand. Swaps are included even though the
+ * lineup search usually dominates them, because the two are selected on different measures — the
+ * lineup by time-weighted score, the swaps by plain DPS — so a swap can top the table on the
+ * figure being quoted while losing on the one the lineup optimises.
+ */
+function bestOutcomeHint(advice: PlacementAdvice): string {
+  const { currentDps, suggestedDps, coverage, placementCount, bench } = advice;
+  const best = Math.max(
+    currentDps,
+    suggestedDps ?? currentDps,
+    bench?.lineup?.dps ?? currentDps,
+    ...(bench?.swaps ?? []).map((s) => s.dps),
+  );
+
+  // Compared as FORMATTED values, so the condition is exactly "will these two read differently".
+  // A gain too small to survive rounding would otherwise render as "116 → 116 DPS average".
+  const from = formatRate(currentDps);
+  const to = formatRate(best);
+  if (to !== from) return `(${from} → ${to} DPS average)`;
+
+  // Nothing on offer. FR-069's honesty requirement: silence here would read as "your placement is
+  // optimal" when the usual reason is that the engine cannot see positional effects at all.
+  const seen = coverage.actionable.length;
+  return seen === 0 ? "(none)" : `(none — ${seen}/${placementCount} positional abilities modelled)`;
 }
 
 interface PlacementAdvisorProps {
@@ -198,10 +243,8 @@ export const PlacementAdvisor = memo(function PlacementAdvisor({ result }: Place
   // prose about an absence — they name creatures on the board that are contributing nothing — and
   // a board with no better arrangement is exactly where the user wants to know why.
   if (!suggestion.placements) {
-    const seen = coverage.actionable.length;
-    const hint = seen === 0 ? "(none)" : `(none — ${seen}/${placementCount} positional abilities modelled)`;
     return (
-      <Disclosure label="Placement suggestion" hint={isStale ? "(recalculating…)" : hint}>
+      <Disclosure label="Placement suggestion" hint={isStale ? "(recalculating…)" : bestOutcomeHint(advice)}>
         {notCounted}
         {benchSection}
       </Disclosure>
@@ -211,11 +254,11 @@ export const PlacementAdvisor = memo(function PlacementAdvisor({ result }: Place
   return (
     <Disclosure
       label="Placement suggestion"
-      hint={
-        isStale
-          ? "(recalculating…)"
-          : `(${formatRate(currentDps)} → ${formatRate(suggestedDps ?? currentDps)} DPS average)`
-      }
+      /*
+       * The SAME hint the no-rearrangement branch shows. It used to quote `suggestedDps` alone,
+       * which understated the panel whenever the bench had a better answer than rearranging did.
+       */
+      hint={isStale ? "(recalculating…)" : bestOutcomeHint(advice)}
     >
       <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", lineHeight: 1.45 }}>
         Searched <strong>{suggestion.evaluated}</strong> arrangements of your placed Batomon, scoring
