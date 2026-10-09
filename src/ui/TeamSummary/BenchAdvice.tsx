@@ -1,7 +1,8 @@
+import type { ReactNode } from "react";
 import type { GridSlot } from "../../data/types";
 import { GridRow } from "../../data/enums";
 import { formatRate } from "../../data/format";
-import type { BenchAdvice as BenchAdviceData } from "../../engine/rosterAdvice";
+import type { BenchAdvice as BenchAdviceData, LineupSuggestion } from "../../engine/rosterAdvice";
 import { Button } from "../primitives";
 import styles from "./BenchAdvice.module.css";
 
@@ -12,6 +13,84 @@ const slotLabel = (slot: GridSlot) =>
 /** `+1.2k` / `-340`. The sign is the whole message, so it is never dropped. */
 function signedRate(value: number): string {
   return `${value >= 0 ? "+" : "−"}${formatRate(Math.abs(value))}`;
+}
+
+/**
+ * One lineup, as a heading, a plan and a button — rendered twice (2026-10-09).
+ *
+ * The recommendation and the damage-maximal alternative are the same KIND of thing: a set of
+ * moves, a DPS figure and an Apply button. Rendering them from one component is what guarantees
+ * the two read on the same scale, which is the entire point of showing the second one.
+ */
+function Lineup({
+  heading,
+  applyLabel,
+  applyVariant = "primary",
+  lineup,
+  isStale,
+  onApply,
+  children,
+}: {
+  heading: string;
+  /**
+   * Distinct per lineup, because two buttons that apply DIFFERENT boards may not share an
+   * accessible name. "Apply this lineup" twice is ambiguous to anyone reading the buttons rather
+   * than the headings above them, which is every screen-reader user and every test.
+   */
+  applyLabel: string;
+  /**
+   * One primary button per panel. The recommendation keeps it; an alternative the user has to
+   * choose against the advice reads as a second recommendation at equal weight.
+   */
+  applyVariant?: "primary" | "secondary";
+  lineup: LineupSuggestion;
+  isStale: boolean;
+  onApply: () => void;
+  /** The trade this lineup makes, stated in whatever terms that lineup's trade actually is. */
+  children?: ReactNode;
+}) {
+  return (
+    <div className={styles.lineup}>
+      {/*
+        A labelled row per kind of change rather than one sentence listing all three.
+        The sentence version named up to six monsters and six slots inside a single clause, so
+        working out what to actually do meant parsing it; the question here is "what moves
+        where", and that is a table.
+      */}
+      <p className={styles.lineupHeading}>
+        {heading} <strong className={styles.lineupDps}>{formatRate(lineup.dps)} DPS</strong>
+      </p>
+      <dl className={styles.plan}>
+        {lineup.bringIn.length > 0 && (
+          <>
+            <dt>Bring on</dt>
+            <dd>{lineup.bringIn.map((b) => `${b.name} → ${slotLabel(b.slot)}`).join(" · ")}</dd>
+          </>
+        )}
+        {lineup.sendOut.length > 0 && (
+          <>
+            <dt>Bench</dt>
+            <dd>{lineup.sendOut.join(" · ")}</dd>
+          </>
+        )}
+        {lineup.moves.length > 0 && (
+          <>
+            <dt>Move</dt>
+            <dd>{lineup.moves.map((m) => `${m.name} → ${slotLabel(m.slot)}`).join(" · ")}</dd>
+          </>
+        )}
+      </dl>
+      {/*
+        Applies the placements AND the bench together. They are one plan: writing the board
+        without the bench would leave the monsters it displaced nowhere, which is the one
+        outcome a bench exists to prevent.
+      */}
+      <Button variant={applyVariant} disabled={isStale} onClick={onApply}>
+        {applyLabel}
+      </Button>
+      {children}
+    </div>
+  );
 }
 
 interface BenchAdviceProps {
@@ -36,9 +115,15 @@ interface BenchAdviceProps {
  * others and rearrange the rest, so it is a plan rather than a move, and it gets a button that
  * applies the whole thing at once.
  *
+ * **"And if I only care about damage?"** is the second lineup, shown when the first one bought
+ * defence with it. See the comment at its JSX for the reported case.
+ *
  * They are shown together because they disagree usefully. A candidate can be the best single
  * addition and still be absent from the best lineup — it duplicates something already there — and
- * seeing only one of the two would leave that invisible.
+ * seeing only one of the two would leave that invisible. The swap table in particular cannot see
+ * PAIRS: every board it builds leaves the rest of the bench parked, so a monster whose whole value
+ * is an adjacency with something else on the bench scores near zero there and can still be in both
+ * lineups below. That is the ranking the two lineups exist to put in context.
  */
 export function BenchAdvice({
   advice,
@@ -47,13 +132,15 @@ export function BenchAdvice({
   isStale,
   onApplyLineup,
 }: BenchAdviceProps) {
-  const { swaps, lineup, unreadablePositional, locked } = advice;
+  const { swaps, lineup, highestDpsLineup, unreadablePositional, locked } = advice;
   /*
    * `locked` keeps the section alive on its own (2026-10-09). Lock every slot and there are no
    * swaps and no lineup left to offer — a correct result, and an empty panel is the worst way to
    * deliver it, since the reason is a padlock the user set and can still undo.
    */
-  if (swaps.length === 0 && lineup === null && locked.length === 0) return null;
+  if (swaps.length === 0 && lineup === null && highestDpsLineup === null && locked.length === 0) {
+    return null;
+  }
 
   return (
     <div className={styles.bench}>
@@ -95,44 +182,13 @@ export function BenchAdvice({
       )}
 
       {lineup && (
-        <div className={styles.lineup}>
-          {/*
-            A labelled row per kind of change rather than one sentence listing all three.
-            The sentence version named up to six monsters and six slots inside a single clause, so
-            working out what to actually do meant parsing it; the question here is "what moves
-            where", and that is a table.
-          */}
-          <p className={styles.lineupHeading}>
-            Best lineup you own <strong className={styles.lineupDps}>{formatRate(lineup.dps)} DPS</strong>
-          </p>
-          <dl className={styles.plan}>
-            {lineup.bringIn.length > 0 && (
-              <>
-                <dt>Bring on</dt>
-                <dd>{lineup.bringIn.map((b) => `${b.name} → ${slotLabel(b.slot)}`).join(" · ")}</dd>
-              </>
-            )}
-            {lineup.sendOut.length > 0 && (
-              <>
-                <dt>Bench</dt>
-                <dd>{lineup.sendOut.join(" · ")}</dd>
-              </>
-            )}
-            {lineup.moves.length > 0 && (
-              <>
-                <dt>Move</dt>
-                <dd>{lineup.moves.map((m) => `${m.name} → ${slotLabel(m.slot)}`).join(" · ")}</dd>
-              </>
-            )}
-          </dl>
-          {/*
-            Applies the placements AND the bench together. They are one plan: writing the board
-            without the bench would leave the monsters it displaced nowhere, which is the one
-            outcome a bench exists to prevent.
-          */}
-          <Button variant="primary" disabled={isStale} onClick={() => onApplyLineup(lineup)}>
-            Apply this lineup
-          </Button>
+        <Lineup
+          heading="Best lineup you own"
+          applyLabel="Apply this lineup"
+          lineup={lineup}
+          isStale={isStale}
+          onApply={() => onApplyLineup(lineup)}
+        >
           {/*
             2026-10-08. The lineup is chosen on a score that counts survivability, so it can
             reach a LOWER DPS than the board you already have and still be the right answer.
@@ -148,7 +204,39 @@ export function BenchAdvice({
               against <strong>{formatRate(currentMitigation)}</strong> now.
             </p>
           )}
-        </div>
+        </Lineup>
+      )}
+
+      {/*
+        The damage-maximal lineup, when the recommendation above gave up damage to reach (2026-10-09,
+        user-reported).
+
+        The recommendation is picked on a survivability-weighted score and the heading quotes DPS,
+        so "best lineup you own — 47.3 DPS" was promising a maximum of one figure while reporting a
+        maximum of another. The 51.6 DPS lineup the search had already found, priced and declined —
+        a Puffloon beside an Aristobat, bought by benching a Runerock — was nowhere on screen, and
+        a synergy that is absent from the advice is indistinguishable from one the engine cannot
+        see. Both are shown now, with the trade between them named, so choosing damage over defence
+        is the user's call rather than the objective function's.
+      */}
+      {highestDpsLineup && (
+        <Lineup
+          heading="Most damage you own"
+          applyLabel="Apply the max-damage lineup"
+          applyVariant="secondary"
+          lineup={highestDpsLineup}
+          isStale={isStale}
+          onApply={() => onApplyLineup(highestDpsLineup)}
+        >
+          <p className={styles.basis}>
+            {signedRate(highestDpsLineup.dps - (lineup?.dps ?? currentDps))} DPS over{" "}
+            {lineup ? "the lineup above" : "your board"}, behind{" "}
+            <strong>{formatRate(highestDpsLineup.mitigationPerSecond)}</strong> effective HP/s of
+            defence against{" "}
+            <strong>{formatRate(lineup?.mitigationPerSecond ?? currentMitigation)}</strong>
+            {lineup ? "" : " now"}.
+          </p>
+        </Lineup>
       )}
 
       {unreadablePositional.length > 0 && (

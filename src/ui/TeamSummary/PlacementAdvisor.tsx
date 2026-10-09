@@ -124,6 +124,10 @@ function bestOutcomeHint(advice: PlacementAdvice): string {
     currentDps,
     suggestedDps ?? currentDps,
     bench?.lineup?.dps ?? currentDps,
+    // The damage-maximal lineup (2026-10-09). It exists precisely BECAUSE it out-damages
+    // `bench.lineup`, so omitting it here would understate the header by the whole of the gap the
+    // second lineup was added to expose.
+    bench?.highestDpsLineup?.dps ?? currentDps,
     ...(bench?.swaps ?? []).map((s) => s.dps),
     // Merges (2026-10-09), for the reason this whole function exists: a third kind of advice added
     // to the body and not to the header would reintroduce the "(none)" defect by a new route.
@@ -145,7 +149,7 @@ function bestOutcomeHint(advice: PlacementAdvice): string {
    * an Apply button, which is precisely the defect this function was extracted to fix, arriving by
    * a new route.
    */
-  const trade = bench?.lineup ?? advice.suggestion.placements;
+  const trade = bench?.lineup ?? bench?.highestDpsLineup ?? advice.suggestion.placements;
   if (trade) return `(same damage, more survivable)`;
   // A merge that gains no damage is still something to tell them about: it costs copies, and
   // knowing it is available and worth nothing is what stops them spending them.
@@ -300,6 +304,8 @@ export const PlacementAdvisor = memo(function PlacementAdvisor({ result }: Place
       }
     />
   );
+  const lineupsEvaluated =
+    advice.bench?.lineup?.evaluated ?? advice.bench?.highestDpsLineup?.evaluated ?? 0;
   const blindTags = coverage.withPositionalTag.filter((n) => !coverage.actionable.includes(n));
   const gain = suggestion.bestScore - suggestion.currentScore;
   const gainPercent = suggestion.currentScore > 0 ? (gain / suggestion.currentScore) * 100 : 0;
@@ -410,7 +416,8 @@ export const PlacementAdvisor = memo(function PlacementAdvisor({ result }: Place
           Scored on damage weighted toward the opening: damage {TIME_WEIGHT_HALF_LIFE_SECONDS}s in
           counts half, and defence pushes that back. Searched{" "}
           {suggestion.evaluated.toLocaleString()} arrangements
-          {advice.bench?.lineup ? ` and ${advice.bench.lineup.evaluated.toLocaleString()} lineups` : ""}.
+          {/* Either lineup carries the same total, so read whichever one the search produced. */}
+          {lineupsEvaluated ? ` and ${lineupsEvaluated.toLocaleString()} lineups` : ""}.
         </p>
         {coverage.actionable.length === 0 ? (
           <p className={styles.footerWarn}>

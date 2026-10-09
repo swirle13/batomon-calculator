@@ -55,9 +55,30 @@ import { applyShinyOverlay, findCreature } from "../data/corpus";
  * questions are very nearly independent, so answering them in sequence loses very little.
  *
  * It is not exhaustive, and the UI says "searched N lineups" rather than claiming optimality.
+ *
+ * ## Why the search returns TWO lineups
+ *
+ * The objective is `timeWeightedScore`, whose half-life is stretched by the board's survivability,
+ * so the winning lineup is routinely not the one with the highest raw DPS — and DPS is the only
+ * figure the UI quotes. On the user's reported board (2026-10-09) the recommendation was 47.3 DPS
+ * while benching the Runerock for a Puffloon beside an Aristobat reached 51.6, which the search
+ * found, priced, and correctly declined: Runerock's shield is worth 82 effective HP/s against
+ * 19.3 without it, and the time-weighting factor goes 2.73 to 1.37. All of that was invisible,
+ * because a heading reading "best lineup you own — 47.3 DPS" promises a maximum of the figure it
+ * quotes and delivers a maximum of a different one.
+ *
+ * So `bestLineup` reports the damage-maximal lineup alongside the recommended one whenever they
+ * differ. Finding it means taking finalists on BOTH measures — the damage-maximal selection was
+ * sixth of seven by score on that board, nowhere near stage two under a score-only cut.
  */
 
-/** How many of stage one's best selections get an exhaustive arrangement search in stage two. */
+/**
+ * How many of stage one's best selections get an exhaustive arrangement search in stage two.
+ *
+ * Applied to each objective separately and the two sets unioned, so the ceiling is twice this and
+ * the usual case is barely above it — the measures mostly agree on which selections are good, and
+ * they only ever disagree about the ORDER of the top few.
+ */
 const LINEUP_FINALISTS = 3;
 
 /** The board holds six. */
@@ -132,6 +153,22 @@ export interface LineupSuggestion {
   evaluated: number;
 }
 
+/**
+ * The two answers the lineup search produces. See the header for why there are two.
+ */
+export interface LineupSearch {
+  /** Highest on the survivability-weighted objective — the recommendation. `null` when the current board wins. */
+  best: LineupSuggestion | null;
+  /**
+   * Highest raw DPS, when that is a lineup `best` loses damage to reach.
+   *
+   * `null` is the common case and means the two agree, NOT that the search skipped the question.
+   * Only reported when it actually beats `best` on DPS, since an identical board quoted twice
+   * under two headings reads as the advisor contradicting itself.
+   */
+  highestDps: LineupSuggestion | null;
+}
+
 export interface BenchAdvice {
   /**
    * The best single slot for each benched monster, ranked by what it gains. A straight one-for-one
@@ -142,6 +179,11 @@ export interface BenchAdvice {
   swaps: BenchSwap[];
   /** The best roster-wide lineup, or `null` when the current board already wins. */
   lineup: LineupSuggestion | null;
+  /**
+   * The highest-DPS lineup the same search found, when the recommendation above gives up damage
+   * to reach it. See `LineupSearch.highestDps`.
+   */
+  highestDpsLineup: LineupSuggestion | null;
   /** Benched monsters carrying a positional ability the engine does not read. See the header. */
   unreadablePositional: string[];
   /**
@@ -313,14 +355,60 @@ function canonicalAssignment(selection: RosterMember[], slots: GridSlot[]): Assi
   return selection.map((member) => ({ member, slot: kept(member) ?? free[next++]! }));
 }
 
+/**
+ * One winning assignment, written up as the plan the UI renders and the button applies.
+ *
+ * Shared by both lineups the search returns, which is the whole reason it is a function: the
+ * `bringIn`/`sendOut`/`moves` derivation is four subtly different set comparisons against the
+ * current board, and a second copy of it for the damage-maximal lineup is a second chance to get
+ * one of them backwards.
+ */
+function describeLineup(
+  config: TeamConfiguration,
+  roster: RosterMember[],
+  corpus: Corpus,
+  assignments: Assignment[],
+  evaluated: number,
+): LineupSuggestion {
+  const board = boardFor(config, roster, assignments);
+  const bringIn = assignments
+    .filter((a) => currentSlot(a.member) === null)
+    .map((a) => ({ name: a.member.name, slot: a.slot }));
+  const fielded = new Set(assignments.map((a) => rosterRefKey(a.member.origin)));
+  const sendOut = roster
+    .filter((m) => currentSlot(m) !== null && !fielded.has(rosterRefKey(m.origin)))
+    .map((m) => m.name);
+  // Only the monsters that actually change slot. Listing the ones already in place made the
+  // instructions hard to find among no-ops — the same lesson `placementAdvice.ts` records.
+  const moves = assignments
+    .filter((a) => {
+      const from = currentSlot(a.member);
+      return from !== null && !slotsEqual(from, a.slot);
+    })
+    .map((a) => ({ name: a.member.name, slot: a.slot }));
+
+  const final = evaluate(board, corpus);
+  return {
+    placements: board.placements,
+    bench: board.bench ?? [],
+    dps: final.dps,
+    mitigationPerSecond: final.mitigationPerSecond,
+    bringIn,
+    sendOut,
+    moves,
+    evaluated,
+  };
+}
+
 function bestLineup(
   config: TeamConfiguration,
   roster: RosterMember[],
   corpus: Corpus,
   currentScore: number,
-): LineupSuggestion | null {
+  currentDps: number,
+): LineupSearch {
   const count = Math.min(GRID_CAPACITY, roster.length);
-  if (count === 0) return null;
+  if (count === 0) return { best: null, highestDps: null };
   const slots = slotsForLineup(config, count);
   let evaluated = 0;
 
@@ -342,10 +430,12 @@ function bestLineup(
   };
 
   // Stage one: score each selection once, in the arrangement that moves the fewest monsters.
+  // Both measures are kept, because the finalist cut is taken on each of them separately.
   const selections = combinations(choosable, count - pinned.length).map((pick) => {
     const assignments = canonicalAssignment(chosenWith(pick), slots);
     evaluated++;
-    return { assignments, score: evaluate(boardFor(config, roster, assignments), corpus).score };
+    const { score, dps } = evaluate(boardFor(config, roster, assignments), corpus);
+    return { assignments, score, dps };
   });
 
   /*
@@ -363,52 +453,62 @@ function bestLineup(
   const isStandingSelection = (members: RosterMember[]) =>
     members.length === standing.size && members.every((m) => standing.has(rosterRefKey(m.origin)));
 
+  /*
+   * Finalists on BOTH measures, deduplicated.
+   *
+   * A score-only cut is what hid the damage-maximal lineup on the reported board: it ranked sixth
+   * of seven by score, so no amount of permuting the top three could have reached it. The two
+   * orderings overlap heavily in practice — a selection that is good is good on both — so this
+   * usually adds one or two selections rather than doubling the work.
+   */
+  const topBy = (key: "score" | "dps") =>
+    [...selections].sort((a, b) => b[key] - a[key]).slice(0, LINEUP_FINALISTS);
+  const finalists = [...new Set([...topBy("score"), ...topBy("dps")])];
+
   // Stage two: permute the finalists exhaustively. The canonical arrangement is already among
   // these permutations, so stage two can only improve on stage one's figure, never contradict it.
   let bestScore = currentScore;
   let best: Assignment[] | null = null;
-  for (const finalist of selections.sort((a, b) => b.score - a.score).slice(0, LINEUP_FINALISTS)) {
+  /*
+   * Tracked against the CURRENT board's DPS, not against `best`'s.
+   *
+   * The question this answers is "what is the most damage my roster can do", so the bar is the
+   * board the user has — the same bar every other figure in this module is relative to. Measuring
+   * it against the recommendation instead would make the alternative disappear whenever the
+   * recommendation happened to be damage-maximal among the finalists, which is not the same
+   * statement at all.
+   */
+  let bestDps = currentDps;
+  let byDps: Assignment[] | null = null;
+  for (const finalist of finalists) {
     const members = finalist.assignments.map((a) => a.member);
     if (isStandingSelection(members)) continue;
     for (const order of permutations(members)) {
       const assignments = order.map((member, i) => ({ member, slot: slots[i]! }));
       evaluated++;
-      const { score } = evaluate(boardFor(config, roster, assignments), corpus);
+      const { score, dps } = evaluate(boardFor(config, roster, assignments), corpus);
       if (score > bestScore + 1e-9) {
         bestScore = score;
         best = assignments;
       }
+      if (dps > bestDps + 1e-9) {
+        bestDps = dps;
+        byDps = assignments;
+      }
     }
   }
-  if (!best) return null;
 
-  const board = boardFor(config, roster, best);
-  const bringIn = best
-    .filter((a) => currentSlot(a.member) === null)
-    .map((a) => ({ name: a.member.name, slot: a.slot }));
-  const fielded = new Set(best.map((a) => rosterRefKey(a.member.origin)));
-  const sendOut = roster
-    .filter((m) => currentSlot(m) !== null && !fielded.has(rosterRefKey(m.origin)))
-    .map((m) => m.name);
-  // Only the monsters that actually change slot. Listing the ones already in place made the
-  // instructions hard to find among no-ops — the same lesson `placementAdvice.ts` records.
-  const moves = best
-    .filter((a) => {
-      const from = currentSlot(a.member);
-      return from !== null && !slotsEqual(from, a.slot);
-    })
-    .map((a) => ({ name: a.member.name, slot: a.slot }));
-
-  const final = evaluate(board, corpus);
+  const recommended = best ? describeLineup(config, roster, corpus, best, evaluated) : null;
+  const damageMax = byDps ? describeLineup(config, roster, corpus, byDps, evaluated) : null;
   return {
-    placements: board.placements,
-    bench: board.bench ?? [],
-    dps: final.dps,
-    mitigationPerSecond: final.mitigationPerSecond,
-    bringIn,
-    sendOut,
-    moves,
-    evaluated,
+    best: recommended,
+    /*
+     * Dropped when it does not beat the recommendation on damage, which also covers the case where
+     * the two searches landed on the SAME board: identical boards have identical DPS, so the
+     * comparison rules it out without needing to compare assignments.
+     */
+    highestDps:
+      damageMax && damageMax.dps > (recommended?.dps ?? currentDps) + 1e-9 ? damageMax : null,
   };
 }
 
@@ -470,7 +570,7 @@ export function computeMergeAdvice(
     const { score, dps } = evaluate(merged, corpus);
     // The post-merge roster's own best lineup. Measured on the merged board rather than the
     // original, so "re-field after merging" is advice about the roster the merge leaves behind.
-    const lineup = bestLineup(merged, rosterOf(merged, corpus), corpus, score);
+    const lineup = bestLineup(merged, rosterOf(merged, corpus), corpus, score, dps).best;
     return {
       from: creatureName(step.source, corpus),
       to: creatureName(step.result, corpus),
@@ -528,9 +628,11 @@ export function computeBenchAdvice(
     (n) => !benchCoverage.actionable.includes(n),
   );
 
+  const lineups = bestLineup(config, roster, corpus, currentScore, currentDps);
   return {
     swaps: bestSwaps(config, roster, corpus, currentDps),
-    lineup: bestLineup(config, roster, corpus, currentScore),
+    lineup: lineups.best,
+    highestDpsLineup: lineups.highestDps,
     unreadablePositional,
     locked: roster.filter(isLocked).map((m) => m.name),
   };

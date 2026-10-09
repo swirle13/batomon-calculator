@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { computeBenchAdvice } from "../rosterAdvice";
 import { scoreConfiguration } from "../optimize";
 import { simulate, windowAverageDps } from "../simulate";
+import { isAdjacent } from "../grid";
 import { corpus } from "../../data/corpus";
 import type { TeamConfiguration } from "../../data/types";
 import { GridRow } from "../../data/enums";
@@ -254,8 +255,100 @@ describe("best lineup", () => {
 
     const { advice } = advise(full);
     expect(advice!.swaps).toHaveLength(4);
-    // 210 selections + 3 finalists x 720 arrangements, with headroom for the constants moving.
-    expect(advice!.lineup?.evaluated ?? 0).toBeLessThan(3000);
+    /*
+     * 210 selections + at most 6 finalists x 720 arrangements, with headroom for the constants
+     * moving. Six rather than three because stage one now cuts finalists on BOTH the score and
+     * the DPS ordering and unions the two (2026-10-09) — in practice they overlap heavily and
+     * this roster searches four, but the ceiling is what a budget has to bound.
+     */
+    expect(advice!.lineup?.evaluated ?? 0).toBeLessThan(5000);
+  });
+});
+
+/**
+ * The damage-maximal lineup (2026-10-09, user-reported).
+ *
+ * The report was "Puffloon is ranked pretty low, but it would be much stronger if Aristobat was
+ * also on the team" — and the engine does model that: Puffloon reacts to an adjacent Toxic ally's
+ * cast, Aristobat is Toxic on a 4s cooldown, and the pairing was being simulated correctly.
+ *
+ * Two things hid it. The swap table only ever builds boards with ONE bench monster fielded, so
+ * Puffloon can never meet an Aristobat there; that is by design and is what `swaps` means. The
+ * lineup search did find the pairing, at the highest raw DPS of any selection — and then declined
+ * it on the survivability-weighted objective, in favour of a Runerock whose shield is worth more
+ * than the extra damage. The declining is defensible. Doing it under a heading that quotes DPS,
+ * with no mention that a higher-DPS lineup existed, is not.
+ */
+describe("the damage-maximal lineup", () => {
+  /**
+   * The reported board. Three placed monsters with no Toxic among them — Panbud is Grass, Magmite
+   * is Fire/Rock — so Puffloon has nothing to react to until Aristobat comes on with it.
+   */
+  const reported = config({
+    placements: [
+      { slot: BACK_2, creatureId: Species.Panbud, level: 1 },
+      { slot: { row: GridRow.Bottom, col: 1 }, creatureId: Species.Magmite, level: 1 },
+      { slot: { row: GridRow.Bottom, col: 2 }, creatureId: Species.Magmite, level: 1 },
+    ],
+    bench: [
+      { index: 0, creatureId: Species.Aristobat, level: 1 },
+      { index: 1, creatureId: Species.Brawlmantis, level: 1 },
+      { index: 2, creatureId: Species.Puffloon, level: 1 },
+      { index: 3, creatureId: Species.Runerock, level: 1 },
+    ],
+    simulationWindowSeconds: 30,
+  });
+
+  it("reports the higher-DPS lineup the recommendation gave up damage to reach", () => {
+    const { advice } = advise(reported);
+    const recommended = advice!.lineup!;
+    const damageMax = advice!.highestDpsLineup!;
+
+    expect(damageMax.dps).toBeGreaterThan(recommended.dps);
+    // The trade, in the direction that makes the recommendation the recommendation.
+    expect(damageMax.mitigationPerSecond).toBeLessThan(recommended.mitigationPerSecond);
+  });
+
+  it("fields Puffloon beside the Aristobat that makes it worth fielding", () => {
+    // The synergy itself, which is the thing the user could not see. Puffloon earns a slot only
+    // in the damage-maximal lineup, and only ever next to the Aristobat.
+    const { advice } = advise(reported);
+    const damageMax = advice!.highestDpsLineup!;
+
+    const aristobat = damageMax.placements.find((p) => p.creatureId === Species.Aristobat);
+    const puffloon = damageMax.placements.find((p) => p.creatureId === Species.Puffloon);
+    expect(aristobat).toBeDefined();
+    expect(puffloon).toBeDefined();
+    expect(isAdjacent(aristobat!.slot, puffloon!.slot)).toBe(true);
+  });
+
+  it("quotes a DPS the board it describes actually produces", () => {
+    // The same guarantee the recommendation carries: the figure comes from simulating the board
+    // the Apply button writes, so taking the advice must reproduce the number.
+    const { advice } = advise(reported);
+    const damageMax = advice!.highestDpsLineup!;
+    const applied = { ...reported, placements: damageMax.placements, bench: damageMax.bench };
+    expect(windowAverageDps(simulate(applied, corpus))).toBeCloseTo(damageMax.dps, 6);
+  });
+
+  it("stays silent when the recommendation is already the highest-damage lineup", () => {
+    /*
+     * `null` has to mean "the two agree", not "the search did not look" — otherwise the second
+     * heading would appear on every board, quoting the first one's figure under a different name.
+     *
+     * No defence anywhere on this board, so the survivability factor is 1 and the two objectives
+     * can only rank selections the same way.
+     */
+    const noDefence = config({
+      placements: [
+        { slot: BACK_0, creatureId: Species.Bumblebolt, level: 1 },
+        { slot: BACK_1, creatureId: Species.Bumblebolt, level: 1 },
+      ],
+      bench: [{ index: 0, creatureId: Species.Thorntail, level: 4 }],
+    });
+    const { advice } = advise(noDefence);
+    expect(advice!.lineup).not.toBeNull();
+    expect(advice!.highestDpsLineup).toBeNull();
   });
 });
 

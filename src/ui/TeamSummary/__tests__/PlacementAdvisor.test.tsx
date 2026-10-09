@@ -5,6 +5,7 @@ import { TeamConfigProvider } from "../../../context/TeamConfigContext";
 import { useTeamConfig } from "../../../context/teamConfig";
 import { corpus } from "../../../data/corpus";
 import { suggestPlacement } from "../../../engine/optimize";
+import { computePlacementAdvice } from "../../../engine/placementAdvice";
 import { simulate } from "../../../engine/simulate";
 import { slotKey } from "../../../engine/grid";
 import { GridRow } from "../../../data/enums";
@@ -202,6 +203,27 @@ describe("PlacementAdvisor bench advice", () => {
     // Thorntail came on, and the board still holds six: somebody went to the bench, not away.
     expect(boardText()).toContain(Species.Thorntail);
     expect(boardText()!.split(" ")).toHaveLength(6);
+  });
+
+  it("offers the damage-maximal lineup as a second plan, applied by its own button", () => {
+    /*
+     * 2026-10-09, user-reported. The recommendation is chosen on a survivability-weighted score
+     * and its heading quotes DPS, so a lineup with strictly more damage could exist, be found, be
+     * priced and be declined without ever appearing on screen — see `engine/rosterAdvice.ts`.
+     *
+     * Two buttons applying two different boards is the point of the test: a single shared
+     * "Apply this lineup" would make whichever one the user clicked a coin toss.
+     */
+    const advice = computePlacementAdvice(withBench, corpus);
+    const damageMax = advice.bench!.highestDpsLineup;
+    expect(damageMax).not.toBeNull();
+    expect(damageMax!.dps).toBeGreaterThan(advice.bench!.lineup!.dps);
+
+    renderWithBench();
+    expect(screen.getByText(/most damage you own/i)).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: /apply the max-damage lineup/i }));
+    expect(boardText()).toBe(asBoardText(damageMax!.placements));
   });
 });
 
