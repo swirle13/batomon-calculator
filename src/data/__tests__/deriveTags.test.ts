@@ -300,10 +300,16 @@ describe("WI-002 coverage — reported, not implied", () => {
      * reason as the cleansers — three species, three different wordings ("Trigger this.", "On
      * Battle Start: Trigger this.", "Trigger this and allies in this row.") — and the third needs
      * two tags, which the rule table has no way to express.
+     *
+     * 2026-10-08, last of the day: 394 -> 378. Cicadence, Dryadell, Torrantler and Opalion
+     * hand-tagged with the ON CAST half of `trigger` ("trigger the Bug ally above" and its three
+     * relatives), 4 levels each. That completes the family — every "Trigger X" creature in the
+     * corpus now resolves — and it is the fourth hand-tagging in a row, which is worth noticing:
+     * the rule table reads WORDINGS, and each of these abilities is phrased once.
      */
-    expect(untagged.length).toBe(394);
+    expect(untagged.length).toBe(378);
     expect(newlyDerived.length).toBe(19);
-    expect(untagged.length - newlyDerived.length).toBe(375);
+    expect(untagged.length - newlyDerived.length).toBe(359);
 
     expect(Object.fromEntries([...byFamily].sort())).toEqual({
       // Engine-resolved: the counter rises by these, correctly (see the FR-114 test above).

@@ -175,11 +175,10 @@ export const RESOLVED_TAG_KINDS = [
    * 2026-10-08, user-reported. Resolved by `simulate()` in Phase A, which pulls the target's first
    * cast to t=0 — see the battle-start block there for why that is the whole of the mechanism.
    *
-   * Only the `OnBattleStart` half of the family is modelled. The `OnCast` half ("trigger the ally
-   * above") needs the reaction queue and is not done, which is a gap this entry papers over
-   * slightly: the kind is listed as resolved and one of its two events is not. Acceptable only
-   * because no creature in the corpus currently carries an `OnCast` `trigger` tag, so there is no
-   * ability being claimed that the engine skips. Tag one and this needs splitting.
+   * Both events resolve as of later the same day: the `OnCast` half (Cicadence, Dryadell,
+   * Torrantler, Opalion) goes through the reaction queue in the cast loop. The note that used to
+   * stand here — warning that the kind was listed as resolved while one of its two events was not
+   * — is discharged rather than deleted, because the condition it set is the one that was met.
    */
   "trigger",
 ] as const;
@@ -237,7 +236,9 @@ export function selectTargets<T extends { slot: GridSlot; key: string; creature:
     }
     case "above": {
       const slot = aboveSlot(source.slot);
-      return slot ? others.filter((m) => slotsEqual(m.slot, slot)) : [];
+      // `filtered` as of 2026-10-08 — see `TargetSelector`'s `above` member. Every pre-existing
+      // `above` tag is unfiltered, so this changes nothing for them.
+      return slot ? filtered(others.filter((m) => slotsEqual(m.slot, slot))) : [];
     }
     case "allAllies":
       return filtered(others);

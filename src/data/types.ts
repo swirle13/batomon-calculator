@@ -112,7 +112,14 @@ export type TargetSelector =
   | ({ kind: TargetKind.Adjacent; sameTeamOnly?: boolean } & SelectorFilters)
   | ({ kind: TargetKind.Row; sameTeamOnly?: boolean } & SelectorFilters)
   | { kind: TargetKind.Behind }
-  | { kind: TargetKind.Above }
+  /**
+   * Carries `SelectorFilters` as of 2026-10-08, for Cicadence's "Trigger the **Bug** ally above"
+   * and Dryadell's "**Grass** ally above". A no-op for the nine existing `above` tags, which are
+   * all unfiltered `buffOnCast` grants — but the filter is load-bearing for the two new ones: the
+   * ability does nothing at all when the monster above is of the wrong type, and an unfiltered
+   * selector would have triggered whoever happened to be standing there.
+   */
+  | ({ kind: TargetKind.Above } & SelectorFilters)
   /**
    * The ally directly IN FRONT — the opposite direction to `behind`. Distinct because the board is
    * two rows and the relationship is not symmetric: Saberhorn's "give the ally in front +1
@@ -142,7 +149,41 @@ export interface EffectDescriptor {
  */
 export type AbilityTag =
   | { kind: AbilityTagKind.Ongoing; target: TargetSelector; effect: EffectDescriptor }
-  | { kind: AbilityTagKind.Trigger; target: TargetSelector; event: EventLabel }
+  /**
+   * "Trigger <target>" — one creature making another cast out of turn.
+   *
+   * Both halves of the family resolve as of 2026-10-08, and they resolve by different mechanisms
+   * because they mean different things:
+   *
+   * - `OnBattleStart` (Coalem, Frizzly, NULL-FF) pulls the target's FIRST cast to t=0. See the
+   *   battle-start block in `simulate.ts` for why that is identical to an extra cast at zero and
+   *   why the identity makes the simpler implementation the right one.
+   * - `OnCast` (Cicadence, Dryadell, Torrantler, Opalion) queues an EXTRA cast for the target,
+   *   leaving its own cooldown untouched — FR-099's rule, established by Puffloon.
+   */
+  | {
+      kind: AbilityTagKind.Trigger;
+      target: TargetSelector;
+      event: EventLabel;
+      /**
+       * "(Except other Torrantler)" / "(Except other Opalion)" — the ability skips its own
+       * species. Both creatures carrying this clause are of the type they target, so without it
+       * two of them standing together would trigger each other every cast.
+       */
+      excludeSameSpecies?: boolean;
+      /**
+       * "Trigger **1 random** Rock allies" — Opalion, the only creature in the corpus whose target
+       * is chosen at random.
+       *
+       * The engine is deterministic and must stay so: the placement optimiser simulates 720 boards
+       * and compares their scores, which a coin flip inside `simulate()` would turn into noise. So
+       * `count` targets are picked deterministically, and `simulate()` picks them by SPECIES ID
+       * rather than by slot order — see there. That keeps the choice independent of where anybody
+       * is standing, so this models the right NUMBER of extra casts without inventing a positional
+       * preference the game does not have for the optimiser to chase.
+       */
+      count?: number;
+    }
   | { kind: AbilityTagKind.OnEvent; event: EventLabel; effect: EffectDescriptor }
   | { kind: AbilityTagKind.CooldownSpeedModifier; target: TargetSelector; amount: number }
   | { kind: AbilityTagKind.StatusGrant; target: TargetSelector; status: StatusEffectType; amount: number }

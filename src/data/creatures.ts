@@ -800,7 +800,9 @@ export const creatures: CreatureSpecies[] = [{
 	baseMulticast: 1,
 	publishedCast: { damage: 100, channel: DamageChannel.Direct },
 	abilityText: "Trigger the Bug ally above.",
-	abilityTags: [],
+	abilityTags: [
+	  { kind: AbilityTagKind.Trigger, target: { kind: TargetKind.Above, typeFilter: CreatureType.Bug }, event: EventLabel.OnCast },
+	],
 	levels: {
 		2: {
 			baseCooldownSeconds: 3,
@@ -1260,7 +1262,9 @@ export const creatures: CreatureSpecies[] = [{
 	baseMulticast: 1,
 	publishedCast: { damage: 70, channel: DamageChannel.Direct },
 	abilityText: "Trigger the Grass ally above.",
-	abilityTags: [],
+	abilityTags: [
+	  { kind: AbilityTagKind.Trigger, target: { kind: TargetKind.Above, typeFilter: CreatureType.Grass }, event: EventLabel.OnCast },
+	],
 	levels: {
 		2: {
 			baseMulticast: 2,
@@ -2533,7 +2537,9 @@ export const creatures: CreatureSpecies[] = [{
 	baseMulticast: 1,
 	appliesStatus: [{ type: StatusEffectType.Shield, amount: 90 }],
 	abilityText: "Trigger 1 random Rock allies. (Except other Opalion)",
-	abilityTags: [],
+	abilityTags: [
+	  { kind: AbilityTagKind.Trigger, target: { kind: TargetKind.AllAllies, typeFilter: CreatureType.Rock }, event: EventLabel.OnCast, excludeSameSpecies: true, count: 1 },
+	],
 	levels: {
 		2: {
 			baseMulticast: 2,
@@ -3817,7 +3823,9 @@ export const creatures: CreatureSpecies[] = [{
 	baseMulticast: 1,
 	healAmount: 200,
 	abilityText: "Trigger adjacent Water allies. (Except other Torrantler)",
-	abilityTags: [],
+	abilityTags: [
+	  { kind: AbilityTagKind.Trigger, target: { kind: TargetKind.Adjacent, typeFilter: CreatureType.Water }, event: EventLabel.OnCast, excludeSameSpecies: true },
+	],
 	levels: {
 		2: {
 			baseMulticast: 2,

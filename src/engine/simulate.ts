@@ -1055,6 +1055,77 @@ export function simulate(
       }
     }
 
+    /*
+     * --- "On Cast: Trigger <target>" — the CASTER-side trigger (2026-10-08) ---
+     *
+     * Cicadence and Dryadell ("Trigger the Bug/Grass ally above"), Torrantler ("Trigger adjacent
+     * Water allies") and Opalion ("Trigger 1 random Rock allies"): four creatures whose whole
+     * ability is making somebody else cast. All four were untagged and inert, so each read as a
+     * plain attacker with a line of flavour text.
+     *
+     * The mirror of the `triggerOnAllyCast` hook above. That one is LISTENER-side — "trigger this
+     * when an ally casts" — and reads the reactor's tags; this reads the CASTER's and fires at
+     * whoever its selector names. Same queue, same FR-099 rule that a reaction is an extra cast
+     * which never touches the target's own cooldown.
+     *
+     * ## Chains terminate by construction, not by the depth cap
+     *
+     * A reaction is in `group` but not in `dueCasts`, so a triggered cast deals its damage and
+     * applies its statuses without firing this hook again. Two adjacent Torrantlers therefore
+     * trigger each other once per scheduled cast and stop, rather than ping-ponging.
+     *
+     * That is a real simplification — in the game a triggered cast presumably does fire its own
+     * On Cast ability — and it is the existing engine's settled semantics for every reaction, so
+     * this follows it rather than introducing a second, deeper kind. It is also why
+     * `MAX_CHAIN_DEPTH` is unreachable from here: `chainDepth` is never incremented anywhere,
+     * because no path produces a chain for it to measure.
+     */
+    for (const caster of dueCasts) {
+      const casterResolved = resolvedByKey.get(placementKey(caster.creature.id, caster.sourceSlot));
+      if (!casterResolved) continue;
+      for (const tag of caster.creature.abilityTags) {
+        if (tag.kind !== AbilityTagKind.Trigger || tag.event !== EventLabel.OnCast) continue;
+
+        let targets = selectTargets(tag.target, casterResolved, resolved, config);
+        // "(Except other Torrantler)". Both creatures carrying the clause target their OWN type,
+        // so without it a pair of them would trigger each other on every cast.
+        if (tag.excludeSameSpecies) {
+          targets = targets.filter((t) => t.creature.id !== caster.creature.id);
+        }
+        /*
+         * Opalion's "1 random Rock allies", made deterministic — see the tag's `count`.
+         *
+         * Sorted by SPECIES ID and not by slot, deliberately. A slot-ordered pick would make which
+         * ally benefits depend on where everyone stands, handing the placement optimiser a
+         * positional preference the game does not have: it would happily shuffle the board to put
+         * the biggest Rock hitter in whichever slot sorts first. Keying on the id instead leaves
+         * the choice arbitrary but position-invariant, so the number of extra casts is right and
+         * the search learns nothing false from it.
+         */
+        if (tag.count !== undefined) {
+          targets = [...targets]
+            .sort((a, b) => a.creature.id.localeCompare(b.creature.id))
+            .slice(0, tag.count);
+        }
+
+        for (const target of targets) {
+          // A target with no cast cycle is absent from `schedule`, and has no `modifiers` resolved
+          // for a cast that could never happen. The ally-cast hook above asserts this lookup with
+          // a `!`; this one does not, because a passive ally is an ordinary board, not a bug.
+          const entry = schedule.find((e) => e.key === target.key);
+          if (!entry) continue;
+          const reactT = roundTime(tSeconds + STEP);
+          if (reactT > windowSeconds + 1e-9) continue;
+          reactions.push({
+            tSeconds: reactT,
+            sourceSlot: target.slot,
+            creature: target.creature,
+            modifiers: entry.modifiers,
+          });
+        }
+      }
+    }
+
     // Applications for this instant are in; record the resulting stack counts.
     snapshotStacks(tSeconds);
 
