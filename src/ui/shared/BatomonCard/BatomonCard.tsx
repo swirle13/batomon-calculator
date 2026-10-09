@@ -147,6 +147,7 @@ export function BatomonCard({ creature, children, levelLabel, fixedHeight, meta,
             alt={creature.name}
             painted={isAllType}
             chefFire={chefFire}
+            opticalCenter
           />
         </div>
         <div className={styles.types}>

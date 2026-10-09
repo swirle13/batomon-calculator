@@ -4,6 +4,7 @@ import { render } from "@testing-library/react";
 import { CreatureSprite } from "../shared/CreatureSprite";
 import { BatomonCard } from "../shared/BatomonCard/BatomonCard";
 import { getCreatureByIdAndLevel } from "../../data/corpus";
+import { spriteVerticalOffset } from "../../data/spriteOffsets";
 import { Species } from "../../data/ids";
 
 /**
@@ -57,6 +58,43 @@ describe("CreatureSprite", () => {
     // the type chips, or the rainbow covers the whole card window again.
     expect(treated.querySelectorAll("img")).toHaveLength(1);
     expect(treated.textContent).toBe("");
+  });
+});
+
+/**
+ * 2026-10-09, user-reported: "the mons are slightly too low in the details pane".
+ *
+ * They were, and the card's CSS was innocent — the artwork is drawn against the bottom of its
+ * canvas, so centring the canvas puts the creature below centre by half the headroom.
+ */
+describe("optical centring of ground-anchored sprites", () => {
+  // 12px of headroom against 1px underfoot in a 48px canvas, so the artwork's centre is 5.5px low
+  // — a lean of 5.5/48, and an 11px lift at the card's 96px render.
+  const panbud = getCreatureByIdAndLevel(Species.Panbud, 1)!;
+
+  it("lifts the card's sprite by the artwork's own lean", () => {
+    const { container } = render(<BatomonCard creature={panbud} />);
+    const wrap = container.querySelector('[class*="wrap"]') as HTMLElement;
+    // A WHOLE pixel, which is the point of expressing the lean against the sprite's own box: a
+    // fractional offset would resample art that `image-rendering: pixelated` keeps sharp.
+    expect(wrap.style.top).toContain("-11px");
+    expect(spriteVerticalOffset(panbud.spriteFile) * 96).toBeCloseTo(11, 3);
+  });
+
+  it("leaves a sprite alone unless the call site opts in", () => {
+    // The team grid reads as a board: lifting each creature by a different amount would leave them
+    // standing at different heights, which is worse than all of them standing low together.
+    const { container } = render(
+      <CreatureSprite spriteFile={panbud.spriteFile} size={96} alt="Panbud" />,
+    );
+    expect((container.firstElementChild as HTMLElement).style.top).toBe("");
+  });
+
+  it("reports no lean for a sprite that is already centred", () => {
+    // A centred sprite is OMITTED from the generated table rather than stored as 0, so a lookup
+    // miss has to read as centred for those 19 records to render correctly at all.
+    expect(spriteVerticalOffset("stellagon.png")).toBe(0);
+    expect(spriteVerticalOffset(undefined)).toBe(0);
   });
 });
 

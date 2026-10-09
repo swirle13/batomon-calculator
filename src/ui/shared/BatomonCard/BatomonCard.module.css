@@ -91,8 +91,10 @@
 	align-items: center;
 	justify-content: center;
 	/* item 15: was 3.25rem, which left the two-type column looking half-empty because the chips set
-     a taller band than the sprite filled. Widened again 2026-10-07 to hold a 96px sprite — the
-     frame must exceed the sprite or the art is clipped. */
+     a taller band than the sprite filled. Widened again 2026-10-07 to hold a 96px sprite.
+     The well is deliberately SHORTER than that sprite and does not clip it: what hangs over the
+     edge is the canvas's transparent padding, which `opticalCenter` then shifts further still. The
+     creature itself is centred here, which is the thing this box is sized around. */
 	width: var(--card-sprite-frame-width);
 	height: var(--card-sprite-frame-height);
 	border: 1px solid var(--line);
