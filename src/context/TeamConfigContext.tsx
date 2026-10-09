@@ -136,12 +136,24 @@ export function TeamConfigProvider({
           // the same treatment, so selling a Craghorn that had banked +40 Damage / +40 Shield and
           // buying something else handed the newcomer forty points of Craghorn's ability. Only
           // slot-scoped modifiers belong to the position and survive that.
-          const carried = modifiersAfterWrite(
-            existing,
-            existing !== undefined && isSameMonster(existing, creatureId, level),
-            true,
-          );
-          const next: TeamPlacement = { slot, creatureId, level, modifiers: carried };
+          const sameMonster = existing !== undefined && isSameMonster(existing, creatureId, level);
+          const carried = modifiersAfterWrite(existing, sameMonster, true);
+          /*
+           * The lock survives a LEVEL change and nothing else (2026-10-09).
+           *
+           * Evolving is the whole reason to lock a monster — Ignit is held through two victories to
+           * reach its final form — and that growing up routes through here as a write of a
+           * different species id, so dropping the lock on any write would clear it at the one
+           * moment it was being kept for. A different monster taking the slot inherits nothing: a
+           * lock belongs to the monster, not to the position.
+           */
+          const next: TeamPlacement = {
+            slot,
+            creatureId,
+            level,
+            modifiers: carried,
+            ...(sameMonster && existing?.locked ? { locked: true as const } : {}),
+          };
           return { ...prev, placements: [...withoutSlot, next] };
         });
       },
@@ -273,6 +285,18 @@ export function TeamConfigProvider({
           // user's own inputs. (Levelling up goes through `setPlacement`, which does drop them,
           // because it can change species entirely via evolution.)
           placements: prev.placements.map((p) => (slotsEqual(p.slot, slot) ? { ...p, shiny } : p)),
+        })),
+      /*
+       * Stored as `undefined` rather than `false` when off (2026-10-09), the same way an empty
+       * modifier list is: an unlocked monster has to look exactly like one that was never locked,
+       * or a build's share code and its fingerprint would change for a padlock toggled twice.
+       */
+      setPlacementLocked: (slot, locked) =>
+        setConfig((prev) => ({
+          ...prev,
+          placements: prev.placements.map((p) =>
+            slotsEqual(p.slot, slot) ? { ...p, locked: locked ? true : undefined } : p,
+          ),
         })),
       // Same rule as the grid's, one line down: shiny swaps the published stat line and leaves the
       // monster's own modifiers alone.

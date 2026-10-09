@@ -74,6 +74,20 @@ function currentSlot(member: RosterMember): GridSlot | null {
   return member.origin.zone === RosterZone.Grid ? member.origin.slot : null;
 }
 
+/**
+ * Pinned onto the board by the user, so no advice here may take it off (2026-10-09).
+ *
+ * Read from the placement rather than from anything the engine derives, because the lock is not a
+ * property of the monster's output — it is the user telling the search about a constraint outside
+ * the fight. See `RosteredCreature.locked` for the reported case.
+ *
+ * Only a PLACED monster can be locked (`settleOnBench` drops the flag), so the zone check is what
+ * makes "locked" and "must stay fielded" the same statement.
+ */
+function isLocked(member: RosterMember): boolean {
+  return currentSlot(member) !== null && member.creature.locked === true;
+}
+
 /** A proposed board: who stands where. */
 interface Assignment {
   member: RosterMember;
@@ -129,6 +143,16 @@ export interface BenchAdvice {
   lineup: LineupSuggestion | null;
   /** Benched monsters carrying a positional ability the engine does not read. See the header. */
   unreadablePositional: string[];
+  /**
+   * Monsters the user pinned onto the board, which every figure above was searched around
+   * (2026-10-09).
+   *
+   * Reported for the same reason the blind spots are: a constrained search and an unconstrained one
+   * produce the same-looking list of numbers, and the difference is not something the user can see
+   * from the rows. Naming the locks is also how a forgotten padlock becomes findable — otherwise
+   * "why is it not suggesting the obvious swap" has no answer on screen.
+   */
+  locked: string[];
 }
 
 /**
@@ -238,6 +262,9 @@ function bestSwaps(
     const benchIndex = candidate.origin.index;
     let best: BenchSwap | null = null;
     for (const slot of STABLE_SLOT_ORDER) {
+      // A locked monster's slot is not for sale (2026-10-09). Skipping it here is what makes the
+      // table show the next-best swap instead of one the user has already ruled out.
+      if (standing.some((a) => slotsEqual(a.slot, slot) && isLocked(a.member))) continue;
       // Everyone else stays exactly where they are; whoever held `slot` steps off the board.
       const others = standing.filter((a) => !slotsEqual(a.slot, slot));
       const { dps } = evaluate(boardFor(config, roster, [...others, { member: candidate, slot }]), corpus);
@@ -296,9 +323,26 @@ function bestLineup(
   const slots = slotsForLineup(config, count);
   let evaluated = 0;
 
+  /*
+   * Locked monsters are in every selection by construction (2026-10-09).
+   *
+   * The alternative was to score all `C(R, 6)` selections and discard the ones that drop a locked
+   * monster, which gives the same answer and pays for boards whose verdict is already known. This
+   * way the lock makes the search cheaper rather than dearer: each pinned monster removes a choice
+   * from the combination, so a user who locks three has a quarter of the selections to score.
+   */
+  const pinned = roster.filter(isLocked);
+  const choosable = roster.filter((m) => !isLocked(m));
+  const chosenWith = (pick: RosterMember[]): RosterMember[] => {
+    const taken = new Set([...pinned, ...pick].map((m) => rosterRefKey(m.origin)));
+    // Re-read in ROSTER order rather than concatenating, so `canonicalAssignment` sees the same
+    // stable order it always did — placed monsters first, which is what keeps a suggestion minimal.
+    return roster.filter((m) => taken.has(rosterRefKey(m.origin)));
+  };
+
   // Stage one: score each selection once, in the arrangement that moves the fewest monsters.
-  const selections = combinations(roster, count).map((selection) => {
-    const assignments = canonicalAssignment(selection, slots);
+  const selections = combinations(choosable, count - pinned.length).map((pick) => {
+    const assignments = canonicalAssignment(chosenWith(pick), slots);
     evaluated++;
     return { assignments, score: evaluate(boardFor(config, roster, assignments), corpus).score };
   });
@@ -406,5 +450,6 @@ export function computeBenchAdvice(
     swaps: bestSwaps(config, roster, corpus, currentDps),
     lineup: bestLineup(config, roster, corpus, currentScore),
     unreadablePositional,
+    locked: roster.filter(isLocked).map((m) => m.name),
   };
 }

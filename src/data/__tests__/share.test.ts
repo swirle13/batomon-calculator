@@ -203,6 +203,45 @@ describe("sharing by URL", () => {
     });
   });
 
+  /**
+   * Locked placements (2026-10-09). Same bargain as the run day above: carried by the code because
+   * the library saves and loads builds as codes, left out of the fingerprint because a padlock
+   * changes nothing the engine computes.
+   */
+  describe("locked placements", () => {
+    const pinned: TeamConfiguration = {
+      ...base,
+      placements: base.placements.map((p) => (p.creatureId === Species.Cobrex ? { ...p, locked: true } : p)),
+    };
+
+    it("survives a round trip, on the right placement", () => {
+      const restored = importBuild(exportBuild(pinned));
+      expect(restored.placements.find((p) => p.creatureId === Species.Cobrex)!.locked).toBe(true);
+      expect(restored.placements.find((p) => p.creatureId === Species.Miasmaw)!.locked).toBeUndefined();
+    });
+
+    it("does NOT change the build id — a padlock is not a different team", () => {
+      expect(buildId(pinned)).toBe(buildId(base));
+      expect(canonicalize(pinned)).not.toHaveProperty("locked");
+    });
+
+    it("leaves the code of a build with no locks byte-identical", () => {
+      // The compatibility guarantee that let `FORMAT_VERSION` stay at 1, same as the bench's.
+      expect(exportBuild({ ...base, placements: base.placements.map((p) => ({ ...p, locked: false })) })).toBe(
+        exportBuild(base),
+      );
+    });
+
+    it("reads a code that predates the field as nothing locked", () => {
+      expect(importBuild(exportBuild(base)).placements.every((p) => p.locked === undefined)).toBe(true);
+    });
+
+    it("produces a different CODE, even at the same id", () => {
+      expect(exportBuild(pinned)).not.toBe(exportBuild(base));
+      expect(buildId(pinned)).toBe(buildId(base));
+    });
+  });
+
   it("readBuildFromUrl returns null for a bad link rather than throwing", () => {
     // A bad LINK should leave a usable empty builder; a bad PASTE throws, because there the user is
     // waiting on a specific action and silence would look like the button is broken.

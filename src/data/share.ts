@@ -155,10 +155,36 @@ export function canonicalize(config: TeamConfiguration) {
  */
 function toTransport(config: TeamConfiguration) {
   const day = config.runDay ?? DEFAULT_RUN_DAY;
+  const locked = lockedSlots(config);
   return {
     ...canonicalize(config),
     ...(day === DEFAULT_RUN_DAY ? {} : { day }),
+    ...(locked.length === 0 ? {} : { locked }),
   };
+}
+
+/**
+ * Which slots hold a monster the user pinned onto the board (2026-10-09).
+ *
+ * In the code and out of the fingerprint, for the same reasons as `day` and by the same mechanism
+ * — emitted only when non-empty, so every code written before this is byte-identical:
+ *
+ * - In the code, because the library SAVES a build as a code and loads it back. A lock that did
+ *   not travel would be silently lost by the one workflow it has to survive, and the monster it
+ *   was protecting would be back at the top of the advisor's bench list on the next load.
+ * - Out of the fingerprint, because a lock changes nothing the engine computes (see
+ *   `RosteredCreature.locked`). Two boards differing only in a padlock are the same team, and
+ *   hashing it would make the library stop recognising a team the moment one was toggled.
+ *
+ * A separate list of slots rather than a flag inside `canonicalPlacements`, because that function
+ * IS the fingerprint. Adding a field there, even a conditional one, is how the paragraph above
+ * would have stopped being true.
+ */
+function lockedSlots(config: TeamConfiguration) {
+  return config.placements
+    .filter((p) => p.locked === true)
+    .map((p) => ({ row: p.slot.row, col: p.slot.col }))
+    .sort((a, b) => a.row.localeCompare(b.row) || a.col - b.col);
 }
 
 /**
@@ -296,6 +322,9 @@ export function importBuild(code: string): TeamConfiguration {
       creatureId: p.creatureId,
       level: p.level,
       ...(p.shiny ? { shiny: true } : {}),
+      // Absent in every code written before locks existed, which reads as "nothing was pinned" —
+      // the same correct default an older reader applies when it ignores the field entirely.
+      ...((parsed.locked ?? []).some((l) => l.row === p.row && l.col === p.col) ? { locked: true } : {}),
       // Modifier ids are regenerated: they are session identity, not build content.
       modifiers: p.modifiers.map((m, i) => ({ ...m, id: `imported-${p.row}${p.col}-${i}` })),
     })),

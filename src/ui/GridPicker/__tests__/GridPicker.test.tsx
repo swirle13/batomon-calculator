@@ -62,6 +62,56 @@ describe("GridPicker clear control (FR-033)", () => {
   });
 });
 
+/**
+ * The padlock (2026-10-09, user-reported). Same hazard as the clear control above — it sits on an
+ * element that is both a drag handle and the click target that opens the picker — plus one of its
+ * own: locking a monster must not be mistaken for editing it, because the whole reason to lock
+ * Ignit is that you intend to leave it exactly as it is.
+ */
+describe("GridPicker lock control (2026-10-09)", () => {
+  it("locks the placement without opening the creature picker", () => {
+    renderWithPlacement();
+    fireEvent.click(screen.getByRole("button", { name: /^lock bumblebolt/i }));
+
+    expect(screen.getByRole("button", { name: /^unlock bumblebolt/i })).toBeTruthy();
+    expect(screen.queryByRole("dialog")).toBeNull();
+    // Still on the board: a lock is not a removal, and the two controls are adjacent.
+    expect(screen.getByRole("button", { name: /^Bumblebolt, level 1/ })).toBeTruthy();
+  });
+
+  it("unlocks on a second press, and says which state it is in", () => {
+    renderWithPlacement();
+    const lock = () => screen.getByRole("button", { name: /lock bumblebolt/i });
+
+    fireEvent.click(lock());
+    expect(lock().getAttribute("aria-pressed")).toBe("true");
+    fireEvent.click(lock());
+    expect(lock().getAttribute("aria-pressed")).toBe("false");
+  });
+
+  it("does not offer a lock on a BENCH card, where it would constrain nothing", () => {
+    // `settleOnBench` drops the flag, so a padlock here would be a control with no effect — see
+    // `RosteredCreature.locked`.
+    render(
+      <TeamConfigProvider
+        initialConfig={{
+          placements: [],
+          bench: [{ index: 0, creatureId: Species.Bumblebolt, level: 1 }],
+          trainerId: null,
+          trinketIds: [],
+          itemIds: [],
+          simulationWindowSeconds: 20,
+        }}
+      >
+        <GridPicker onHighlight={vi.fn()} />
+      </TeamConfigProvider>,
+    );
+
+    expect(screen.getByRole("button", { name: /^Bumblebolt, level 1/ })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /lock bumblebolt/i })).toBeNull();
+  });
+});
+
 describe("GridPicker click-to-open (FR-047, 2026-10-06 round 7)", () => {
   it("opens the creature picker on a single click of an occupied slot", () => {
     renderWithPlacement();

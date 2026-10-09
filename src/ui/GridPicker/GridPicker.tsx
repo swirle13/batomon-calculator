@@ -168,6 +168,35 @@ function CardFace({ creature, level, modifiers, painted, chefFire }: CardFacePro
   );
 }
 
+/**
+ * The padlock, drawn rather than typed (2026-10-09).
+ *
+ * `🔒` would have been one character, and it renders as a full-colour emoji at whatever size the
+ * platform's emoji font decides — beside the `×` on a 17px control that reads as a sticker on the
+ * card. This inherits `currentColor` and the button's size, so locked and unlocked are the same
+ * shape in the same weight as everything else in the corner.
+ */
+function LockGlyph({ locked }: { locked: boolean }) {
+  return (
+    <svg viewBox="0 0 12 12" width="100%" height="100%" aria-hidden focusable="false">
+      {/*
+        The shackle, and the ONLY difference between the two states: closed has both legs standing
+        on the body, open has the right one hinged in mid-air above it. A subtler difference than
+        this — a shackle merely lifted, or tilted — is invisible at 17px, which is the size this is
+        actually read at. The colour carries the rest; see `.lockOn`.
+      */}
+      <path
+        d={locked ? "M4.2 5V3.8a2 2 0 0 1 4 0V5" : "M4.2 5V3.8a2 2 0 0 1 4 0"}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinecap="round"
+      />
+      <rect x="2.6" y="5" width="6.8" height="5" rx="1" fill="currentColor" />
+    </svg>
+  );
+}
+
 interface DraggableCardProps extends CardFaceProps {
   /**
    * Where this card stands — a grid slot or a bench position (2026-10-08).
@@ -186,16 +215,34 @@ interface DraggableCardProps extends CardFaceProps {
   onOpenSearch: () => void;
   /** FR-033 (round 6). */
   onClear: () => void;
+  /**
+   * Pinned onto the board, so the advisor stops offering to bench it (2026-10-09). Absent on bench
+   * cards: a lock means "keep this fielded", which is not something a benched monster can be.
+   */
+  locked?: boolean;
+  onToggleLock?: () => void;
 }
 
-function DraggableCard({ target, creature, level, modifiers, painted, chefFire, onHighlight, onOpenSearch, onClear }: DraggableCardProps) {
+function DraggableCard({
+  target,
+  creature,
+  level,
+  modifiers,
+  painted,
+  chefFire,
+  onHighlight,
+  onOpenSearch,
+  onClear,
+  locked,
+  onToggleLock,
+}: DraggableCardProps) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: rosterRefKey(target),
     data: { target },
   });
 
   /**
-   * The clear button lives inside an element that is BOTH a drag handle and a click target that
+   * The corner buttons live inside an element that is BOTH a drag handle and a click target that
    * opens the picker, so every path that could reach the parent has to be stopped here
    * (research.md H5):
    *  - `pointerDown`: otherwise @dnd-kit treats the press as the start of a drag.
@@ -203,16 +250,22 @@ function DraggableCard({ target, creature, level, modifiers, painted, chefFire, 
    *  - `keyDown`: otherwise the card's onKeyDown calls preventDefault() and opens the picker on
    *    Enter/Space -- which would suppress the button's own click and give a keyboard user the
    *    exact opposite of "clear this slot".
+   *
+   * Written once and used by both buttons since the padlock arrived (2026-10-09). Three separate
+   * one-line handlers per corner control is how the second one would have shipped missing a case
+   * — and a missing `pointerDown` does not look like a bug, it looks like the card being dragged.
    */
-  function handleClearPointerDown(event: MouseEvent<HTMLButtonElement>) {
+  function stopPointerDown(event: MouseEvent<HTMLButtonElement>) {
     event.stopPropagation();
   }
-  function handleClearClick(event: MouseEvent<HTMLButtonElement>) {
+  function stopKeyDown(event: KeyboardEvent<HTMLButtonElement>) {
     event.stopPropagation();
-    onClear();
   }
-  function handleClearKeyDown(event: KeyboardEvent<HTMLButtonElement>) {
-    event.stopPropagation();
+  function runOnClick(action: () => void) {
+    return (event: MouseEvent<HTMLButtonElement>) => {
+      event.stopPropagation();
+      action();
+    };
   }
 
   return (
@@ -235,12 +288,39 @@ function DraggableCard({ target, creature, level, modifiers, painted, chefFire, 
       role="button"
       aria-label={`${creature.name}, level ${level}. Click to change, or drag to another slot.`}
     >
+      {/*
+        The padlock (2026-10-09, user-reported). Top-LEFT corner, opposite the clear button: they
+        are the two things you can do to a card without opening anything, and putting them side by
+        side on a 96px pane would make the wrong one easy to hit.
+
+        Only rendered when the card can be locked, which in practice means only on the grid — see
+        `DraggableCardProps.locked`. An unlocked padlock is drawn at reduced opacity rather than
+        hidden until hover, because a control nobody can see is a feature nobody finds.
+      */}
+      {onToggleLock && (
+        <button
+          type="button"
+          className={`${styles.lock} ${locked ? styles.lockOn : ""}`}
+          onPointerDown={stopPointerDown}
+          onClick={runOnClick(onToggleLock)}
+          onKeyDown={stopKeyDown}
+          aria-label={
+            locked
+              ? `Unlock ${creature.name}, so placement suggestions may bench it`
+              : `Lock ${creature.name} onto the board, so placement suggestions keep it`
+          }
+          aria-pressed={locked === true}
+          title={locked ? `${creature.name} is locked onto the board` : `Lock ${creature.name} onto the board`}
+        >
+          <LockGlyph locked={locked === true} />
+        </button>
+      )}
       <button
         type="button"
         className={styles.clear}
-        onPointerDown={handleClearPointerDown}
-        onClick={handleClearClick}
-        onKeyDown={handleClearKeyDown}
+        onPointerDown={stopPointerDown}
+        onClick={runOnClick(onClear)}
+        onKeyDown={stopKeyDown}
         aria-label={`Remove ${creature.name} from this slot`}
         title={`Remove ${creature.name}`}
       >
@@ -306,7 +386,7 @@ function DroppableZone({ target, children }: { target: RosterRef; children: Reac
  * actually holds; passing an inline arrow from the parent would silently defeat it.
  */
 export const GridPicker = memo(function GridPicker({ onHighlight }: GridPickerProps) {
-  const { config, setPlacement, setBenchCreature, moveRoster } = useTeamConfig();
+  const { config, setPlacement, setPlacementLocked, setBenchCreature, moveRoster } = useTeamConfig();
   const [searchTarget, setSearchTarget] = useState<RosterRef | null>(null);
   /** The position being dragged, so `<DragOverlay>` knows which card to draw under the pointer. */
   const [draggingFrom, setDraggingFrom] = useState<RosterRef | null>(null);
@@ -370,6 +450,7 @@ export const GridPicker = memo(function GridPicker({ onHighlight }: GridPickerPr
     return {
       creature,
       level: member.level,
+      locked: member.locked === true,
       modifiers: [...(member.modifiers ?? []), ...trainerModifiersFor(creature, config)],
       painted: creature.types.some(isWildcardType) || isPainted(creature.id, config),
       chefFire: hasChefFireTyping(creature, config),
@@ -444,6 +525,8 @@ export const GridPicker = memo(function GridPicker({ onHighlight }: GridPickerPr
                           onHighlight={() => onHighlight(ref)}
                           onOpenSearch={() => setSearchTarget(ref)}
                           onClear={() => setPlacement(slot, null)}
+                          locked={card.locked}
+                          onToggleLock={() => setPlacementLocked(slot, !card.locked)}
                         />
                       ) : (
                         <EmptyCard

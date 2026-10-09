@@ -47,33 +47,52 @@ export function BenchAdvice({
   isStale,
   onApplyLineup,
 }: BenchAdviceProps) {
-  const { swaps, lineup, unreadablePositional } = advice;
-  if (swaps.length === 0) return null;
+  const { swaps, lineup, unreadablePositional, locked } = advice;
+  /*
+   * `locked` keeps the section alive on its own (2026-10-09). Lock every slot and there are no
+   * swaps and no lineup left to offer — a correct result, and an empty panel is the worst way to
+   * deliver it, since the reason is a padlock the user set and can still undo.
+   */
+  if (swaps.length === 0 && lineup === null && locked.length === 0) return null;
 
   return (
     <div className={styles.bench}>
       <p className={styles.heading}>From your bench</p>
 
-      <ul className={styles.swaps}>
-        {swaps.map((swap) => (
-          <li key={swap.benchIndex} className={styles.swap}>
-            <span className={styles.name}>{swap.name}</span>
-            <span className={styles.detail}>
-              {swap.replaces === null
-                ? `into the empty ${slotLabel(swap.slot)}`
-                : `for ${swap.replaces}, ${slotLabel(swap.slot)}`}
-            </span>
-            <span className={swap.dpsDelta >= 0 ? styles.gain : styles.loss}>
-              {signedRate(swap.dpsDelta)}
-            </span>
-            <span className={styles.resulting}>{formatRate(swap.dps)} DPS</span>
-          </li>
-        ))}
-      </ul>
+      {swaps.length > 0 && (
+        <ul className={styles.swaps}>
+          {swaps.map((swap) => (
+            <li key={swap.benchIndex} className={styles.swap}>
+              <span className={styles.name}>{swap.name}</span>
+              <span className={styles.detail}>
+                {swap.replaces === null
+                  ? `into the empty ${slotLabel(swap.slot)}`
+                  : `for ${swap.replaces}, ${slotLabel(swap.slot)}`}
+              </span>
+              <span className={swap.dpsDelta >= 0 ? styles.gain : styles.loss}>
+                {signedRate(swap.dpsDelta)}
+              </span>
+              <span className={styles.resulting}>{formatRate(swap.dps)} DPS</span>
+            </li>
+          ))}
+        </ul>
+      )}
 
-      <p className={styles.basis}>
-        One swap at a time, against <strong>{formatRate(currentDps)}</strong> now.
-      </p>
+      {swaps.length > 0 && (
+        <p className={styles.basis}>
+          One swap at a time, against <strong>{formatRate(currentDps)}</strong> now.
+        </p>
+      )}
+
+      {/* Stated before the lineup rather than after it, because it is a condition ON the lineup:
+          every monster named here was held in place while the search ran. */}
+      {locked.length > 0 && (
+        <p className={styles.basis}>
+          Keeping <strong>{locked.join(", ")}</strong> on the board —{" "}
+          {locked.length === 1 ? "it is locked" : "they are locked"}, so nothing here offers to bench{" "}
+          {locked.length === 1 ? "it" : "them"}.
+        </p>
+      )}
 
       {lineup && (
         <div className={styles.lineup}>

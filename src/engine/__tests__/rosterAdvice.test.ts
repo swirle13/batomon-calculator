@@ -258,3 +258,72 @@ describe("best lineup", () => {
     expect(advice!.lineup?.evaluated ?? 0).toBeLessThan(3000);
   });
 });
+
+/**
+ * Locked monsters (2026-10-09, user-reported).
+ *
+ * The reported board is reproduced in miniature: a weak monster held deliberately — Ignit is kept
+ * through two victories to reach its final form — on a board with a strong candidate benched. Every
+ * answer the advisor had was "bench the weak one", which is right about the fight and useless to a
+ * user who cannot act on it, and it crowded out the swap they could have made.
+ */
+describe("a locked monster stays on the board", () => {
+  /** A full board of Thorntails with one slot given to a monster the user is holding. */
+  function heldBoard(locked: boolean) {
+    const [held, ...rest] = fullBoardOf(Species.Thorntail, 4);
+    return config({
+      placements: [{ ...held!, creatureId: Species.Bumblebolt, level: 1, ...(locked ? { locked: true } : {}) }, ...rest],
+      bench: [{ index: 0, creatureId: Species.Thorntail, level: 4 }],
+    });
+  }
+
+  it("is the swap the advisor makes when it is NOT locked", () => {
+    // The control. Without a lock the weak monster is exactly what a candidate should displace,
+    // and the test below is only meaningful because this is what it changes.
+    const swap = advise(heldBoard(false)).advice!.swaps[0]!;
+    expect(swap.replaces).toBe("Bumblebolt Lv.1");
+  });
+
+  it("is never the monster a bench candidate is offered", () => {
+    const { advice } = advise(heldBoard(true));
+    // A row is still produced — "nothing here beats what you have" is an answer — it just names a
+    // slot the user can actually give up.
+    expect(advice!.swaps[0]!.replaces).not.toBe("Bumblebolt Lv.1");
+    expect(advice!.locked).toEqual(["Bumblebolt Lv.1"]);
+  });
+
+  it("is kept by the best lineup, which then has to find its gain elsewhere", () => {
+    const board = config({
+      placements: [
+        { slot: BACK_0, creatureId: Species.Bumblebolt, level: 1, locked: true },
+        { slot: BACK_1, creatureId: Species.Bumblebolt, level: 1 },
+      ],
+      bench: [
+        { index: 0, creatureId: Species.Thorntail, level: 4 },
+        { index: 1, creatureId: Species.Thorntail, level: 4 },
+      ],
+    });
+
+    const lineup = advise(board).advice!.lineup!;
+    expect(lineup.sendOut).not.toContain("Bumblebolt Lv.1");
+    // And it is still ON the suggested board, carrying its lock, so applying the lineup does not
+    // silently unlock it.
+    const kept = lineup.placements.find((p) => p.creatureId === Species.Bumblebolt);
+    expect(kept?.locked).toBe(true);
+  });
+
+  it("costs fewer simulations, not more — the lock removes selections from the search", () => {
+    const roster = {
+      placements: fullBoardOf(Species.Bumblebolt, 1),
+      bench: [
+        { index: 0 as const, creatureId: Species.Thorntail, level: 4 as const },
+        { index: 1 as const, creatureId: Species.Thorntail, level: 2 as const },
+      ],
+    };
+    const unlocked = advise(config(roster)).advice!.lineup!.evaluated;
+    const locked = advise(
+      config({ ...roster, placements: roster.placements.map((p, i) => (i === 0 ? { ...p, locked: true } : p)) }),
+    ).advice!.lineup!.evaluated;
+    expect(locked).toBeLessThan(unlocked);
+  });
+});

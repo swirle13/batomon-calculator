@@ -88,6 +88,9 @@ export function creatureOf(member: RosteredCreature): RosteredCreature {
     level: member.level,
     ...(member.shiny ? { shiny: true as const } : {}),
     ...(member.modifiers ? { modifiers: member.modifiers } : {}),
+    // The lock is part of what the monster IS as far as this function is concerned — the user
+    // pinned this monster, not this square. `settleOnBench` is where it stops being true.
+    ...(member.locked ? { locked: true as const } : {}),
   };
 }
 
@@ -111,7 +114,14 @@ export function arrivingModifiers(
   return modifiersOrUndefined([...carried, ...inherited]);
 }
 
-/** `mover`, standing in `slot`, carrying what the rule above says it carries. */
+/**
+ * `mover`, standing in `slot`, carrying what the rule above says it carries.
+ *
+ * The LOCK rides along with the monster rather than staying with the slot (2026-10-09). It means
+ * "keep this one fielded", which is a statement about the monster and not about where it stands —
+ * so dragging a locked monster one column over must not quietly unlock it, and the monster it
+ * swapped with must not inherit a lock it never had.
+ */
 export function settleOnGrid(
   mover: RosteredCreature,
   slot: GridSlot,
@@ -121,9 +131,17 @@ export function settleOnGrid(
   return { ...creatureOf(mover), modifiers: arrivingModifiers(mover, ref, previousOccupant), slot };
 }
 
-/** `mover`, parked at `index`. No `previousOccupant`: the bench has nothing to inherit. */
+/**
+ * `mover`, parked at `index`. No `previousOccupant`: the bench has nothing to inherit.
+ *
+ * Drops the lock, because the bench is where a lock has no meaning: it exists to stop the advisor
+ * SUGGESTING this monster be taken off the board, and the user has just taken it off themselves.
+ * Leaving it set would show a padlock on a bench card that constrains nothing.
+ */
 export function settleOnBench(mover: RosteredCreature, index: BenchIndex): BenchedCreature {
-  return { ...creatureOf(mover), modifiers: arrivingModifiers(mover, benchRef(index), undefined), index };
+  const monster = creatureOf(mover);
+  delete monster.locked;
+  return { ...monster, modifiers: arrivingModifiers(mover, benchRef(index), undefined), index };
 }
 
 /** `mover`, settled into `destination`, whichever zone that is. */

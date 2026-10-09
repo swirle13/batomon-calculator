@@ -83,6 +83,11 @@ export interface TeamConfigContextValue {
   /** FR-087 (round 11, WI-R11-001): toggle this placement's SHINY variant, independent of level. */
   setPlacementShiny: (slot: GridSlot, shiny: boolean) => void;
   /**
+   * Pins the monster in `slot` onto the board, so the placement advisor stops offering to bench it
+   * (2026-10-09). Changes no simulated figure — see `RosteredCreature.locked`.
+   */
+  setPlacementLocked: (slot: GridSlot, locked: boolean) => void;
+  /**
    * The bench's counterpart (2026-10-08), added when the detail card learned to open on a hovered
    * bench monster: the card carries the level/shiny bubbles, and half a roster that could not use
    * them would read as the panel being broken.

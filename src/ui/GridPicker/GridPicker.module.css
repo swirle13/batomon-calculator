@@ -284,6 +284,58 @@
   background: var(--danger-fill);
 }
 
+/*
+ * The padlock (2026-10-09): the clear button's twin in the opposite corner.
+ *
+ * Shares `--slot-clear-size` and `--slot-clear-inset` with `.clear` deliberately. The two are the
+ * card's only chrome and they sit at the same height on the same pane, so a size of its own here
+ * would read as one of them being misaligned — and the header's `--slot-clear-gutter` already
+ * reserves exactly this much room on both sides of the name.
+ */
+.lock {
+  position: absolute;
+  top: var(--slot-clear-inset);
+  left: var(--slot-clear-inset);
+  width: var(--slot-clear-size);
+  height: var(--slot-clear-size);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* The glyph fills the button, so it needs the inset the `×` gets from being a character. */
+  padding: 0.15rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--scrim-art);
+  /*
+   * Visible but quiet while unlocked. Hiding it until hover would have been tidier and would have
+   * made it undiscoverable on a phone, which has no hover at all.
+   */
+  color: var(--text-on-art);
+  opacity: 0.45;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 1;
+}
+
+.lock:hover,
+.lock:focus-visible {
+  opacity: 1;
+}
+
+/*
+ * Locked reads as ON from across the board: full opacity, the accent fill, and a light ring.
+ *
+ * The ring is not decoration. `--accent-fill` is a mid amber, and half the cards it lands on are
+ * the orange of a Fire type — on Lignite and Scorchimp the fill alone was barely a shade apart
+ * from the pane behind it, which is the one state that has to be unmissable, since it is the
+ * explanation for why the advisor is leaving that monster alone.
+ */
+.lockOn {
+  opacity: 1;
+  background: var(--accent-fill);
+  box-shadow: 0 0 0 1px var(--text-on-art);
+}
+
 .fallbackDetails summary {
   font-size: var(--font-xs);
   color: var(--text-muted);
@@ -495,5 +547,16 @@
   .header .level {
     flex-basis: 100%;
     text-align: left;
+  }
+
+  /*
+   * Grid panes keep BOTH gutters, because grid panes are the ones with a padlock in the left
+   * corner (2026-10-09). The rule above gives the left edge `--space-3xs`, which is right for a
+   * bench card — nothing is up there — and would run a long name straight under the lock here.
+   *
+   * Below the rule it overrides, per this block's own warning about source order.
+   */
+  .grid .header {
+    padding-inline: var(--slot-clear-gutter);
   }
 }

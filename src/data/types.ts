@@ -925,6 +925,26 @@ export interface RosteredCreature {
   shiny?: boolean;
   /** Applies only to this creature, on top of any teamModifiers */
   modifiers?: StatModifier[];
+  /**
+   * "Never advise taking this one off the board" (2026-10-09, user-reported).
+   *
+   * Some monsters are held for a reason the simulation cannot see. Ignit is the reported case: it
+   * is deliberately weak until two victories evolve it into a strong dragon, so it has to stay
+   * fielded to reach that form — and the advisor, which only ever measures the fight in front of
+   * it, correctly concluded it should be benched and said so in every suggestion it made. The
+   * result was that no OTHER swap was ever visible, because the one the user could not take
+   * occupied the top of the list.
+   *
+   * So this is not an engine input. `simulate()` never reads it; a locked monster fights exactly
+   * as it did before. It constrains the SEARCH in `engine/rosterAdvice.ts`: the lineup must keep
+   * every locked monster fielded, and no bench candidate is offered the slot one stands in. The
+   * arrangement search is left alone, because moving a monster between slots does not take it off
+   * the board — which is the only thing the lock is about.
+   *
+   * Only ever set on a placement. `settleOnBench` drops it, so parking a locked monster by hand
+   * unlocks it: the user has just done the thing the lock was preventing being suggested.
+   */
+  locked?: boolean;
 }
 
 export interface TeamPlacement extends RosteredCreature {
