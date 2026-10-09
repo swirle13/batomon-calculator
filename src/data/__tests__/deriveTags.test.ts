@@ -294,10 +294,16 @@ describe("WI-002 coverage — reported, not implied", () => {
      * the corpus, and a rule table row matching two wordings that appear nowhere else would be a
      * generalisation with nothing to generalise over. `newlyDerived` is unmoved, which is the
      * check that matters — the rule table did not change.
+     *
+     * 2026-10-08, later still: 406 -> 394. Coalem, Frizzly and NULL-FF hand-tagged `trigger` for
+     * their "On Battle Start: Trigger this" opening cast, 4 levels each. Hand-tagged for the same
+     * reason as the cleansers — three species, three different wordings ("Trigger this.", "On
+     * Battle Start: Trigger this.", "Trigger this and allies in this row.") — and the third needs
+     * two tags, which the rule table has no way to express.
      */
-    expect(untagged.length).toBe(406);
+    expect(untagged.length).toBe(394);
     expect(newlyDerived.length).toBe(19);
-    expect(untagged.length - newlyDerived.length).toBe(387);
+    expect(untagged.length - newlyDerived.length).toBe(375);
 
     expect(Object.fromEntries([...byFamily].sort())).toEqual({
       // Engine-resolved: the counter rises by these, correctly (see the FR-114 test above).

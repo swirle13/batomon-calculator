@@ -1,5 +1,5 @@
 import type { CreatureSpecies } from "./types";
-import { AbilityTagKind, AbilityTrigger, CreatureType, DamageChannel, ModifierStat, Rarity, StatChangeStat, StatusEffectType, TargetKind } from "./enums";
+import { AbilityTagKind, AbilityTrigger, CreatureType, DamageChannel, EventLabel, ModifierStat, Rarity, StatChangeStat, StatusEffectType, TargetKind } from "./enums";
 import { Species } from "./ids";
 
 /**
@@ -902,7 +902,9 @@ export const creatures: CreatureSpecies[] = [{
 	baseMulticast: 1,
 	appliesStatus: [{ type: StatusEffectType.Shield, amount: 550 }, { type: StatusEffectType.Burn, amount: 20 }],
 	abilityText: "Trigger this.",
-	abilityTags: [],
+	abilityTags: [
+	  { kind: AbilityTagKind.Trigger, target: { kind: TargetKind.Self }, event: EventLabel.OnBattleStart },
+	],
 	levels: {
 		2: {
 			appliesStatus: [{ type: StatusEffectType.Shield, amount: 1100 }, { type: StatusEffectType.Burn, amount: 40 }],
@@ -1463,7 +1465,9 @@ export const creatures: CreatureSpecies[] = [{
 	publishedCast: { damage: 1, channel: DamageChannel.Direct },
 	appliesStatus: [{ type: StatusEffectType.Shock, amount: 8 }],
 	abilityText: "On Battle Start: Trigger this.",
-	abilityTags: [],
+	abilityTags: [
+	  { kind: AbilityTagKind.Trigger, target: { kind: TargetKind.Self }, event: EventLabel.OnBattleStart },
+	],
 	levels: {
 		2: {
 			appliesStatus: [{ type: StatusEffectType.Shock, amount: 16 }],
@@ -2450,7 +2454,13 @@ export const creatures: CreatureSpecies[] = [{
 	baseMulticast: 1,
 	publishedCast: { damage: 99, channel: DamageChannel.Direct },
 	abilityText: "Trigger this and allies in this row.",
-	abilityTags: [],
+	// Two tags, because `TargetKind.Row` means "the OTHERS in my row" — `effects.ts` excludes the
+	// source from every ally selector. "This AND allies in this row" names the two separately, so
+	// the tags do too, rather than inventing an `includeSelf` the selector does not have.
+	abilityTags: [
+	  { kind: AbilityTagKind.Trigger, target: { kind: TargetKind.Self }, event: EventLabel.OnBattleStart },
+	  { kind: AbilityTagKind.Trigger, target: { kind: TargetKind.Row }, event: EventLabel.OnBattleStart },
+	],
 	levels: {
 		2: {
 			baseMulticast: 2,

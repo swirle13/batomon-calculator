@@ -11,7 +11,7 @@ import { applyShinyOverlay, findCreature, hasCreatureRecord } from "../data/corp
 import { InvalidTeamConfigurationError } from "./errors";
 
 import { damageChannelOf } from "../data/vocabularies";
-import { AbilityTagKind, DamageChannel, ModifierStat, StatChangeStat, StatusEffectType, TargetKind, TimelineEventKind } from "../data/enums";
+import { AbilityTagKind, DamageChannel, EventLabel, ModifierStat, StatChangeStat, StatusEffectType, TargetKind, TimelineEventKind } from "../data/enums";
 import { placementKey } from "./grid";
 
 /**
@@ -435,6 +435,52 @@ export function simulate(
       key: placementKey(creature.id, slot),
       chargeRules: member.resolved.chargeRules,
     });
+  }
+
+  /*
+   * --- "On Battle Start: Trigger this" — the opening cast (2026-10-08, user-reported) ---
+   *
+   * Coalem, Frizzly and NULL-FF all publish `abilityTrigger: OnBattleStart` over the text "Trigger
+   * this", and all three carried no tag at all, so the engine gave them no opening cast. Coalem on
+   * a 15s cooldown therefore cast twice in a 30s window instead of three times — the user's report:
+   * "he also gets a 0.0s cast because of his ability". A third of its output was missing, and it is
+   * the creature the whole survivability model was weighed up on.
+   *
+   * ## Why this moves `nextAt` instead of queuing a reaction
+   *
+   * `reactions` is the machinery for an extra cast that must not disturb its caster's cooldown
+   * (FR-099, Puffloon). It would work here, but it is both more code and strictly worse: a reaction
+   * skips the multicast expansion in the loop below, which would silently cost NULL-FF its 999
+   * Multicast and Frizzly Lv4 its 2.
+   *
+   * Moving the first cast to `startAt` needs none of that, because at battle start the two readings
+   * COINCIDE. An extra cast at t=0 with the schedule untouched gives casts at 0, cd, 2cd; a first
+   * cast pulled to t=0 gives 0, cd, 2cd — the schedule's opening entry was at `cd` either way.
+   * There is no third reading to choose between, so this takes the one that runs through every
+   * existing code path (multicast, on-cast buffs, the ally-cast hook, charges) rather than around
+   * them.
+   *
+   * ## Scope
+   *
+   * `AbilityTagKind.Trigger` was in the vocabulary, used by no creature and resolved by nothing.
+   * This is its first resolution, and deliberately only for `event: OnBattleStart` — the ON CAST
+   * half of the family (Cicadence, Dryadell, Torrantler, Opalion: "trigger the ally above") is a
+   * different hook, needs the reaction queue proper, and stays unmodelled and reported as such.
+   *
+   * Runs BEFORE the revive block below so that a revived ally's clock still starts at its
+   * reviver's first cast: a creature that was knocked out at battle start did not act at battle
+   * start, whatever its own ability says.
+   */
+  for (const entry of resolved) {
+    for (const tag of entry.creature.abilityTags) {
+      if (tag.kind !== AbilityTagKind.Trigger || tag.event !== EventLabel.OnBattleStart) continue;
+      for (const target of selectTargets(tag.target, entry, resolved, config)) {
+        // A target with no cooldown has no cast to pull forward. It is absent from `schedule`
+        // rather than present with a null one, so this is a lookup miss and not a special case.
+        const scheduled = schedule.find((s) => s.key === target.key);
+        if (scheduled) scheduled.nextAt = roundTime(startAt);
+      }
+    }
   }
 
   /*
@@ -1078,7 +1124,20 @@ export function simulate(
    */
   const perCreatureDps: Record<string, number> = {};
   for (const [key, totalDamage] of perCreatureDamage.entries()) {
-    perCreatureDps[key] = totalDamage / (lastDirectHitAt.get(key) ?? windowSeconds);
+    /*
+     * A last hit at t=0 is a span of ZERO, and dividing by it yields Infinity (2026-10-08).
+     *
+     * Unreachable until the battle-start trigger above existed, because every cast used to land at
+     * `cooldown` or later. It became reachable the moment a creature could hit at t=0 and not hit
+     * again: a Frizzly in a window shorter than its 7s cooldown casts once, at the opening bell,
+     * and would have reported infinite DPS — the UI permits a 1-second window.
+     *
+     * `??` does not catch it, because 0 is a recorded value and not a missing one. Falling back to
+     * the window is the conservative reading of a single opening hit: it is the one span that is
+     * certainly not zero, and it understates rather than inventing a rate from no elapsed time.
+     */
+    const lastHit = lastDirectHitAt.get(key);
+    perCreatureDps[key] = totalDamage / (lastHit !== undefined && lastHit > 0 ? lastHit : windowSeconds);
   }
 
   const perCreatureFacilitatedDps: Record<string, number> = {};

@@ -171,6 +171,17 @@ export const RESOLVED_TAG_KINDS = [
    * its own kind of wrong number.
    */
   "cleanseDebuffs",
+  /*
+   * 2026-10-08, user-reported. Resolved by `simulate()` in Phase A, which pulls the target's first
+   * cast to t=0 — see the battle-start block there for why that is the whole of the mechanism.
+   *
+   * Only the `OnBattleStart` half of the family is modelled. The `OnCast` half ("trigger the ally
+   * above") needs the reaction queue and is not done, which is a gap this entry papers over
+   * slightly: the kind is listed as resolved and one of its two events is not. Acceptable only
+   * because no creature in the corpus currently carries an `OnCast` `trigger` tag, so there is no
+   * ability being claimed that the engine skips. Tag one and this needs splitting.
+   */
+  "trigger",
 ] as const;
 
 /** True when `tag` is one this resolver understands. Keeps the "can we act on it?" test in one place. */
