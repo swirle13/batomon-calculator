@@ -1,6 +1,7 @@
-import { memo } from "react";
+import { memo, useState } from "react";
 import type { SimulationResult } from "../../data/types";
 import { STAT_COLORS } from "../../data/statColors";
+import { Button } from "../primitives";
 
 interface CumulativeChartProps {
   result: SimulationResult;
@@ -49,9 +50,39 @@ export const CumulativeChart = memo(function CumulativeChart({ result, day }: Cu
   const hpText = threshold === null ? "" : `${threshold.hp.toLocaleString()} HP`;
   const estimated = threshold?.source === "projected" ? " (est.)" : "";
 
+  /*
+   * LOG SCALE, FOR THE GAP A LINEAR AXIS CANNOT HOLD (2026-10-08, user-reported).
+   *
+   * "I can't see what the HP looks like for day 19 with my current mons" — and they could not,
+   * at any window length. A board doing 500 damage against 207,700 is a 400x gap, and the linear
+   * axis has only two ways to render that: squash the curve onto the floor, or drop the
+   * threshold. The guard in `enemyThresholdFor` picks the second, which is right for a linear
+   * plot and still leaves the user unable to see the thing they asked about.
+   *
+   * Decades hold both. The threshold is ALWAYS drawn here, no matter the ratio, because on a log
+   * axis an extra decade costs a fixed slice of height instead of crushing everything below it —
+   * so the reason the guard exists does not apply.
+   */
+  const [logScale, setLogScale] = useState(false);
+  const showThreshold = threshold !== null && (threshold.drawable || logScale);
+  const overshoot =
+    threshold === null ? "" : (threshold.hp / Math.max(threshold.peakDamage, 1)).toFixed(1);
+
   return (
     <section>
-      <h2>Cumulative damage over time, by type</h2>
+      <div className={styles.header}>
+        <h2>Cumulative damage over time, by type</h2>
+        <Button
+          size="sm"
+          variant="ghost"
+          selected={logScale}
+          aria-pressed={logScale}
+          onClick={() => setLogScale((on) => !on)}
+          title="Plot the damage axis in powers of ten, so a curve and a threshold orders of magnitude apart both fit"
+        >
+          Log scale
+        </Button>
+      </div>
       {/* T256: the shared chart. These five lines are why the component takes a LIST of series —
           a single-series signature could not express this chart at all. T257: the 0.5s increment is
           stated once on the axis instead of in every hover card. */}
@@ -87,7 +118,7 @@ export const CumulativeChart = memo(function CumulativeChart({ result, day }: Cu
           { name: "Shock", values: series.map((p) => p.byStatus.Shock), color: STAT_COLORS.shock, lineType: "stepAfter" },
         ]}
         referenceLines={
-          threshold?.drawable
+          showThreshold && threshold !== null
             ? [
                 {
                   y: threshold.hp,
@@ -104,10 +135,19 @@ export const CumulativeChart = memo(function CumulativeChart({ result, day }: Cu
         yLabel="cumulative damage"
         xMax={windowSeconds}
         xTickInterval={1}
+        yScale={logScale ? "log" : "linear"}
+        offScale={
+          threshold !== null && !showThreshold && threshold.peakDamage > 0
+            ? {
+                label: `↑ Day ${day} · ${hpText}${estimated} — ${overshoot}× above this curve`,
+                color: THRESHOLD_COLOR,
+              }
+            : null
+        }
         ariaLabel={
-          threshold?.drawable
-            ? `Line chart of cumulative damage by source over the simulated time window, sampled every 0.5 seconds, with day ${day}'s enemy team health of ${hpText} marked as a threshold`
-            : "Line chart of cumulative damage by source over the simulated time window, sampled every 0.5 seconds"
+          showThreshold
+            ? `Line chart of cumulative damage by source over the simulated time window, sampled every 0.5 seconds, on a ${logScale ? "logarithmic" : "linear"} damage axis, with day ${day}'s enemy team health of ${hpText} marked as a threshold`
+            : `Line chart of cumulative damage by source over the simulated time window, sampled every 0.5 seconds, on a ${logScale ? "logarithmic" : "linear"} damage axis`
         }
         formatValue={(v) => v.toFixed(0)}
       />
@@ -116,16 +156,20 @@ export const CumulativeChart = memo(function CumulativeChart({ result, day }: Cu
       {/* `peakDamage > 0` keeps the empty board quiet. With nothing placed the ratio is a division
           by zero dressed up as a fact — "300x the 0 this team deals" — and an empty chart does not
           need telling that it cannot kill anything. */}
-      {threshold !== null && !threshold.drawable && threshold.peakDamage > 0 && (
+      {/* The marker on the plot says the line is up there; this says how far and what to do about
+          it. Neither repeats the other's job. */}
+      {threshold !== null && !showThreshold && threshold.peakDamage > 0 && (
         <p className={styles.note}>
-          Day {day}&apos;s {hpText}
-          {estimated} is {(threshold.hp / Math.max(threshold.peakDamage, 1)).toFixed(1)}× the{" "}
+          Day {day}&apos;s HP is {overshoot}× the{" "}
           {threshold.peakDamage.toLocaleString(undefined, { maximumFractionDigits: 0 })} this team
-          deals in {windowSeconds}s, so the threshold is left off the chart rather than flattening
-          the curve into the axis.
+          deals in {windowSeconds}s, so a linear axis cannot hold both.{" "}
+          <button type="button" className={styles.inlineAction} onClick={() => setLogScale(true)}>
+            Switch to log scale
+          </button>{" "}
+          to see the gap to scale.
         </p>
       )}
-      {threshold?.drawable && (
+      {showThreshold && (
         <p className={styles.note}>
           The threshold is a <strong>floor</strong>: it assumes an enemy that never heals, shields
           or clears status, all of which exist, so a real fight runs longer.

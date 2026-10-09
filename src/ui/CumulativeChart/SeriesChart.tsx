@@ -11,6 +11,7 @@ import {
 } from "recharts";
 import { formatCompactValue } from "../../data/format";
 import { yAxisWidthFor } from "./yAxisWidth";
+import { decadeAxis } from "./decadeAxis";
 
 /**
  * The ONE line chart (T256 / FR-103), parameterised rather than duplicated.
@@ -78,6 +79,26 @@ export interface SeriesChartProps {
   /** Tick interval. The user's "x axis scale" — a spacing, not a log/linear switch. */
   xTickInterval?: number;
   yTickInterval?: number;
+  /**
+   * `log` fits a curve and a threshold that are orders of magnitude apart into one plot.
+   *
+   * It exists for the case a linear axis genuinely cannot serve: a board doing 500 damage against
+   * day 19's 207,700 is a 400x gap, and on a linear axis one of the two is always a flat line on
+   * an edge. Decades turn that into readable distance.
+   *
+   * Non-positive samples are dropped rather than clamped — log has no zero, and a cumulative
+   * curve is zero until the first cast, so the line simply starts when damage does.
+   */
+  yScale?: "linear" | "log";
+  /**
+   * A threshold that exists but lies too far above the data to plot, shown as a marker pinned to
+   * the top edge instead.
+   *
+   * Without it, a dropped reference line is indistinguishable from no reference line at all: the
+   * chart silently stops answering the question the day selector asked. This says "it is up
+   * there", which is the one thing the plot itself cannot.
+   */
+  offScale?: { label: string; color: string } | null;
   /** Accessible description of the whole chart. */
   ariaLabel: string;
   /** Formats values in the tooltip, where there is room for the exact figure. */
@@ -91,6 +112,19 @@ export interface SeriesChartProps {
 
 const AXIS = "#9ca3af";
 const GRID = "#444857";
+
+/**
+ * Chart margins and the legend strip, named because the off-scale marker is positioned from them.
+ *
+ * That marker is HTML laid over the SVG rather than something inside it, because Recharts has no
+ * concept of "outside the domain but still worth drawing" — `ReferenceLine` either sits at a y
+ * value or does not exist. So the only way to pin something to the top edge of the PLOT (not of
+ * the chart box) is to know where that edge is, and these are the numbers that put it there.
+ */
+const MARGIN = { top: 8, right: 24, bottom: 28, left: 8 };
+const LEGEND_HEIGHT = 24;
+/** Distance from the top of the chart box to the top of the plot area. */
+const PLOT_TOP = MARGIN.top + LEGEND_HEIGHT;
 
 function ticksFor(max: number | undefined, interval: number | undefined): number[] | undefined {
   if (max === undefined || interval === undefined || interval <= 0) return undefined;
@@ -109,6 +143,8 @@ export function SeriesChart({
   yMax,
   xTickInterval,
   yTickInterval,
+  yScale = "linear",
+  offScale = null,
   ariaLabel,
   formatValue = (v) => v.toFixed(2),
   height = 284,
@@ -123,29 +159,66 @@ export function SeriesChart({
    * the stat chips use — and no precision is lost, because hovering still gives the exact figure.
    */
   const formatTick = (v: number) => formatCompactValue(v, formatValue);
-  // Reference lines are measured too: they extend the y domain, so a threshold above every sample
-  // is what sets the widest tick, and leaving them out would size the gutter for the series alone.
-  const yAxisWidth = yAxisWidthFor(
-    [...series, { values: referenceLines.map((r) => r.y) }],
-    formatTick,
-    yMax,
-  );
+
+  // Reference lines take part in both of these: they extend the y domain, so a threshold above
+  // every sample is what sets the widest tick and the top decade alike. Leaving them out would
+  // size the gutter and the axis for the series alone and then draw outside both.
+  const withThresholds = [...series, { values: referenceLines.map((r) => r.y) }];
+  const log = yScale === "log" ? decadeAxis(withThresholds.flatMap((s) => s.values)) : null;
+  const yAxisWidth = log
+    ? yAxisWidthFor([{ values: log.ticks }], formatTick)
+    : yAxisWidthFor(withThresholds, formatTick, yMax);
 
   const data = xValues.map((x, i) => {
-    const row: Record<string, number> = { x };
-    for (const s of series) row[s.name] = s.values[i] ?? 0;
+    const row: Record<string, number | null> = { x };
+    for (const s of series) {
+      const v = s.values[i] ?? 0;
+      // `null`, not 0, on a log axis: 0 has no position on it, and Recharts given one draws the
+      // whole path to NaN. A null is a gap, which is the truth — before the first cast there is
+      // no cumulative damage to plot.
+      row[s.name] = log !== null && v <= 0 ? null : v;
+    }
     return row;
   });
 
   return (
-    <div role="img" aria-label={ariaLabel} style={{ width: "100%", height }}>
+    <div role="img" aria-label={ariaLabel} style={{ width: "100%", height, position: "relative" }}>
+      {offScale && (
+        /*
+          Sits ON the plot's top edge, spanning its full width, so it reads as the threshold
+          pressed up against the ceiling rather than as a caption that happens to be near it.
+          `pointerEvents: none` keeps it out of the way of the Recharts tooltip underneath.
+        */
+        <div
+          style={{
+            position: "absolute",
+            top: PLOT_TOP,
+            left: yAxisWidth + MARGIN.left,
+            right: MARGIN.right,
+            borderTop: `2px dashed ${offScale.color}`,
+            pointerEvents: "none",
+            fontSize: 12,
+            lineHeight: "16px",
+            color: offScale.color,
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            // Left, with the same inset the in-plot reference label uses, so the two read as the
+            // same annotation in two states rather than as different things. The section centres
+            // its text, which a `div` would otherwise inherit.
+            textAlign: "left",
+            paddingLeft: 6,
+          }}
+        >
+          {offScale.label}
+        </div>
+      )}
       <ResponsiveContainer>
         {/*
           Margins carry the axis labels, so each one is sized for what sits in it:
           `left` holds up-to-5-digit ticks AND the rotated y label beside them; `bottom` holds the
           x label alone, now that the legend has moved to the top (see <Legend/>).
         */}
-        <LineChart data={data} margin={{ top: 8, right: 24, bottom: 28, left: 8 }}>
+        <LineChart data={data} margin={MARGIN}>
           <CartesianGrid strokeDasharray="3 3" stroke={GRID} />
           <XAxis
             dataKey="x"
@@ -163,8 +236,12 @@ export function SeriesChart({
             // this band and the label is anchored at its left edge, so sizing the band is what
             // keeps them apart.
             width={yAxisWidth}
-            domain={[0, yMax ?? "auto"]}
-            ticks={ticksFor(yMax, yTickInterval)}
+            scale={log ? "log" : "linear"}
+            // `allowDataOverflow` holds the snapped decade domain. Without it Recharts widens a
+            // log domain back to the data and the round gridlines go with it.
+            allowDataOverflow={log !== null}
+            domain={log ? log.domain : [0, yMax ?? "auto"]}
+            ticks={log ? log.ticks : ticksFor(yMax, yTickInterval)}
             stroke={AXIS}
             tickFormatter={formatTick}
             /*
@@ -203,7 +280,11 @@ export function SeriesChart({
             overlapped; moving the legend is the right half of that fix because the label belongs to
             the axis and cannot move far from it.
           */}
-          <Legend verticalAlign="top" height={24} wrapperStyle={{ color: AXIS, lineHeight: "24px" }} />
+          <Legend
+            verticalAlign="top"
+            height={LEGEND_HEIGHT}
+            wrapperStyle={{ color: AXIS, lineHeight: `${LEGEND_HEIGHT}px` }}
+          />
           {/*
             Before the lines, so a series always draws ON TOP of a threshold it crosses. The
             crossing point is the thing being read, and a 2px reference stroke over a 1px series

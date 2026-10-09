@@ -1,3 +1,16 @@
+/* The heading keeps its own centring; the axis toggle is pinned to the right so it reads as a
+   control ON the chart rather than a thing above it. */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+.header h2 {
+  margin: 0;
+}
+
 /* Matches `TeamSummary`'s `.note` — this is the same kind of thing, a caption qualifying the
    figure above it, and the two sit close enough on the page to be compared. */
 .note {
@@ -9,4 +22,20 @@
   /* The section inherits the page's centring; a two-line caption centred under a left-aligned
      plot has a ragged left edge that reads as a different column. */
   text-align: left;
+}
+
+/* A link in behaviour, so it is not a second button competing with the one in the header — the
+   header toggle is the control, this is a pointer to it from where the problem is described. */
+.inlineAction {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: var(--text-accent);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.inlineAction:hover {
+  text-decoration: none;
 }
