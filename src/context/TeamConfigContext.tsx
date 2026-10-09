@@ -1,10 +1,11 @@
 import { useMemo, useState, type ReactNode } from "react";
-import type { GridSlot, StatModifier, TeamConfiguration, TeamPlacement } from "../data/types";
+import type { BenchedCreature, StatModifier, TeamConfiguration, TeamPlacement } from "../data/types";
 import type { Species } from "../data/ids";
 import { corpus } from "../data/corpus";
-import { isCreatureScoped, isSlotScoped, scopeOf } from "../data/modifierScope";
+import { isSlotScoped, scopeOf } from "../data/modifierScope";
 import { resolveLevelUp } from "../engine/evolution";
 import { slotsEqual } from "../engine/grid";
+import { benchOf, gridRef, modifiersOrUndefined, moveRoster } from "../engine/roster";
 import { TeamConfigContext, type TeamConfigContextValue } from "./teamConfig";
 
 /**
@@ -34,6 +35,7 @@ const DEFAULT_WINDOW_SECONDS = 30;
 function emptyConfig(): TeamConfiguration {
   return {
     placements: [],
+    bench: [],
     trainerId: null,
     trinketIds: [],
     itemIds: [],
@@ -58,29 +60,35 @@ function freshModifierId(): string {
  * Re-picking the SAME species is read as the same monster, because nothing distinguishes buying a
  * second Craghorn from re-selecting the one already placed.
  */
-function isSameMonster(existing: TeamPlacement, creatureId: Species, level: 1 | 2 | 3 | 4): boolean {
+function isSameMonster(existing: { creatureId: Species }, creatureId: Species, level: 1 | 2 | 3 | 4): boolean {
   if (existing.creatureId === creatureId) return true;
   return resolveLevelUp(corpus, existing.creatureId, level)?.id === creatureId;
 }
 
-/** Empty lists are stored as `undefined`, so a placement that carries nothing looks like one. */
-function modifiersOrUndefined(modifiers: StatModifier[]): StatModifier[] | undefined {
-  return modifiers.length > 0 ? modifiers : undefined;
-}
+/*
+ * `relocate` and `modifiersOrUndefined` moved to `engine/roster.ts` (2026-10-08). They are the
+ * rule for what a monster carries when it changes position, and the placement advisor now has to
+ * apply the same rule to the hypothetical swaps it costs — see that module's header for why a
+ * second copy here would be a defect rather than a convenience.
+ */
 
 /**
- * A placement arriving at `toSlot`: it brings what belongs to the monster and inherits what
- * belongs to the position.
+ * Which modifiers survive a WRITE to a position — a different monster being put there, or the one
+ * already there changing level. Distinct from a move, where the monster keeps its own and
+ * inherits the destination's.
  *
- * Its own slot-scoped modifiers are left behind by construction — they were never its to carry.
- * When the slot it left ends up empty they have nowhere to live and are gone, which is the one
- * lossy case here and is accepted: a bonus attached to a position with nothing in it is not
- * something the engine can apply or the card can show.
+ * The same monster keeps everything (it is still itself, one level up). A different monster keeps
+ * only what belongs to the position, and on the bench that is nothing at all.
  */
-function relocate(placement: TeamPlacement, toSlot: GridSlot, inheritedFrom: TeamPlacement | undefined): TeamPlacement {
-  const carried = (placement.modifiers ?? []).filter(isCreatureScoped);
-  const inherited = (inheritedFrom?.modifiers ?? []).filter(isSlotScoped);
-  return { ...placement, slot: toSlot, modifiers: modifiersOrUndefined([...carried, ...inherited]) };
+function modifiersAfterWrite(
+  existing: { modifiers?: StatModifier[] } | undefined,
+  sameMonster: boolean,
+  positionOwnsModifiers: boolean,
+): StatModifier[] | undefined {
+  if (existing === undefined) return undefined;
+  if (sameMonster) return existing.modifiers;
+  if (!positionOwnsModifiers) return undefined;
+  return modifiersOrUndefined(existing.modifiers?.filter(isSlotScoped) ?? []);
 }
 
 export function TeamConfigProvider({
@@ -126,35 +134,44 @@ export function TeamConfigProvider({
           // the same treatment, so selling a Craghorn that had banked +40 Damage / +40 Shield and
           // buying something else handed the newcomer forty points of Craghorn's ability. Only
           // slot-scoped modifiers belong to the position and survive that.
-          const carried =
-            existing === undefined || isSameMonster(existing, creatureId, level)
-              ? existing?.modifiers
-              : modifiersOrUndefined(existing.modifiers?.filter(isSlotScoped) ?? []);
+          const carried = modifiersAfterWrite(
+            existing,
+            existing !== undefined && isSameMonster(existing, creatureId, level),
+            true,
+          );
           const next: TeamPlacement = { slot, creatureId, level, modifiers: carried };
           return { ...prev, placements: [...withoutSlot, next] };
         });
       },
-      movePlacement: (fromSlot, toSlot) => {
-        if (slotsEqual(fromSlot, toSlot)) return;
+      /*
+       * Each side brings its creature-scoped modifiers and inherits the destination slot's
+       * slot-scoped ones (2026-10-08). A bonus attached to a POSITION does not ride along with the
+       * monster that happened to be standing in it.
+       *
+       * The logic that says so moved to `engine/roster.ts` when the bench arrived, so the advisor
+       * can cost a swap by the same rule the drag applies. These two are now its grid-to-grid and
+       * general cases, and neither decides anything itself.
+       */
+      movePlacement: (fromSlot, toSlot) =>
+        setConfig((prev) => moveRoster(prev, gridRef(fromSlot), gridRef(toSlot))),
+      moveRoster: (from, to) => setConfig((prev) => moveRoster(prev, from, to)),
+      setBenchCreature: (index, creatureId, level = 1) => {
         setConfig((prev) => {
-          const fromPlacement = prev.placements.find((p) => slotsEqual(p.slot, fromSlot));
-          if (!fromPlacement) return prev; // no-op: nothing to move
-          const toPlacement = prev.placements.find((p) => slotsEqual(p.slot, toSlot));
-          const others = prev.placements.filter(
-            (p) => !slotsEqual(p.slot, fromSlot) && !slotsEqual(p.slot, toSlot),
-          );
-          // Each side brings its creature-scoped modifiers and inherits the destination slot's
-          // slot-scoped ones (2026-10-08). A bonus attached to a POSITION does not ride along with
-          // the monster that happened to be standing in it — see `relocate`.
-          const movedFrom = relocate(fromPlacement, toSlot, toPlacement);
-          if (!toPlacement) {
-            // Empty destination: a plain move.
-            return { ...prev, placements: [...others, movedFrom] };
+          const bench = benchOf(prev);
+          const existing = bench.find((b) => b.index === index);
+          const withoutIndex = bench.filter((b) => b.index !== index);
+          if (creatureId === null) {
+            return { ...prev, bench: withoutIndex };
           }
-          // Occupied destination: swap -- toPlacement's full object (level/modifiers intact)
-          // goes to fromSlot, fromPlacement's goes to toSlot.
-          const movedTo = relocate(toPlacement, fromSlot, fromPlacement);
-          return { ...prev, placements: [...others, movedFrom, movedTo] };
+          // `false` for the position: the bench owns nothing, so a different monster arriving here
+          // inherits nothing. See `engine/roster.ts` for the asymmetry this is the other half of.
+          const carried = modifiersAfterWrite(
+            existing,
+            existing !== undefined && isSameMonster(existing, creatureId, level),
+            false,
+          );
+          const next: BenchedCreature = { index, creatureId, level, modifiers: carried };
+          return { ...prev, bench: [...withoutIndex, next] };
         });
       },
       setTrainerId: (trainerId) => setConfig((prev) => ({ ...prev, trainerId })),

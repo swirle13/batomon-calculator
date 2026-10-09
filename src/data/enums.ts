@@ -153,6 +153,22 @@ export enum GridRow {
   Front = "front",
 }
 
+/**
+ * Which half of the roster a monster is standing in (2026-10-08).
+ *
+ * The grid is the six slots that fight. The bench is a holding area that the engine never reads:
+ * a monster parked there keeps its level, shiny and modifiers, but contributes no damage, no aura
+ * and no adjacency to anything. See `RosterRef` in `./types` for how a position in either is
+ * addressed, and `engine/roster.ts` for what moving between them does to a monster's modifiers.
+ *
+ * A discriminant rather than a nullable slot, for the usual reason: `{ slot: GridSlot | null }`
+ * makes "benched" and "not placed yet" the same value, and they are not the same thing.
+ */
+export enum RosterZone {
+  Grid = "grid",
+  Bench = "bench",
+}
+
 // ---------------------------------------------------------------------------
 // Engine and modifier vocabularies
 // ---------------------------------------------------------------------------

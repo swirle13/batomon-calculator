@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react";
-import type { TeamConfiguration, GridSlot, RegionId, StatModifier } from "../data/types";
+import type { BenchIndex, TeamConfiguration, GridSlot, RegionId, RosterRef, StatModifier } from "../data/types";
 import type { Species, TrainerId, TrinketId } from "../data/ids";
 
 /**
@@ -35,6 +35,24 @@ export interface TeamConfigContextValue {
    * sides. A no-op if `fromSlot` has no placement.
    */
   movePlacement: (fromSlot: GridSlot, toSlot: GridSlot) => void;
+  /**
+   * The general form of `movePlacement`: moves between any two roster positions, grid or bench
+   * (2026-10-08). `movePlacement` is now the grid-to-grid case of this, kept because that is what
+   * the name says and because three of its callers only ever do that.
+   *
+   * The rule for what happens to the monster's modifiers lives in `engine/roster.ts`, not here,
+   * because the placement advisor has to apply the same one when it costs a hypothetical swap.
+   */
+  moveRoster: (from: RosterRef, to: RosterRef) => void;
+  /**
+   * Puts a monster on the bench at `index`, or clears it with `null` — the bench's counterpart to
+   * `setPlacement`, and what the search modal writes when it is opened from a bench position.
+   *
+   * No slot-scoped carry-over clause, unlike `setPlacement`: the bench has no positions that own
+   * modifiers, so a different monster arriving inherits nothing. The same monster changing LEVEL
+   * keeps everything, which is the clause that matters.
+   */
+  setBenchCreature: (index: BenchIndex, creatureId: Species | null, level?: 1 | 2 | 3 | 4) => void;
   setTrainerId: (trainerId: TrainerId | null) => void;
   /** FR-027 (2026-10-06 round 5): multi-select, mirroring the Trainer single-select pattern --
    * `TeamConfiguration.trinketIds` already existed in the type (round 1) but had no setter. */

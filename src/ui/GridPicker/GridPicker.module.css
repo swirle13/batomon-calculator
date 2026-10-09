@@ -289,6 +289,129 @@
   color: var(--text-muted);
   cursor: pointer;
 }
+
+/* --- The bench (2026-10-08) --- */
+
+/*
+ * Set apart from the board by a rule and a gap rather than by a box.
+ *
+ * The panes inside are the SAME `.card` the grid uses — they have to be, because a card is
+ * dragged between the two and a ghost that changed size mid-gesture would read as a different
+ * monster. So the separation has to come from around them: anything that restyled the bench pane
+ * itself would break that correspondence.
+ */
+.bench {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--line-subtle);
+}
+
+.benchHeading {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2xs);
+  flex-wrap: wrap;
+  margin: 0;
+  font-size: var(--font-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+/*
+ * "not in the fight" earns its place on screen: a row of monster cards directly beneath the board
+ * looks like more board, and a user who read it that way would see their DPS not move and
+ * conclude the tool was broken. Lower-case and un-tracked so it reads as a sentence beside the
+ * heading rather than as a second heading.
+ */
+.benchHint {
+  font-size: var(--font-2xs);
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--text-muted);
+}
+
+/*
+ * FOUR columns in the width the board uses for three, so a bench pane is visibly smaller.
+ *
+ * That difference is doing work. The bench holds candidates, the grid holds your team, and at
+ * identical sizes the two blocks read as one ten-slot board. `minmax(0, 1fr)` for the same reason
+ * `.grid` uses it — see the note there.
+ *
+ * ## The pane has to be RESIZED, not just given a narrower column
+ *
+ * `.card` is shared with the grid — it must be, because a card is dragged between the two and a
+ * ghost that changed size mid-gesture would read as a different monster — and it carries
+ * `aspect-ratio: 1` with `min-height: var(--grid-slot-size)` around a FIXED-pixel sprite. Put that
+ * card in a 134px column and none of the three agree: the min-height wins, the pane goes portrait,
+ * and the 96px sprite spills over its own name and the clear button.
+ *
+ * So the three tokens the pane is built from are redefined here instead, and the card re-derives
+ * itself from them with no bench-specific rule of its own:
+ *
+ * - `--sprite-grid` is **48px exactly**, not the ~48.6px the column arithmetic wants. Only
+ *   48/96/144/192 keep `image-rendering: pixelated` crisp (see `tokens.css`), and a sprite that
+ *   is correct to a tenth of a pixel and visibly fuzzy is the worse trade. The slack lands as
+ *   breathing room around it.
+ * - `--grid-slot-size` is recomputed from it by the SAME formula `tokens.css` uses, so the pane
+ *   stays square and the two cannot drift apart.
+ * - `--stat-chips-per-row` drops to three, the value the phone layout already uses: four chips
+ *   need ~142px and a bench pane has ~134px, so the fourth would be clipped by the card's own
+ *   `overflow: hidden`. `.badges` already wraps the surplus upward.
+ */
+.benchRow {
+  --sprite-grid: 48px;
+  --grid-slot-size: calc(var(--sprite-grid) + var(--grid-card-chrome) + 2 * var(--grid-card-padding));
+  --stat-chips-per-row: 3;
+
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--grid-gap);
+  width: var(--team-column-width);
+  max-width: 100%;
+  flex-shrink: 0;
+}
+
+/*
+ * TWO ROWS in the header: the name, then the level under it.
+ *
+ * The same treatment the phone layout gives a squeezed pane, and here for the same reason. A
+ * bench pane is ~134px, of which the clear button's gutter takes 20px, and "Thorntail LV. 4"
+ * needs more than the rest — so on one row every name ellipsised to "Thor...", which defeats the
+ * point of showing the card at all. Alone, the name has room to be read.
+ *
+ * It fits vertically because `--grid-card-chrome` budgets a 96px pane's header and chip band and
+ * is unchanged here, while the sprite dropped to 48px: the second row comes out of that slack
+ * rather than out of the sprite.
+ *
+ * Two classes deep, so it also applies inside the phone media query at the end of this file
+ * (which it matches anyway) rather than being silently overridden by it.
+ */
+.benchRow .header {
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  column-gap: var(--space-2xs);
+  row-gap: 0;
+  padding-inline: var(--space-3xs) var(--slot-clear-gutter);
+}
+
+.benchRow .name,
+.benchRow .level {
+  font-size: var(--font-2xs);
+  line-height: 1.2;
+}
+
+/* Spans the second row entirely, so `justify-content` has nothing left to place and the TEXT
+   alignment is what positions it — see the phone rules for the same trap. */
+.benchRow .level {
+  flex-basis: 100%;
+  text-align: left;
+}
+
 /*
  * Phones: the pane keeps the desktop's 96px sprite and gives up its square instead (2026-10-08).
  *
@@ -312,6 +435,25 @@
    */
   .grid {
     width: 100%;
+  }
+
+  /*
+   * Four columns are KEPT rather than wrapping to two rows. A bench pane is small here, but it is
+   * a parking space, and halving the count on screen would make the bench look full when it is not.
+   *
+   * The two tokens are restated because the phone's `--grid-slot-size` is a DIFFERENT formula
+   * from the desktop's — it omits `--grid-card-chrome`, which `.card`'s phone rule adds back as
+   * explicit height — so the desktop bench override above produces a pane half again too tall
+   * here. `min()` against the viewport for the same reason the phone's own sprite token uses it:
+   * at four columns of a 320px screen there is less than 48px to give.
+   */
+  .benchRow {
+    width: 100%;
+    --sprite-grid: min(
+      48px,
+      calc((100vw - 2 * var(--page-pad) - 3 * var(--grid-gap)) / 4 - 2 * var(--grid-card-padding))
+    );
+    --grid-slot-size: calc(var(--sprite-grid) + 2 * var(--grid-card-padding));
   }
 
   .card,

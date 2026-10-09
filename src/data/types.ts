@@ -25,7 +25,7 @@
  * Imported for this file's own type positions AND re-exported for consumers. Both are needed: a
  * bare `export … from` does not bring the names into local scope.
  */
-import { AbilityTrigger, CreatureType, DamageChannel, EventLabel, GridRow, ItemTargetKind, ModifierScope, ModifierStat, MultiplierScope, RegionId, StatusEffectType, TimelineEventKind } from "./enums";
+import { AbilityTrigger, CreatureType, DamageChannel, EventLabel, GridRow, ItemTargetKind, ModifierScope, ModifierStat, MultiplierScope, RegionId, RosterZone, StatusEffectType, TimelineEventKind } from "./enums";
 import { ItemId, Species, TrainerId, TrinketId } from "./ids";
 import { Rarity } from "./enums";
 import { AbilityTagKind, StatChangeStat, TargetKind } from "./enums";
@@ -46,6 +46,7 @@ export {
   MultiplierScope,
   Rarity,
   RegionId,
+  RosterZone,
   StatChangeStat,
   StatusEffectType,
   TimelineEventKind,
@@ -709,8 +710,16 @@ export interface StatModifier {
   scope?: ModifierScope;
 }
 
-export interface TeamPlacement {
-  slot: GridSlot;
+/**
+ * What a monster IS, with no statement about where it is standing (2026-10-08).
+ *
+ * Extracted when the bench arrived, because a benched monster and a placed one carry exactly the
+ * same four facts and differ only in their position. Writing them out twice would have been two
+ * declarations to keep in step, and the first thing to fall out of step would have been `shiny` or
+ * `modifiers` — the two that make a bench worth having, since preserving them across a swap is the
+ * entire point of parking a monster rather than selling it.
+ */
+export interface RosteredCreature {
   creatureId: Species;
   /** Widened 1-3 -> 1-4 alongside CreatureRecord.level (2026-10-05 round 2) — must match an
    * actual `(creatureId, level)` corpus record; see data-model.md's lookup-fix amendment. */
@@ -721,9 +730,55 @@ export interface TeamPlacement {
    * multiplier, and for a handful of creatures it is strictly worse.
    */
   shiny?: boolean;
-  /** Applies only to this placement's creature, on top of any teamModifiers */
+  /** Applies only to this creature, on top of any teamModifiers */
   modifiers?: StatModifier[];
 }
+
+export interface TeamPlacement extends RosteredCreature {
+  slot: GridSlot;
+}
+
+/** The bench's positions, addressed by index the way the grid is addressed by slot. */
+export const BENCH_INDEXES = [0, 1, 2, 3] as const;
+export type BenchIndex = (typeof BENCH_INDEXES)[number];
+
+/**
+ * A monster kept out of the fight (2026-10-08, user-requested).
+ *
+ * ## The bench is inert, and that is its whole specification
+ *
+ * Nothing in `engine/` reads `TeamConfiguration.bench`. `simulate()`, `resolveEffects()`,
+ * `trainerModifiersFor()` and every item and trinket target all iterate `placements`, so a benched
+ * monster deals no damage, grants no aura, counts for no `statFromCount`, and is not adjacent to
+ * anybody. Adding a field they do not read is what makes that true by construction rather than by
+ * six separate exclusions that could each be forgotten.
+ *
+ * ## Why it exists
+ *
+ * Judging whether a monster from the shop is worth buying used to mean selling one you had, which
+ * threw away its level, its shiny and every modifier you had banked on it — work that cannot be
+ * recovered by buying it back. A benched monster keeps all four, so trying a candidate is a drag
+ * out and a drag back.
+ *
+ * `index` rather than an opaque id: the bench is four fixed positions on screen, so a position is
+ * what the user drags to and what the UI has to address. It also means bench entries sort and
+ * compare the same way placements do.
+ */
+export interface BenchedCreature extends RosteredCreature {
+  index: BenchIndex;
+}
+
+/**
+ * A position in the roster — one of the six grid slots, or one of the four bench positions.
+ *
+ * Exists so dragging has a single vocabulary: without it, moving a monster needs four functions
+ * (grid-to-grid, grid-to-bench, bench-to-grid, bench-to-bench) that would each have to decide
+ * independently what happens to the monster's modifiers. `engine/roster.ts` takes two of these and
+ * decides once.
+ */
+export type RosterRef =
+  | { zone: RosterZone.Grid; slot: GridSlot }
+  | { zone: RosterZone.Bench; index: BenchIndex };
 
 export interface TeamConfiguration {
   /**
@@ -741,6 +796,13 @@ export interface TeamConfiguration {
   smuggledCreatureIds?: Species[];
   /** Max 6; one per unique slot — see Validation rules in data-model.md */
   placements: TeamPlacement[];
+  /**
+   * Monsters kept out of the fight (2026-10-08). Max 4; one per unique `index`.
+   *
+   * OPTIONAL, and absent is the same as empty: every build saved or shared before the bench
+   * existed has none, and `share.ts` omits it when it is empty so those builds keep their ids.
+   */
+  bench?: BenchedCreature[];
   trainerId: TrainerId | null;
   trinketIds: TrinketId[];
   itemIds: ItemId[];

@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { CreatureType, GridSlot, Rarity } from "../../data/types";
+import type { CreatureType, Rarity, RosterRef } from "../../data/types";
+import { RosterZone } from "../../data/types";
 import { distinctCreatures } from "../../data/corpus";
 import { RARITIES_ASC, RARITY_COLORS, rarityLabel } from "../../data/statColors";
-import { slotKey } from "../../engine/grid";
+import { rosterRefKey } from "../../engine/roster";
 import {
   CardGrid,
   ClearFiltersButton,
@@ -22,9 +23,15 @@ import type { TeamConfiguration } from "../../data/types";
 import type { Species } from "../../data/ids";
 
 interface CreatureSearchModalProps {
-  /** `null` = closed. Changing to a different slot while already open re-triggers the
-   * clear+autofocus effect below, same as opening fresh (FR-018). */
-  slot: GridSlot | null;
+  /**
+   * The roster position being filled, or `null` = closed. Changing to a different position while
+   * already open re-triggers the clear+autofocus effect below, same as opening fresh (FR-018).
+   *
+   * Widened from `GridSlot` to `RosterRef` (2026-10-08) so the bench opens the same picker. It is
+   * only ever an identity token and an aria-label here — this modal has never cared where the
+   * creature was going, only that it is going somewhere new.
+   */
+  target: RosterRef | null;
   onClose: () => void;
   onSelect: (creatureId: Species | null) => void;
   /**
@@ -52,7 +59,14 @@ interface CreatureSearchModalProps {
  * - **The type background is `TypeSplit`, not a gradient**, which is what removes the "sliver" of
  *   the far colour along the card edge (research.md I8).
  */
-export function CreatureSearchModal({ slot, onClose, onSelect, config}: CreatureSearchModalProps) {
+function targetLabel(target: RosterRef | null): string {
+  if (target === null) return "Choose a Batomon";
+  return target.zone === RosterZone.Grid
+    ? `Choose a Batomon for ${target.slot.row} row, slot ${target.slot.col + 1}`
+    : `Choose a Batomon for bench position ${target.index + 1}`;
+}
+
+export function CreatureSearchModal({ target, onClose, onSelect, config}: CreatureSearchModalProps) {
   const [query, setQuery] = useState("");
   const [rarityFilter, setRarityFilter] = useState<Rarity | "">("");
   const [typeFilter, setTypeFilter] = useState<CreatureType | "">("");
@@ -60,11 +74,11 @@ export function CreatureSearchModal({ slot, onClose, onSelect, config}: Creature
 
   const allTypes = useMemo(() => Array.from(new Set(distinctCreatures.flatMap((c) => c.types))).sort(), []);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally keyed on the slot's
-  // identity (slotKey), not the slot object reference, so re-opening for a *different* slot
-  // re-runs this even if the slot prop happens to be a new object with the same row/col.
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally keyed on the position's
+  // identity (rosterRefKey), not the ref object reference, so re-opening for a *different*
+  // position re-runs this even if the prop happens to be a new object describing the same one.
   useEffect(() => {
-    if (slot === null) return;
+    if (target === null) return;
     // The QUERY still clears on every open — that is FR-018, and the original complaint was
     // reopening onto a stale search for a creature you already placed.
     setQuery("");
@@ -75,7 +89,7 @@ export function CreatureSearchModal({ slot, onClose, onSelect, config}: Creature
     // The Clear button exists for when it does.
     const id = window.setTimeout(() => inputRef.current?.focus(), 0);
     return () => window.clearTimeout(id);
-  }, [slot ? slotKey(slot) : null]);
+  }, [target ? rosterRefKey(target) : null]);
 
   const needle = query.trim().toLowerCase();
   const results = distinctCreatures.filter((c) => {
@@ -102,12 +116,12 @@ export function CreatureSearchModal({ slot, onClose, onSelect, config}: Creature
 
   return (
     <Modal
-      isOpen={slot !== null}
+      isOpen={target !== null}
       onClose={onClose}
       title="Choose a Batomon"
-      // The visible heading drops the slot position (FR-034, round 6) — the user just clicked that
-      // slot — but assistive tech still gets it, for anyone who didn't see the click.
-      ariaLabel={slot ? `Choose a Batomon for ${slot.row} row, slot ${slot.col + 1}` : "Choose a Batomon"}
+      // The visible heading drops the position (FR-034, round 6) — the user just clicked it — but
+      // assistive tech still gets it, for anyone who didn't see the click.
+      ariaLabel={targetLabel(target)}
       width="880px"
       toolbar={
         <FilterBar>

@@ -1,4 +1,4 @@
-import type { StatModifier, TeamConfiguration, TeamPlacement } from "./types";
+import type { BenchedCreature, StatModifier, TeamConfiguration, TeamPlacement } from "./types";
 import { ModifierScope } from "./enums";
 import { scopeOf } from "./modifierScope";
 
@@ -78,6 +78,33 @@ function canonicalPlacements(placements: TeamPlacement[]) {
 }
 
 /**
+ * The bench (2026-10-08). Sorted by position, for the same reason placements are.
+ *
+ * Emitted by `canonicalize` only when it is NON-EMPTY, and that condition is the whole reason
+ * `FORMAT_VERSION` did not have to move:
+ *
+ * - Every build saved or shared before the bench existed has none, so its canonical form is
+ *   byte-identical to what it was and its `buildId` — the fingerprint the library warns on and
+ *   caches by — does not change. Bumping the version, or writing `bench: []` unconditionally,
+ *   would have re-fingerprinted every saved team for a field none of them uses.
+ * - A code carrying a bench still decodes in a reader that predates it. It drops the bench, which
+ *   is a real loss, but the TEAM — the six monsters that fight and every number derived from them
+ *   — is unaffected, because nothing in `engine/` reads the bench. That is the test a silent
+ *   omission has to pass, and it is why this is additive rather than breaking.
+ */
+function canonicalBench(bench: BenchedCreature[] | undefined) {
+  return (bench ?? [])
+    .map((b) => ({
+      index: b.index,
+      creatureId: b.creatureId,
+      level: b.level,
+      shiny: b.shiny === true,
+      modifiers: canonicalModifiers(b.modifiers),
+    }))
+    .sort((a, b) => a.index - b.index);
+}
+
+/**
  * One representation per distinct build.
  *
  * Every optional field is normalized to a present value, every list is sorted, and nothing
@@ -85,12 +112,15 @@ function canonicalPlacements(placements: TeamPlacement[]) {
  * literal below is written in a fixed order and `JSON.stringify` preserves insertion order.
  */
 export function canonicalize(config: TeamConfiguration) {
+  const bench = canonicalBench(config.bench);
   return {
     v: FORMAT_VERSION,
     region: config.selectedRegion ?? null,
     trainer: config.trainerId ?? null,
     window: config.simulationWindowSeconds,
     placements: canonicalPlacements(config.placements),
+    // Conditional, so a benchless build's fingerprint is unchanged — see `canonicalBench`.
+    ...(bench.length === 0 ? {} : { bench }),
     trinkets: [...config.trinketIds].sort(),
     items: [...config.itemIds].sort(),
     painted: [...(config.paintedCreatureIds ?? [])].sort(),
@@ -233,6 +263,15 @@ export function importBuild(code: string): TeamConfiguration {
       ...(p.shiny ? { shiny: true } : {}),
       // Modifier ids are regenerated: they are session identity, not build content.
       modifiers: p.modifiers.map((m, i) => ({ ...m, id: `imported-${p.row}${p.col}-${i}` })),
+    })),
+    // Absent in every code written before the bench existed, and `[]` is the correct reading of
+    // that: those builds had no bench, rather than an unknown one.
+    bench: (parsed.bench ?? []).map((b) => ({
+      index: b.index,
+      creatureId: b.creatureId,
+      level: b.level,
+      ...(b.shiny ? { shiny: true } : {}),
+      modifiers: b.modifiers.map((m, i) => ({ ...m, id: `imported-bench${b.index}-${i}` })),
     })),
     trinketIds: parsed.trinkets,
     itemIds: parsed.items,

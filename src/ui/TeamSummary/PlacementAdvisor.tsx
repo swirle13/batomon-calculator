@@ -7,6 +7,7 @@ import { Button, Disclosure } from "../primitives";
 import { GridRow } from "../../data/enums";
 import type { SimulationResult, TeamConfiguration } from "../../data/types";
 import { usePlacementAdvice } from "./usePlacementAdvice";
+import { BenchAdvice } from "./BenchAdvice";
 import styles from "./PlacementAdvisor.module.css";
 
 /** The grid renders `Back` above `Front`, so name the rows the way the user sees them. */
@@ -132,10 +133,10 @@ export const PlacementAdvisor = memo(function PlacementAdvisor({ result }: Place
    */
   const notCounted = renderNotCounted(liveConfig, result);
 
-  // A single placed creature has nothing to permute, so there is no suggestion to make — but it
-  // can still have an ability the engine skips, and that is the half of this section that does
-  // not need a second creature to be true.
-  if (liveConfig.placements.length < 2) {
+  // Nothing to permute and nothing benched: no search to report. The board can still have an
+  // ability the engine skips, and that is the half of this section that does not need a second
+  // creature to be true.
+  if (liveConfig.placements.length < 2 && (liveConfig.bench?.length ?? 0) === 0) {
     return notCounted ? (
       <Disclosure label="Placement suggestion" hint="(place a second Batomon to search)">
         {notCounted}
@@ -152,6 +153,31 @@ export const PlacementAdvisor = memo(function PlacementAdvisor({ result }: Place
   }
 
   const { suggestion, coverage, currentDps, suggestedDps, moves, placementCount } = advice;
+
+  /**
+   * The bench's advice, rendered into every branch below (2026-10-08).
+   *
+   * It is deliberately independent of whether there is an ARRANGEMENT to suggest. "Nothing scored
+   * higher where your Batomon currently stand" and "this benched Batomon is worth 2k more DPS
+   * than the one in the bottom-left" are unrelated answers, and the first used to suppress the
+   * second by returning early — which is the case the bench matters most in, since a board that
+   * cannot be improved by moving is exactly one you improve by changing who is on it.
+   */
+  const benchSection = advice.bench ? (
+    <BenchAdvice
+      advice={advice.bench}
+      currentDps={currentDps}
+      isStale={isStale}
+      /*
+       * Placements and bench written together, as one atomic replacement — the same lesson the
+       * arrangement button below records. Applying them in two steps would briefly produce a board
+       * holding two monsters in one slot, or a bench that has lost the ones it displaced.
+       */
+      onApplyLineup={(lineup) =>
+        replaceConfig({ ...liveConfig, placements: lineup.placements, bench: lineup.bench })
+      }
+    />
+  ) : null;
   const blindTags = coverage.withPositionalTag.filter((n) => !coverage.actionable.includes(n));
   const gain = suggestion.bestScore - suggestion.currentScore;
   const gainPercent = suggestion.currentScore > 0 ? (gain / suggestion.currentScore) * 100 : 0;
@@ -177,6 +203,7 @@ export const PlacementAdvisor = memo(function PlacementAdvisor({ result }: Place
     return (
       <Disclosure label="Placement suggestion" hint={isStale ? "(recalculating…)" : hint}>
         {notCounted}
+        {benchSection}
       </Disclosure>
     );
   }
@@ -244,6 +271,8 @@ export const PlacementAdvisor = memo(function PlacementAdvisor({ result }: Place
       {/* Before the engine's own blind spots, because this describes the user's board rather than
           a limit of the tool — and it is the part they can act on. */}
       {notCounted}
+
+      {benchSection}
 
       {/* The blind-spot disclosure. This is mandatory, not a nicety (FR-069). */}
       <p

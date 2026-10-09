@@ -11,14 +11,16 @@ import {
   type DragEndEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
-import type { CreatureRecord, CreatureType, GridCol, StatModifier, GridSlot } from "../../data/types";
+import type { CreatureRecord, CreatureType, GridCol, StatModifier, GridSlot, RosterRef } from "../../data/types";
+import { BENCH_INDEXES, RosterZone } from "../../data/types";
+import type { Species } from "../../data/ids";
 import { resolveCreatureVariant } from "../../data/corpus";
 import { hasChefFireTyping, isPainted } from "../../data/typing";
 import { trainerModifiersFor } from "../../engine/trainerEffects";
 import { useTeamConfig } from "../../context/teamConfig";
 import { typeBackground } from "../../data/typeColors";
 import { STATUS_COLOR_KEY } from "../../data/format";
-import { slotKey, slotsEqual } from "../../engine/grid";
+import { benchRef, gridRef, rosterMemberAt, rosterRefKey } from "../../engine/roster";
 import { CreatureSprite } from "../shared/CreatureSprite";
 import { StatBadge } from "../primitives";
 import { perCastOutputOf } from "../shared/BatomonCard/perCastOutput";
@@ -163,7 +165,15 @@ function CardFace({ creature, level, modifiers, painted, chefFire }: CardFacePro
 }
 
 interface DraggableCardProps extends CardFaceProps {
-  slot: GridSlot;
+  /**
+   * Where this card stands — a grid slot or a bench position (2026-10-08).
+   *
+   * It was a `GridSlot`, which is also what @dnd-kit carried as the drag payload, so the bench
+   * could not have been a drop target without a second, parallel card component. One ref type
+   * means one card, and dragging works in all four directions because nothing here knows which
+   * two zones a given gesture connects.
+   */
+  target: RosterRef;
   onHighlight: () => void;
   /** FR-023 (round 4): the card itself is the click target that opens CreatureSearchModal — no
    * separate "Change…" button. Coexists with dragging on the same element: @dnd-kit/core's pointer
@@ -174,10 +184,10 @@ interface DraggableCardProps extends CardFaceProps {
   onClear: () => void;
 }
 
-function DraggableCard({ slot, creature, level, modifiers, painted, chefFire, onHighlight, onOpenSearch, onClear }: DraggableCardProps) {
+function DraggableCard({ target, creature, level, modifiers, painted, chefFire, onHighlight, onOpenSearch, onClear }: DraggableCardProps) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
-    id: slotKey(slot),
-    data: { slot },
+    id: rosterRefKey(target),
+    data: { target },
   });
 
   /**
@@ -256,7 +266,7 @@ function DragGhost({ creature, level, modifiers, painted, chefFire }: CardFacePr
   );
 }
 
-function EmptyCard({ onOpenSearch }: { onOpenSearch: () => void }) {
+function EmptyCard({ onOpenSearch, label }: { onOpenSearch: () => void; label: string }) {
   return (
     <div
       className={styles.emptyCard}
@@ -269,15 +279,15 @@ function EmptyCard({ onOpenSearch }: { onOpenSearch: () => void }) {
       }}
       tabIndex={0}
       role="button"
-      aria-label="Empty slot. Click to choose a creature."
+      aria-label={label}
     >
       — empty —
     </div>
   );
 }
 
-function DroppableZone({ slot, children }: { slot: GridSlot; children: ReactNode }) {
-  const { setNodeRef, isOver } = useDroppable({ id: slotKey(slot), data: { slot } });
+function DroppableZone({ target, children }: { target: RosterRef; children: ReactNode }) {
+  const { setNodeRef, isOver } = useDroppable({ id: rosterRefKey(target), data: { target } });
   return (
     <div ref={setNodeRef} className={`${styles.dropZone} ${isOver ? styles.dropZoneOver : ""}`}>
       {children}
@@ -292,10 +302,10 @@ function DroppableZone({ slot, children }: { slot: GridSlot; children: ReactNode
  * actually holds; passing an inline arrow from the parent would silently defeat it.
  */
 export const GridPicker = memo(function GridPicker({ onHighlightSlot }: GridPickerProps) {
-  const { config, setPlacement, movePlacement } = useTeamConfig();
-  const [searchModalSlot, setSearchModalSlot] = useState<GridSlot | null>(null);
-  /** The slot being dragged, so `<DragOverlay>` knows which card to draw under the pointer. */
-  const [draggingSlot, setDraggingSlot] = useState<GridSlot | null>(null);
+  const { config, setPlacement, setBenchCreature, moveRoster } = useTeamConfig();
+  const [searchTarget, setSearchTarget] = useState<RosterRef | null>(null);
+  /** The position being dragged, so `<DragOverlay>` knows which card to draw under the pointer. */
+  const [draggingFrom, setDraggingFrom] = useState<RosterRef | null>(null);
 
   /**
    * ONE SENSOR PER INPUT, because mouse and touch need different activation rules (2026-10-08).
@@ -323,42 +333,59 @@ export const GridPicker = memo(function GridPicker({ onHighlightSlot }: GridPick
     useSensor(TouchSensor, { activationConstraint: TOUCH_ACTIVATION_CONSTRAINT }),
   );
 
-  /** The placed creature in a slot, resolved at its own level — `null` for an empty slot. */
-  function cardAt(slot: GridSlot) {
-    const placement = config.placements.find((p) => slotsEqual(p.slot, slot));
-    if (!placement) return null;
+  /** The creature at a roster position, resolved at its own level — `null` when nothing is there. */
+  function cardAt(ref: RosterRef) {
+    const member = rosterMemberAt(config, ref);
+    if (!member) return null;
     // 2026-10-06 round 10 (T209b / WI-002): resolve by (id, LEVEL). This used `getCreatureById`,
     // which returns the first matching record — always level 1 — so every chip on every levelled
     // creature silently showed level-1 stats. The user reported the missing Multicast chip because
     // it was the one visibly absent; the rest looked plausible at any level, which is why it went
     // unnoticed.
-    const creature = resolveCreatureVariant(placement.creatureId, placement.level, placement.shiny);
+    const creature = resolveCreatureVariant(member.creatureId, member.level, member.shiny);
     if (!creature) return null;
+    /*
+     * The trainer's per-monster bonus reads as part of the creature here, the same way a manual
+     * modifier does — see `PlacedCreatureDetails` for why the chips are the third place it has to
+     * show up rather than living only in the simulation.
+     *
+     * BENCHED monsters are excluded from it, and that is the chips telling the truth rather than
+     * an omission: the trainer buffs your team, a benched monster is not on your team, and the
+     * engine does not apply it to them either. A bench chip showing Chef's +2 Burn would be
+     * promising a stat that disappears the moment you look at the simulation.
+     */
+    const onGrid = ref.zone === RosterZone.Grid;
     return {
       creature,
-      level: placement.level,
-      // The trainer's per-monster bonus reads as part of the creature here, the same way a manual
-      // modifier does — see `PlacedCreatureDetails` for why the chips are the third place it has
-      // to show up rather than living only in the simulation.
-      modifiers: [...(placement.modifiers ?? []), ...trainerModifiersFor(creature, config)],
+      level: member.level,
+      modifiers: [...(member.modifiers ?? []), ...(onGrid ? trainerModifiersFor(creature, config) : [])],
       painted: creature.types.some(isWildcardType) || isPainted(creature.id, config),
-      chefFire: hasChefFireTyping(creature, config),
+      chefFire: onGrid && hasChefFireTyping(creature, config),
     };
   }
 
   function handleDragStart(event: DragStartEvent) {
-    setDraggingSlot((event.active.data.current?.slot as GridSlot | undefined) ?? null);
+    setDraggingFrom((event.active.data.current?.target as RosterRef | undefined) ?? null);
   }
 
   function handleDragEnd(event: DragEndEvent) {
-    setDraggingSlot(null);
-    const fromSlot = event.active.data.current?.slot as GridSlot | undefined;
-    const toSlot = event.over?.data.current?.slot as GridSlot | undefined;
-    if (!fromSlot || !toSlot || slotsEqual(fromSlot, toSlot)) return;
-    movePlacement(fromSlot, toSlot);
+    setDraggingFrom(null);
+    const from = event.active.data.current?.target as RosterRef | undefined;
+    const to = event.over?.data.current?.target as RosterRef | undefined;
+    // `moveRoster` is a no-op on an equal or empty `from`, so there is nothing to guard here
+    // beyond the drop having landed on a target at all.
+    if (!from || !to) return;
+    moveRoster(from, to);
   }
 
-  const draggingCard = draggingSlot ? cardAt(draggingSlot) : null;
+  /** Writes the picked creature to whichever zone the modal was opened from. */
+  function handleSearchSelect(creatureId: Species | null) {
+    if (!searchTarget) return;
+    if (searchTarget.zone === RosterZone.Grid) setPlacement(searchTarget.slot, creatureId, 1);
+    else setBenchCreature(searchTarget.index, creatureId, 1);
+  }
+
+  const draggingCard = draggingFrom ? cardAt(draggingFrom) : null;
 
   return (
     <>
@@ -376,14 +403,15 @@ export const GridPicker = memo(function GridPicker({ onHighlightSlot }: GridPick
         autoScroll={false}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
-        onDragCancel={() => setDraggingSlot(null)}
+        onDragCancel={() => setDraggingFrom(null)}
       >
         <div className={styles.grid}>
           {ROWS.map((row) => (
             <Fragment key={row}>
               {COLS.map((col) => {
                 const slot: GridSlot = { row, col };
-                const card = cardAt(slot);
+                const ref = gridRef(slot);
+                const card = cardAt(ref);
                 // FR-022 (data-model.md's "Evolution-aware leveling"): never offer a level the
                 // corpus has no backing record for -- checked via the exact same resolver that
                 // performs the swap (resolveLevelUp), so a level only appears here if selecting
@@ -392,21 +420,24 @@ export const GridPicker = memo(function GridPicker({ onHighlightSlot }: GridPick
 
                 return (
                   <div key={`${row}-${col}`} className={styles.slot}>
-                    <DroppableZone slot={slot}>
+                    <DroppableZone target={ref}>
                       {card ? (
                         <DraggableCard
-                          slot={slot}
+                          target={ref}
                           creature={card.creature}
                           level={card.level}
                           modifiers={card.modifiers}
                           painted={card.painted}
                           chefFire={card.chefFire}
                           onHighlight={() => onHighlightSlot(slot)}
-                          onOpenSearch={() => setSearchModalSlot(slot)}
+                          onOpenSearch={() => setSearchTarget(ref)}
                           onClear={() => setPlacement(slot, null)}
                         />
                       ) : (
-                        <EmptyCard onOpenSearch={() => setSearchModalSlot(slot)} />
+                        <EmptyCard
+                          onOpenSearch={() => setSearchTarget(ref)}
+                          label="Empty slot. Click to choose a creature."
+                        />
                       )}
                     </DroppableZone>
 
@@ -423,6 +454,63 @@ export const GridPicker = memo(function GridPicker({ onHighlightSlot }: GridPick
           ))}
         </div>
 
+        {/*
+          THE BENCH (2026-10-08, user-requested).
+
+          Inside the same `DndContext` as the grid, which is the whole reason it is rendered here
+          rather than as a sibling component in `App.tsx`: @dnd-kit only connects draggables and
+          droppables that share a context, so a bench in its own provider could be rearranged but
+          never swapped with the board — and swapping with the board is the only thing it is for.
+
+          Four panes rather than six. A bench is for the two or three candidates you are weighing
+          against what you have, and every extra position multiplies the lineup search (see
+          `engine/rosterAdvice.ts`), so the cost of a wider one is paid on every edit.
+        */}
+        <section className={styles.bench} aria-label="Bench">
+          <p className={styles.benchHeading}>
+            Bench
+            <span className={styles.benchHint}>
+              not in the fight — drag onto the board to try one
+            </span>
+          </p>
+          <div className={styles.benchRow}>
+            {BENCH_INDEXES.map((index) => {
+              const ref = benchRef(index);
+              const card = cardAt(ref);
+              return (
+                <div key={index} className={styles.slot}>
+                  <DroppableZone target={ref}>
+                    {card ? (
+                      <DraggableCard
+                        target={ref}
+                        creature={card.creature}
+                        level={card.level}
+                        modifiers={card.modifiers}
+                        painted={card.painted}
+                        chefFire={card.chefFire}
+                        /*
+                         * No `onHighlightSlot`: the detail panel shows a PLACED monster's resolved
+                         * stats, and a benched one has none to show — it is in no simulation. A
+                         * hover that swapped the panel to a card whose "Effective this battle"
+                         * band could never appear would read as the panel breaking.
+                         */
+                        onHighlight={() => {}}
+                        onOpenSearch={() => setSearchTarget(ref)}
+                        onClear={() => setBenchCreature(index, null)}
+                      />
+                    ) : (
+                      <EmptyCard
+                        onOpenSearch={() => setSearchTarget(ref)}
+                        label="Empty bench position. Click to choose a creature."
+                      />
+                    )}
+                  </DroppableZone>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
         {/* Sized by @dnd-kit to the pane it was lifted from, so the ghost matches the hole it
             left — nothing here needs to know the slot's dimensions.
 
@@ -436,11 +524,9 @@ export const GridPicker = memo(function GridPicker({ onHighlightSlot }: GridPick
 
       <CreatureSearchModal
         config={config}
-        slot={searchModalSlot}
-        onClose={() => setSearchModalSlot(null)}
-        onSelect={(creatureId) => {
-          if (searchModalSlot) setPlacement(searchModalSlot, creatureId, 1);
-        }}
+        target={searchTarget}
+        onClose={() => setSearchTarget(null)}
+        onSelect={handleSearchSelect}
       />
     </>
   );

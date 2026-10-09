@@ -10,7 +10,17 @@ import type { TeamConfiguration } from "../../data/types";
  * advisor may still render on a one-creature board — see `renderNotCounted` — but nothing it shows
  * there comes from a search.)
  */
-const MIN_PLACEMENTS = 2;
+const MIN_ROSTER = 2;
+
+/**
+ * Placed AND benched (2026-10-08). The gate used to count placements alone, which was right while
+ * the only question was how to arrange them. With a bench there is a second question — whether to
+ * field a different monster at all — and it is live from the first candidate: one Batomon on the
+ * board and one on the bench is a real comparison to make, and the search was refusing to make it.
+ */
+function rosterSize(config: TeamConfiguration): number {
+  return config.placements.length + (config.bench?.length ?? 0);
+}
 
 /**
  * Checked per call rather than captured once at module load, so a test can install a fake
@@ -47,7 +57,7 @@ export interface PlacementAdviceState {
  */
 export function usePlacementAdvice(config: TeamConfiguration): PlacementAdviceState {
   const workerSupported = hasWorker();
-  const enabled = config.placements.length >= MIN_PLACEMENTS;
+  const enabled = rosterSize(config) >= MIN_ROSTER;
 
   // Hooks cannot be called conditionally, so both paths are always set up and one is chosen at
   // the end. The synchronous one is inert — and free — whenever a worker is available.

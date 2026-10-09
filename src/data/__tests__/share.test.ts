@@ -112,6 +112,54 @@ describe("sharing by URL", () => {
     expect(() => importBuild("https://example.test/?nothing=here")).toThrow(InvalidBuildCodeError);
   });
 
+  /**
+   * The bench travels with the build (2026-10-08), because the setup work it preserves — levels,
+   * shiny, banked modifiers — is exactly what the user did not want to lose.
+   */
+  describe("the bench", () => {
+    const withBench: TeamConfiguration = {
+      ...base,
+      bench: [
+        { index: 1, creatureId: Species.Thorntail, level: 4, shiny: true },
+        {
+          index: 0,
+          creatureId: Species.Mosslug,
+          level: 2,
+          modifiers: [{ id: syntheticSpecies("b1"), stat: ModifierStat.DamageFlatAdd, amount: 25 }],
+        },
+      ],
+    };
+
+    it("round-trips with its levels, shiny and modifiers intact", () => {
+      const restored = importBuild(exportBuild(withBench));
+      expect(restored.bench).toHaveLength(2);
+      // Sorted by position on the way out, so the order it was built in does not survive and
+      // should not: two benches holding the same monsters in the same places are one build.
+      expect(restored.bench![0]).toMatchObject({ index: 0, creatureId: Species.Mosslug, level: 2 });
+      expect(restored.bench![0]!.modifiers![0]!.amount).toBe(25);
+      expect(restored.bench![1]).toMatchObject({ index: 1, creatureId: Species.Thorntail, shiny: true });
+    });
+
+    it("changes the build id, because a different bench is a different build", () => {
+      expect(buildId(withBench)).not.toBe(buildId(base));
+    });
+
+    /*
+     * The compatibility guarantee that let `FORMAT_VERSION` stay at 1. Every team saved before
+     * the bench existed has to keep its fingerprint, or the library's duplicate warning and its
+     * per-build caches would all miss on data nobody touched.
+     */
+    it("leaves a benchless build's id exactly where it was", () => {
+      expect(buildId({ ...base, bench: [] })).toBe(buildId(base));
+      expect(buildId({ ...base, bench: undefined })).toBe(buildId(base));
+      expect(canonicalize(base)).not.toHaveProperty("bench");
+    });
+
+    it("reads a code that predates the bench as having an empty one, not an unknown one", () => {
+      expect(importBuild(exportBuild(base)).bench).toEqual([]);
+    });
+  });
+
   it("readBuildFromUrl returns null for a bad link rather than throwing", () => {
     // A bad LINK should leave a usable empty builder; a bad PASTE throws, because there the user is
     // waiting on a specific action and silence would look like the button is broken.

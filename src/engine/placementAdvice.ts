@@ -6,6 +6,7 @@ import {
   type PositionalCoverage,
 } from "./optimize";
 import { simulate, windowAverageDps } from "./simulate";
+import { computeBenchAdvice, type BenchAdvice } from "./rosterAdvice";
 import { slotKey } from "./grid";
 
 /**
@@ -32,6 +33,12 @@ export interface PlacementAdvice {
    * count the same six `coverage` was derived from, or the sentence contradicts itself mid-way.
    */
   placementCount: number;
+  /**
+   * The bench's half of the advice — which parked monster is worth fielding, and the best lineup
+   * over everything the user owns (2026-10-08). `null` when the bench is empty, which is both the
+   * common case and the one where this must cost nothing.
+   */
+  bench: BenchAdvice | null;
 }
 
 /**
@@ -51,14 +58,23 @@ export function computePlacementAdvice(config: TeamConfiguration, corpus: Corpus
   // six-line list of which two lines were instructions, and the user read the no-op lines as the
   // advisor contradicting itself.
   const currentBySlot = new Map(config.placements.map((p) => [slotKey(p.slot), p.creatureId]));
+  const currentDps = windowAverageDps(simulate(config, corpus));
   return {
     suggestion,
     coverage: analyzePositionalCoverage(config, corpus),
-    currentDps: windowAverageDps(simulate(config, corpus)),
+    currentDps,
     suggestedDps: suggestion.placements
       ? windowAverageDps(simulate({ ...config, placements: suggestion.placements }, corpus))
       : null,
     moves: (suggestion.placements ?? []).filter((p) => currentBySlot.get(slotKey(p.slot)) !== p.creatureId),
     placementCount: config.placements.length,
+    /*
+     * Reuses the two figures above rather than recomputing the current board, and returns `null`
+     * immediately on an empty bench — so a user who never opens the bench pays exactly what they
+     * paid before this existed. `suggestion.currentScore` is the same time-weighted score
+     * `suggestPlacement` just measured, so the bench's candidates are compared against the board
+     * on precisely the scale the arrangement search used.
+     */
+    bench: computeBenchAdvice(config, corpus, suggestion.currentScore, currentDps),
   };
 }

@@ -1,4 +1,4 @@
-import type { Corpus, GridSlot, TeamConfiguration, TeamPlacement } from "../data/types";
+import type { Corpus, GridSlot, SimulationResult, TeamConfiguration, TeamPlacement } from "../data/types";
 import { simulate } from "./simulate";
 import { STABLE_SLOT_ORDER, slotKey } from "./grid";
 import { isResolvableTag } from "./effects";
@@ -107,15 +107,22 @@ const POSITIONAL_TRINKET_PATTERN = /column|leftmost|rightmost|adjacent|slot|behi
 /**
  * Time-weighted damage: each timeline event's damage discounted by how late it lands.
  * Uses the simulated timeline rather than the summary totals so the weighting sees actual timing.
+ *
+ * Takes a RESULT rather than a config (2026-10-08) so a caller that also wants the window-average
+ * DPS of the same board pays for one `simulate()` instead of two. The bench advisor reports both
+ * figures for every candidate it ranks, which doubled its cost for no reason.
  */
-export function scoreConfiguration(config: TeamConfiguration, corpus: Corpus): number {
-  const result = simulate(config, corpus);
+export function timeWeightedScore(result: SimulationResult): number {
   let score = 0;
   for (const event of result.timeline) {
     if (event.damage === undefined) continue;
     score += event.damage * Math.pow(0.5, event.tSeconds / TIME_WEIGHT_HALF_LIFE_SECONDS);
   }
   return score;
+}
+
+export function scoreConfiguration(config: TeamConfiguration, corpus: Corpus): number {
+  return timeWeightedScore(simulate(config, corpus));
 }
 
 /**
@@ -186,7 +193,7 @@ export function analyzePositionalCoverage(config: TeamConfiguration, corpus: Cor
 }
 
 /** All permutations of `items`. Bounded by 6! = 720 for a full board. */
-function permutations<T>(items: T[]): T[][] {
+export function permutations<T>(items: T[]): T[][] {
   if (items.length <= 1) return [items];
   const out: T[][] = [];
   for (let i = 0; i < items.length; i++) {

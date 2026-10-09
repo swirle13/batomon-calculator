@@ -21,6 +21,7 @@ import { formatRate } from "../../data/format";
 import { allCreatureRecords, corpus, getCreatureByIdAndLevel } from "../../data/corpus";
 import { RARITIES_ASC } from "../../data/statColors";
 import type { TeamConfiguration } from "../../data/types";
+import { gridRef } from "../../engine/roster";
 
 import { syntheticSpecies } from "../../data/ids";
 import { GridRow, ModifierStat, RegionId } from "../../data/enums";
@@ -250,7 +251,7 @@ describe("the card's output band overflows into a second column (WI-003)", () =>
 
 describe("CreatureSearchModal heading (FR-034, item 13)", () => {
   it("shows no slot position in the visible heading, but keeps it for assistive tech", () => {
-    render(<CreatureSearchModal slot={{ row: GridRow.Back, col: 1 }} onClose={() => {}} onSelect={() => {}} />);
+    render(<CreatureSearchModal target={gridRef({ row: GridRow.Back, col: 1 })} onClose={() => {}} onSelect={() => {}} />);
     expect(screen.getByRole("heading", { name: "Choose a Batomon" })).toBeTruthy();
     expect(screen.queryByRole("heading", { name: /back row, slot/i })).toBeNull();
     // The user clicked the slot so they know which it is; a screen-reader user may not have.
@@ -310,7 +311,7 @@ describe("round 7 presentation fixes", () => {
         <PlacedCreatureDetails result={simulate(CONFIG, corpus)} highlightedSlot={null} />
       </TeamConfigProvider>,
     );
-    render(<CreatureSearchModal slot={{ row: GridRow.Back, col: 1 }} onClose={() => {}} onSelect={() => {}} />);
+    render(<CreatureSearchModal target={gridRef({ row: GridRow.Back, col: 1 })} onClose={() => {}} onSelect={() => {}} />);
     expect(screen.getByRole("heading", { name: "Choose a Batomon" })).toBeTruthy();
     expect(document.body.textContent).not.toMatch(/Banto\b/);
   });
@@ -331,7 +332,7 @@ describe("round 7 presentation fixes", () => {
   });
 
   it("renders the split type background without a gradient (FR-049, item 11)", () => {
-    render(<CreatureSearchModal slot={{ row: GridRow.Back, col: 0 }} onClose={() => {}} onSelect={() => {}} />);
+    render(<CreatureSearchModal target={gridRef({ row: GridRow.Back, col: 0 })} onClose={() => {}} onSelect={() => {}} />);
     // The sliver came from a linear-gradient painted across the border box. Two explicit halves
     // cannot reproduce it, so the absence of any gradient is the structural guarantee.
     const withGradient = Array.from(document.querySelectorAll<HTMLElement>("[style]")).filter((el) =>
@@ -341,7 +342,7 @@ describe("round 7 presentation fixes", () => {
   });
 
   it("groups picker results into rarity sections and puts no rarity text on the cards (FR-048, item 10)", () => {
-    render(<CreatureSearchModal slot={{ row: GridRow.Back, col: 0 }} onClose={() => {}} onSelect={() => {}} />);
+    render(<CreatureSearchModal target={gridRef({ row: GridRow.Back, col: 0 })} onClose={() => {}} onSelect={() => {}} />);
     expect(screen.getAllByRole("heading", { level: 4 }).length).toBeGreaterThan(1);
     // Rarity is structure now, not a per-card label; the only "Common" text should be headings
     // and the filter <option>, never inside a result card.
@@ -840,7 +841,7 @@ describe("region never blocks a selection (2026-10-07)", () => {
         simulationWindowSeconds: 30, teamModifiers: [], selectedRegion: RegionId.Pantra,
       }}>
         <CreatureSearchModal
-          slot={{ row: GridRow.Back, col: 0 }}
+          target={gridRef({ row: GridRow.Back, col: 0 })}
           onClose={() => {}}
           onSelect={() => {}}
           config={{ selectedRegion: RegionId.Pantra }}

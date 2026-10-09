@@ -3,11 +3,12 @@ import { fireEvent, render, screen, within } from "@testing-library/react";
 import { CreatureSearchModal } from "../GridPicker/CreatureSearchModal";
 import { RARITIES_ASC, rarityLabel } from "../../data/statColors";
 import { GridRow } from "../../data/enums";
+import { gridRef } from "../../engine/roster";
 
 const SLOT = { row: GridRow.Back, col: 0 } as const;
 
 function openPicker(onSelect = () => {}, onClose = () => {}) {
-  return render(<CreatureSearchModal slot={SLOT} onClose={onClose} onSelect={onSelect} />);
+  return render(<CreatureSearchModal target={gridRef(SLOT)} onClose={onClose} onSelect={onSelect} />);
 }
 
 describe("creature picker ordering (2026-10-07)", () => {
@@ -89,7 +90,7 @@ describe("creature picker keyboard + filters (2026-10-07)", () => {
     fireEvent.change(screen.getByLabelText("Search by name"), { target: { value: "bumble" } });
 
     // Re-open for a different slot.
-    rerender(<CreatureSearchModal slot={{ row: GridRow.Front, col: 2 }} onClose={() => {}} onSelect={() => {}} />);
+    rerender(<CreatureSearchModal target={gridRef({ row: GridRow.Front, col: 2 })} onClose={() => {}} onSelect={() => {}} />);
 
     expect((screen.getByLabelText("Filter by rarity") as HTMLSelectElement).value).toBe("Common");
     expect((screen.getByLabelText("Search by name") as HTMLInputElement).value).toBe("");

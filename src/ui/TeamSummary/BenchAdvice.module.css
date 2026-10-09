@@ -1,0 +1,123 @@
+/*
+ * The bench section of the placement advisor (2026-10-08).
+ *
+ * Separated from the arrangement advice above it by a rule, the same device
+ * `PlacementAdvisor.module.css` uses for its exclusions block — these are answers to a different
+ * question (which monsters to field) from the one above (where to put the ones you have), and
+ * running them together read as one long paragraph of advice.
+ */
+.bench {
+  border-top: 1px solid var(--line-subtle);
+  padding-top: var(--space-xs);
+  margin-top: var(--space-sm);
+  font-size: var(--font-sm);
+  line-height: 1.45;
+}
+
+.heading {
+  margin: 0 0 var(--space-2xs);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  font-size: var(--font-2xs);
+  color: var(--text-muted);
+}
+
+.swaps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3xs);
+}
+
+/*
+ * A four-column grid rather than a sentence per row.
+ *
+ * The rows exist to be COMPARED — that is the entire decision the user is making — and comparison
+ * needs the deltas under each other. In prose the numbers landed at a different horizontal
+ * position on every line, so ranking four candidates meant reading four sentences.
+ *
+ * The delta column is `max-content` and comes before the resulting total, so the figure that
+ * drives the decision is the one the eye lands on.
+ */
+.swap {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr) max-content max-content;
+  align-items: baseline;
+  gap: var(--space-2xs) var(--space-sm);
+}
+
+.name {
+  font-weight: 700;
+  color: var(--text-strong);
+}
+
+.detail {
+  color: var(--text-muted);
+  font-size: var(--font-xs);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Tabular figures so the deltas line up digit-for-digit down the column. */
+.gain,
+.loss,
+.resulting {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.gain {
+  color: var(--text-accent);
+}
+
+/*
+ * A loss is muted, not red. Red would read as an error in the tool rather than as a worse team,
+ * and "this candidate is not worth buying" is a perfectly good answer that should not look alarming.
+ */
+.loss {
+  color: var(--text-muted);
+}
+
+/*
+ * Muted, and quieter than the delta beside it. The resulting total is context — what the board
+ * would read afterwards — while the delta is the comparison the user is actually making, and at
+ * equal weight the eye went to the larger number rather than the deciding one.
+ */
+.resulting {
+  color: var(--text-muted);
+  font-weight: 400;
+  font-size: var(--font-xs);
+}
+
+.basis,
+.searched {
+  margin: var(--space-2xs) 0 0;
+  font-size: var(--font-2xs);
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.lineup {
+  margin-top: var(--space-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2xs);
+}
+
+.lineup p {
+  margin: 0;
+}
+
+/* The same warning treatment as the advisor's own blind-spot disclosure, because it is one. */
+.caveat {
+  margin: var(--space-sm) 0 0;
+  font-size: var(--font-2xs);
+  color: var(--text-warn);
+  line-height: 1.45;
+}

@@ -117,3 +117,53 @@ describe("PlacementAdvisor apply (FR-069)", () => {
     expect(screen.getAllByText(/DPS average/i).length).toBeGreaterThan(0);
   });
 });
+
+/**
+ * The bench section (2026-10-08). The user's actual question is "is the one in the shop better
+ * than what I have", and until this existed the only way to find out was to sell something.
+ */
+describe("PlacementAdvisor bench advice", () => {
+  const withBench: TeamConfiguration = {
+    ...CONFIG,
+    bench: [{ index: 0, creatureId: Species.Thorntail, level: 4 }],
+  };
+
+  function renderWithBench(config: TeamConfiguration = withBench) {
+    render(
+      <TeamConfigProvider initialConfig={config}>
+        <Advisor />
+        <Board />
+      </TeamConfigProvider>,
+    );
+  }
+
+  it("says nothing about a bench when there is nothing on it", () => {
+    renderAdvisor();
+    expect(screen.queryByText(/from your bench/i)).toBeNull();
+  });
+
+  it("ranks each benched Batomon by what swapping it in is worth", () => {
+    renderWithBench();
+    expect(screen.getByText(/from your bench/i)).toBeTruthy();
+    expect(screen.getByText("Thorntail Lv.4")).toBeTruthy();
+    // The number has to be a DELTA against the current board, or it is not a comparison.
+    expect(screen.getByText(/nothing else moving/i)).toBeTruthy();
+  });
+
+  it("applies a lineup as one write, moving the displaced Batomon to the bench", () => {
+    /*
+     * The failure this guards is the bench's version of the apply bug above: writing
+     * `placements` without `bench` would leave whoever the lineup displaced in neither, i.e.
+     * deleted — the single outcome a bench exists to prevent.
+     */
+    renderWithBench();
+    const apply = screen.queryByRole("button", { name: /apply this lineup/i });
+    expect(apply).not.toBeNull();
+
+    fireEvent.click(apply!);
+
+    // Thorntail came on, and the board still holds six: somebody went to the bench, not away.
+    expect(boardText()).toContain(Species.Thorntail);
+    expect(boardText()!.split(" ")).toHaveLength(6);
+  });
+});
