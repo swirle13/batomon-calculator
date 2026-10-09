@@ -306,10 +306,16 @@ describe("WI-002 coverage — reported, not implied", () => {
      * relatives), 4 levels each. That completes the family — every "Trigger X" creature in the
      * corpus now resolves — and it is the fourth hand-tagging in a row, which is worth noticing:
      * the rule table reads WORDINGS, and each of these abilities is phrased once.
+     *
+     * 2026-10-09: 378 -> 342, nine more species x 4 levels, from the standing audit in
+     * `abilityQualifiers.test.ts` rather than from a user noticing a wrong number. Boomagon,
+     * Pylong, Geminiss, Lumijel, Orcana, Talonite, Aegistruct, Gaiadrasil and Quillustrous — every
+     * ability whose text narrows a target in a way the existing tag vocabulary could already
+     * express. What remains untagged is listed in that file with the mechanism each one needs.
      */
-    expect(untagged.length).toBe(378);
+    expect(untagged.length).toBe(342);
     expect(newlyDerived.length).toBe(19);
-    expect(untagged.length - newlyDerived.length).toBe(359);
+    expect(untagged.length - newlyDerived.length).toBe(323);
 
     expect(Object.fromEntries([...byFamily].sort())).toEqual({
       // Engine-resolved: the counter rises by these, correctly (see the FR-114 test above).

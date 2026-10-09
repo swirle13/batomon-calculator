@@ -206,6 +206,30 @@ export function cannotGain(
 }
 
 /**
+ * Whether `creature` passes a selector's type/rarity/level filters.
+ *
+ * Extracted from `selectTargets` on 2026-10-09 because it had a second, SHORTER copy:
+ * `resolveCooldownSpeedTotal` in `simulate.ts` re-implemented the same test and checked only
+ * `typeFilter`. That is the path Formiqueen's aura actually takes, so the moment its tag gained the
+ * `rarityFilter` its text has always specified — "adjacent **Common** allies" — the filter would
+ * have been honoured everywhere except the one place it mattered. Two copies of a predicate is how
+ * the Zephyrex and `inFront` defects both happened; this is the same lesson applied before it
+ * bites rather than after.
+ */
+export function selectorAccepts(
+  selector: TargetSelector,
+  creature: CreatureRecord,
+  config?: Pick<TeamConfiguration, "paintedCreatureIds" | "trinketIds">,
+): boolean {
+  const f = selector as Partial<SelectorFilters>;
+  return (
+    (!f.typeFilter || creatureHasType(creature, f.typeFilter, config)) &&
+    (!f.rarityFilter || creature.rarity === f.rarityFilter) &&
+    (!f.minLevelFilter || creature.level >= f.minLevelFilter)
+  );
+}
+
+/**
  * The creatures a `TargetSelector` picks out, relative to `source`.
  *
  * All six selectors in the vocabulary resolve here, which is what turns seven separate "mechanism
@@ -227,15 +251,7 @@ export function selectTargets<T extends { slot: GridSlot; key: string; creature:
   const others = all.filter((m) => m.key !== source.key);
 
   // T225: type/rarity/level filters apply to every selector that can carry them, in one place.
-  const filtered = (list: T[]) => {
-    const f = selector as Partial<SelectorFilters>;
-    return list.filter(
-      (m) =>
-        (!f.typeFilter || creatureHasType(m.creature, f.typeFilter, config)) &&
-        (!f.rarityFilter || m.creature.rarity === f.rarityFilter) &&
-        (!f.minLevelFilter || m.creature.level >= f.minLevelFilter),
-    );
-  };
+  const filtered = (list: T[]) => list.filter((m) => selectorAccepts(selector, m.creature, config));
 
   switch (selector.kind) {
     case "self":
@@ -387,6 +403,11 @@ export function resolveBoard(config: TeamConfiguration, corpus: Corpus): Resolve
         if (tag.stat === "status" || tag.stat === "all") {
           for (const v of target.stats.status.values()) applyMultiplier(v, tag.factor);
         }
+        // A SINGLE named status (2026-10-09): Geminiss's "+50% Shield", Pylong's "+100% Shock".
+        // Absent from the target, there is nothing to scale — a multiplier creates no effect,
+        // unlike the flat grants FR-078 governs.
+        const single = target.stats.status.get(tag.stat as StatusEffectType);
+        if (single) applyMultiplier(single, tag.factor);
       }
     }
   }
@@ -642,7 +663,11 @@ export function resolveBoard(config: TeamConfiguration, corpus: Corpus): Resolve
 
         case "statFromStat": {
           // Stat scaling: "+Damage equal to 50% of the Shield of your allies".
-          const pool = selectTargets(tag.sourceSelector, source, base, config);
+          const pool = selectTargets(tag.sourceSelector, source, base, config).filter(
+            // "(Except other Gaiadrasil)" — 2026-10-09. Without it a pair of them each counts the
+            // other's damage, so two copies feed each other instead of merely stacking.
+            (m) => !tag.excludeSameSpecies || m.creature.id !== source.creature.id,
+          );
           const total = pool.reduce((sum, m) => {
             if (tag.sourceStat === "damage") return sum + (m.baseDamage ?? 0);
             if (tag.sourceStat === "multicast") return sum + m.multicast;

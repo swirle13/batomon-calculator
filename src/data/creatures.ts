@@ -79,32 +79,32 @@ export const creatures: CreatureSpecies[] = [{
 	publishedCast: { damage: 60, channel: DamageChannel.Direct },
 	abilityText: "Ongoing: Adjacent Common allies have +25% Cooldown Speed.",
 	abilityTags: [
-	  { kind: AbilityTagKind.Ongoing, target: { kind: TargetKind.Adjacent, sameTeamOnly: true }, effect: { statChange: { stat: StatChangeStat.CooldownSpeed, amount: 0.25 } } },
-	  { kind: AbilityTagKind.CooldownSpeedModifier, target: { kind: TargetKind.Adjacent, sameTeamOnly: true }, amount: 0.25 },
+	  { kind: AbilityTagKind.Ongoing, target: { kind: TargetKind.Adjacent, sameTeamOnly: true, rarityFilter: Rarity.Common }, effect: { statChange: { stat: StatChangeStat.CooldownSpeed, amount: 0.25 } } },
+	  { kind: AbilityTagKind.CooldownSpeedModifier, target: { kind: TargetKind.Adjacent, sameTeamOnly: true, rarityFilter: Rarity.Common }, amount: 0.25 },
 	],
 	levels: {
 		2: {
 			publishedCast: { damage: 120, channel: DamageChannel.Direct },
 			abilityText: "Adjacent Common allies have +50% Cooldown Speed.",
 			abilityTags: [
-			  { kind: AbilityTagKind.Ongoing, target: { kind: TargetKind.Adjacent, sameTeamOnly: true }, effect: { statChange: { stat: StatChangeStat.CooldownSpeed, amount: 0.5 } } },
-			  { kind: AbilityTagKind.CooldownSpeedModifier, target: { kind: TargetKind.Adjacent, sameTeamOnly: true }, amount: 0.5 },
+			  { kind: AbilityTagKind.Ongoing, target: { kind: TargetKind.Adjacent, sameTeamOnly: true, rarityFilter: Rarity.Common }, effect: { statChange: { stat: StatChangeStat.CooldownSpeed, amount: 0.5 } } },
+			  { kind: AbilityTagKind.CooldownSpeedModifier, target: { kind: TargetKind.Adjacent, sameTeamOnly: true, rarityFilter: Rarity.Common }, amount: 0.5 },
 			],
 		},
 		3: {
 			publishedCast: { damage: 180, channel: DamageChannel.Direct },
 			abilityText: "Adjacent Common allies have +75% Cooldown Speed.",
 			abilityTags: [
-			  { kind: AbilityTagKind.Ongoing, target: { kind: TargetKind.Adjacent, sameTeamOnly: true }, effect: { statChange: { stat: StatChangeStat.CooldownSpeed, amount: 0.75 } } },
-			  { kind: AbilityTagKind.CooldownSpeedModifier, target: { kind: TargetKind.Adjacent, sameTeamOnly: true }, amount: 0.75 },
+			  { kind: AbilityTagKind.Ongoing, target: { kind: TargetKind.Adjacent, sameTeamOnly: true, rarityFilter: Rarity.Common }, effect: { statChange: { stat: StatChangeStat.CooldownSpeed, amount: 0.75 } } },
+			  { kind: AbilityTagKind.CooldownSpeedModifier, target: { kind: TargetKind.Adjacent, sameTeamOnly: true, rarityFilter: Rarity.Common }, amount: 0.75 },
 			],
 		},
 		4: {
 			publishedCast: { damage: 720, channel: DamageChannel.Direct },
 			abilityText: "Adjacent Common allies have +225% Cooldown Speed.",
 			abilityTags: [
-			  { kind: AbilityTagKind.Ongoing, target: { kind: TargetKind.Adjacent, sameTeamOnly: true }, effect: { statChange: { stat: StatChangeStat.CooldownSpeed, amount: 2.25 } } },
-			  { kind: AbilityTagKind.CooldownSpeedModifier, target: { kind: TargetKind.Adjacent, sameTeamOnly: true }, amount: 2.25 },
+			  { kind: AbilityTagKind.Ongoing, target: { kind: TargetKind.Adjacent, sameTeamOnly: true, rarityFilter: Rarity.Common }, effect: { statChange: { stat: StatChangeStat.CooldownSpeed, amount: 2.25 } } },
+			  { kind: AbilityTagKind.CooldownSpeedModifier, target: { kind: TargetKind.Adjacent, sameTeamOnly: true, rarityFilter: Rarity.Common }, amount: 2.25 },
 			],
 		},
 	},
@@ -251,16 +251,27 @@ export const creatures: CreatureSpecies[] = [{
 	baseMulticast: 1,
 	appliesStatus: [{ type: StatusEffectType.Shield, amount: 150 }],
 	abilityText: "Gain Shield for this battle equal to 1x the Shield of adjacent allies. (Except other Aegistruct)",
-	abilityTags: [],
+	abilityTags: [
+	  { kind: AbilityTagKind.StatFromStat, sourceSelector: { kind: TargetKind.Adjacent }, sourceStat: StatusEffectType.Shield, multiplier: 1, excludeSameSpecies: true, effect: { statusGrant: { type: StatusEffectType.Shield, amount: 1 } } }
+	],
 	levels: {
 		2: {
 			abilityText: "Gain Shield for this battle equal to 2x the Shield of adjacent allies.\n(Except other Aegistruct)",
+			abilityTags: [
+			  { kind: AbilityTagKind.StatFromStat, sourceSelector: { kind: TargetKind.Adjacent }, sourceStat: StatusEffectType.Shield, multiplier: 2, excludeSameSpecies: true, effect: { statusGrant: { type: StatusEffectType.Shield, amount: 1 } } }
+			],
 		},
 		3: {
 			abilityText: "Gain Shield for this battle equal to 3x the Shield of adjacent allies.\n(Except other Aegistruct)",
+			abilityTags: [
+			  { kind: AbilityTagKind.StatFromStat, sourceSelector: { kind: TargetKind.Adjacent }, sourceStat: StatusEffectType.Shield, multiplier: 3, excludeSameSpecies: true, effect: { statusGrant: { type: StatusEffectType.Shield, amount: 1 } } }
+			],
 		},
 		4: {
 			abilityText: "Gain Shield for this battle equal to 12x the Shield of adjacent allies.\n(Except other Aegistruct)",
+			abilityTags: [
+			  { kind: AbilityTagKind.StatFromStat, sourceSelector: { kind: TargetKind.Adjacent }, sourceStat: StatusEffectType.Shield, multiplier: 12, excludeSameSpecies: true, effect: { statusGrant: { type: StatusEffectType.Shield, amount: 1 } } }
+			],
 		},
 	},
 }, {
@@ -569,16 +580,27 @@ export const creatures: CreatureSpecies[] = [{
 	baseMulticast: 1,
 	publishedCast: { damage: 40, channel: DamageChannel.Direct },
 	abilityText: "Give the ally behind +3% Cooldown Speed permanently.",
-	abilityTags: [],
+	abilityTags: [
+	  { kind: AbilityTagKind.CooldownSpeedModifier, target: { kind: TargetKind.Behind }, amount: 0.03 }
+	],
 	levels: {
 		2: {
 			abilityText: "Give the ally behind +6% Cooldown Speed permanently.",
+			abilityTags: [
+			  { kind: AbilityTagKind.CooldownSpeedModifier, target: { kind: TargetKind.Behind }, amount: 0.06 }
+			],
 		},
 		3: {
 			abilityText: "Give the ally behind +9% Cooldown Speed permanently.",
+			abilityTags: [
+			  { kind: AbilityTagKind.CooldownSpeedModifier, target: { kind: TargetKind.Behind }, amount: 0.09 }
+			],
 		},
 		4: {
 			abilityText: "Give the ally behind +18% Cooldown Speed permanently.",
+			abilityTags: [
+			  { kind: AbilityTagKind.CooldownSpeedModifier, target: { kind: TargetKind.Behind }, amount: 0.18 }
+			],
 		},
 	},
 }, {
@@ -1585,7 +1607,9 @@ export const creatures: CreatureSpecies[] = [{
 	baseCooldownSeconds: 9,
 	baseMulticast: 1,
 	abilityText: "Has additional Damage equal to 100% of the total Damage of adjacent allies. (Except other Gaiadrasil)",
-	abilityTags: [],
+	abilityTags: [
+	  { kind: AbilityTagKind.StatFromStat, sourceSelector: { kind: TargetKind.Adjacent }, sourceStat: StatChangeStat.Damage, multiplier: 1, excludeSameSpecies: true, effect: { statChange: { stat: StatChangeStat.Damage, amount: 1 } } }
+	],
 	levels: {
 		2: {
 			baseCooldownSeconds: 4.5,
@@ -1598,6 +1622,9 @@ export const creatures: CreatureSpecies[] = [{
 		4: {
 			baseCooldownSeconds: 3,
 			abilityText: "Has additional Damage equal to 1000% of the total Damage of adjacent allies.\n(Except other Gaiadrasil)",
+			abilityTags: [
+			  { kind: AbilityTagKind.StatFromStat, sourceSelector: { kind: TargetKind.Adjacent }, sourceStat: StatChangeStat.Damage, multiplier: 10, excludeSameSpecies: true, effect: { statChange: { stat: StatChangeStat.Damage, amount: 1 } } }
+			],
 		},
 	},
 }, {
@@ -1643,17 +1670,28 @@ export const creatures: CreatureSpecies[] = [{
 	baseMulticast: 1,
 	appliesStatus: [{ type: StatusEffectType.Shield, amount: 100 }],
 	abilityText: "Give adjacent allies +50% Shield for this battle.",
-	abilityTags: [],
+	abilityTags: [
+	  { kind: AbilityTagKind.StatMultiplier, target: { kind: TargetKind.Adjacent }, stat: StatusEffectType.Shield, factor: 1.5 }
+	],
 	levels: {
 		2: {
 			abilityText: "Give adjacent allies +100% Shield for this battle.",
+			abilityTags: [
+			  { kind: AbilityTagKind.StatMultiplier, target: { kind: TargetKind.Adjacent }, stat: StatusEffectType.Shield, factor: 2 }
+			],
 		},
 		3: {
 			abilityText: "Give adjacent allies +150% Shield for this battle.",
+			abilityTags: [
+			  { kind: AbilityTagKind.StatMultiplier, target: { kind: TargetKind.Adjacent }, stat: StatusEffectType.Shield, factor: 2.5 }
+			],
 		},
 		4: {
 			appliesStatus: [{ type: StatusEffectType.Shield, amount: 1000 }],
 			abilityText: "Give adjacent allies +1500% Shield for this battle.",
+			abilityTags: [
+			  { kind: AbilityTagKind.StatMultiplier, target: { kind: TargetKind.Adjacent }, stat: StatusEffectType.Shield, factor: 16 }
+			],
 		},
 	},
 }, {
@@ -2076,22 +2114,37 @@ export const creatures: CreatureSpecies[] = [{
 	publishedCast: { damage: 20, channel: DamageChannel.Direct },
 	healAmount: 30,
 	abilityText: "Allies of level 3 or above gain +15 Damage and +15 Heal permanently.",
-	abilityTags: [],
+	abilityTags: [
+	  { kind: AbilityTagKind.Ongoing, target: { kind: TargetKind.AllAllies, minLevelFilter: 3 }, effect: { statChange: { stat: StatChangeStat.Damage, amount: 15 } } },
+	  { kind: AbilityTagKind.Ongoing, target: { kind: TargetKind.AllAllies, minLevelFilter: 3 }, effect: { statChange: { stat: StatChangeStat.Heal, amount: 15 } } }
+	],
 	levels: {
 		2: {
 			publishedCast: { damage: 40, channel: DamageChannel.Direct },
 			healAmount: 60,
 			abilityText: "Allies of level 3 or above gain +30 Damage and +30 Heal permanently.",
+			abilityTags: [
+			  { kind: AbilityTagKind.Ongoing, target: { kind: TargetKind.AllAllies, minLevelFilter: 3 }, effect: { statChange: { stat: StatChangeStat.Damage, amount: 30 } } },
+			  { kind: AbilityTagKind.Ongoing, target: { kind: TargetKind.AllAllies, minLevelFilter: 3 }, effect: { statChange: { stat: StatChangeStat.Heal, amount: 30 } } }
+			],
 		},
 		3: {
 			publishedCast: { damage: 60, channel: DamageChannel.Direct },
 			healAmount: 90,
 			abilityText: "Allies of level 3 or above gain +45 Damage and +45 Heal permanently.",
+			abilityTags: [
+			  { kind: AbilityTagKind.Ongoing, target: { kind: TargetKind.AllAllies, minLevelFilter: 3 }, effect: { statChange: { stat: StatChangeStat.Damage, amount: 45 } } },
+			  { kind: AbilityTagKind.Ongoing, target: { kind: TargetKind.AllAllies, minLevelFilter: 3 }, effect: { statChange: { stat: StatChangeStat.Heal, amount: 45 } } }
+			],
 		},
 		4: {
 			publishedCast: { damage: 240, channel: DamageChannel.Direct },
 			healAmount: 360,
 			abilityText: "Allies of level 3 or above gain +180 Damage and +180 Heal permanently.",
+			abilityTags: [
+			  { kind: AbilityTagKind.Ongoing, target: { kind: TargetKind.AllAllies, minLevelFilter: 3 }, effect: { statChange: { stat: StatChangeStat.Damage, amount: 180 } } },
+			  { kind: AbilityTagKind.Ongoing, target: { kind: TargetKind.AllAllies, minLevelFilter: 3 }, effect: { statChange: { stat: StatChangeStat.Heal, amount: 180 } } }
+			],
 		},
 	},
 }, {
@@ -2567,16 +2620,31 @@ export const creatures: CreatureSpecies[] = [{
 	baseMulticast: 1,
 	healAmount: 200,
 	abilityText: "Has an additional +160 Damage and +160 Heal for each ally of level 3 or above.",
-	abilityTags: [],
+	abilityTags: [
+	  { kind: AbilityTagKind.StatFromCount, target: { kind: TargetKind.Self }, minLevelFilter: 3, effect: { statChange: { stat: StatChangeStat.Damage, amount: 160 } } },
+	  { kind: AbilityTagKind.StatFromCount, target: { kind: TargetKind.Self }, minLevelFilter: 3, effect: { statChange: { stat: StatChangeStat.Heal, amount: 160 } } }
+	],
 	levels: {
 		2: {
 			abilityText: "Has an additional +320 Damage and +320 Heal for each ally of level 3 or above.",
+			abilityTags: [
+			  { kind: AbilityTagKind.StatFromCount, target: { kind: TargetKind.Self }, minLevelFilter: 3, effect: { statChange: { stat: StatChangeStat.Damage, amount: 320 } } },
+			  { kind: AbilityTagKind.StatFromCount, target: { kind: TargetKind.Self }, minLevelFilter: 3, effect: { statChange: { stat: StatChangeStat.Heal, amount: 320 } } }
+			],
 		},
 		3: {
 			abilityText: "Has an additional +480 Damage and +480 Heal for each ally of level 3 or above.",
+			abilityTags: [
+			  { kind: AbilityTagKind.StatFromCount, target: { kind: TargetKind.Self }, minLevelFilter: 3, effect: { statChange: { stat: StatChangeStat.Damage, amount: 480 } } },
+			  { kind: AbilityTagKind.StatFromCount, target: { kind: TargetKind.Self }, minLevelFilter: 3, effect: { statChange: { stat: StatChangeStat.Heal, amount: 480 } } }
+			],
 		},
 		4: {
 			abilityText: "Has an additional +1920 Damage and +1920 Heal for each ally of level 3 or above.",
+			abilityTags: [
+			  { kind: AbilityTagKind.StatFromCount, target: { kind: TargetKind.Self }, minLevelFilter: 3, effect: { statChange: { stat: StatChangeStat.Damage, amount: 1920 } } },
+			  { kind: AbilityTagKind.StatFromCount, target: { kind: TargetKind.Self }, minLevelFilter: 3, effect: { statChange: { stat: StatChangeStat.Heal, amount: 1920 } } }
+			],
 		},
 	},
 }, {
@@ -2819,7 +2887,7 @@ export const creatures: CreatureSpecies[] = [{
 	healAmount: 10,
 	abilityText: "Trigger this when adjacent Toxic allies trigger. (Except other Puffloon)",
 	abilityTags: [
-	  { kind: AbilityTagKind.TriggerOnAllyTrigger, target: { kind: TargetKind.Adjacent, typeFilter: CreatureType.Toxic } },
+	  { kind: AbilityTagKind.TriggerOnAllyTrigger, target: { kind: TargetKind.Adjacent, typeFilter: CreatureType.Toxic }, excludeSameSpecies: true },
 	],
 	levels: {
 		2: {
@@ -2871,16 +2939,27 @@ export const creatures: CreatureSpecies[] = [{
 	publishedCast: { damage: 1, channel: DamageChannel.Direct },
 	appliesStatus: [{ type: StatusEffectType.Shock, amount: 15 }],
 	abilityText: "Ally behind has +100% Shock.",
-	abilityTags: [],
+	abilityTags: [
+	  { kind: AbilityTagKind.StatMultiplier, target: { kind: TargetKind.Behind }, stat: StatusEffectType.Shock, factor: 2 }
+	],
 	levels: {
 		2: {
 			abilityText: "Ally behind has +200% Shock.",
+			abilityTags: [
+			  { kind: AbilityTagKind.StatMultiplier, target: { kind: TargetKind.Behind }, stat: StatusEffectType.Shock, factor: 3 }
+			],
 		},
 		3: {
 			abilityText: "Ally behind has +300% Shock.",
+			abilityTags: [
+			  { kind: AbilityTagKind.StatMultiplier, target: { kind: TargetKind.Behind }, stat: StatusEffectType.Shock, factor: 4 }
+			],
 		},
 		4: {
 			abilityText: "Ally behind has +2400% Shock.",
+			abilityTags: [
+			  { kind: AbilityTagKind.StatMultiplier, target: { kind: TargetKind.Behind }, stat: StatusEffectType.Shock, factor: 25 }
+			],
 		},
 	},
 }, {
@@ -2957,19 +3036,30 @@ export const creatures: CreatureSpecies[] = [{
 	baseMulticast: 2,
 	publishedCast: { damage: 150, channel: DamageChannel.Direct },
 	abilityText: "Has additional Damage equal to 50% of the total Damage of your allies. (Except other Quillustrous)",
-	abilityTags: [],
+	abilityTags: [
+	  { kind: AbilityTagKind.StatFromStat, sourceSelector: { kind: TargetKind.AllAllies }, sourceStat: StatChangeStat.Damage, multiplier: 0.5, excludeSameSpecies: true, effect: { statChange: { stat: StatChangeStat.Damage, amount: 1 } } }
+	],
 	levels: {
 		2: {
 			publishedCast: { damage: 300, channel: DamageChannel.Direct },
 			abilityText: "Has additional Damage equal to 100% of the total Damage of your allies.\n(Except other Quillustrous)",
+			abilityTags: [
+			  { kind: AbilityTagKind.StatFromStat, sourceSelector: { kind: TargetKind.AllAllies }, sourceStat: StatChangeStat.Damage, multiplier: 1, excludeSameSpecies: true, effect: { statChange: { stat: StatChangeStat.Damage, amount: 1 } } }
+			],
 		},
 		3: {
 			publishedCast: { damage: 450, channel: DamageChannel.Direct },
 			abilityText: "Has additional Damage equal to 150% of the total Damage of your allies.\n(Except other Quillustrous)",
+			abilityTags: [
+			  { kind: AbilityTagKind.StatFromStat, sourceSelector: { kind: TargetKind.AllAllies }, sourceStat: StatChangeStat.Damage, multiplier: 1.5, excludeSameSpecies: true, effect: { statChange: { stat: StatChangeStat.Damage, amount: 1 } } }
+			],
 		},
 		4: {
 			publishedCast: { damage: 4500, channel: DamageChannel.Direct },
 			abilityText: "Has additional Damage equal to 1500% of the total Damage of your allies.\n(Except other Quillustrous)",
+			abilityTags: [
+			  { kind: AbilityTagKind.StatFromStat, sourceSelector: { kind: TargetKind.AllAllies }, sourceStat: StatChangeStat.Damage, multiplier: 15, excludeSameSpecies: true, effect: { statChange: { stat: StatChangeStat.Damage, amount: 1 } } }
+			],
 		},
 	},
 }, {
@@ -3735,19 +3825,34 @@ export const creatures: CreatureSpecies[] = [{
 	baseMulticast: 2,
 	publishedCast: { damage: 30, channel: DamageChannel.Direct },
 	abilityText: "+20 Shield permanently for each Rock ally and +1 Multicast permanently for each Flying ally.",
-	abilityTags: [],
+	abilityTags: [
+	  { kind: AbilityTagKind.StatFromCount, target: { kind: TargetKind.Self }, typeFilter: CreatureType.Rock, effect: { statusGrant: { type: StatusEffectType.Shield, amount: 20 } } },
+	  { kind: AbilityTagKind.StatFromCount, target: { kind: TargetKind.Self }, typeFilter: CreatureType.Flying, effect: { statChange: { stat: StatChangeStat.Multicast, amount: 1 } } }
+	],
 	levels: {
 		2: {
 			publishedCast: { damage: 60, channel: DamageChannel.Direct },
 			abilityText: "+40 Shield permanently for each Rock ally and +2 Multicast permanently for each Flying ally.",
+			abilityTags: [
+			  { kind: AbilityTagKind.StatFromCount, target: { kind: TargetKind.Self }, typeFilter: CreatureType.Rock, effect: { statusGrant: { type: StatusEffectType.Shield, amount: 40 } } },
+			  { kind: AbilityTagKind.StatFromCount, target: { kind: TargetKind.Self }, typeFilter: CreatureType.Flying, effect: { statChange: { stat: StatChangeStat.Multicast, amount: 2 } } }
+			],
 		},
 		3: {
 			publishedCast: { damage: 90, channel: DamageChannel.Direct },
 			abilityText: "+60 Shield permanently for each Rock ally and +3 Multicast permanently for each Flying ally.",
+			abilityTags: [
+			  { kind: AbilityTagKind.StatFromCount, target: { kind: TargetKind.Self }, typeFilter: CreatureType.Rock, effect: { statusGrant: { type: StatusEffectType.Shield, amount: 60 } } },
+			  { kind: AbilityTagKind.StatFromCount, target: { kind: TargetKind.Self }, typeFilter: CreatureType.Flying, effect: { statChange: { stat: StatChangeStat.Multicast, amount: 3 } } }
+			],
 		},
 		4: {
 			publishedCast: { damage: 180, channel: DamageChannel.Direct },
 			abilityText: "+120 Shield permanently for each Rock ally and +6 Multicast permanently for each Flying ally.",
+			abilityTags: [
+			  { kind: AbilityTagKind.StatFromCount, target: { kind: TargetKind.Self }, typeFilter: CreatureType.Rock, effect: { statusGrant: { type: StatusEffectType.Shield, amount: 120 } } },
+			  { kind: AbilityTagKind.StatFromCount, target: { kind: TargetKind.Self }, typeFilter: CreatureType.Flying, effect: { statChange: { stat: StatChangeStat.Multicast, amount: 6 } } }
+			],
 		},
 	},
 }, {

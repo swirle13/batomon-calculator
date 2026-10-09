@@ -3,8 +3,8 @@ import { STATUS_TYPES, applyModifiers } from "./modifiers";
 import { applySelfScaling, selfScaledAmount } from "./selfScaling";
 import { effectiveCooldown } from "./cooldown";
 import { applyStatusTick, applyShockProc } from "./status";
-import { STABLE_SLOT_ORDER, adjacentUnder, slotKey, slotsEqual, stableSlotIndex } from "./grid";
-import { cannotGain, resolveBoard, selectTargets } from "./effects";
+import { STABLE_SLOT_ORDER, adjacentUnder, behindSlot, inFrontSlot, slotKey, slotsEqual, stableSlotIndex } from "./grid";
+import { cannotGain, resolveBoard, selectTargets, selectorAccepts } from "./effects";
 import { trainerModifiersFor } from "./trainerEffects";
 import { creatureHasType } from "../data/typing";
 import { applyShinyOverlay, findCreature, hasCreatureRecord } from "../data/corpus";
@@ -129,7 +129,16 @@ function resolveCooldownSpeedTotal(
       if (tag.kind !== AbilityTagKind.CooldownSpeedModifier) continue;
       const target = tag.target;
       let reaches = false;
-      if (target.kind === TargetKind.Adjacent) {
+      // Boomagon's "give the ally behind +3% Cooldown Speed permanently" (2026-10-09). This
+      // resolver understood only `adjacent` and `allAllies`, so a directional cooldown grant had
+      // nowhere to land and Boomagon's whole ability was inert.
+      if (target.kind === TargetKind.Behind) {
+        const slot = behindSlot(member.slot);
+        reaches = slot !== null && slotsEqual(slot, targetSlot);
+      } else if (target.kind === TargetKind.InFront) {
+        const slot = inFrontSlot(member.slot);
+        reaches = slot !== null && slotsEqual(slot, targetSlot);
+      } else if (target.kind === TargetKind.Adjacent) {
         // Link Cable (2026-10-09): see `adjacentUnder`. This is the second of the two places that
         // ask the adjacency question, and a trinket honoured in only one of them would make
         // Formiqueen's aura reach the whole team for damage purposes but not for cooldown.
@@ -138,12 +147,16 @@ function resolveCooldownSpeedTotal(
         reaches = true;
       }
       if (!reaches) continue;
-      if (target.kind === TargetKind.Adjacent && target.typeFilter && !creatureHasType(targetCreature, target.typeFilter, config)) {
-        continue;
-      }
-      if (target.kind === TargetKind.AllAllies && target.typeFilter && !creatureHasType(targetCreature, target.typeFilter, config)) {
-        continue;
-      }
+      /*
+       * 2026-10-09: through `selectorAccepts`, the SAME predicate `selectTargets` uses.
+       *
+       * This was a local re-implementation that tested `typeFilter` and nothing else, so a
+       * selector's rarity or level filter was silently dropped on the cooldown path — which is
+       * exactly the path Formiqueen's "adjacent COMMON allies have +25% Cooldown Speed" takes.
+       * Its tag had no `rarityFilter` at all until today, so the gap was invisible; adding the
+       * filter without this would have fixed the data and changed nothing.
+       */
+      if (!selectorAccepts(target, targetCreature, config)) continue;
       total += tag.amount;
     }
   }
@@ -1042,6 +1055,16 @@ export function simulate(
             }
           } else if (tag.kind === AbilityTagKind.TriggerOnAllyTrigger || tag.kind === AbilityTagKind.TriggerOnAllyCast) {
             if (!selectTargets(tag.target, listener, resolved, config).some((t) => t.key === casterKey)) continue;
+            // "(Except other Puffloon)" — 2026-10-09. Puffloon is Toxic and reacts to adjacent
+            // Toxic allies, so a pair of them satisfied each other's selector and traded free
+            // casts for the whole battle.
+            if (
+              tag.kind === AbilityTagKind.TriggerOnAllyTrigger &&
+              tag.excludeSameSpecies &&
+              caster.creature.id === listener.creature.id
+            ) {
+              continue;
+            }
             if (chainDepth >= MAX_CHAIN_DEPTH) {
               chainCapHits++;
               continue;

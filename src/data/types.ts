@@ -262,7 +262,19 @@ export type AbilityTag =
    * The tag vocabulary could not express a multiplier at all; the capture shows one driving the
    * board's largest numbers.
    */
-  | { kind: AbilityTagKind.StatMultiplier; target: TargetSelector; stat: MultiplierScope; factor: number }
+  /**
+   * `stat` accepts a SINGLE `StatusEffectType` as of 2026-10-09, alongside the broad scopes.
+   *
+   * `MultiplierScope.Status` multiplies every status at once, which is right for "+70% to all
+   * stats" and wrong for Geminiss's "+50% **Shield**" and Pylong's "+100% **Shock**" — on a target
+   * carrying more than one status it would inflate the others too.
+   */
+  | {
+      kind: AbilityTagKind.StatMultiplier;
+      target: TargetSelector;
+      stat: MultiplierScope | StatusEffectType;
+      factor: number;
+    }
   /**
    * 2026-10-06 (T244 / FR-098). "additional Damage equal to 200% of the Poison stacks on the
    * enemy" — Fumungus. Read from the SHARED TARGET's accumulated status, recomputed every cast and
@@ -280,7 +292,16 @@ export type AbilityTag =
    * monotonically 13 -> 19px through a four-hit cascade and it still cast off its own 10s cycle
    * afterwards.
    */
-  | { kind: AbilityTagKind.TriggerOnAllyTrigger; target: TargetSelector }
+  | {
+      kind: AbilityTagKind.TriggerOnAllyTrigger;
+      target: TargetSelector;
+      /**
+       * "(Except other Puffloon)" — 2026-10-09. Puffloon is itself Toxic and reacts to adjacent
+       * TOXIC allies, so two of them standing together satisfied each other's selector and traded
+       * free casts. The clause was in the text from the start and expressed nowhere.
+       */
+      excludeSameSpecies?: boolean;
+    }
   /**
    * 2026-10-07. A repeatable permanent stat gain whose trigger the BATTLE ENGINE cannot fire —
    * buying a monster, using an item, winning a round, gaining a trinket.
@@ -359,6 +380,13 @@ export type AbilityTag =
       sourceStat: StatusEffectType | StatChangeStat.Damage | StatChangeStat.Multicast;
       multiplier: number;
       effect: EffectDescriptor;
+      /**
+       * "(Except other Aegistruct / Gaiadrasil / Quillustrous)" — 2026-10-09. All three scale off
+       * a pool of allies and all three exclude their own species from it, which matters most
+       * precisely when you would reach for a second copy: two Gaiadrasil would otherwise each
+       * count the other's damage, and the pair would feed each other.
+       */
+      excludeSameSpecies?: boolean;
     }
   /**
    * 2026-10-08. "Has additional Damage equal to 20 times this monster's Burn" — Lignite.
