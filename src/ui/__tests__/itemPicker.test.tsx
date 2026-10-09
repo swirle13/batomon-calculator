@@ -61,10 +61,11 @@ describe("picking an item uses it", () => {
     // One modifier at +10, not two indistinguishable +5s — `addPlacementModifier` accumulates.
     expect(screen.getByText("1 active")).toBeTruthy();
 
-    // The chips live inside the Modifiers overlay, so the amount has to be read there.
+    // The chips live inside the Modifiers overlay, so the amount has to be read there. The chip
+    // names the item that made it, which is the point of `StatModifier.label`.
     fireEvent.click(screen.getByRole("button", { name: "Done" }));
     fireEvent.click(screen.getByText("Modifiers").closest("button")!);
-    expect(screen.getByText("Damage +10")).toBeTruthy();
+    expect(screen.getByText("Feast: Damage +10")).toBeTruthy();
   });
 
   it("counts what is applied, derived from the modifiers rather than stored", () => {

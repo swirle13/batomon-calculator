@@ -207,7 +207,14 @@ export function TeamConfigProvider({
             // Matched on scope as well as stat (2026-10-08): a +10 Damage the monster earned and a
             // +10 Damage attached to the slot are not the same entry, because placing a different
             // monster here keeps one and discards the other.
-            const match = existing.find((m) => m.stat === modifier.stat && scopeOf(m) === scopeOf(modifier));
+            // And on LABEL (2026-10-08): a labelled modifier names what produced it — a used item,
+            // a trinket grant — and merging Tempo Charm's +4% Cooldown Speed into an unrelated
+            // cooldown chip both loses that attribution and breaks the press count, which is read
+            // back out of the chip. Unlabelled entries still merge with each other, because
+            // `undefined === undefined`: the hand-typed case is unchanged.
+            const match = existing.find(
+              (m) => m.stat === modifier.stat && scopeOf(m) === scopeOf(modifier) && m.label === modifier.label,
+            );
             if (!match) {
               return { ...p, modifiers: [...existing, { ...modifier, id: freshModifierId() }] };
             }

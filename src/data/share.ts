@@ -43,6 +43,12 @@ const PREFIX = "bat1:";
  * teams differing only in that are different builds — but writing it unconditionally would change
  * the canonical form of every build that predates the field, and with it every build id, for teams
  * nobody edited.
+ *
+ * `label` is emitted the same way, and for a stronger reason than attribution (2026-10-08): it is
+ * what `addPlacementModifier` matches on, so a +4% Cooldown Speed labelled "Tempo Charm" and an
+ * unlabelled one are two chips that behave differently — the trinket's stepper can step its own
+ * back down and must not touch the other. Dropping it on export turned an imported build's banked
+ * grants into bonuses with no control attached to them.
  */
 function canonicalModifiers(modifiers: StatModifier[] | undefined) {
   return (modifiers ?? [])
@@ -50,9 +56,10 @@ function canonicalModifiers(modifiers: StatModifier[] | undefined) {
       stat: m.stat,
       amount: m.amount,
       ...(scopeOf(m) === ModifierScope.Creature ? {} : { scope: scopeOf(m) }),
+      ...(m.label === undefined ? {} : { label: m.label }),
     }))
     // Two modifiers added in a different order are the same build.
-    .sort((a, b) => a.stat.localeCompare(b.stat) || a.amount - b.amount);
+    .sort((a, b) => a.stat.localeCompare(b.stat) || a.amount - b.amount || (a.label ?? "").localeCompare(b.label ?? ""));
 }
 
 function canonicalPlacements(placements: TeamPlacement[]) {

@@ -47,6 +47,11 @@
 	text-align: center;
 	color: var(--text-strong);
 }
+/* The trinket a grant row came from. Small and unlabelled: the name is right beside it, so this is
+   there to say "this row is a trinket, not this monster's own ability" at a glance. */
+.rowSprite {
+	flex-shrink: 0;
+}
 /* The action the presses stand for ("Use an item"), now that the buttons are glyphs and cannot
    say it themselves. */
 .label {

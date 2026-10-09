@@ -568,6 +568,21 @@ export interface TrinketRecord {
    */
   effectTags?: { stat: ModifierStat; amount: number }[];
   /**
+   * A permanent grant that lands on ONE monster rather than on the whole team (2026-10-08).
+   *
+   * Tempo Charm reads "On Battle Start, a random monster gains +4% Cooldown Speed permanently",
+   * which `effectTags` cannot express in either direction: as a team-wide +4% it is six times too
+   * much, and as nothing at all it is a trinket the tool says does nothing. The recipient is also
+   * not ours to decide — the game already rolled it, and the user is reconciling a board they are
+   * looking at, the same argument `ItemTargetKind.Chosen` makes for Cake.
+   *
+   * So this is never applied automatically. It drives a stepper on each placed monster's card,
+   * and a press banks the grant as a labelled modifier on that monster — the manual-trigger
+   * treatment, for the same reason: it recurs (every battle start, all run) and only the user
+   * knows how often and on whom.
+   */
+  chosenMonsterGrant?: { stat: ModifierStat; amount: number }[];
+  /**
    * Vendored sprite filename (2026-10-06 round 6, research.md H3), resolved against
    * `${import.meta.env.BASE_URL}sprites/trinket/` -- see `src/ui/shared/Sprite.tsx`.
    * Absent = render the text-only presentation, never a broken <img>.

@@ -133,6 +133,7 @@ export const trinkets: TrinketRecord[] = [
     name: "Tempo Charm",
     effectText: "On Battle Start\nA random monster gains +4% Cooldown Speed permanently.",
     rarity: Rarity.Common,
+    chosenMonsterGrant: [{ stat: ModifierStat.CooldownSpeedAdd, amount: 0.04 }],
     abilityTags: [],
     spriteFile: "tempo_charm.png",
   },

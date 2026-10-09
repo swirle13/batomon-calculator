@@ -1,12 +1,14 @@
 import { useTeamConfig } from "../../context/teamConfig";
-import { resolveCreatureVariant } from "../../data/corpus";
-import { manualTriggersFor, modifiersForPress, type ManualTrigger } from "../../data/triggers";
+import { corpus, resolveCreatureVariant } from "../../data/corpus";
+import { manualTriggersFor, modifiersForPress } from "../../data/triggers";
+import { chosenTrinketGrants, modifiersForGrantPress } from "../../data/trinketGrants";
 import { isCreatureScoped } from "../../data/modifierScope";
 import { STAT_COLORS } from "../../data/statColors";
-import type { CreatureRecord, GridSlot, TeamPlacement } from "../../data/types";
+import type { CreatureRecord, GridSlot, StatModifier, TeamPlacement } from "../../data/types";
 import { slotKey } from "../../engine/grid";
 import { recipientsOfPress } from "../../engine/manualTriggers";
 import { Button } from "../primitives";
+import { Sprite } from "../shared/Sprite";
 import styles from "./TriggerButtons.module.css";
 import { ModifierStat, StatColorKey } from "../../data/enums";
 
@@ -45,6 +47,18 @@ import { ModifierStat, StatColorKey } from "../../data/enums";
  * the wrong grain: having pressed four times, the way back to three was to clear to zero and press
  * three times. Each trigger now carries its own `− n +`, so the count is always on screen, the
  * control never appears or disappears, and one press back is one press back.
+ *
+ * ## Trinkets that grant to one monster press here too (2026-10-08)
+ *
+ * Tempo Charm reads "On Battle Start, a random monster gains +4% Cooldown Speed permanently".
+ * That is the same shape as Craghorn's item bonus in every way that matters to this component: it
+ * recurs, the engine cannot fire it, and only the user knows how many times it has landed on which
+ * monster. The one difference is where it comes from — the board's trinkets rather than the open
+ * card's ability — so a held `chosenMonsterGrant` trinket adds a row to every placed monster, and
+ * a press banks it on that monster alone. See `data/trinketGrants.ts`.
+ *
+ * Putting it here rather than in the trinket picker is the point: the question a press answers is
+ * "which monster got it", and the monster is what you are looking at.
  */
 interface TriggerButtonsProps {
   creature: CreatureRecord;
@@ -97,7 +111,33 @@ interface BoardMember {
 }
 
 /**
- * How many presses of this trigger the recipients are currently carrying.
+ * One pressable row: a creature's manual trigger, or a held trinket that grants to one monster.
+ *
+ * The two differ only in where they come from and who they reach, so they are one shape here
+ * rather than two near-identical blocks of JSX free to drift in spacing, wording and stepper
+ * behaviour.
+ */
+interface PressRow {
+  key: string;
+  /** What the presses stand for — the action for a trigger, the trinket's name for a grant. */
+  label: string;
+  /** The `+` button's tooltip. */
+  description: string;
+  effects: readonly { stat: ModifierStat; amount: number }[];
+  recipients: readonly BoardMember[];
+  /** What one press writes to each recipient. */
+  modifiers: Omit<StatModifier, "id">[];
+  /**
+   * The `label` the written modifier carries, and therefore the one a press is read back from.
+   * `undefined` for manual triggers, which write unlabelled chips.
+   */
+  sourceLabel: string | undefined;
+  /** Shown beside the label for a trinket row, so a press is traceable to the thing that caused it. */
+  sprite?: { file: string | undefined; name: string };
+}
+
+/**
+ * How many presses of this row the recipients are currently carrying.
  *
  * Read back out of the modifiers a press writes, because that is the only record of one — banking
  * into the same representation the user types into is what makes the amounts display and round-trip
@@ -106,19 +146,27 @@ interface BoardMember {
  * than a press put there, and a hand-typed modifier on a recipient can only make it read high,
  * never make a decrement go below what was banked.
  *
+ * Matched on the modifier's `label` as well as its stat, which is what keeps two rows on one card
+ * from reading each other's presses: Tempo Charm's +4% Cooldown Speed and Ninflora's +10% are both
+ * creature-scoped cooldown, and before labels were part of the match they were one chip and one
+ * count. `addPlacementModifier` matches the same way, so the chip a press lands on is the chip this
+ * reads.
+ *
  * The epsilon is for `cooldownSpeedAdd`, which is stored as a fraction — three presses of Ninflora's
  * +10% accumulate to 0.30000000000000004 or 0.29999999999999993 depending on the order, and a bare
  * `Math.floor` turns the second one into two presses.
  */
-function bankedPresses(trigger: ManualTrigger, recipients: readonly BoardMember[]): number {
-  if (recipients.length === 0) return 0;
+function bankedPresses(row: PressRow): number {
+  if (row.recipients.length === 0) return 0;
   let presses = Infinity;
-  for (const recipient of recipients) {
+  for (const recipient of row.recipients) {
     const modifiers = recipient.placement.modifiers ?? [];
-    for (const effect of trigger.effects) {
+    for (const effect of row.effects) {
       // Creature-scoped only: a press banks onto the monster, so a slot-scoped modifier of the
       // same stat is somebody else's and must not be read back as a press.
-      const carried = modifiers.find((m) => m.stat === effect.stat && isCreatureScoped(m))?.amount ?? 0;
+      const carried =
+        modifiers.find((m) => m.stat === effect.stat && isCreatureScoped(m) && m.label === row.sourceLabel)?.amount ??
+        0;
       presses = Math.min(presses, Math.floor(carried / effect.amount + 1e-9));
     }
   }
@@ -128,7 +176,8 @@ function bankedPresses(trigger: ManualTrigger, recipients: readonly BoardMember[
 export function TriggerButtons({ creature, placement }: TriggerButtonsProps) {
   const { config, addPlacementModifier } = useTeamConfig();
   const triggers = manualTriggersFor(creature);
-  if (triggers.length === 0) return null;
+  const grants = chosenTrinketGrants(config.trinketIds, corpus.trinkets);
+  if (triggers.length === 0 && grants.length === 0) return null;
 
   /*
    * The whole board, because an ally-wide trigger's recipients are decided by position and rarity
@@ -146,22 +195,47 @@ export function TriggerButtons({ creature, placement }: TriggerButtonsProps) {
   const source: BoardMember =
     board.find((m) => m.key === sourceKey) ?? { slot: placement.slot, key: sourceKey, creature, placement };
 
-  const recipientsByTrigger = triggers.map((trigger) => ({
-    trigger,
-    recipients: recipientsOfPress(trigger, source, board, config),
-  }));
+  const rows: PressRow[] = [
+    ...triggers.map((trigger): PressRow => ({
+      key: `trigger-${trigger.trigger}`,
+      label: trigger.definition.actionLabel,
+      description: trigger.definition.description,
+      effects: trigger.effects,
+      recipients: recipientsOfPress(trigger, source, board, config),
+      modifiers: modifiersForPress(trigger),
+      sourceLabel: undefined,
+    })),
+    /*
+     * A held trinket's grant reaches THIS monster and nobody else, because the press is the user
+     * saying "this is the one the game rolled". No selector, no board walk — the recipient is the
+     * card the row is drawn on.
+     */
+    ...grants.map((grant): PressRow => ({
+      key: `trinket-${grant.trinket.id}`,
+      label: grant.copies > 1 ? `${grant.trinket.name} ×${grant.copies}` : grant.trinket.name,
+      description:
+        grant.copies > 1
+          ? `${grant.trinket.effectText} You hold ${grant.copies}, so it lands ${grant.copies} times per battle start.`
+          : grant.trinket.effectText,
+      effects: grant.effects,
+      recipients: [source],
+      modifiers: modifiersForGrantPress(grant),
+      sourceLabel: grant.trinket.name,
+      sprite: { file: grant.trinket.spriteFile, name: grant.trinket.name },
+    })),
+  ];
 
   /**
-   * One step in either direction, written to every recipient of that trigger.
+   * One step in either direction, written to every recipient of that row.
    *
    * A decrement is the same write with the amounts negated, because `addPlacementModifier`
    * accumulates onto the matching stat and drops the entry when it reaches zero — so stepping back
    * down to nothing leaves no "+0" chip behind, and there is no second code path that has to agree
    * with the first about which slots a press touched.
    */
-  function step(trigger: ManualTrigger, recipients: readonly BoardMember[], direction: 1 | -1) {
-    for (const recipient of recipients) {
-      for (const modifier of modifiersForPress(trigger)) {
+  function step(row: PressRow, direction: 1 | -1) {
+    for (const recipient of row.recipients) {
+      for (const modifier of row.modifiers) {
         addPlacementModifier(recipient.slot, { ...modifier, amount: modifier.amount * direction });
       }
     }
@@ -169,19 +243,18 @@ export function TriggerButtons({ creature, placement }: TriggerButtonsProps) {
 
   return (
     <div className={styles.wrap}>
-      {recipientsByTrigger.map(({ trigger, recipients }) => {
-        const presses = bankedPresses(trigger, recipients);
-        const label = trigger.definition.actionLabel;
+      {rows.map((row) => {
+        const presses = bankedPresses(row);
         return (
-          <div key={trigger.trigger} className={styles.row}>
-            <div className={styles.stepper} role="group" aria-label={label}>
+          <div key={row.key} className={styles.row}>
+            <div className={styles.stepper} role="group" aria-label={row.label}>
               <Button
                 size="sm"
                 className={styles.step}
                 disabled={presses === 0}
-                aria-label={`Unbank: ${label}`}
-                title={`Takes back one ${label.toLowerCase()}.`}
-                onClick={() => step(trigger, recipients, -1)}
+                aria-label={`Unbank: ${row.label}`}
+                title={`Takes back one ${row.label.toLowerCase()}.`}
+                onClick={() => step(row, -1)}
               >
                 −
               </Button>
@@ -191,17 +264,20 @@ export function TriggerButtons({ creature, placement }: TriggerButtonsProps) {
               <Button
                 size="sm"
                 className={styles.step}
-                disabled={recipients.length === 0}
-                aria-label={`Bank: ${label}`}
-                title={`${trigger.definition.description} Each press banks it once.`}
-                onClick={() => step(trigger, recipients, 1)}
+                disabled={row.recipients.length === 0}
+                aria-label={`Bank: ${row.label}`}
+                title={`${row.description} Each press banks it once.`}
+                onClick={() => step(row, 1)}
               >
                 +
               </Button>
             </div>
-            <span className={styles.label}>{label}</span>
+            {row.sprite && (
+              <Sprite spriteFile={row.sprite.file} kind="trinket" size={16} alt="" className={styles.rowSprite} />
+            )}
+            <span className={styles.label}>{row.label}</span>
             <span className={styles.effects}>
-              {trigger.effects.map((e) => (
+              {row.effects.map((e) => (
                 <span
                   key={e.stat}
                   className={styles.effect}
@@ -211,8 +287,8 @@ export function TriggerButtons({ creature, placement }: TriggerButtonsProps) {
                 </span>
               ))}
               {/* Only said when it is news: a self-only trigger would be stating the obvious. */}
-              {recipients.length > 1 && (
-                <span className={styles.scope}>to {recipients.length} monsters</span>
+              {row.recipients.length > 1 && (
+                <span className={styles.scope}>to {row.recipients.length} monsters</span>
               )}
             </span>
           </div>

@@ -6,8 +6,8 @@ import { useTeamConfig } from "../../../context/teamConfig";
 import { resolveCreatureVariant } from "../../../data/corpus";
 import { slotKey } from "../../../engine/grid";
 import type { GridSlot, TeamConfiguration, TeamPlacement } from "../../../data/types";
-import { GridRow, ModifierStat } from "../../../data/enums";
-import { Species } from "../../../data/ids";
+import { GridRow, ModifierScope, ModifierStat } from "../../../data/enums";
+import { Species, TrinketId } from "../../../data/ids";
 
 /**
  * The manual trigger buttons (2026-10-07, user-reported).
@@ -28,11 +28,11 @@ const BOARD: { name: string; id: Species; slot: GridSlot }[] = [
   { name: "Craghorn", id: Species.Craghorn, slot: { row: GridRow.Front, col: 2 } }, // Uncommon
 ];
 
-function configWith(placements: TeamPlacement[]): TeamConfiguration {
+function configWith(placements: TeamPlacement[], trinketIds: TrinketId[] = []): TeamConfiguration {
   return {
     placements,
     trainerId: null,
-    trinketIds: [],
+    trinketIds,
     itemIds: [],
     simulationWindowSeconds: 20,
     teamModifiers: [],
@@ -52,15 +52,27 @@ function Probe() {
             .join(",")}
         </li>
       ))}
+      {config.placements.map((p) => (
+        <li key={`cd-${slotKey(p.slot)}`} data-testid={`cooldown-${p.creatureId}`}>
+          {(p.modifiers ?? [])
+            .filter((m) => m.stat === ModifierStat.CooldownSpeedAdd)
+            .map((m) => `${m.label ?? "—"}:${Math.round(m.amount * 1000) / 10}`)
+            .join(",")}
+        </li>
+      ))}
     </ul>
   );
 }
 
-function renderBoard(sourceId: string, placements: TeamPlacement[] = BOARD.map(toPlacement)) {
+function renderBoard(
+  sourceId: string,
+  placements: TeamPlacement[] = BOARD.map(toPlacement),
+  trinketIds: TrinketId[] = [],
+) {
   const source = placements.find((p) => p.creatureId === sourceId)!;
   const creature = resolveCreatureVariant(source.creatureId, source.level, source.shiny)!;
   render(
-    <TeamConfigProvider initialConfig={configWith(placements)}>
+    <TeamConfigProvider initialConfig={configWith(placements, trinketIds)}>
       <TriggerButtons creature={creature} placement={source} />
       <Probe />
     </TeamConfigProvider>,
@@ -178,5 +190,88 @@ describe("TriggerButtons — stepping back down", () => {
 
     fireEvent.click(plus(/use an item/));
     expect(screen.getByText("1")).toBeTruthy();
+  });
+});
+
+/**
+ * Trinkets that grant to ONE monster (2026-10-08, user-reported).
+ *
+ * Tempo Charm's "On Battle Start, a random monster gains +4% Cooldown Speed permanently" had no
+ * representation at all: the trinket was browsable corpus data with no effect, so a run where it
+ * had fired seven times showed the same cooldowns as a run without it. The game rolls the
+ * recipient, so the user names it — one press per time it landed on the monster they are looking
+ * at.
+ */
+describe("TriggerButtons — a trinket that grants to one chosen monster", () => {
+  /** A board with no manual triggers on the open card, so the only row is the trinket's. */
+  const PEBBLER = [BOARD.find((b) => b.id === Species.Pebbler)!, BOARD.find((b) => b.id === Species.Venopuff)!].map(
+    toPlacement,
+  );
+
+  function cooldown(creatureId: Species): string {
+    return screen.getByTestId(`cooldown-${creatureId}`).textContent ?? "";
+  }
+
+  it("offers no row when the trinket is not held", () => {
+    renderBoard("pebbler", PEBBLER);
+    expect(screen.queryByRole("button", { name: /Tempo Charm/i })).toBeNull();
+  });
+
+  it("banks +4% Cooldown Speed on the open monster alone, labelled with the trinket", () => {
+    renderBoard("pebbler", PEBBLER, [TrinketId.TempoCharm]);
+    fireEvent.click(plus(/tempo charm/));
+
+    expect(cooldown(Species.Pebbler)).toBe("Tempo Charm:4");
+    // The ability says "a random monster", singular. A press must not spray the board.
+    expect(cooldown(Species.Venopuff)).toBe("");
+  });
+
+  it("accumulates one chip across presses, because it fires every battle start", () => {
+    renderBoard("pebbler", PEBBLER, [TrinketId.TempoCharm]);
+    const press = plus(/tempo charm/);
+    fireEvent.click(press);
+    fireEvent.click(press);
+    fireEvent.click(press);
+
+    expect(cooldown(Species.Pebbler)).toBe("Tempo Charm:12");
+  });
+
+  it("steps back down one battle at a time and cannot go below nothing", () => {
+    renderBoard("pebbler", PEBBLER, [TrinketId.TempoCharm]);
+    expect(minus(/tempo charm/)).toHaveProperty("disabled", true);
+
+    fireEvent.click(plus(/tempo charm/));
+    fireEvent.click(plus(/tempo charm/));
+    fireEvent.click(minus(/tempo charm/));
+
+    expect(cooldown(Species.Pebbler)).toBe("Tempo Charm:4");
+  });
+
+  /**
+   * The reason `addPlacementModifier` and the press count both match on label.
+   *
+   * A hand-typed +10% Cooldown Speed is creature-scoped cooldown, exactly like Tempo Charm's
+   * grant. Merged into one chip it read as two presses of a trinket that had never been pressed,
+   * and unbanking would have eaten a bonus the user typed.
+   */
+  it("leaves a hand-typed bonus on the same stat alone, and is not counted by it", () => {
+    const typed: TeamPlacement = {
+      ...PEBBLER[0]!,
+      modifiers: [
+        { id: "typed", stat: ModifierStat.CooldownSpeedAdd, amount: 0.1, scope: ModifierScope.Creature },
+      ],
+    };
+    renderBoard("pebbler", [typed, PEBBLER[1]!], [TrinketId.TempoCharm]);
+
+    // Nothing has been pressed, however much cooldown the monster is already carrying.
+    expect(screen.getByText("0")).toBeTruthy();
+
+    fireEvent.click(plus(/tempo charm/));
+    expect(cooldown(Species.Pebbler)).toBe("—:10,Tempo Charm:4");
+  });
+
+  it("says how many copies are held, since each one fires separately", () => {
+    renderBoard("pebbler", PEBBLER, [TrinketId.TempoCharm, TrinketId.TempoCharm]);
+    expect(screen.getByText("Tempo Charm ×2")).toBeTruthy();
   });
 });

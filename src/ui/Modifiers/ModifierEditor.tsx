@@ -94,10 +94,19 @@ function optionFor(stat: ModifierStat): StatOption {
   return STAT_OPTIONS.find((o) => o.value === stat) ?? { value: stat, label: stat, chip: stat, store: same, show: signed, step: "any" };
 }
 
-/** A chip's full text: "Damage +40", "Cooldown -1s", "Cooldown Speed +20%". */
-function chipText(stat: ModifierStat, amount: number): string {
+/**
+ * A chip's full text: "Damage +40", "Cooldown -1s", "Cooldown Speed +20%".
+ *
+ * A labelled modifier says where it came from — "Tempo Charm: Cooldown Speed +12%" (2026-10-08).
+ * Labels have existed since items were added and were never rendered, which was survivable while
+ * same-stat bonuses merged into one chip. They no longer do: a monster carrying a hand-typed
+ * cooldown bonus AND a banked Tempo Charm grant has two cooldown chips, and without the label
+ * there is nothing on screen that says which is which or which one the stepper owns.
+ */
+function chipText(stat: ModifierStat, amount: number, label?: string): string {
   const option = optionFor(stat);
-  return `${option.chip} ${option.show(amount)}`;
+  const text = `${option.chip} ${option.show(amount)}`;
+  return label === undefined ? text : `${label}: ${text}`;
 }
 
 /**
@@ -327,7 +336,7 @@ function PlacementModifierCell({ placement, onAdd, onRemove }: PlacementModifier
               >
                 {/* In the user's units, not the engine's: a stored 0.2 reads "+20%" and a stored
                     -1 second reads "-1s", so the chip says back what was typed. */}
-                {chipText(modifier.stat, modifier.amount)}
+                {chipText(modifier.stat, modifier.amount, modifier.label)}
               </Chip>
             </li>
           ))}
