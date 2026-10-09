@@ -113,6 +113,28 @@ describe("tokenizeAbilityText — typings", () => {
   });
 });
 
+describe("tokenizeAbilityText — a count coloured without its noun", () => {
+  it("colours the number of rerolls, and nothing else on the card", () => {
+    // Youngster, read off an in-game capture (2026-10-08): the digit is coloured and "rerolls" is
+    // not. Three records in the whole corpus take this shape — this one, the Reroll Token trinket's
+    // "Gain 10 free rerolls." and an item's "Gain 1 free reroll." — and the adjective between the
+    // number and the noun is why the ordinary adjacent-quantity rule cannot express it.
+    const youngster = getTrainerById(TrainerId.Youngster)!;
+    expect(render(youngster.abilityText)).toBe("Gain [3|mechanic] free rerolls every day.");
+  });
+
+  it("leaves numbers that count anything ELSE plain", () => {
+    // The narrowness is the point: this is a rule about rerolls, not about digits. If it widened
+    // into "colour every number", these two would light up and the game does not light them up.
+    expect(render("Trinket gifts only offer 2 choices, but you can take both of them.")).toBe(
+      "[Trinket|mechanic] gifts only offer 2 choices, but you can take both of them.",
+    );
+    expect(render("On day 9, gain a Mythical monster and $30.")).toBe(
+      "On day 9, gain a Mythical monster and [$30|mechanic].",
+    );
+  });
+});
+
 describe("tokenizeAbilityText — words the game leaves plain", () => {
   it("does not colour 'day'", () => {
     // It was in the mechanic tier on the assumption that a unit of run time is a mechanic noun.

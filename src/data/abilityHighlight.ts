@@ -170,17 +170,41 @@ const TYPE_ALTERNATION = byLengthDesc(TYPINGS)
 const GOLD = String.raw`\$\d+`;
 
 /**
- * The stat/mechanic branch comes FIRST, so where the two tiers could both claim a span the
- * quantity-bearing one wins and the typing branch sees only what is left.
+ * Nouns whose COUNT the game colours while leaving the noun itself plain.
+ *
+ * Youngster's card reads "Gain <3> free rerolls every day." with only the digit coloured — not the
+ * word, and not the numbers on cards that count other things ("only offer 2 choices", "On day 9").
+ * So this is neither of the existing shapes: `KEYWORDS` colours the noun and pulls an adjacent
+ * quantity in with it, and there is no tier that colours a quantity alone.
+ *
+ * An optional adjective is allowed between the two because the corpus always writes one ("3 free
+ * rerolls", and the Reroll Token trinket's "Gain 10 free rerolls."), and the lookahead keeps it out
+ * of the match so the coloured run is the digits and nothing else.
+ *
+ * The hue is the mechanic amber: the colour belongs to the noun's tier, and the number is standing
+ * in for it. That is a judgement, not a sampled value — the game's own colour for this digit has
+ * not been read off a capture.
+ */
+const COUNTED_NOUNS = [String.raw`rerolls?`];
+const COUNTED = COUNTED_NOUNS.map(
+  (noun) => String.raw`\d+(?=(?:\s+\w+)?\s+${noun}\b)`,
+).join("|");
+
+/**
+ * The stat/mechanic branch comes FIRST, so where the tiers could both claim a span the
+ * quantity-bearing one wins and the later branches see only what is left.
  */
 const RUN = new RegExp(
-  String.raw`(?:${QUANTITY}\s+)?\b(?:${ALTERNATION})\b(?:\s+${QUANTITY})?|\b(?:${TYPE_ALTERNATION})\b|${GOLD}`,
+  String.raw`(?:${QUANTITY}\s+)?\b(?:${ALTERNATION})\b(?:\s+${QUANTITY})?|\b(?:${TYPE_ALTERNATION})\b|${GOLD}|${COUNTED}`,
   "gi",
 );
 
 /** Which colour a run resolves to, by matching the same patterns the alternation was built from. */
 function colorKeyFor(run: string): RunColorKey | undefined {
   if (new RegExp(GOLD).test(run)) return "mechanic";
+  // A run of bare digits can only have come from the `COUNTED` branch: every other branch carries a
+  // keyword, and a quantity is never matched on its own.
+  if (/^\d+$/.test(run)) return "mechanic";
   for (const keyword of byLengthDesc([...KEYWORDS, ...TYPINGS])) {
     if (new RegExp(String.raw`\b(?:${keyword.pattern})\b`, "i").test(run)) return keyword.colorKey;
   }
