@@ -13,7 +13,7 @@ import {
 } from "@dnd-kit/core";
 import type { CreatureRecord, CreatureType, GridCol, StatModifier, GridSlot } from "../../data/types";
 import { resolveCreatureVariant } from "../../data/corpus";
-import { isPainted } from "../../data/typing";
+import { isChefAffected, isPainted } from "../../data/typing";
 import { useTeamConfig } from "../../context/teamConfig";
 import { typeBackground } from "../../data/typeColors";
 import { STATUS_COLOR_KEY } from "../../data/format";
@@ -123,6 +123,8 @@ interface CardFaceProps {
   modifiers: StatModifier[] | undefined;
   /** Painted by Painter, or natively `All`-typed — drives the rainbow treatment. */
   painted: boolean;
+  /** Reached by Chef's ability — drives the red/orange treatment. */
+  chefFire: boolean;
 }
 
 /**
@@ -133,7 +135,7 @@ interface CardFaceProps {
  * component is what keeps the two from drifting — a lifted card that is missing its chips, or sized
  * differently from the one it came from, reads as a different creature.
  */
-function CardFace({ creature, level, modifiers, painted }: CardFaceProps) {
+function CardFace({ creature, level, modifiers, painted, chefFire }: CardFaceProps) {
   return (
     <>
       {/* Name and level share the top row, so everything below the sprite is chips. See `.header`. */}
@@ -151,6 +153,7 @@ function CardFace({ creature, level, modifiers, painted }: CardFaceProps) {
           sizeVar="--sprite-grid"
           alt={creature.name}
           painted={painted}
+          chefFire={chefFire}
         />
       </div>
       <SlotBadges creature={creature} modifiers={modifiers} />
@@ -170,7 +173,7 @@ interface DraggableCardProps extends CardFaceProps {
   onClear: () => void;
 }
 
-function DraggableCard({ slot, creature, level, modifiers, painted, onHighlight, onOpenSearch, onClear }: DraggableCardProps) {
+function DraggableCard({ slot, creature, level, modifiers, painted, chefFire, onHighlight, onOpenSearch, onClear }: DraggableCardProps) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: slotKey(slot),
     data: { slot },
@@ -228,7 +231,7 @@ function DraggableCard({ slot, creature, level, modifiers, painted, onHighlight,
       >
         ×
       </button>
-      <CardFace creature={creature} level={level} modifiers={modifiers} painted={painted} />
+      <CardFace creature={creature} level={level} modifiers={modifiers} painted={painted} chefFire={chefFire} />
     </div>
   );
 }
@@ -240,14 +243,14 @@ function DraggableCard({ slot, creature, level, modifiers, painted, onHighlight,
  *
  * It carries no handlers and no clear button: it is a picture of the card, not the card.
  */
-function DragGhost({ creature, level, modifiers, painted }: CardFaceProps) {
+function DragGhost({ creature, level, modifiers, painted, chefFire }: CardFaceProps) {
   return (
     <div
       className={`${styles.card} ${styles.cardGhost}`}
       style={{ background: typeBackground(creature.types) }}
       aria-hidden
     >
-      <CardFace creature={creature} level={level} modifiers={modifiers} painted={painted} />
+      <CardFace creature={creature} level={level} modifiers={modifiers} painted={painted} chefFire={chefFire} />
     </div>
   );
 }
@@ -335,6 +338,7 @@ export const GridPicker = memo(function GridPicker({ onHighlightSlot }: GridPick
       level: placement.level,
       modifiers: placement.modifiers,
       painted: creature.types.some(isWildcardType) || isPainted(creature.id, config),
+      chefFire: isChefAffected(creature, config),
     };
   }
 
@@ -392,6 +396,7 @@ export const GridPicker = memo(function GridPicker({ onHighlightSlot }: GridPick
                           level={card.level}
                           modifiers={card.modifiers}
                           painted={card.painted}
+                          chefFire={card.chefFire}
                           onHighlight={() => onHighlightSlot(slot)}
                           onOpenSearch={() => setSearchModalSlot(slot)}
                           onClear={() => setPlacement(slot, null)}

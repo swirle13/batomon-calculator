@@ -1,5 +1,9 @@
 import { useMemo, useState, type ReactNode } from "react";
-import type { TeamConfiguration, TeamPlacement } from "../data/types";
+import type { GridSlot, StatModifier, TeamConfiguration, TeamPlacement } from "../data/types";
+import type { Species } from "../data/ids";
+import { corpus } from "../data/corpus";
+import { isCreatureScoped, isSlotScoped, scopeOf } from "../data/modifierScope";
+import { resolveLevelUp } from "../engine/evolution";
 import { slotsEqual } from "../engine/grid";
 import { TeamConfigContext, type TeamConfigContextValue } from "./teamConfig";
 
@@ -43,6 +47,42 @@ function freshModifierId(): string {
   return `mod-${nextModifierId++}`;
 }
 
+/**
+ * Whether a write to this slot is the monster already standing there, or a different one.
+ *
+ * The two reach `setPlacement` through the same call. A level bubble passes the species the level
+ * resolves to, which for Panbud at Lv.3 is Bambudo — a different id for the same monster growing
+ * up. The search modal passes whatever the user picked. Asking the evolution resolver is what
+ * separates them, and it is the same resolver `VariantToggles` used to produce the id.
+ *
+ * Re-picking the SAME species is read as the same monster, because nothing distinguishes buying a
+ * second Craghorn from re-selecting the one already placed.
+ */
+function isSameMonster(existing: TeamPlacement, creatureId: Species, level: 1 | 2 | 3 | 4): boolean {
+  if (existing.creatureId === creatureId) return true;
+  return resolveLevelUp(corpus, existing.creatureId, level)?.id === creatureId;
+}
+
+/** Empty lists are stored as `undefined`, so a placement that carries nothing looks like one. */
+function modifiersOrUndefined(modifiers: StatModifier[]): StatModifier[] | undefined {
+  return modifiers.length > 0 ? modifiers : undefined;
+}
+
+/**
+ * A placement arriving at `toSlot`: it brings what belongs to the monster and inherits what
+ * belongs to the position.
+ *
+ * Its own slot-scoped modifiers are left behind by construction — they were never its to carry.
+ * When the slot it left ends up empty they have nowhere to live and are gone, which is the one
+ * lossy case here and is accepted: a bonus attached to a position with nothing in it is not
+ * something the engine can apply or the card can show.
+ */
+function relocate(placement: TeamPlacement, toSlot: GridSlot, inheritedFrom: TeamPlacement | undefined): TeamPlacement {
+  const carried = (placement.modifiers ?? []).filter(isCreatureScoped);
+  const inherited = (inheritedFrom?.modifiers ?? []).filter(isSlotScoped);
+  return { ...placement, slot: toSlot, modifiers: modifiersOrUndefined([...carried, ...inherited]) };
+}
+
 export function TeamConfigProvider({
   children,
   /** Seed state. Exists so component tests can render a pre-populated team without driving the
@@ -80,7 +120,17 @@ export function TeamConfigProvider({
           // that round 6 makes per-creature modifiers the primary modifier workflow (FR-039).
           // Modifiers survive an evolution too (Panbud -> Bambudo at Lv.3 keeps its carry-over),
           // which matches what a "carry-over from a previous round" means.
-          const next: TeamPlacement = { slot, creatureId, level, modifiers: existing?.modifiers };
+          //
+          // 2026-10-08 (user-reported): carried over by SCOPE, not wholesale. The clause above is
+          // about the same monster changing level; a DIFFERENT monster taking the slot was getting
+          // the same treatment, so selling a Craghorn that had banked +40 Damage / +40 Shield and
+          // buying something else handed the newcomer forty points of Craghorn's ability. Only
+          // slot-scoped modifiers belong to the position and survive that.
+          const carried =
+            existing === undefined || isSameMonster(existing, creatureId, level)
+              ? existing?.modifiers
+              : modifiersOrUndefined(existing.modifiers?.filter(isSlotScoped) ?? []);
+          const next: TeamPlacement = { slot, creatureId, level, modifiers: carried };
           return { ...prev, placements: [...withoutSlot, next] };
         });
       },
@@ -93,14 +143,17 @@ export function TeamConfigProvider({
           const others = prev.placements.filter(
             (p) => !slotsEqual(p.slot, fromSlot) && !slotsEqual(p.slot, toSlot),
           );
-          const movedFrom: TeamPlacement = { ...fromPlacement, slot: toSlot };
+          // Each side brings its creature-scoped modifiers and inherits the destination slot's
+          // slot-scoped ones (2026-10-08). A bonus attached to a POSITION does not ride along with
+          // the monster that happened to be standing in it — see `relocate`.
+          const movedFrom = relocate(fromPlacement, toSlot, toPlacement);
           if (!toPlacement) {
             // Empty destination: a plain move.
             return { ...prev, placements: [...others, movedFrom] };
           }
           // Occupied destination: swap -- toPlacement's full object (level/modifiers intact)
           // goes to fromSlot, fromPlacement's goes to toSlot.
-          const movedTo: TeamPlacement = { ...toPlacement, slot: fromSlot };
+          const movedTo = relocate(toPlacement, fromSlot, fromPlacement);
           return { ...prev, placements: [...others, movedFrom, movedTo] };
         });
       },
@@ -151,7 +204,10 @@ export function TeamConfigProvider({
             // same stat instead of appending a second indistinguishable chip. Adding +10 twice
             // gave two "+10" chips the user had no way to tell apart and no reason to care about;
             // the engine already summed them, so this only ever changed the display.
-            const match = existing.find((m) => m.stat === modifier.stat);
+            // Matched on scope as well as stat (2026-10-08): a +10 Damage the monster earned and a
+            // +10 Damage attached to the slot are not the same entry, because placing a different
+            // monster here keeps one and discards the other.
+            const match = existing.find((m) => m.stat === modifier.stat && scopeOf(m) === scopeOf(modifier));
             if (!match) {
               return { ...p, modifiers: [...existing, { ...modifier, id: freshModifierId() }] };
             }

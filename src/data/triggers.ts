@@ -6,7 +6,7 @@ import type {
   TargetSelector,
 } from "./types";
 import { ABILITY_TRIGGER, ABILITY_TRIGGERS } from "./vocabularies";
-import { AbilityTagKind, TargetKind } from "./enums";
+import { AbilityTagKind, ModifierScope, TargetKind } from "./enums";
 
 /**
  * The trigger registry: one entry per `AbilityTrigger`, describing how that trigger behaves and
@@ -90,7 +90,11 @@ export function manualTriggersFor(creature: CreatureRecord): ManualTrigger[] {
  * Returned without ids; the caller supplies those, because `addPlacementModifier` already
  * accumulates same-stat modifiers rather than appending duplicates — so pressing twice yields one
  * chip at double the amount rather than two chips, which is what "click it twice" should mean.
+ *
+ * Scoped to the CREATURE, and stated here rather than left to the default (2026-10-08). These
+ * abilities say "**this** gains +20 Damage" or "this and Common allies gain +10 Damage": the
+ * subject is a monster in every case, so what a press banks is gone when that monster is sold.
  */
 export function modifiersForPress(trigger: ManualTrigger): Omit<StatModifier, "id">[] {
-  return trigger.effects.map((e) => ({ stat: e.stat, amount: e.amount }));
+  return trigger.effects.map((e) => ({ stat: e.stat, amount: e.amount, scope: ModifierScope.Creature }));
 }

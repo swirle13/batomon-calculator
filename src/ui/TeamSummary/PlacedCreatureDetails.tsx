@@ -1,7 +1,7 @@
 import { resolveCreatureVariant } from "../../data/corpus";
 import { VariantToggles } from "../shared/VariantToggles/VariantToggles";
 import { TriggerButtons } from "./TriggerButtons";
-import { isPainted } from "../../data/typing";
+import { isChefAffected, isPainted } from "../../data/typing";
 import { useTeamConfig } from "../../context/teamConfig";
 import type { GridSlot, SimulationResult } from "../../data/types";
 import {  } from "../../engine/grid";
@@ -94,6 +94,7 @@ export function PlacedCreatureDetails({ result, highlightedSlot }: PlacedCreatur
       levelLabel={`Lv.${placement.level}${placement.shiny ? " ✦" : ""}`}
       fixedHeight="panel"
       painted={isPainted(creature.id, config)}
+      chefFire={isChefAffected(creature, config)}
       modifiers={placement.modifiers}
       meta={
         <>

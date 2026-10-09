@@ -4,6 +4,7 @@ import { effectiveCooldown } from "./cooldown";
 import { applyStatusTick, applyShockProc } from "./status";
 import { STABLE_SLOT_ORDER, isAdjacent, slotKey, slotsEqual, stableSlotIndex } from "./grid";
 import { resolveBoard, selectTargets } from "./effects";
+import { trainerModifiersFor } from "./trainerEffects";
 import { creatureHasType } from "../data/typing";
 import { applyShinyOverlay, findCreature, hasCreatureRecord } from "../data/corpus";
 import { InvalidTeamConfigurationError } from "./errors";
@@ -292,7 +293,10 @@ export function simulate(
         slot: p.slot,
         creature,
         resolved,
-        placementModifiers: p.modifiers ?? [],
+        // The chosen trainer's per-monster bonuses join this placement's own modifiers (2026-10-08).
+        // They are per-placement rather than team-wide because their recipient is conditional —
+        // Chef's "+2 Burn" reaches Fire monsters only. See `trainerEffects.ts`.
+        placementModifiers: [...(p.modifiers ?? []), ...trainerModifiersFor(creature, config)],
       },
     ];
   });

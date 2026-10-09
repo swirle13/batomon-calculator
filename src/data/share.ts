@@ -1,4 +1,6 @@
 import type { StatModifier, TeamConfiguration, TeamPlacement } from "./types";
+import { ModifierScope } from "./enums";
+import { scopeOf } from "./modifierScope";
 
 /**
  * Sharing a build: a portable code plus a stable id derived from the build's content.
@@ -33,10 +35,22 @@ import type { StatModifier, TeamConfiguration, TeamPlacement } from "./types";
 const FORMAT_VERSION = 1;
 const PREFIX = "bat1:";
 
-/** A modifier's runtime `id` is a fresh UUID per session and says nothing about the build. */
+/**
+ * A modifier's runtime `id` is a fresh UUID per session and says nothing about the build.
+ *
+ * `scope` is emitted only when it is NOT the default (2026-10-08). It is build content — a bonus
+ * attached to the slot survives a monster swap and one attached to the monster does not, so two
+ * teams differing only in that are different builds — but writing it unconditionally would change
+ * the canonical form of every build that predates the field, and with it every build id, for teams
+ * nobody edited.
+ */
 function canonicalModifiers(modifiers: StatModifier[] | undefined) {
   return (modifiers ?? [])
-    .map((m) => ({ stat: m.stat, amount: m.amount }))
+    .map((m) => ({
+      stat: m.stat,
+      amount: m.amount,
+      ...(scopeOf(m) === ModifierScope.Creature ? {} : { scope: scopeOf(m) }),
+    }))
     // Two modifiers added in a different order are the same build.
     .sort((a, b) => a.stat.localeCompare(b.stat) || a.amount - b.amount);
 }

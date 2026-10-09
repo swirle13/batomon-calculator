@@ -4,7 +4,7 @@ import { TRIGGER_DEFINITIONS, manualTriggersFor, modifiersForPress } from "../tr
 import { isResolvableTag } from "../../engine/effects";
 import { recipientsOfPress } from "../../engine/manualTriggers";
 import type { CreatureRecord, GridSlot } from "../types";
-import { AbilityTrigger, GridRow, ModifierStat, Rarity, TargetKind } from "../enums";
+import { AbilityTrigger, GridRow, ModifierScope, ModifierStat, Rarity, TargetKind } from "../enums";
 import { Species } from "../ids";
 
 describe("manual trigger framework", () => {
@@ -69,9 +69,11 @@ describe("manual trigger framework", () => {
   it("a press yields modifiers with no id, for the caller to accumulate", () => {
     const c = getCreatureByIdAndLevel(Species.Craghorn, 1)!;
     const press = modifiersForPress(manualTriggersFor(c)[0]!);
+    // Scoped to the creature: Craghorn's text is "THIS gains…", so the bonus is the monster's and
+    // not the slot's — selling it must not leave the +20s behind for its replacement.
     expect(press).toEqual([
-      { stat: ModifierStat.DamageFlatAdd, amount: 20 },
-      { stat: ModifierStat.ShieldAmountAdd, amount: 20 },
+      { stat: ModifierStat.DamageFlatAdd, amount: 20, scope: ModifierScope.Creature },
+      { stat: ModifierStat.ShieldAmountAdd, amount: 20, scope: ModifierScope.Creature },
     ]);
     for (const m of press) expect("id" in m).toBe(false);
   });

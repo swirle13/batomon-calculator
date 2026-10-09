@@ -1,6 +1,7 @@
 import { useTeamConfig } from "../../context/teamConfig";
 import { resolveCreatureVariant } from "../../data/corpus";
 import { manualTriggersFor, modifiersForPress, type ManualTrigger } from "../../data/triggers";
+import { isCreatureScoped } from "../../data/modifierScope";
 import { STAT_COLORS } from "../../data/statColors";
 import type { CreatureRecord, GridSlot, TeamPlacement } from "../../data/types";
 import { slotKey } from "../../engine/grid";
@@ -115,7 +116,9 @@ function bankedPresses(trigger: ManualTrigger, recipients: readonly BoardMember[
   for (const recipient of recipients) {
     const modifiers = recipient.placement.modifiers ?? [];
     for (const effect of trigger.effects) {
-      const carried = modifiers.find((m) => m.stat === effect.stat)?.amount ?? 0;
+      // Creature-scoped only: a press banks onto the monster, so a slot-scoped modifier of the
+      // same stat is somebody else's and must not be read back as a press.
+      const carried = modifiers.find((m) => m.stat === effect.stat && isCreatureScoped(m))?.amount ?? 0;
       presses = Math.min(presses, Math.floor(carried / effect.amount + 1e-9));
     }
   }

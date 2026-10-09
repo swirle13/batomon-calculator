@@ -87,10 +87,61 @@
   to { background-position: 112px 112px; }
 }
 
+/*
+ * Chef's Fire treatment (2026-10-08, user-reported: "a swirling red/orange translucent texture
+ * over mon sprites, just like painter does").
+ *
+ * Built from the painted overlay rather than beside it, because the hard-won parts of that effect
+ * are not about colour: the silhouette mask, the repeating gradient whose first and last stops
+ * match, and the translation of exactly one period are what make it hug the artwork and loop
+ * without a seam. Only the palette and the direction differ — a red/orange ramp instead of a
+ * spectrum, and a counter-rotating angle so the two overlays are distinguishable at a glance on a
+ * board where both appear.
+ */
+.chefFire::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+
+  -webkit-mask-image: var(--sprite-url);
+  mask-image: var(--sprite-url);
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+
+  mix-blend-mode: screen;
+  /* Marginally under painted's 0.6: the ramp is narrow and warm, so at the full value a
+     brown or red creature stops reading as itself with a treatment on it. */
+  opacity: 0.55;
+
+  background-image: repeating-linear-gradient(
+    -45deg,
+    #ff4d1f 0px,
+    #ff8c1a 18px,
+    #ffd04d 36px,
+    #ff8c1a 54px,
+    #ff4d1f 72px
+  );
+  animation: chefFireDrift 2.4s linear infinite;
+}
+
+/*
+ * The mirror of `paintedDrift`: 72px is this gradient's period, and the -45deg angle means one
+ * tile is +72px in x against -72px in y. Faster than the rainbow's 3.3s because the ramp is
+ * shorter — matching the period rather than the duration is what keeps the apparent speed sane.
+ */
+@keyframes chefFireDrift {
+  from { background-position: 0 0; }
+  to { background-position: 72px -72px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   /* The rainbow still identifies the creature as painted; only the drift stops. Removing the
      overlay entirely would take the information away along with the motion. */
-  .painted::after {
+  .painted::after,
+  .chefFire::after {
     animation: none;
     background-position: 50% 50%;
   }

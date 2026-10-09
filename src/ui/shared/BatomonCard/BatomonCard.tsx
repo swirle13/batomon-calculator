@@ -93,11 +93,13 @@ interface BatomonCardProps {
   meta?: ReactNode;
   /** True when Painter has painted this species this run (T236/FR-092). */
   painted?: boolean;
+  /** True when Chef's ability reaches this creature — a prop for the same reason `painted` is. */
+  chefFire?: boolean;
   /** The user's own manual modifiers for this placement — folded into the displayed stats. */
   modifiers?: StatModifier[];
 }
 
-export function BatomonCard({ creature, children, levelLabel, fixedHeight, meta, painted, modifiers }: BatomonCardProps) {
+export function BatomonCard({ creature, children, levelLabel, fixedHeight, meta, painted, chefFire, modifiers }: BatomonCardProps) {
   // Painted species and natively-"All" species render identically — they mean the same thing
   // in-game and differ only in where the "All" came from (run configuration vs corpus data).
   //
@@ -131,6 +133,7 @@ export function BatomonCard({ creature, children, levelLabel, fixedHeight, meta,
             size={96}
             alt={creature.name}
             painted={isAllType}
+            chefFire={chefFire}
           />
         </div>
         <div className={styles.types}>

@@ -25,7 +25,7 @@
  * Imported for this file's own type positions AND re-exported for consumers. Both are needed: a
  * bare `export … from` does not bring the names into local scope.
  */
-import { AbilityTrigger, CreatureType, DamageChannel, EventLabel, GridRow, ItemTargetKind, ModifierStat, MultiplierScope, RegionId, StatusEffectType, TimelineEventKind } from "./enums";
+import { AbilityTrigger, CreatureType, DamageChannel, EventLabel, GridRow, ItemTargetKind, ModifierScope, ModifierStat, MultiplierScope, RegionId, StatusEffectType, TimelineEventKind } from "./enums";
 import { ItemId, Species, TrainerId, TrinketId } from "./ids";
 import { Rarity } from "./enums";
 import { AbilityTagKind, StatChangeStat, TargetKind } from "./enums";
@@ -41,6 +41,7 @@ export {
   EventLabel,
   GridRow,
   ItemTargetKind,
+  ModifierScope,
   ModifierStat,
   MultiplierScope,
   Rarity,
@@ -663,6 +664,8 @@ export interface StatModifier {
   label?: string;
   stat: ModifierStat;
   amount: number;
+  /** What this bonus is attached to. Absent means `ModifierScope.Creature` — see the enum. */
+  scope?: ModifierScope;
 }
 
 export interface TeamPlacement {

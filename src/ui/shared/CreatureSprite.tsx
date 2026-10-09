@@ -30,10 +30,17 @@ interface CreatureSpriteProps {
   alt: string;
   /** Painted by Painter, or natively `All`-typed. */
   painted?: boolean;
+  /**
+   * Touched by Chef — single-typed and so granted Fire, or Fire already and so carrying the +2
+   * Burn (2026-10-08). Yields to `painted`: a creature that is every type is already wearing an
+   * overlay that says its typing is not what the card says, and stacking a second one over it
+   * would only make both harder to read.
+   */
+  chefFire?: boolean;
   className?: string;
 }
 
-export function CreatureSprite({ spriteFile, size, sizeVar, alt, painted, className }: CreatureSpriteProps) {
+export function CreatureSprite({ spriteFile, size, sizeVar, alt, painted, chefFire, className }: CreatureSpriteProps) {
   if (!spriteFile) return null;
 
   const url = `${import.meta.env.BASE_URL}sprites/monster/${spriteFile}`;
@@ -43,7 +50,7 @@ export function CreatureSprite({ spriteFile, size, sizeVar, alt, painted, classN
 
   return (
     <span
-      className={`${styles.wrap} ${painted ? styles.painted : ""} ${className ?? ""}`}
+      className={`${styles.wrap} ${painted ? styles.painted : chefFire ? styles.chefFire : ""} ${className ?? ""}`}
       // The mask needs the same URL the <img> resolves, so it is passed as a custom property
       // rather than duplicating the path-building that `Sprite` already owns.
       style={{ width: box, height: box, "--sprite-url": `url("${url}")` } as CSSProperties}

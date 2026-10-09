@@ -180,6 +180,31 @@ export enum ModifierStat {
 }
 
 /**
+ * What a modifier is attached to, and therefore what happens to it when the board changes
+ * (2026-10-08, user-reported).
+ *
+ * Craghorn's "When you use an item, **this** gains +20 Damage and Shield" was banked onto the
+ * SLOT, so selling the Craghorn and buying something else left the new monster holding Craghorn's
+ * forty points. The amounts were right and their owner was wrong: a placement modifier had no way
+ * to say whether it described the monster standing there or the position it was standing in.
+ *
+ * - `Creature` — belongs to the monster. Travels with it when it is dragged, and is discarded when
+ *   a DIFFERENT monster takes the slot. Everything a creature's own ability grants, and everything
+ *   the user types into the Modifiers overlay (a carry-over bonus is something a monster earned).
+ * - `Slot` — belongs to the position. Stays behind when the monster moves away, and transfers to
+ *   whatever is placed there next. Nothing writes this yet; the vocabulary exists because trinkets
+ *   that read "monsters in the back row" / "the bottom right monster" are slot effects, and the
+ *   distinction has to be stateable before one of them can be modelled.
+ *
+ * Absent means `Creature`, which is the safe default: a bonus of unknown provenance following the
+ * monster that earned it is the behaviour every existing source wants.
+ */
+export enum ModifierScope {
+  Creature = "creature",
+  Slot = "slot",
+}
+
+/**
  * Who a USED item's effect lands on (2026-10-08, T046).
  *
  * Items are the first corpus entity whose effects are not uniformly team-wide, which is why they
