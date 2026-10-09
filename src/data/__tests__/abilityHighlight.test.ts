@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { allCreatureRecords, getCreatureByIdAndLevel } from "../corpus";
+import { allCreatureRecords, getCreatureByIdAndLevel, getTrainerById } from "../corpus";
+import { trainers } from "../trainers";
 import { hasAbilityText } from "../display";
 import { runColor, tokenizeAbilityText, type AbilityTextRun } from "../abilityHighlight";
 import { STAT_COLORS } from "../statColors";
-import { StatColorKey } from "../enums";
-import { Species } from "../ids";
+import { TYPE_COLORS } from "../typeColors";
+import { CreatureType, StatColorKey } from "../enums";
+import { Species, TrainerId } from "../ids";
 
 /**
  * Ability-text keyword highlighting (2026-10-07, round 7 WI-007 / FR-115).
@@ -72,6 +74,45 @@ describe("tokenizeAbilityText — the two rules that are easy to get wrong", () 
   });
 });
 
+/**
+ * The typing tier (2026-10-08).
+ *
+ * Added from a user screenshot of the in-game Chef card, which colours both occurrences of "Fire"
+ * as well as "+2 Burn" — our card had the Burn run and left the typings grey.
+ */
+describe("tokenizeAbilityText — typings", () => {
+  it("renders Chef's card as the game does: both typings AND the status", () => {
+    const chef = getTrainerById(TrainerId.Chef)!;
+    expect(render(chef.abilityText)).toBe(
+      "Your single-typed monsters gain [Fire|Fire] typing. Your [Fire|Fire] monsters have [+2 Burn|burn].",
+    );
+  });
+
+  it("does NOT swallow a number beside a typing, because it counts monsters", () => {
+    // The mirror of "applies 1 Shock", and the reason typings are matched without the quantity
+    // rule: here the 1 belongs to "monster", so colouring "1 Fighting" would read as an amount of
+    // Fighting granted.
+    const runs = coloured(
+      tokenizeAbilityText("if you have exactly 1 Fighting monster on your team, activate it."),
+    );
+    expect(runs.map((r) => r.text)).toEqual(["Fighting"]);
+  });
+
+  it("leaves the non-element type labels alone", () => {
+    // "All" and "NULL" are `CreatureType`s, but as prose they are ordinary words — this sentence is
+    // from the corpus, and its "all" is a quantifier.
+    expect(render("Disable abilities of all Ongoing monsters in this row.")).toBe(
+      "Disable abilities of all [Ongoing|mechanic] monsters in this row.",
+    );
+  });
+
+  it("colours a typing in creature text too, not just trainers", () => {
+    expect(render("Adjacent Water allies gain +25 Heal permanently.")).toBe(
+      "Adjacent [Water|Water] allies gain [+25 Heal|heal] permanently.",
+    );
+  });
+});
+
 describe("tokenizeAbilityText — it must not change the text", () => {
   it("round-trips EVERY record with ability text, exactly", () => {
     // The assertion that matters most: a highlighter that drops or duplicates a character is worse
@@ -80,6 +121,15 @@ describe("tokenizeAbilityText — it must not change the text", () => {
       (c) => tokenizeAbilityText(c.abilityText).map((r) => r.text).join("") !== c.abilityText,
     );
     expect(broken.map((c) => `${c.id} L${c.level}`)).toEqual([]);
+  });
+
+  it("round-trips every TRAINER's ability text too", () => {
+    // Trainers render through this since 2026-10-08, and their prose is a different shape from a
+    // creature's — "day/round", "$30", "1 rarity tier higher".
+    const broken = trainers.filter(
+      (t) => tokenizeAbilityText(t.abilityText).map((r) => r.text).join("") !== t.abilityText,
+    );
+    expect(broken.map((t) => t.id)).toEqual([]);
   });
 
   it("leaves a keywordless ability as a single plain run", () => {
@@ -132,6 +182,10 @@ describe("WI-007 coverage — stated, not implied", () => {
     for (const level of [1, 2, 3, 4] as const) {
       expect(getCreatureByIdAndLevel(Species.Venopuff, level)!.abilityText).toBe("");
     }
+  });
+
+  it("colours a typing from TYPE_COLORS, the same map the type chips use", () => {
+    expect(runColor({ text: "Fire", colorKey: CreatureType.Fire })).toBe(TYPE_COLORS.Fire);
   });
 
   it("uses the stat badges' own palette, so text and badges cannot drift", () => {

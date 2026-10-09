@@ -115,6 +115,18 @@ export const FILTERABLE_CREATURE_TYPES: CreatureType[] = CREATURE_TYPES_ASC.filt
   (t) => CREATURE_TYPE[t].kind !== TypeKind.Wildcard,
 );
 
+/**
+ * The actual elements: no wildcard, and no `Curio`/`NULL` placeholders.
+ *
+ * Narrower than `FILTERABLE_CREATURE_TYPES` because a filter may usefully offer "show me the NULL
+ * ones", while a prose matcher may not: "NULL" and "Curio" are this corpus's words for absent or
+ * unclassified data, and `Element` is the only `kind` whose label is a word the game writes into
+ * ability text meaning a type.
+ */
+export const ELEMENT_CREATURE_TYPES: CreatureType[] = CREATURE_TYPES_ASC.filter(
+  (t) => CREATURE_TYPE[t].kind === TypeKind.Element,
+);
+
 /** True when `type` matches every other type. One place, so no call site compares a literal. */
 export function isWildcardType(type: CreatureType): boolean {
   return CREATURE_TYPE[type].kind === TypeKind.Wildcard;
