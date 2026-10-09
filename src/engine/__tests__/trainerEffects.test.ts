@@ -64,4 +64,25 @@ describe("trainerModifiersFor — Chef", () => {
       burnOf(without, Species.Bumblebolt, BUMBLEBOLT_SLOT),
     );
   });
+
+  it("burns in the BATTLE, not only on the card, when the monster publishes no Burn of its own", () => {
+    // Pebbler applies Shield and nothing else, so Chef's +2 Burn is create-from-nothing. The test
+    // above passes on `perCreatureEffectiveStats`, which goes through `applyModifiers` and
+    // therefore always created it — the cast loop did not, so the Burn existed on the chip and the
+    // card and nowhere in the simulation.
+    expect(
+      (getCreatureByIdAndLevel(Species.Pebbler, 1)!.appliesStatus ?? []).map((s) => s.type),
+    ).not.toContain(StatusEffectType.Burn);
+
+    const without = simulate(team(null), corpus);
+    const withChef = simulate(team(TrainerId.Chef), corpus);
+
+    expect(without.perStatusPerSecond.Burn).toBe(0);
+    expect(withChef.perStatusPerSecond.Burn).toBeGreaterThan(0);
+    expect(withChef.perStatusAppliedPerSecond.Burn).toBeGreaterThan(0);
+    // And it is credited to Pebbler, which is the "— in the Facilitated DPS column" the user saw.
+    expect(
+      withChef.perCreatureFacilitatedDps[placementKey(Species.Pebbler, PEBBLER_SLOT)] ?? 0,
+    ).toBeGreaterThan(0);
+  });
 });

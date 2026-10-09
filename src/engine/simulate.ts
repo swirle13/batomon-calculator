@@ -1,5 +1,5 @@
 import type { PerCastOutput, Corpus, CreatureRecord, GridSlot, PlacementKey, StatModifier, StatusEffectInstance, TeamConfiguration, TimelineEvent } from "../data/types";
-import { applyModifiers } from "./modifiers";
+import { STATUS_TYPES, applyModifiers } from "./modifiers";
 import { applySelfScaling, selfScaledAmount } from "./selfScaling";
 import { effectiveCooldown } from "./cooldown";
 import { applyStatusTick, applyShockProc } from "./status";
@@ -812,8 +812,27 @@ export function simulate(
       // separate applications are separate decaying instances, whereas one doubled application is a
       // single instance that sheds the same 1 layer per tick.
       const ongoingReps = 1 + (effective?.extraOngoingApplications ?? 0);
+      const published = effective?.appliesStatus ?? creature.appliesStatus ?? [];
+      /*
+       * FR-078's "a modifier may CREATE an effect, not only scale one" (engine/modifiers.ts) --
+       * this loop was the last place that did not follow it. It walked the published list and
+       * added the modifier to each entry, so a Burn modifier on a creature applying no Burn had no
+       * entry to land on and vanished: Chef's "+2 Burn to your Fire monsters" reaching a
+       * Shield-only Runerock or a status-less Panbud (2026-10-08, user-reported). Because
+       * `perCreatureEffectiveStats` goes through `applyModifiers`, which does create it, the grid
+       * chip, the card and the "Effective this battle" band all showed a Burn the battle never
+       * applied -- so it was invisible in the DPS and status tables rather than obviously wrong.
+       *
+       * An On Cast `statusGrant` naming a status the creature does not publish was dropped the
+       * same way, which is why `accrued` is consulted here too.
+       */
+      const created = STATUS_TYPES.filter(
+        (type) =>
+          !published.some((s) => s.type === type) &&
+          (statusModifierAdd(modifiers, type) !== 0 || (accrued?.status.get(type) ?? 0) !== 0),
+      ).map((type) => ({ type, amount: 0 }));
       const appliedList = Array.from({ length: ongoingReps }, () =>
-        (effective?.appliesStatus ?? creature.appliesStatus ?? []).map((s) => ({
+        [...published, ...created].map((s) => ({
           ...s,
           // T224: accumulated status buffs, e.g. "+4 Burn permanently" on an On Cast trigger.
           amount: s.amount + (accrued?.status.get(s.type) ?? 0),
