@@ -1178,7 +1178,32 @@ export interface SimulationResult {
        * between two parallel shapes is what silently dropped healing.
        */
       output: PerCastOutput;
+      /**
+       * The cooldown the creature ENTERED the battle with, after modifiers, trinkets and ally
+       * auras. Resolved before the simulation runs, so it cannot see anything the battle did to
+       * the cast rate — see `effectiveCooldownSeconds`.
+       */
       cooldownSeconds: number | null;
+      /**
+       * How many times it cast over the window: scheduled casts and reactive ones, never multicast
+       * repetitions (2026-10-09, user-requested).
+       *
+       * Multicast is its own reported stat and a repetition is one cast landing more than once, so
+       * counting them here would report Multicast twice.
+       */
+      casts: number;
+      /**
+       * The mean gap between those casts — "effectively a 2.9s cooldown this battle".
+       *
+       * Puffloon is why this exists. It publishes a 10s cooldown, and beside a Toxic ally on a 4s
+       * one it casts roughly every 2.9s, because `TriggerOnAllyTrigger` fires it on that ally's
+       * cast without advancing its own schedule. `cooldownSeconds` above is right about what it
+       * started with and silent about what happened, and the card had no other figure to show.
+       *
+       * Equals `cooldownSeconds` exactly when nothing changed the rate, so a difference is always
+       * something the battle did. `null` below two casts, which establish no interval.
+       */
+      effectiveCooldownSeconds: number | null;
     }
   >;
   /**

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { corpus } from "../../data/corpus";
 import { simulate } from "../simulate";
 import { GridRow, TimelineEventKind } from "../../data/enums";
+import { placementKey } from "../grid";
 import { Species } from "../../data/ids";
 import type { CreatureLevel, GridCol, TeamConfiguration } from "../../data/types";
 
@@ -155,5 +156,103 @@ describe("On Cast: Trigger <target>", () => {
     // it has nothing above it and triggers nobody. Three scheduled casts plus three triggered.
     expect(castTimes(facing, GridRow.Bottom, 0)).toEqual([6, 12, 18]);
     expect(castTimes(facing, GridRow.Top, 0)).toEqual([6, 6.1, 12, 12.1, 18, 18.1]);
+  });
+});
+
+/**
+ * The rate a creature actually fought at (2026-10-09, user-requested: "we also need to have an
+ * 'effective this battle' for Puffloon… it might have to be an averaged out 'Ns casting speed'").
+ *
+ * Every figure on the detail card was resolved before Phase B ran, so none of them could express a
+ * reaction: Puffloon's published 10s cooldown is what it ENTERED the battle with and is correct,
+ * and beside a Toxic ally on a 4s cooldown it is also nothing like the rate it fired at. The "11
+ * casts in 20s" case is not an edge case for this species — it is how Puffloon is played.
+ */
+describe("effective cast rate", () => {
+  /** The stats record for the creature at `row`/`col`. */
+  const statsAt = (config: TeamConfiguration, row: GridRow, col: GridCol) =>
+    simulate(config, corpus).perCreatureEffectiveStats[
+      placementKey(config.placements.find((p) => p.slot.row === row && p.slot.col === col)!.creatureId, { row, col })
+    ]!;
+
+  it("reports the reactive rate, not the published cooldown", () => {
+    // Aristobat is Toxic on a 4s cooldown; Puffloon reacts to adjacent Toxic allies. Its own 10s
+    // cycle keeps running underneath, so the casts are its three plus Aristobat's five reactions.
+    const pairing = board([
+      [GridRow.Top, 0, Species.Aristobat],
+      [GridRow.Top, 1, Species.Puffloon],
+    ]);
+    const puffloon = statsAt(pairing, GridRow.Top, 1);
+
+    expect(puffloon.cooldownSeconds).toBe(10);
+    expect(puffloon.casts).toBe(castTimes(pairing, GridRow.Top, 1).length);
+    expect(puffloon.casts).toBeGreaterThan(3);
+    // The headline claim: it fought at well under half its published cooldown.
+    expect(puffloon.effectiveCooldownSeconds!).toBeLessThan(5);
+  });
+
+  it("scales with how many Toxic allies are feeding it", () => {
+    // "Puffloon absolutely will trigger many many times with other poison creatures in play" —
+    // every qualifying neighbour adds its own cast cycle to Puffloon's rate.
+    const one = board([
+      [GridRow.Top, 0, Species.Aristobat],
+      [GridRow.Top, 1, Species.Puffloon],
+    ]);
+    const three = board([
+      [GridRow.Top, 0, Species.Aristobat],
+      [GridRow.Top, 1, Species.Puffloon],
+      [GridRow.Top, 2, Species.Aristobat],
+      [GridRow.Bottom, 1, Species.Venopuff],
+    ]);
+
+    expect(statsAt(three, GridRow.Top, 1).casts).toBeGreaterThan(statsAt(one, GridRow.Top, 1).casts);
+    expect(statsAt(three, GridRow.Top, 1).effectiveCooldownSeconds!).toBeLessThan(
+      statsAt(one, GridRow.Top, 1).effectiveCooldownSeconds!,
+    );
+  });
+
+  it("equals the published cooldown exactly when nothing changed the rate", () => {
+    /*
+     * The property that makes a DIFFERENCE meaningful. The card only opens its "Effective this
+     * battle" band when a figure changed, so a measure that drifted off the published cooldown
+     * would open it on every creature in the corpus and report a discrepancy nobody caused.
+     *
+     * This is why the figure is the mean gap between casts rather than `window / casts`: Magmite's
+     * 4.5s cooldown fits four casts into a 20s window, which the latter would read as 5.0.
+     */
+    const plain = board([
+      [GridRow.Top, 0, Species.Magmite],
+      [GridRow.Top, 2, Species.Venopuff],
+    ]);
+    expect(statsAt(plain, GridRow.Top, 0).effectiveCooldownSeconds).toBeCloseTo(4.5, 6);
+    expect(statsAt(plain, GridRow.Top, 2).effectiveCooldownSeconds).toBeCloseTo(3.5, 6);
+  });
+
+  it("counts casts, not multicast repetitions", () => {
+    /*
+     * Aristobat has Multicast 2, so it produces two attack events per cast. Reporting four casts
+     * where there are two would halve its effective cooldown and double-count a stat the card
+     * already shows on its own line.
+     */
+    const solo = board([[GridRow.Top, 0, Species.Aristobat]]);
+    const aristobat = statsAt(solo, GridRow.Top, 0);
+
+    expect(aristobat.casts).toBe(5); // 4, 8, 12, 16, 20
+    // Nine attack events, not ten: the repetition of the cast at t=20 would land at 20.1, past the
+    // end of the window. Which is the second reason not to count reps — the tail of the window
+    // truncates them, so an interval derived from them would drift with the window length.
+    expect(castTimes(solo, GridRow.Top, 0)).toHaveLength(9);
+    expect(aristobat.effectiveCooldownSeconds).toBeCloseTo(4, 6);
+  });
+
+  it("reports no interval for a creature that cast at most once", () => {
+    // One cast establishes no interval. Dividing the window by it would invent one, reporting a
+    // 25s-cooldown monster in a 20s window as though it had a rate at all.
+    const slow = board([[GridRow.Top, 0, Species.Puffloon]]);
+    const single = { ...slow, simulationWindowSeconds: 10 };
+    const puffloon = statsAt(single, GridRow.Top, 0);
+
+    expect(puffloon.casts).toBe(1);
+    expect(puffloon.effectiveCooldownSeconds).toBeNull();
   });
 });

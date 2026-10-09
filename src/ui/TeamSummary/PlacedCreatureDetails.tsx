@@ -128,10 +128,33 @@ export function PlacedCreatureDetails({ result, highlighted }: PlacedCreatureDet
   // Tempo Charm press opened the band to report a 4% speed-up the user had banked themselves.
   const base = perCastOutputOf(creature, displayModifiers);
   const baseCooldown = cooldownWithModifiers(creature, displayModifiers);
+
+  /**
+   * The rate it actually fought at, when that is not the cooldown it started with (2026-10-09,
+   * user-requested).
+   *
+   * Puffloon publishes a 10s cooldown and casts every 2.9s beside a Toxic ally on a 4s one, because
+   * its trigger fires it on that ally's cast without advancing its own schedule. Every figure on
+   * this card was resolved before the battle began, so none of them could say so — the band stayed
+   * hidden, since nothing it compared had changed.
+   *
+   * Compared as FORMATTED values, so the condition is exactly "will these two read differently".
+   * `effectiveCooldownSeconds` equals the resolved cooldown whenever nothing changed the rate, but
+   * through floating-point division rather than exactly, and a band that opens to report 4.5
+   * against 4.5 is the noise this comparison exists to prevent.
+   */
+  const effectiveRate =
+    effective?.effectiveCooldownSeconds != null &&
+    formatCooldown(effective.effectiveCooldownSeconds) !==
+      formatCooldown(effective.cooldownSeconds ?? baseCooldown)
+      ? effective.effectiveCooldownSeconds
+      : null;
+
   const differs =
     effective !== undefined &&
     (JSON.stringify(effective.output) !== JSON.stringify(base) ||
-      (effective.cooldownSeconds !== null && effective.cooldownSeconds !== baseCooldown));
+      (effective.cooldownSeconds !== null && effective.cooldownSeconds !== baseCooldown) ||
+      effectiveRate !== null);
 
   return (
     <BatomonCard
@@ -161,7 +184,13 @@ export function PlacedCreatureDetails({ result, highlighted }: PlacedCreatureDet
       }
     >
       {effective && differs ? (
-        <div title="Reflects any active modifiers and selected Trinkets">
+        <div
+          title={
+            effectiveRate === null
+              ? "Reflects any active modifiers and selected Trinkets"
+              : `Cast ${effective.casts} times in ${result.windowSeconds}s — one every ${formatCooldown(effectiveRate)}s on average, against a ${formatCooldown(effective.cooldownSeconds)}s cooldown.`
+          }
+        >
           <div
             style={{
               fontSize: "0.7rem",
@@ -173,11 +202,30 @@ export function PlacedCreatureDetails({ result, highlighted }: PlacedCreatureDet
             }}
           >
             Effective this battle
+            {/*
+              The cast count, appended to the heading rather than given a line of its own.
+
+              `.card` is a fixed-height flex column whose bands compress silently rather than
+              overflowing (see `BatomonCard.module.css`), so a new row here would quietly steal
+              height from the ability text. This row already exists and has slack.
+
+              It is also what makes the seconds below legible: "2.9 sec" under a card publishing
+              10.0 reads as a contradiction until you know it got off ten casts to earn it.
+            */}
+            {effectiveRate !== null && (
+              <span style={{ fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>
+                {" "}
+                · {effective.casts} casts in {result.windowSeconds}s
+              </span>
+            )}
           </div>
           <div style={{ display: "flex", gap: "0.6rem" }}>
-            <CooldownBlock
-              seconds={formatCooldown(effective.cooldownSeconds)}
-            />
+            {/*
+              The rate it FOUGHT at when that differs, not the one it started with. A reactive
+              trigger, a mid-battle charge and a compounding ally grant are all invisible in the
+              resolved cooldown, and this band's whole claim is to report what the battle did.
+            */}
+            <CooldownBlock seconds={formatCooldown(effectiveRate ?? effective.cooldownSeconds)} />
             <StatLines
               // No mapping: the engine produces the same `PerCastOutput` the card renders from,
               // so there is no hand-written field list here to forget a stat in.

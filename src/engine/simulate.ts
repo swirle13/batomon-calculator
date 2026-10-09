@@ -358,6 +358,8 @@ export function simulate(
     {
       output: PerCastOutput;
       cooldownSeconds: number | null;
+      casts: number;
+      effectiveCooldownSeconds: number | null;
     }
   > = {};
 
@@ -431,7 +433,14 @@ export function simulate(
     // "Effective this battle" band correctly stays hidden for a creature whose only ability is
     // this one. See `engine/selfScaling.ts` for why it is not resolved in `resolveBoard`.
     const output = applySelfScaling(creature.abilityTags, modified);
-    perCreatureEffectiveStats[key] = { cooldownSeconds: cooldown, output };
+    // `casts` and `effectiveCooldownSeconds` are filled in after Phase B, which is the only place
+    // they can be known. Seeded here so every creature has an entry whether or not it ever casts.
+    perCreatureEffectiveStats[key] = {
+      cooldownSeconds: cooldown,
+      output,
+      casts: 0,
+      effectiveCooldownSeconds: null,
+    };
 
     // Modifiers are reported above whether or not this creature casts; only the SCHEDULE depends on
     // having a cooldown.
@@ -710,6 +719,29 @@ export function simulate(
    */
   const reactions: Cast[] = [];
 
+  /**
+   * When each creature actually CAST, which its cooldown does not tell you (2026-10-09, user-
+   * requested: "we also need an 'effective this battle' for Puffloon").
+   *
+   * Puffloon is the case this exists for. It publishes a 10s cooldown and, beside an Aristobat, it
+   * casts roughly every 2.9s — `TriggerOnAllyTrigger` fires it on an ally's cast WITHOUT advancing
+   * its own schedule (see FR-099 below), so no amount of inspecting its cooldown can reveal the
+   * rate it actually fought at. `cooldownSeconds` in `perCreatureEffectiveStats` is resolved before
+   * Phase B even starts, so by construction it cannot see a cast the battle produced. The same gap
+   * hid Cobrex's charges and Drumire's compounding ally-cast grant, which shorten a cooldown
+   * mid-battle rather than adding casts beside it.
+   *
+   * Scheduled casts and reactions, NEVER multicast repetitions. A repetition is one cast landing
+   * more than once, Multicast is already its own reported stat, and counting reps here would both
+   * report it twice and express it in a unit it does not belong in.
+   */
+  const castTimesByKey = new Map<string, number[]>();
+  function recordCast(key: string, t: number) {
+    const times = castTimesByKey.get(key);
+    if (times) times.push(t);
+    else castTimesByKey.set(key, [t]);
+  }
+
   const runtimeBuffs = new Map<string, { damage: number; multicast: number; status: Map<StatusEffectType, number> }>();
   const buffFor = (key: string) => {
     let b = runtimeBuffs.get(key);
@@ -757,9 +789,14 @@ export function simulate(
       })),
     ].sort((a, b) => stableSlotIndex(a.sourceSlot) - stableSlotIndex(b.sourceSlot));
 
+    // A reaction is a cast for the purpose of "how often did this actually fire" — that is the
+    // whole of what makes Puffloon's effective rate differ from its cooldown.
+    for (const r of dueReactions) recordCast(placementKey(r.creature.id, r.sourceSlot), tSeconds);
+
     // Queue each firing creature's remaining repetitions and its next cast before resolving, so a
     // charge landing in this instant adjusts a next-cast time that already exists.
     for (const entry of dueCasts) {
+      recordCast(entry.key, tSeconds);
       // Round 10 (T219): the RESOLVED multicast, so a multicast-granting ally actually produces
       // extra repetitions. This read `entry.creature.baseMulticast`, which meant every
       // multicast-grant ability resolved correctly in `effects.ts` and then changed nothing here.
@@ -1475,6 +1512,25 @@ export function simulate(
       dps: damage / BUCKET,
     })),
   ];
+
+  /*
+   * What each creature's cooldown effectively WAS this battle, from the casts it actually got off.
+   *
+   * The mean gap between consecutive casts, rather than `windowSeconds / casts`. Only the gap
+   * reduces exactly to the published cooldown when nothing modified it: a 4s cooldown fits seven
+   * casts into a 30s window, so `window / casts` reads 4.3 and would open the "Effective this
+   * battle" band on every creature whose cooldown happens not to divide the window — a difference
+   * the user did not cause and cannot act on. Between first and last cast it reads 4.0.
+   *
+   * `null` below two casts. One cast establishes no interval, and dividing the window by it would
+   * invent one — a 25s-cooldown monster in a 30s window would be reported as casting every 30s.
+   */
+  for (const [key, stats] of Object.entries(perCreatureEffectiveStats)) {
+    const times = castTimesByKey.get(key) ?? [];
+    stats.casts = times.length;
+    stats.effectiveCooldownSeconds =
+      times.length < 2 ? null : (times[times.length - 1]! - times[0]!) / (times.length - 1);
+  }
 
   return {
     timeline,
