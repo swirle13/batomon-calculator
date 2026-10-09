@@ -4062,26 +4062,30 @@ export const creatures: CreatureSpecies[] = [{
 	publishedCast: { damage: 100, channel: DamageChannel.Direct },
 	abilityText: "Give the Flying ally in front +1 Multicast permanently. (Zephyrex can't have Multicast)",
 	abilityTags: [
-	  { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.InFront }, effect: { statChange: { stat: StatChangeStat.Multicast, amount: 1 } } },
+	  { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.InFront, typeFilter: CreatureType.Flying }, effect: { statChange: { stat: StatChangeStat.Multicast, amount: 1 } } },
+	  { kind: AbilityTagKind.CannotGain, stat: StatChangeStat.Multicast },
 	],
 	levels: {
 		2: {
 			abilityText: "Give the Flying ally in front +2 Multicast permanently.\n(Zephyrex can't have Multicast)",
 			abilityTags: [
-			  { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.InFront }, effect: { statChange: { stat: StatChangeStat.Multicast, amount: 2 } } },
+			  { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.InFront, typeFilter: CreatureType.Flying }, effect: { statChange: { stat: StatChangeStat.Multicast, amount: 2 } } },
+			  { kind: AbilityTagKind.CannotGain, stat: StatChangeStat.Multicast },
 			],
 		},
 		3: {
 			abilityText: "Give the Flying ally in front +3 Multicast permanently.\n(Zephyrex can't have Multicast)",
 			abilityTags: [
-			  { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.InFront }, effect: { statChange: { stat: StatChangeStat.Multicast, amount: 3 } } },
+			  { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.InFront, typeFilter: CreatureType.Flying }, effect: { statChange: { stat: StatChangeStat.Multicast, amount: 3 } } },
+			  { kind: AbilityTagKind.CannotGain, stat: StatChangeStat.Multicast },
 			],
 		},
 		4: {
 			publishedCast: { damage: 800, channel: DamageChannel.Direct },
 			abilityText: "Give the Flying ally in front +12 Multicast permanently.\n(Zephyrex can't have Multicast)",
 			abilityTags: [
-			  { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.InFront }, effect: { statChange: { stat: StatChangeStat.Multicast, amount: 12 } } },
+			  { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.InFront, typeFilter: CreatureType.Flying }, effect: { statChange: { stat: StatChangeStat.Multicast, amount: 12 } } },
+			  { kind: AbilityTagKind.CannotGain, stat: StatChangeStat.Multicast },
 			],
 		},
 	},

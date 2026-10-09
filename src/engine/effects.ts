@@ -9,7 +9,7 @@ import type {
   TeamConfiguration,
 } from "../data/types";
 import { aboveSlot, behindSlot, isAdjacent, slotsEqual } from "./grid";
-import type { PlacementKey } from "../data/types";
+import type { AbilityTag, PlacementKey } from "../data/types";
 import { applyShinyOverlay, findCreature } from "../data/corpus";
 import { creatureHasType } from "../data/typing";
 import { isWildcardType } from "../data/vocabularies";
@@ -189,6 +189,23 @@ export function isResolvableTag(tag: { kind: string }): boolean {
 }
 
 /**
+ * Whether this monster REFUSES a grant of `stat` — "(Zephyrex can't have Multicast)".
+ *
+ * Shared by the two places a Multicast grant can land, `applyEffect` below and the `buffOnCast`
+ * accumulation in `simulate()`, because a restriction enforced in one of them is a restriction a
+ * board can route around. Zephyrex's own grant goes through `buffOnCast`, so checking only the
+ * static resolver would have let a pair of them stack exactly as if the clause did not exist.
+ */
+export function cannotGain(
+  creature: { abilityTags: AbilityTag[] } | undefined,
+  stat: StatChangeStat.Multicast,
+): boolean {
+  return (creature?.abilityTags ?? []).some(
+    (tag) => tag.kind === AbilityTagKind.CannotGain && tag.stat === stat,
+  );
+}
+
+/**
  * The creatures a `TargetSelector` picks out, relative to `source`.
  *
  * All six selectors in the vocabulary resolve here, which is what turns seven separate "mechanism
@@ -228,7 +245,9 @@ export function selectTargets<T extends { slot: GridSlot; key: string; creature:
     case "inFront": {
       // The mirror of `behind`: defined only from the back row, looking forward.
       if (source.slot.row !== GridRow.Back) return [];
-      return others.filter((m) => m.slot.row === GridRow.Front && m.slot.col === source.slot.col);
+      // `filtered` as of 2026-10-08 — see `TargetSelector`'s `inFront` member. Saberhorn's tag is
+      // unfiltered and unaffected; Zephyrex's "Flying ally in front" depends on it entirely.
+      return filtered(others.filter((m) => m.slot.row === GridRow.Front && m.slot.col === source.slot.col));
     }
     case "behind": {
       const slot = behindSlot(source.slot);
@@ -509,6 +528,9 @@ export function resolveBoard(config: TeamConfiguration, corpus: Corpus): Resolve
     ]),
   );
 
+  /** The resolved placement a delta belongs to, so a grant can ask about its RECIPIENT. */
+  const byKey = new Map(base.map((r) => [r.key, r]));
+
   const addStatus = (key: PlacementKey, type: StatusEffectType, amount: number) => {
     const d = deltas.get(key);
     if (!d || amount === 0) return;
@@ -522,7 +544,11 @@ export function resolveBoard(config: TeamConfiguration, corpus: Corpus): Resolve
       const amount = effect.statChange.amount * scale;
       // `CooldownSpeed` is intentionally absent — see the double-counting note above.
       if (effect.statChange.stat === StatChangeStat.Damage) d.damage += amount;
-      else if (effect.statChange.stat === StatChangeStat.Multicast) d.multicast += amount;
+      // "(Zephyrex can't have Multicast)" — a restriction on the RECIPIENT, so it is checked here
+      // where the grant lands rather than wherever it was emitted. See `AbilityTagKind.CannotGain`.
+      else if (effect.statChange.stat === StatChangeStat.Multicast) {
+        if (!cannotGain(byKey.get(targetKey)?.creature, StatChangeStat.Multicast)) d.multicast += amount;
+      }
       else if (effect.statChange.stat === StatChangeStat.Heal) d.heal += amount;
     }
     if (effect.statusGrant) {

@@ -124,8 +124,14 @@ export type TargetSelector =
    * The ally directly IN FRONT — the opposite direction to `behind`. Distinct because the board is
    * two rows and the relationship is not symmetric: Saberhorn's "give the ally in front +1
    * Multicast" reads from the back row forward, where `behind`/`above` read from the front row back.
+   *
+   * Carries `SelectorFilters` as of 2026-10-08, user-reported. Zephyrex reads "give the **Flying**
+   * ally in front +1 Multicast" and the selector had no way to say so, so the engine handed the
+   * Multicast to whoever was standing there — on the reporting user's own board that was a Toxic
+   * Venopuff, whose cast count it more than doubled. Saberhorn's is genuinely unfiltered and is
+   * unaffected.
    */
-  | { kind: TargetKind.InFront }
+  | ({ kind: TargetKind.InFront } & SelectorFilters)
   | ({ kind: TargetKind.AllAllies } & SelectorFilters);
 
 export interface EffectDescriptor {
@@ -400,7 +406,25 @@ export type AbilityTag =
    * `fraction` is a proportion (`0.2` for 20%), like every other fractional amount here.
    */
   | { kind: AbilityTagKind.CleanseDebuffs; stacks: number; fraction?: undefined }
-  | { kind: AbilityTagKind.CleanseDebuffs; fraction: number; stacks?: undefined };
+  | { kind: AbilityTagKind.CleanseDebuffs; fraction: number; stacks?: undefined }
+  /**
+   * "(Zephyrex can't have Multicast)" — a restriction on what this monster may RECEIVE, as opposed
+   * to anything it does (2026-10-08, user-reported).
+   *
+   * It is the first tag of its shape and it earns one. Zephyrex is itself Flying, so the most
+   * obvious board to build around it — a second Zephyrex in front of the first — is exactly the
+   * one the parenthetical forbids, and without this the engine would quietly reward stacking them.
+   * The clause is in the ability text precisely because a player would otherwise try it.
+   *
+   * Enforced at both places a Multicast grant can land: the static resolver in `effects.ts` and
+   * the per-cast `buffOnCast` accumulation in `simulate.ts`. A USER modifier still applies — that
+   * is the user asserting something about their own run, and the engine does not overrule it.
+   *
+   * Three further creatures carry the same shape for Charge (Dracana, Ironcore, Steamscuttle). They
+   * are deliberately NOT tagged: the granting half of their abilities is itself unmodelled, so a
+   * restriction on it would guard nothing and would claim coverage this engine does not have.
+   */
+  | { kind: AbilityTagKind.CannotGain; stat: StatChangeStat.Multicast };
 
 // ---------------------------------------------------------------------------
 // Corpus entities

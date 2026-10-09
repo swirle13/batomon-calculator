@@ -4,7 +4,7 @@ import { applySelfScaling, selfScaledAmount } from "./selfScaling";
 import { effectiveCooldown } from "./cooldown";
 import { applyStatusTick, applyShockProc } from "./status";
 import { STABLE_SLOT_ORDER, isAdjacent, slotKey, slotsEqual, stableSlotIndex } from "./grid";
-import { resolveBoard, selectTargets } from "./effects";
+import { cannotGain, resolveBoard, selectTargets } from "./effects";
 import { trainerModifiersFor } from "./trainerEffects";
 import { creatureHasType } from "../data/typing";
 import { applyShinyOverlay, findCreature, hasCreatureRecord } from "../data/corpus";
@@ -984,7 +984,15 @@ export function simulate(
         for (const target of selectTargets(tag.target, sourceResolved, resolved)) {
           const b = buffFor(target.key);
           if (tag.effect.statChange?.stat === "damage") b.damage += tag.effect.statChange.amount;
-          if (tag.effect.statChange?.stat === "multicast") b.multicast += tag.effect.statChange.amount;
+          // "(Zephyrex can't have Multicast)", checked on the RECIPIENT. This is the path Zephyrex's
+          // own grant takes, so it is the one that matters: two Zephyrex stacked is the natural
+          // board to try, and both of them are Flying.
+          if (
+            tag.effect.statChange?.stat === "multicast" &&
+            !cannotGain(target.creature, StatChangeStat.Multicast)
+          ) {
+            b.multicast += tag.effect.statChange.amount;
+          }
           if (tag.effect.statChange?.stat === StatChangeStat.CooldownFlatSeconds) {
             // T227a: Saberhorn's "+8 seconds to this monster's Cooldown" — a COST, pushing its own
             // next cast later. Applied to the schedule directly, since cooldown is a property of

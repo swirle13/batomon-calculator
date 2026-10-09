@@ -192,6 +192,16 @@ export function analyzePositionalCoverage(config: TeamConfiguration, corpus: Cor
         target?.kind === TargetKind.Adjacent ||
         target?.kind === TargetKind.Behind ||
         target?.kind === TargetKind.Above ||
+        /*
+         * `InFront` and `Row` added 2026-10-08. Both are plainly positional — Zephyrex's "the
+         * Flying ally IN FRONT", Saberhorn's "the ally in front", NULL-FF's "allies in this ROW" —
+         * and both were missing, so the advisor's "N of M placed Batomon have a positional ability
+         * the engine acts on" was UNDERSTATING itself on exactly the boards where placement
+         * matters most. An honesty mechanism that under-reports is still a wrong number; the
+         * direction it errs in does not make it right.
+         */
+        target?.kind === TargetKind.InFront ||
+        target?.kind === TargetKind.Row ||
         tag.kind === AbilityTagKind.BattleStartStatusFromAllies ||
         tag.kind === AbilityTagKind.ChargeOnAllyStatus ||
         tag.kind === AbilityTagKind.CooldownSpeedOnAllyCast

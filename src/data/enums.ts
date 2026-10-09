@@ -409,4 +409,5 @@ export enum AbilityTagKind {
   StatFromStat = "statFromStat",
   StatFromOwnStat = "statFromOwnStat",
   CleanseDebuffs = "cleanseDebuffs",
+  CannotGain = "cannotGain",
 }
