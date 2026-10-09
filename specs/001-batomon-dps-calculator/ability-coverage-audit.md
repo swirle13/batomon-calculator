@@ -171,17 +171,18 @@ reachable through the existing manual-trigger button rather than the simulation:
 - The rest (eggs, Rigalord's devour-and-spawn, MissingN.'s rarity transform, trinket grants) change
   the board's composition and are out of scope for a within-battle calculator.
 
-## G. Evolution and run progress — 7
+## G. Evolution and run progress — 7 — **FIXED 2026-10-08**
 
 Beetdown, Emberpaw, Fernfowl, Flarilisk, Ignit, Pipskull, Sproutquill
 
-Not battle effects (research.md B6). `abilityNeedsModelling` already excludes the plain
+Not battle effects (research.md B6). `abilityNeedsModelling` excluded the plain
 `"Evolves at level N."` phrasing but not these variants — "Evolve after your team deals 15000
 non-status Damage", "Evolve when your team inflicts Burn 25 times", "Evolve." on On Victory.
 
-**These are denominator defects, not gaps.** Widening the exclusion regex removes 7 false entries
-from the figure shown beside the user's DPS. Beetdown is the clearest case: its text is
-`"Evolution result of Beetbud at level 3"`, which is a provenance note, not an ability.
+**These were denominator defects, not gaps.** All 7 are now excluded: the function judges sentence
+by sentence and treats any sentence opening with `evolve`/`evolution result of` as progression.
+Anchored at the sentence start, so Rigalord's "devour the ally in front and evolve into Rigalord"
+stays counted — that one is a real gap.
 
 ## H. A mechanic the engine has no concept of — 10
 
@@ -205,7 +206,7 @@ property:
   level-3 record partway through.
 - **Transformation**: Aerophim. Out of scope, same as MissingN.
 
-## I. Not an ability at all — 2
+## I. Not an ability at all — 2 — **FIXED 2026-10-08**
 
 Bumblebolt, Scorchimp
 
@@ -213,14 +214,18 @@ Bumblebolt, Scorchimp
 `baseCooldownSeconds` and `appliesStatus` — the engine already computes every word of it. The same
 goes for Scorchimp.
 
-`abilityNeedsModelling` catches the `"Applies N <Status> per cast"` phrasing and misses this one,
-so both creatures are reported to the user as unmodelled next to a DPS figure that is entirely
+`abilityNeedsModelling` caught the `"Applies N <Status> per cast"` phrasing and missed this one,
+so both creatures were reported to the user as unmodelled next to a DPS figure that is entirely
 correct for them. That is precisely the failure mode the function was written to prevent, and
 Bumblebolt is a starter Common, so it shows up on a lot of boards.
 
-Bumblebolt's text also carries a trailing editorial aside —
-`'"The poster Common: 2.5s, Shock, cheap."'` — which does not belong in a published ability field
-at all.
+Now handled by stripping each claim the sentence makes — "deals N damage", "applies N `<Status>`",
+"every N seconds" — but only where it MATCHES the record, and asking whether anything but joining
+words is left. Claim-by-claim rather than per-phrasing, because the two records above state the
+same three facts in different orders.
+
+Bumblebolt's trailing editorial aside — `'"The poster Common: 2.5s, Shock, cheap."'` — is excluded
+as a fully-quoted sentence. The corpus text is left faithful to the game rather than edited.
 
 ---
 

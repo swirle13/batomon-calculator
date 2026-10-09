@@ -172,11 +172,12 @@ export const TeamSummary = memo(function TeamSummary({ config, result }: TeamSum
       <p className={styles.note}>
         Status damage climbs as a fight goes on, so <strong>Dmg/s (avg)</strong> understates a long
         battle — compare it with <strong>Dmg/s (end)</strong>. Poison never stops growing: its
-        stacks don&rsquo;t decay at all. Burn grows too, for most of a realistic fight — each burn
-        instance sheds 1 stack per tick no matter how big it was, so a large application takes a
-        long time to burn out (a 170-stack burn lasts ~85s) and new ones pile up faster than old
-        ones drain. Only small burn stacks settle quickly.{" "}
-        <strong>Applied/s</strong> is the stack <em>input</em> rate, not damage.
+        stacks don&rsquo;t decay at all. Burn grows too, whenever your team applies it faster than
+        it drains — the enemy carries a single Burn stack that sheds 1 layer per 0.5s tick however
+        many of your monsters are feeding it, so the drain is a flat 2 layers/second and everything
+        above that piles up for the rest of the fight.{" "}
+        <strong>Applied/s</strong> is the stack <em>input</em> rate, not damage — compare it with 2
+        to see which side of that line a Burn team is on.
       </p>
     </section>
   );

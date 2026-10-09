@@ -807,10 +807,13 @@ export function simulate(
       // RESOLVED status amounts, not the creature's base ones — this is what makes the simulation
       // actually use the resolution layer rather than merely report it (T202).
       // Round 10 (T219): "applies its Ongoing abilities N additional time(s)" repeats the whole
-      // status application, so a grant of 1 doubles this creature's status output per cast. Applied
-      // by repeating the list rather than multiplying amounts, because the two differ for Burn:
-      // separate applications are separate decaying instances, whereas one doubled application is a
-      // single instance that sheds the same 1 layer per tick.
+      // status application, so a grant of 1 doubles this creature's status output per cast.
+      //
+      // Written as a repeated list rather than a multiplied amount on the grounds that separate
+      // applications decay separately. They do not — every application joins the one pool on the
+      // target, which sheds 1 layer per tick however many applications fed it (research.md's Burn
+      // mechanism note) — so the two spellings are now numerically identical. Kept as a repetition
+      // because it is what the ability text says, not because the arithmetic needs it.
       const ongoingReps = 1 + (effective?.extraOngoingApplications ?? 0);
       const published = effective?.appliesStatus ?? creature.appliesStatus ?? [];
       /*

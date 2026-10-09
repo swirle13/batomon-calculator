@@ -1246,25 +1246,34 @@ follow-up guess ("this is how much poison is applied per second") is **not** it.
   W=120s: avg 1463.2/s  end 2190/s  growth 18.25/s^2   curve 0 -> 966 -> 1735 -> 2026 -> 1898
   ```
 
-  **Mechanism**: each Burn *instance* sheds exactly 1 layer per 0.5 s tick **regardless of its
-  size**, so an N-layer instance lives `N/2` seconds. Basilord's 170-stack lives **85 s**. With a
-  fresh application every 8 s, instances accumulate far faster than any one drains. A steady state
-  does exist — aggregate decay scales with the number of live instances — but the *time to reach
-  it* is on the order of the largest stack's lifetime, which exceeds a real battle. The curve above
-  only begins to flatten at a 120 s window.
+  **Mechanism** (corrected 2026-10-08 by the user, who plays the game; the paragraph this replaces
+  claimed per-*instance* decay and is wrong): there is **one Burn stack on the target**, not one per
+  application. Every monster's Burn is added to that single stack, which ticks every 0.5 s for its
+  current value and then sheds **exactly 1 layer** — once for the target, not once per contributor.
+
+  So aggregate decay is a **flat 2 layers per second** no matter how many monsters are feeding the
+  stack, while application scales with the team. Any board applying more than 2 Burn layers per
+  second therefore grows without bound, exactly as Poison does; below 2/s it drains to zero between
+  casts. That threshold is the whole mechanic, and it is why the Brimtoad fixture (Burn 1 every 6 s
+  = 0.17 layers/s) looked flat while the fire build above does not.
+
+  `simulate()`'s `StatusPool` implements this correctly for both statuses. Do not "fix" it toward
+  per-instance decay: the per-instance reading would have cut the fire board above to roughly a
+  fifth of its Burn damage.
 
 - **The corrected Poison-vs-Burn distinction** is therefore quantitative, not binary:
   - **Poison** grows **without bound, forever** — its stacks never decay, so there is no steady
     state at any window length.
-  - **Burn** grows **throughout any realistic fight** and plateaus only in principle. Only a small
-    burn stack settles quickly.
+  - **Burn** grows without bound too, but only above the 2-layers-per-second drain rate. Below it,
+    Burn settles; above it, the surplus accumulates for the whole fight.
 
   Both warrant the growth column. The original framing ("Poison grows, Burn doesn't") would have
   told fire-build users their scaling was flat when it is not.
 - **Why Poison in particular**: `applyStatusTick` decrements layers for **Burn** but explicitly
   **not** for Poison (research.md B2) — "Poison: layers do NOT decrease from the act of ticking".
   So every Poison application permanently adds its full amount to a per-tick damage floor, and the
-  rate grows without bound. Burn self-limits (a stack of N deals N+(N−1)+…+1 and expires). Shock
+  rate grows without bound. Burn drains, but at a fixed 2 layers/second for the whole target (see
+  the mechanism note above), so it self-limits only below that application rate. Shock
   layers also never decay, so Shock grows too, but only on direct hits.
   **This difference is the whole reason a second-order metric is needed, and it is a property of
   the modelled mechanics, not a reporting preference.**
