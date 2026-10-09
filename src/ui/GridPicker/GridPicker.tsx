@@ -477,9 +477,6 @@ export const GridPicker = memo(function GridPicker({ onHighlightSlot }: GridPick
         <section className={styles.bench} aria-label="Bench">
           <p className={styles.benchHeading}>
             Bench
-            <span className={styles.benchHint}>
-              not in the fight — drag onto the board to try one
-            </span>
           </p>
           <div className={styles.benchRow}>
             {BENCH_INDEXES.map((index) => {
@@ -502,7 +499,7 @@ export const GridPicker = memo(function GridPicker({ onHighlightSlot }: GridPick
                          * hover that swapped the panel to a card whose "Effective this battle"
                          * band could never appear would read as the panel breaking.
                          */
-                        onHighlight={() => {}}
+                        onHighlight={() => { }}
                         onOpenSearch={() => setSearchTarget(ref)}
                         onClear={() => setBenchCreature(index, null)}
                       />

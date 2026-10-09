@@ -322,18 +322,11 @@
 }
 
 /*
- * "not in the fight" earns its place on screen: a row of monster cards directly beneath the board
- * looks like more board, and a user who read it that way would see their DPS not move and
- * conclude the tool was broken. Lower-case and un-tracked so it reads as a sentence beside the
- * heading rather than as a second heading.
+ * `.benchHint` is gone (2026-10-08, user's own edit). It carried "not in the fight — drag onto
+ * the board to try one" beside the heading. The BENCH label and the rule above it do the same
+ * job without a sentence under the board, and the row's panes are visibly smaller than the
+ * board's, which was always the stronger signal.
  */
-.benchHint {
-  font-size: var(--font-2xs);
-  font-weight: 400;
-  text-transform: none;
-  letter-spacing: 0;
-  color: var(--text-muted);
-}
 
 /*
  * FOUR columns in the width the board uses for three, so a bench pane is visibly smaller.
