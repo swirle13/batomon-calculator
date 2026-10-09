@@ -747,11 +747,17 @@ export type BenchIndex = (typeof BENCH_INDEXES)[number];
  *
  * ## The bench is inert, and that is its whole specification
  *
- * Nothing in `engine/` reads `TeamConfiguration.bench`. `simulate()`, `resolveEffects()`,
- * `trainerModifiersFor()` and every item and trinket target all iterate `placements`, so a benched
- * monster deals no damage, grants no aura, counts for no `statFromCount`, and is not adjacent to
- * anybody. Adding a field they do not read is what makes that true by construction rather than by
- * six separate exclusions that could each be forgotten.
+ * Nothing in `engine/` reads `TeamConfiguration.bench`. `simulate()`, `resolveEffects()` and
+ * every item and trinket target all iterate `placements`, so a benched monster deals no damage,
+ * grants no aura, counts for no `statFromCount`, and is not adjacent to anybody. Adding a field
+ * they do not read is what makes that true by construction rather than by six separate exclusions
+ * that could each be forgotten.
+ *
+ * "Inert" is about the BATTLE, not about the monster's stat line. A trainer's per-monster grant
+ * does reach the bench — Chef's +2 Burn shows on a benched card, because the game shows it on the
+ * bench and in the shop (2026-10-08, from a screenshot: Coalem reads 22 Burn against a published
+ * 20). That is the card reporting what the monster IS, and it changes no figure the engine
+ * produces, because the engine is still only looking at `placements`.
  *
  * ## Why it exists
  *

@@ -349,18 +349,26 @@ export const GridPicker = memo(function GridPicker({ onHighlightSlot }: GridPick
      * modifier does — see `PlacedCreatureDetails` for why the chips are the third place it has to
      * show up rather than living only in the simulation.
      *
-     * BENCHED monsters are excluded from it, and that is the chips telling the truth rather than
-     * an omission: the trainer buffs your team, a benched monster is not on your team, and the
-     * engine does not apply it to them either. A bench chip showing Chef's +2 Burn would be
-     * promising a stat that disappears the moment you look at the simulation.
+     * ## It reaches the BENCH too, and that is the game's behaviour, not a convenience
+     *
+     * The bench was briefly excluded on the reasoning that a trainer buffs your team and a benched
+     * monster is not on your team. A screenshot of the game settles it the other way: with Chef
+     * active, every monster in the bench AND in the shop row carries the Fire treatment and the
+     * +2 Burn — Coalem reads 22 against a published 20, and four monsters with no published Burn
+     * at all read 2. So the grant is a property of the run, which is also the argument
+     * `perCastOutput.ts` already makes for manual modifiers.
+     *
+     * Nothing about the SIMULATION changes, and nothing here is claiming otherwise: a benched
+     * monster still deals no damage and grants nothing, because `simulate()` reads `placements`.
+     * This is the card reporting what the monster's stat line is, which is the only thing a bench
+     * chip was ever reporting.
      */
-    const onGrid = ref.zone === RosterZone.Grid;
     return {
       creature,
       level: member.level,
-      modifiers: [...(member.modifiers ?? []), ...(onGrid ? trainerModifiersFor(creature, config) : [])],
+      modifiers: [...(member.modifiers ?? []), ...trainerModifiersFor(creature, config)],
       painted: creature.types.some(isWildcardType) || isPainted(creature.id, config),
-      chefFire: onGrid && hasChefFireTyping(creature, config),
+      chefFire: hasChefFireTyping(creature, config),
     };
   }
 

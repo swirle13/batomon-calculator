@@ -47,10 +47,13 @@ describe("the bench", () => {
     expect(screen.getAllByRole("button", { name: /^empty slot/i })).toHaveLength(6);
   });
 
-  it("says on screen that its monsters are not in the fight", () => {
-    // A row of monster cards under the board looks like more board. Someone who read it that way
-    // would watch their DPS not move and conclude the tool was broken.
-    expect(renderBoard().container.textContent).toMatch(/not in the fight/i);
+  it("is labelled, so it does not read as six more board slots", () => {
+    // A row of monster cards under the board looks like more board — more so now that Chef's
+    // grant shows on them — and someone who read it that way would watch their DPS not move and
+    // conclude the tool was broken. Asserted as the region's accessible NAME rather than as
+    // on-screen prose, so wording stays an editorial choice rather than a test to update.
+    expect(renderBoard().container.textContent).toMatch(/bench/i);
+    expect(bench()).toBeTruthy();
   });
 
   it("renders a benched monster as a card you can clear", () => {
@@ -76,14 +79,17 @@ describe("the bench", () => {
     expect(within(bench()).getByRole("button", { name: /^Bumblebolt, level 3/ })).toBeTruthy();
   });
 
-  it("withholds the trainer's per-monster bonus from a benched card", () => {
+  it("applies the trainer's per-monster bonus to a benched card, as the game does", () => {
     /*
-     * Chef gives "your Fire monsters +2 Burn", and `trainerModifiersFor` is applied to placements
-     * only — a benched monster is not on your team. The chip has to agree: advertising the +2
-     * here would promise a stat that disappears the moment the monster is actually fielded, or
-     * the moment the user reads the simulation.
+     * 2026-10-08, from a screenshot of the game: with Chef active, the bench and the shop row
+     * both show the buffed figure — Coalem reads 22 Burn against a published 20, and monsters
+     * with no published Burn at all read 2. So Chef's grant is a property of the run rather than
+     * of the six monsters currently fighting.
      *
-     * Scorchimp publishes Burn 5 at level 1, so the two cards are legible as 7 and 5.
+     * This was briefly the other way round, on the reasoning that a benched monster is not on
+     * your team. The game disagrees, and the game is the specification.
+     *
+     * Scorchimp publishes Burn 5 at level 1, so a buffed card is legible as 7.
      */
     renderBoard({
       trainerId: TrainerId.Chef,
@@ -91,10 +97,28 @@ describe("the bench", () => {
       bench: [{ index: 0, creatureId: Species.Scorchimp, level: 1 }],
     });
 
+    expect(within(bench()).getByTitle("Burn: 7")).toBeTruthy();
+    expect(within(bench()).queryByTitle("Burn: 5")).toBeNull();
+    // Both cards agree, which is the point — the same monster should not read differently on
+    // either side of the line.
+    expect(screen.getAllByTitle("Burn: 7")).toHaveLength(2);
+  });
+
+  it("grants the Fire treatment to a benched single-typed monster", () => {
+    // The visual half of the same rule: the screenshot shows every bench and shop monster carrying
+    // the fire wash. Cobrex is single-typed (Toxic) and not Fire, so Chef's first clause — "your
+    // singled-typed monsters gain Fire typing" — reaches it. Bumblebolt would not do here: it is
+    // Bug/Electric, and a dual-typed monster is granted nothing.
+    renderBoard({
+      trainerId: TrainerId.Chef,
+      bench: [{ index: 0, creatureId: Species.Cobrex, level: 1 }],
+    });
+    expect(bench().querySelector("[class*='chefFire']")).not.toBeNull();
+  });
+
+  it("leaves a benched monster alone when no trainer grants anything", () => {
+    renderBoard({ trainerId: null, bench: [{ index: 0, creatureId: Species.Scorchimp, level: 1 }] });
     expect(within(bench()).getByTitle("Burn: 5")).toBeTruthy();
-    expect(within(bench()).queryByTitle("Burn: 7")).toBeNull();
-    // The placed one does get it, so this is the bench being excluded rather than the bonus
-    // being broken everywhere.
-    expect(screen.getByTitle("Burn: 7")).toBeTruthy();
+    expect(bench().querySelector("[class*='chefFire']")).toBeNull();
   });
 });
