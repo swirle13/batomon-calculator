@@ -1,5 +1,6 @@
 import type { Corpus, GridSlot, SimulationResult, TeamConfiguration, TeamPlacement } from "../data/types";
-import { simulate } from "./simulate";
+import { simulate, windowAverageDps } from "./simulate";
+import { estimateSurvivability, type SurvivabilityEstimate } from "./survivability";
 import { STABLE_SLOT_ORDER, slotKey } from "./grid";
 import { isResolvableTag } from "./effects";
 import { manualTriggersFor } from "../data/triggers";
@@ -41,7 +42,17 @@ import { AbilityTagKind, TargetKind } from "../data/enums";
  * which of the two it means.
  */
 
-/** Damage this many seconds in is worth half as much as damage at t=0. */
+/**
+ * Damage this many seconds in is worth half as much as damage at t=0, on a team with no defence
+ * of any kind.
+ *
+ * 2026-10-08: "with no defence of any kind" is new, and it is the whole of what changed. This
+ * constant was always a survivability assumption wearing a discount's clothes — damage later is
+ * discounted because you may be dead by then — but it was a FIXED one, so a board's shielding,
+ * healing and cleansing moved it not at all. `engine/survivability.ts` makes it the baseline that
+ * mitigation stretches; read that module for why this is the right place to spend a Runerock
+ * rather than adding a defence term alongside the damage.
+ */
 export const TIME_WEIGHT_HALF_LIFE_SECONDS = 10;
 
 export interface PlacementSuggestion {
@@ -112,17 +123,43 @@ const POSITIONAL_TRINKET_PATTERN = /column|leftmost|rightmost|adjacent|slot|behi
  * DPS of the same board pays for one `simulate()` instead of two. The bench advisor reports both
  * figures for every candidate it ranks, which doubled its cost for no reason.
  */
-export function timeWeightedScore(result: SimulationResult): number {
+export function timeWeightedScore(
+  result: SimulationResult,
+  survivability: SurvivabilityEstimate,
+): number {
+  const halfLife = TIME_WEIGHT_HALF_LIFE_SECONDS * survivability.factor;
   let score = 0;
   for (const event of result.timeline) {
     if (event.damage === undefined) continue;
-    score += event.damage * Math.pow(0.5, event.tSeconds / TIME_WEIGHT_HALF_LIFE_SECONDS);
+    score += event.damage * Math.pow(0.5, event.tSeconds / halfLife);
   }
   return score;
 }
 
+/**
+ * One board, one `simulate()`, every figure the advisor ranks or quotes.
+ *
+ * `survivability` is a REQUIRED argument to `timeWeightedScore` above rather than an optional one,
+ * and this exists so that being required costs nobody anything. An optional parameter would have
+ * meant two scoring scales in circulation — one that prices a Runerock and one that does not — and
+ * the only thing deciding which a board got would be whether its caller remembered.
+ */
+export function scoreBoard(
+  config: TeamConfiguration,
+  corpus: Corpus,
+): { result: SimulationResult; survivability: SurvivabilityEstimate; score: number; dps: number } {
+  const result = simulate(config, corpus);
+  const survivability = estimateSurvivability(config, corpus, result);
+  return {
+    result,
+    survivability,
+    score: timeWeightedScore(result, survivability),
+    dps: windowAverageDps(result),
+  };
+}
+
 export function scoreConfiguration(config: TeamConfiguration, corpus: Corpus): number {
-  return timeWeightedScore(simulate(config, corpus));
+  return scoreBoard(config, corpus).score;
 }
 
 /**

@@ -287,10 +287,17 @@ describe("WI-002 coverage — reported, not implied", () => {
      * 2026-10-08: 15 -> 19, all four of them Lignite, the only species in the corpus whose ability
      * scales off its own stat. A one-species family is still worth a rule row rather than a
      * hand-written tag, because the rule is what keeps the four LEVELS from being four edits.
+     *
+     * 2026-10-08, later: 414 -> 406. Runerock ("remove 15 stacks of every debuff") and Sirenade
+     * ("remove 20% of debuffs") were hand-tagged `cleanseDebuffs` for the survivability model, 4
+     * levels each. HAND-tagged rather than derived deliberately: they are the only two cleansers in
+     * the corpus, and a rule table row matching two wordings that appear nowhere else would be a
+     * generalisation with nothing to generalise over. `newlyDerived` is unmoved, which is the
+     * check that matters — the rule table did not change.
      */
-    expect(untagged.length).toBe(414);
+    expect(untagged.length).toBe(406);
     expect(newlyDerived.length).toBe(19);
-    expect(untagged.length - newlyDerived.length).toBe(395);
+    expect(untagged.length - newlyDerived.length).toBe(387);
 
     expect(Object.fromEntries([...byFamily].sort())).toEqual({
       // Engine-resolved: the counter rises by these, correctly (see the FR-114 test above).

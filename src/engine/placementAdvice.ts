@@ -1,11 +1,13 @@
 import type { Corpus, TeamConfiguration, TeamPlacement } from "../data/types";
 import {
   analyzePositionalCoverage,
+  scoreBoard,
   suggestPlacement,
   type PlacementSuggestion,
   type PositionalCoverage,
 } from "./optimize";
 import { simulate, windowAverageDps } from "./simulate";
+import type { SurvivabilityEstimate } from "./survivability";
 import { computeBenchAdvice, type BenchAdvice } from "./rosterAdvice";
 import { slotKey } from "./grid";
 
@@ -21,6 +23,15 @@ export interface PlacementAdvice {
   coverage: PositionalCoverage;
   /** Window-average DPS of the board as it stands. */
   currentDps: number;
+  /**
+   * What the current board's shielding, healing and cleansing bought it (2026-10-08).
+   *
+   * Carried so the UI can state the assumptions the ranking rests on. The survivability model
+   * prices a cleanse against an ASSUMED opponent, which is a far bigger leap than anything else
+   * the advisor does, and a search that silently moves a Runerock up the order on the strength of
+   * a guess about the enemy would be exactly the black box FR-069 exists to prevent.
+   */
+  survivability: SurvivabilityEstimate;
   /** Window-average DPS of the suggested board, or `null` when there is no suggestion. */
   suggestedDps: number | null;
   /** Only the placements that actually change slot. */
@@ -58,11 +69,12 @@ export function computePlacementAdvice(config: TeamConfiguration, corpus: Corpus
   // six-line list of which two lines were instructions, and the user read the no-op lines as the
   // advisor contradicting itself.
   const currentBySlot = new Map(config.placements.map((p) => [slotKey(p.slot), p.creatureId]));
-  const currentDps = windowAverageDps(simulate(config, corpus));
+  const { dps: currentDps, survivability } = scoreBoard(config, corpus);
   return {
     suggestion,
     coverage: analyzePositionalCoverage(config, corpus),
     currentDps,
+    survivability,
     suggestedDps: suggestion.placements
       ? windowAverageDps(simulate({ ...config, placements: suggestion.placements }, corpus))
       : null,

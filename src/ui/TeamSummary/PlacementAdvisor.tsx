@@ -133,10 +133,66 @@ function bestOutcomeHint(advice: PlacementAdvice): string {
   const to = formatRate(best);
   if (to !== from) return `(${from} → ${to} DPS average)`;
 
+  /*
+   * 2026-10-08: a suggestion that wins on SURVIVABILITY rather than on damage.
+   *
+   * Since the objective started pricing shielding, healing and cleansing, "the panel has an answer"
+   * and "the panel has a bigger DPS number" came apart — a lineup can trade damage for survival and
+   * be right to. Measuring the header in DPS alone would then write "(none)" above a body holding
+   * an Apply button, which is precisely the defect this function was extracted to fix, arriving by
+   * a new route.
+   */
+  const trade = bench?.lineup ?? advice.suggestion.placements;
+  if (trade) return `(same damage, more survivable)`;
+
   // Nothing on offer. FR-069's honesty requirement: silence here would read as "your placement is
   // optimal" when the usual reason is that the engine cannot see positional effects at all.
   const seen = coverage.actionable.length;
   return seen === 0 ? "(none)" : `(none — ${seen}/${placementCount} positional abilities modelled)`;
+}
+
+/**
+ * What the board's defence bought it, and the assumptions that figure rests on (2026-10-08).
+ *
+ * Mandatory for the same reason the blind-spot paragraph below is (FR-069), and more so. The
+ * survivability term moves the ranking on the strength of two guesses about an OPPONENT the engine
+ * does not simulate: that the enemy deals what you deal, and that it applies debuffs at the rate
+ * you apply them. Those are the least arbitrary assumptions available (see
+ * `engine/survivability.ts`) and they are still assumptions — a Runerock that just climbed into
+ * the recommended lineup on the back of them has to say so.
+ *
+ * Renders nothing when the board has no defence at all, because then the model did nothing: the
+ * factor is exactly 1 and every figure matches what the advisor produced before this existed.
+ */
+function renderSurvivability(s: PlacementAdvice["survivability"]) {
+  if (s.mitigationPerSecond <= 0) return null;
+
+  const parts = [
+    s.shieldPerSecond > 0 ? `${formatRate(s.shieldPerSecond)} shield` : null,
+    s.healPerSecond > 0 ? `${formatRate(s.healPerSecond)} healing` : null,
+    s.cleansePerSecond > 0 ? `${formatRate(s.cleansePerSecond)} from cleansing` : null,
+  ].filter((p): p is string => p !== null);
+
+  return (
+    <div className={styles.coverage}>
+      <p className={styles.coverageHeading}>Survivability counted in this ranking</p>
+      <p className={styles.coverageLine}>
+        {parts.join(", ")} — <strong>{formatRate(s.mitigationPerSecond)}</strong> effective HP per
+        second. Against an enemy assumed to deal what you deal ({formatRate(s.assumedIncomingDps)}{" "}
+        DPS) that is {s.factor.toFixed(2)}× the survival time, so damage{" "}
+        {(TIME_WEIGHT_HALF_LIFE_SECONDS * s.factor).toFixed(0)}s in now counts half as much
+        instead of damage at {TIME_WEIGHT_HALF_LIFE_SECONDS}s.
+      </p>
+      {s.cleansers.length > 0 && (
+        <p className={styles.coverageLine}>
+          <span className={styles.coverageNames}>{s.cleansers.join(", ")}</span> — debuff removal is
+          priced against an enemy assumed to apply debuffs at your own team&rsquo;s rate. Against
+          an opponent that applies none it is worth <strong>nothing</strong>, and that is the
+          single biggest assumption in this panel.
+        </p>
+      )}
+    </div>
+  );
 }
 
 interface PlacementAdvisorProps {
@@ -198,6 +254,7 @@ export const PlacementAdvisor = memo(function PlacementAdvisor({ result }: Place
   }
 
   const { suggestion, coverage, currentDps, suggestedDps, moves, placementCount } = advice;
+  const survivabilitySection = renderSurvivability(advice.survivability);
 
   /**
    * The bench's advice, rendered into every branch below (2026-10-08).
@@ -212,6 +269,7 @@ export const PlacementAdvisor = memo(function PlacementAdvisor({ result }: Place
     <BenchAdvice
       advice={advice.bench}
       currentDps={currentDps}
+      currentMitigation={advice.survivability.mitigationPerSecond}
       isStale={isStale}
       /*
        * Placements and bench written together, as one atomic replacement — the same lesson the
@@ -246,6 +304,7 @@ export const PlacementAdvisor = memo(function PlacementAdvisor({ result }: Place
     return (
       <Disclosure label="Placement suggestion" hint={isStale ? "(recalculating…)" : bestOutcomeHint(advice)}>
         {notCounted}
+        {survivabilitySection}
         {benchSection}
       </Disclosure>
     );
@@ -264,7 +323,8 @@ export const PlacementAdvisor = memo(function PlacementAdvisor({ result }: Place
         Searched <strong>{suggestion.evaluated}</strong> arrangements of your placed Batomon, scoring
         each by damage weighted toward the start of the fight — damage {TIME_WEIGHT_HALF_LIFE_SECONDS}s
         in counts half as much as damage at the opening, since a slow ramp may arrive after you are
-        already dead.
+        already dead. Shielding, healing and cleansing push that half-way point back rather than
+        scoring as damage, so a tanky board earns its keep by making your late damage count.
       </p>
 
       <div style={{ fontSize: "0.85rem" }}>
@@ -314,6 +374,8 @@ export const PlacementAdvisor = memo(function PlacementAdvisor({ result }: Place
       {/* Before the engine's own blind spots, because this describes the user's board rather than
           a limit of the tool — and it is the part they can act on. */}
       {notCounted}
+
+      {survivabilitySection}
 
       {benchSection}
 

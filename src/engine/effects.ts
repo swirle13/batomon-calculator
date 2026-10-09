@@ -160,6 +160,17 @@ export const RESOLVED_TAG_KINDS = [
    * dishonesty this constant exists to prevent.
    */
   "statFromOwnStat",
+  /*
+   * 2026-10-08. Resolved in `engine/survivability.ts`, and in neither this resolver nor
+   * `simulate()` — a cleanse acts on debuffs the ENEMY put on us, and the simulation has no
+   * incoming side to remove them from.
+   *
+   * Listed here for the same reason `statFromOwnStat` is: this constant means "the engine acts on
+   * this", not "`resolveBoard` acts on this", and leaving Runerock in the advisor's "does not
+   * compute this ability yet" list while the placement objective was pricing its cleanse would be
+   * its own kind of wrong number.
+   */
+  "cleanseDebuffs",
 ] as const;
 
 /** True when `tag` is one this resolver understands. Keeps the "can we act on it?" test in one place. */

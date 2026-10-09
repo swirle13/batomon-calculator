@@ -9,8 +9,7 @@ import type {
   TeamPlacement,
 } from "../data/types";
 import { BENCH_INDEXES, RosterZone } from "../data/types";
-import { analyzePositionalCoverage, permutations, timeWeightedScore } from "./optimize";
-import { simulate, windowAverageDps } from "./simulate";
+import { analyzePositionalCoverage, permutations, scoreBoard } from "./optimize";
 import { STABLE_SLOT_ORDER, slotKey, slotsEqual } from "./grid";
 import { BENCH_SIZE, benchOf, benchRef, creatureOf, gridRef, rosterRefKey, settleOnBench, settleOnGrid } from "./roster";
 import { applyShinyOverlay, findCreature } from "../data/corpus";
@@ -98,6 +97,16 @@ export interface LineupSuggestion {
   placements: TeamPlacement[];
   bench: BenchedCreature[];
   dps: number;
+  /**
+   * Effective HP per second this lineup's shielding, healing and cleansing is worth (2026-10-08).
+   *
+   * Reported because the lineup can now WIN WHILE LOSING DPS, and without this that is an
+   * unexplained contradiction on screen. On the user's own board the best lineup went from "bench
+   * Runerock, bring on Reapra, 201 DPS" to "keep Runerock, bring on Coalem, 172 DPS" — a correct
+   * answer under the new objective and an absurd-looking one if the only figure quoted is the one
+   * that went down.
+   */
+  mitigationPerSecond: number;
   /** Benched monsters this lineup brings on, and where it puts them. */
   bringIn: { name: string; slot: GridSlot }[];
   /** Placed monsters this lineup sends to the bench. */
@@ -188,10 +197,21 @@ function boardFor(config: TeamConfiguration, roster: RosterMember[], assignments
   return { ...config, placements, bench };
 }
 
-/** One board, one `simulate()`, both figures the advisor reports. */
-function evaluate(config: TeamConfiguration, corpus: Corpus): { score: number; dps: number } {
-  const result = simulate(config, corpus);
-  return { score: timeWeightedScore(result), dps: windowAverageDps(result) };
+/**
+ * One board, one `simulate()`, both figures the advisor reports.
+ *
+ * Delegates to `optimize.ts`'s `scoreBoard` (2026-10-08) rather than combining `simulate` and
+ * `timeWeightedScore` itself, so the bench is ranked on exactly the scale the arrangement search
+ * uses. When the objective grew its survivability term this was the second place that had to learn
+ * about it, and a local reimplementation is how it would have been missed: the bench would have
+ * gone on pricing a Runerock at zero while the arrangement search beside it did not.
+ */
+function evaluate(
+  config: TeamConfiguration,
+  corpus: Corpus,
+): { score: number; dps: number; mitigationPerSecond: number } {
+  const { score, dps, survivability } = scoreBoard(config, corpus);
+  return { score, dps, mitigationPerSecond: survivability.mitigationPerSecond };
 }
 
 /**
@@ -334,10 +354,12 @@ function bestLineup(
     })
     .map((a) => ({ name: a.member.name, slot: a.slot }));
 
+  const final = evaluate(board, corpus);
   return {
     placements: board.placements,
     bench: board.bench ?? [],
-    dps: evaluate(board, corpus).dps,
+    dps: final.dps,
+    mitigationPerSecond: final.mitigationPerSecond,
     bringIn,
     sendOut,
     moves,

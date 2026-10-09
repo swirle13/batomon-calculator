@@ -509,6 +509,8 @@ export function simulate(
   /** When each creature last landed a direct hit — the denominator of its DPS. See Phase C. */
   const lastDirectHitAt = new Map<string, number>();
   const perStatusDamage: Record<StatusEffectType, number> = { Burn: 0, Poison: 0, Shock: 0, Shield: 0 };
+  /** HP restored to our own team across the window. Never mixed into any damage total. */
+  let totalHeal = 0;
 
   function runTicksUpTo(limit: number) {
     // Repeatedly process the earliest pending POOL tick <= limit, so multiple ticks between two
@@ -812,6 +814,24 @@ export function simulate(
         lastDirectHitAt.set(sourceKey, tSeconds);
       } else {
         timeline.push({ tSeconds, kind: TimelineEventKind.Attack, sourceSlot });
+      }
+
+      /*
+       * 2026-10-08: the cast's HEALING, which until now stopped at `perCreatureEffectiveStats`.
+       *
+       * Thirteen species publish a `healAmount`, `resolveBoard` resolves it, `applyModifiers`
+       * scales it and the creature card renders it — and then the battle threw it away. A Dribblet
+       * was, to every number the engine produced, a monster that did nothing at all.
+       *
+       * Read the same way the status block below reads its amounts: the RESOLVED value (so an
+       * ally's "+25 Heal" grant counts) plus the user's modifier (so FR-078's "a modifier may
+       * create an effect" holds here too — a Heal modifier on a creature publishing none still
+       * heals). Multicast repetitions each heal, because each is a full repetition of the cast.
+       */
+      const healed = (effective?.healAmount ?? creature.healAmount ?? 0) + modifiers.healAmountAdd;
+      if (healed > 0) {
+        timeline.push({ tSeconds, kind: TimelineEventKind.Heal, sourceSlot, heal: healed });
+        totalHeal += healed;
       }
 
       // RESOLVED status amounts, not the creature's base ones — this is what makes the simulation
@@ -1241,6 +1261,8 @@ export function simulate(
     perStatusFinalDamageRate,
     perStatusDamageGrowthPerSecond,
     knockedOutAtBattleStart: board.knockedOut,
+    windowSeconds,
+    healPerSecond: totalHeal / windowSeconds,
     cumulativeSeries,
   };
 }

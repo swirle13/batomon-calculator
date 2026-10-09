@@ -3168,19 +3168,24 @@ export const creatures: CreatureSpecies[] = [{
 	baseMulticast: 1,
 	appliesStatus: [{ type: StatusEffectType.Shield, amount: 140 }],
 	abilityText: "Remove 15 stacks of every debuff on your team.",
-	abilityTags: [],
+	abilityTags: [
+	  { kind: AbilityTagKind.CleanseDebuffs, stacks: 15 },
+	],
 	levels: {
 		2: {
 			appliesStatus: [{ type: StatusEffectType.Shield, amount: 280 }],
 			abilityText: "Remove 30 stacks of every debuff on your team.",
+			abilityTags: [{ kind: AbilityTagKind.CleanseDebuffs, stacks: 30 }],
 		},
 		3: {
 			appliesStatus: [{ type: StatusEffectType.Shield, amount: 420 }],
 			abilityText: "Remove 45 stacks of every debuff on your team.",
+			abilityTags: [{ kind: AbilityTagKind.CleanseDebuffs, stacks: 45 }],
 		},
 		4: {
 			appliesStatus: [{ type: StatusEffectType.Shield, amount: 840 }],
 			abilityText: "Remove 90 stacks of every debuff on your team.",
+			abilityTags: [{ kind: AbilityTagKind.CleanseDebuffs, stacks: 90 }],
 		},
 	},
 }, {
@@ -3425,19 +3430,24 @@ export const creatures: CreatureSpecies[] = [{
 	baseMulticast: 1,
 	healAmount: 100,
 	abilityText: "Remove 20% of debuffs on your team.",
-	abilityTags: [],
+	abilityTags: [
+	  { kind: AbilityTagKind.CleanseDebuffs, fraction: 0.2 },
+	],
 	levels: {
 		2: {
 			healAmount: 200,
 			abilityText: "Remove 35% of debuffs on your team.",
+			abilityTags: [{ kind: AbilityTagKind.CleanseDebuffs, fraction: 0.35 }],
 		},
 		3: {
 			healAmount: 300,
 			abilityText: "Remove 50% of debuffs on your team.",
+			abilityTags: [{ kind: AbilityTagKind.CleanseDebuffs, fraction: 0.5 }],
 		},
 		4: {
 			healAmount: 1200,
 			abilityText: "Remove 80% of debuffs on your team.",
+			abilityTags: [{ kind: AbilityTagKind.CleanseDebuffs, fraction: 0.8 }],
 		},
 	},
 }, {

@@ -337,7 +337,29 @@ export type AbilityTag =
       sourceStat: StatusEffectType;
       stat: StatChangeStat.Damage | StatChangeStat.Heal;
       multiplier: number;
-    };
+    }
+  /**
+   * 2026-10-08. "Remove 15 stacks of every debuff on your team" (Runerock) and "Remove 20% of
+   * debuffs on your team" (Sirenade) — the corpus's only two cleansers, and until now the only
+   * defensive mechanic with no representation at all.
+   *
+   * ## It describes an effect on US, which is why it took a new shape
+   *
+   * Every other tag in this union acts on the team's OUTPUT — what a monster emits, or what a
+   * teammate's aura does to that. This one acts on the enemy's output, and the engine simulates
+   * against an "idealized target" with no incoming side at all. So there is nothing in
+   * `simulate()` for it to hook, and it is deliberately not resolved there.
+   *
+   * It is read by `engine/survivability.ts` instead, which prices it against an ASSUMED incoming
+   * debuff rate rather than a simulated one. That makes it the one tag whose value depends on an
+   * assumption about the opponent — see that module for the assumption and why it is the least
+   * arbitrary one available.
+   *
+   * Exactly one of `stacks` and `fraction` is set, matching the two wordings the corpus uses.
+   * `fraction` is a proportion (`0.2` for 20%), like every other fractional amount here.
+   */
+  | { kind: AbilityTagKind.CleanseDebuffs; stacks: number; fraction?: undefined }
+  | { kind: AbilityTagKind.CleanseDebuffs; fraction: number; stacks?: undefined };
 
 // ---------------------------------------------------------------------------
 // Corpus entities
@@ -845,6 +867,15 @@ export interface TimelineEvent {
   targetSlot?: GridSlot;
   damage?: number;
   damageType?: DamageChannel;
+  /**
+   * HP restored to your own team, on a `TimelineEventKind.Heal` event (2026-10-08).
+   *
+   * A SEPARATE field from `damage` rather than a negative one. Four different places sum
+   * `event.damage` across the timeline — the cumulative chart, the DPS rate buckets, the per-status
+   * totals and the placement objective — and every one of them would have silently absorbed
+   * healing as damage dealt to the enemy.
+   */
+  heal?: number;
   statusDelta?: { type: StatusEffectType; slot: GridSlot; layerDelta: number };
 }
 
@@ -945,6 +976,26 @@ export interface SimulationResult {
    * `resolveEffects()` returned one entry per placement, which it has never done for this family.
    */
   knockedOutAtBattleStart: { key: PlacementKey; name: string; knockedOutBy: string }[];
+  /**
+   * The window this result was simulated over, carried so a consumer never has to be told it
+   * separately (2026-10-08).
+   *
+   * Added when `timeWeightedScore` grew a survivability term that needs the window length: a
+   * debuff stack removed at the midpoint of a 30s fight is worth five times one removed at the
+   * midpoint of a 6s fight. Threading it as a second parameter through `timeWeightedScore`,
+   * `scoreConfiguration` and `rosterAdvice`'s `evaluate` would have given three call sites the
+   * chance to pass a window that did not produce this result.
+   */
+  windowSeconds: number;
+  /**
+   * HP restored to your own team per second, summed over everything that healed (2026-10-08).
+   *
+   * Beside `perStatusPerSecond.Shield` — which has always meant shield GRANTED per second, an
+   * output stat, never absorption — these are the two halves of what the team does to keep itself
+   * alive. Neither reduces any damage in this simulation, because there is no modelled incoming
+   * side for them to reduce; both exist so `engine/survivability.ts` can price them.
+   */
+  healPerSecond: number;
   cumulativeSeries: {
     tSeconds: number;
     totalDamage: number;

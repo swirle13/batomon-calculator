@@ -264,6 +264,14 @@ export enum TimelineEventKind {
   StatusTick = "statusTick",
   ShockProc = "shockProc",
   OngoingChange = "ongoingChange",
+  /**
+   * 2026-10-08. A cast's healing, which the engine resolved into `perCreatureEffectiveStats` and
+   * then dropped on the floor — thirteen species publish a `healAmount` and not one point of it
+   * reached the timeline. It carries `heal`, never `damage`, so nothing that sums damage (the
+   * cumulative series, the DPS buckets, the placement objective's own damage term) picks it up by
+   * accident. See `engine/survivability.ts` for what reads it.
+   */
+  Heal = "heal",
 }
 
 /**
@@ -400,4 +408,5 @@ export enum AbilityTagKind {
   ReviveKnockedOutAllies = "reviveKnockedOutAllies",
   StatFromStat = "statFromStat",
   StatFromOwnStat = "statFromOwnStat",
+  CleanseDebuffs = "cleanseDebuffs",
 }
