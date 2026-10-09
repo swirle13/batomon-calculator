@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from "react";
 import type { TrainerRecord } from "../../../data/types";
 import { Button, Surface } from "../../primitives";
+import { AbilityText } from "../AbilityText";
 import { Sprite } from "../Sprite";
 import { AffectedCreaturePicker } from "./AffectedCreaturePicker";
 import { designatesCreatureSet } from "./setDesignatingTrainers";
@@ -67,9 +68,13 @@ export function TrainerCard({ trainer, controls }: TrainerCardProps) {
           lines for the wordiest trainer and made the card grow by ~90px on selection; at the card's
           full width the longest ability in the corpus takes two. */}
       <div className={styles.footer}>
-        <p className={`${styles.ability} ${trainer ? "" : styles.abilityPlaceholder}`}>
-          {trainer?.abilityText ?? "Choose a trainer to see their ability."}
-        </p>
+        {trainer ? (
+          <AbilityText text={trainer.abilityText} className={styles.ability} />
+        ) : (
+          <p className={`${styles.ability} ${styles.abilityPlaceholder}`}>
+            Choose a trainer to see their ability.
+          </p>
+        )}
 
         {designation && (
           <>
