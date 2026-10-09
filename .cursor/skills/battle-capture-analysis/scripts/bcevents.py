@@ -28,6 +28,7 @@ Usage:
 
 from __future__ import annotations
 
+import bisect
 import csv
 import os
 import sys
@@ -38,12 +39,21 @@ from collections import defaultdict
 # whole cooldown regardless of its length.
 FULL_FRAC = 0.85
 EMPTY_FRAC = 0.25
-# How many frames back to look for the "was full" half of a cast. The bar renders a short
-# flash at full before the reset lands, so the two are never on the same frame.
-CAST_LOOKBACK = 6
+# Every window below is in seconds, never in frames.
+#
+# Phone captures are variable rate. A Galaxy S23 Ultra recording of this game runs at 120 Hz
+# nominally but drops ~5% of its frames, in gaps of up to six in a row, because the encoder is
+# competing with the game for the GPU. A window of "6 frames" is therefore somewhere between
+# 50 ms and 300 ms depending on where in the recording it lands, which is how a phantom cast got
+# through 59 ms after a real one. Windows are resolved against the `t` column instead, so they
+# mean the same thing everywhere in every recording.
+
+# How far back to look for the "was full" half of a cast. The bar renders a short flash at full
+# before the reset lands, so the two are never on the same frame.
+CAST_LOOKBACK_SECONDS = 0.055
 # A bar that was near-empty shortly before reading full did not fill; a spell effect crossed it.
 # A real cast is preceded by a ramp, so the typical level this far back is already well up the bar.
-CAST_RAMP_LOOKBACK = 24
+CAST_RAMP_SECONDS = 0.22
 CAST_RAMP_FRAC = 0.5
 # Mirror of the ramp test, looking forward: a bar that was spent stays spent and refills
 # gradually, so its typical level over the next fraction of a second is still near empty. This
@@ -52,13 +62,16 @@ CAST_RAMP_FRAC = 0.5
 # throw it. Expressed in seconds rather than frames because it is bounded by the shortest real
 # cooldown, not by the capture rate; at very high fast-forward it may need lowering.
 CAST_SPENT_SECONDS = 0.6
-# A charge grant shows as the bar jumping further in one frame than it could have filled.
+# A charge grant shows as the bar jumping further between two rows than it could have filled in
+# the time between them. Dropped frames make that gap uneven, so the comparison is against the
+# bar's measured fill *rate* over this row's own interval rather than against a per-frame step.
 CHARGE_MIN_PX = 4
-# Frames the new bar level must hold for a jump to count as a charge rather than a VFX flash.
-CHARGE_PERSIST = 3
-# A flash can hold for longer than CHARGE_PERSIST, so the level is also checked over a longer
-# window: a granted charge is never given back, while a flash falls off within a few frames.
-CHARGE_HOLD = 25
+CHARGE_RATE_MULTIPLE = 3
+# How long the new bar level must hold for a jump to count as a charge rather than a VFX flash.
+CHARGE_PERSIST_SECONDS = 0.027
+# A flash can hold for longer than that, so the level is also checked over a longer window: a
+# granted charge is never given back, while a flash falls off within a fraction of a second.
+CHARGE_HOLD_SECONDS = 0.22
 # How far off a perfect tick a health drop may sit and still count as on-cadence, as a fraction
 # of the period. Loose enough to absorb render lag, tight enough that cast damage does not fit.
 DOT_PHASE_TOLERANCE = 0.08
@@ -159,11 +172,13 @@ def detect(rows, cluster_ms, charge_slots):
     times = [float(r["t"]) for r in rows]
     events = []
 
-    # Frame interval from the data rather than from a declared frame rate: recordings are often
-    # variable rate, and the declared one has been wrong before.
-    steps = sorted(b - a for a, b in zip(times, times[1:]) if b > a)
-    frame_dt = steps[len(steps) // 2] if steps else 1 / 60
-    spent_frames = max(1, round(CAST_SPENT_SECONDS / frame_dt))
+    # Row indices spanning a time window around row `i`, so every threshold below is expressed in
+    # seconds and resolved against real timestamps. `bisect` rather than arithmetic because the
+    # rows are not evenly spaced.
+    def window(i, before=0.0, after=0.0):
+        lo = bisect.bisect_left(times, times[i] - before) if before else i
+        hi = bisect.bisect_right(times, times[i] + after) if after else i
+        return lo, hi
 
     # ---- cooldown bars: casts and charge grants ----
     bar_stats = {}
@@ -178,24 +193,27 @@ def detect(rows, cluster_ms, charge_slots):
         casts = []
         # One cast per descent, enforced by the invariant rather than by a time window: a mon
         # cannot cast again until its bar has refilled. An earlier version collapsed repeats
-        # within 50 ms, which depended on the capture's frame rate and let a second "cast"
-        # through whenever the frames either side of `CAST_LOOKBACK` happened to straddle it.
+        # within a fixed 50 ms, which let a second "cast" through whenever the lookback window
+        # happened to straddle the real one.
         armed = True
         for i in range(1, len(cd)):
             if cd[i] >= full:
                 armed = True
             if cd[i] > empty or not armed:
                 continue
-            back = cd[max(0, i - CAST_LOOKBACK) : i]
+            peak_lo, _ = window(i, before=CAST_LOOKBACK_SECONDS)
+            back = cd[peak_lo:i]
             if back and max(back) >= full:
                 # Reject the flash case: the bar read full, but it was near-empty a moment
                 # earlier and near-empty again afterwards, so nothing was ever spent.
                 # The median, not the maximum: a flash can run long enough to reach into this
                 # window, but not long enough to dominate it.
-                ramp = sorted(cd[max(0, i - CAST_LOOKBACK - CAST_RAMP_LOOKBACK) : max(0, i - CAST_LOOKBACK)])
+                ramp_lo, _ = window(i, before=CAST_LOOKBACK_SECONDS + CAST_RAMP_SECONDS)
+                ramp = sorted(cd[ramp_lo:peak_lo])
                 if ramp and ramp[len(ramp) // 2] < height * CAST_RAMP_FRAC:
                     continue
-                spent = sorted(cd[i : i + spent_frames])
+                _, spent_hi = window(i, after=CAST_SPENT_SECONDS)
+                spent = sorted(cd[i:spent_hi])
                 if spent and spent[len(spent) // 2] > empty:
                     continue
                 armed = False
@@ -214,25 +232,32 @@ def detect(rows, cluster_ms, charge_slots):
                     }
                 )
 
-        # Natural fill per frame, from the median upward step, so a charge can be told apart
-        # from ordinary progress.
+        # Natural fill rate in pixels per *second*, from the median upward step divided by the
+        # interval it happened over. Per-second rather than per-frame is what makes this survive
+        # dropped frames: across a gap the bar really did advance further, in proportion to the
+        # gap, and comparing that against a per-frame step would read as a charge grant.
         ups = sorted(
-            d for d in (cd[i] - cd[i - 1] for i in range(1, len(cd))) if 0 < d <= 3
+            (cd[i] - cd[i - 1]) / (times[i] - times[i - 1])
+            for i in range(1, len(cd))
+            if 0 < cd[i] - cd[i - 1] <= 3 and times[i] > times[i - 1]
         )
-        typical = ups[len(ups) // 2] if ups else 1
-        for i in range(1, len(cd) - CHARGE_PERSIST):
+        rate = ups[len(ups) // 2] if ups else 1.0
+        for i in range(1, len(cd)):
             d = cd[i] - cd[i - 1]
-            if d < max(CHARGE_MIN_PX, typical * 3) or cd[i] > height:
+            dt = times[i] - times[i - 1]
+            if d < max(CHARGE_MIN_PX, CHARGE_RATE_MULTIPLE * rate * dt) or cd[i] > height:
                 continue
             # A real charge moves the bar and the bar *stays* moved. The bars are only 4px wide,
             # so a white VFX flash crossing one reads as a big jump for a frame or two and then
             # falls back; requiring the new level to hold removes almost all of that.
-            after = cd[i + 1 : i + 1 + CHARGE_PERSIST]
+            _, persist_hi = window(i, after=CHARGE_PERSIST_SECONDS)
+            after = cd[i + 1 : persist_hi]
             if not after or min(after) < cd[i] - 2:
                 continue
             # Over a longer window the bar may only leave the new level by being spent, so a
             # fall back towards where it started — with no cast in between — was a flash.
-            held = cd[i + 1 : i + 1 + CHARGE_HOLD]
+            _, hold_hi = window(i, after=CHARGE_HOLD_SECONDS)
+            held = cd[i + 1 : hold_hi]
             if held and min(held) <= cd[i - 1] + d // 2 and max(held) > empty:
                 continue
             events.append(
@@ -244,7 +269,7 @@ def detect(rows, cluster_ms, charge_slots):
                     "from": cd[i - 1],
                     "to": cd[i],
                     "delta": d,
-                    "detail": f"jump of {d}px (normal fill {typical}px/frame)",
+                    "detail": f"jump of {d}px in {dt * 1000:.0f}ms (normal fill {rate:.1f}px/s)",
                     "confidence": "medium",
                 }
             )
@@ -292,7 +317,8 @@ def detect(rows, cluster_ms, charge_slots):
             # The fill boundary jitters by a few pixels when VFX cross the bar, so only accept a
             # drop that still holds a few frames later. Health only ever decreases.
             if prev is not None and v < prev - 1:
-                after = series[i + 1 : i + 1 + CHARGE_PERSIST]
+                _, hi = window(i, after=CHARGE_PERSIST_SECONDS)
+                after = series[i + 1 : hi]
                 if after and max(after) <= prev - 1:
                     events.append(
                         {

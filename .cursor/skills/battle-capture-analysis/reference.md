@@ -231,19 +231,24 @@ than dropped.
 
 ## Tuning event detection
 
-`bcevents.py` constants, all near the top of the file:
+`bcevents.py` constants, all near the top of the file. **Every window is in seconds and is
+resolved against the `t` column**, never as a count of rows, because phone captures drop frames
+in bursts and a window of "6 frames" would otherwise mean anything between 50 ms and 300 ms
+depending on where it landed. Decimating a real dataset by 35% leaves every cast time and
+interval unchanged; the frame-counted version invented a phantom cast under the same test.
 
 | Constant | Default | Effect |
 |---|---|---|
 | `FULL_FRAC` | 0.85 | How full a bar must get to count as ready |
 | `EMPTY_FRAC` | 0.25 | How empty it must then be to count as a cast |
-| `CAST_LOOKBACK` | 6 | Frames to look back for the "was full" half |
-| `CAST_RAMP_LOOKBACK` | 24 | Frames before that whose median level proves the bar really filled |
+| `CAST_LOOKBACK_SECONDS` | 0.055 | How far back to look for the "was full" half |
+| `CAST_RAMP_SECONDS` | 0.22 | Window before that whose median level proves the bar really filled |
 | `CAST_RAMP_FRAC` | 0.5 | How far up the bar that median must be. This is what stops a *bright* spell effect crossing a bar from being reported as a second cast moments after the real one |
 | `CAST_SPENT_SECONDS` | 0.6 | How long after a cast the bar's median level must stay below `EMPTY_FRAC`. The mirror of the ramp test, and what rejects a *dark* effect covering a bar. Bounded below by the shortest real cooldown, so lower it at very high fast-forward |
 | `CHARGE_MIN_PX` | 4 | Smallest bar jump treated as a charge |
-| `CHARGE_PERSIST` | 3 | Frames the new level must hold (VFX rejection) |
-| `CHARGE_HOLD` | 25 | Longer window over which the level must not fall back towards where it started. A flash can outlast `CHARGE_PERSIST`; a granted charge is never given back |
+| `CHARGE_RATE_MULTIPLE` | 3 | How many times the bar's own fill rate, over *this row's* interval, a jump must exceed. Rate-based rather than step-based so that the extra travel across a dropped frame is not read as a grant |
+| `CHARGE_PERSIST_SECONDS` | 0.027 | How long the new level must hold (VFX rejection) |
+| `CHARGE_HOLD_SECONDS` | 0.22 | Longer window over which the level must not fall back towards where it started. A flash can outlast `CHARGE_PERSIST_SECONDS`; a granted charge is never given back |
 | `DOT_PHASE_TOLERANCE` | 0.08 | How far off a tick a drop may sit, as a fraction of the period |
 | `DOT_MIN_COVERAGE` | 0.8 | Fraction of expected tick slots that must be filled. This is what stops the period search aliasing onto a submultiple and reporting double the speed |
 
@@ -284,14 +289,24 @@ the fix is a 1x calibration recording rather than arithmetic.
 
 Worth getting right, because re-recording is cheaper than working around a bad capture.
 
-1. **Note the fast-forward level** and pass `--speed`. Off is ideal for timing-sensitive work, but
+1. **Lock the phone's screen resolution**, because a Samsung screen recording captures at
+   whatever the display is currently set to, and that is what decides the canvas size. On a
+   Galaxy S23 Ultra the three settings give frames of 3088x1440, 2316x1080 and 1544x720 — all the
+   same 2.144 aspect, holding canvases of 2560x1440, 1920x1080 and 1280x720. **FHD+ is the one to
+   pick**: it is the device default and the 1920x1080 layout and glyph set already cover it, so a
+   recording needs no calibration at all. Power saving mode silently drops the display to a lower
+   setting, which is the usual reason two recordings from one phone disagree.
+2. **Note the fast-forward level** and pass `--speed`. Off is ideal for timing-sensitive work, but
    ordering questions are fine at any speed.
-2. Highest frame rate available. The reference capture is 111 fps, which is ~9 ms per frame and
+3. Highest frame rate available. The reference capture is 111 fps, which is ~9 ms per frame and
    plenty to separate same-tick events. At higher fast-forward you need the frame rate more.
-3. Start recording before the battle begins. The pre-battle board shows base stats, and the
+   Do not worry about the rate being *steady*: a phone encoder competing with the game drops
+   frames in bursts, and every threshold in `bcevents` is resolved against the `t` column rather
+   than against a frame count precisely so that this does not matter.
+4. Start recording before the battle begins. The pre-battle board shows base stats, and the
    difference between those and the first in-battle frame is what reveals the battle-start
    phases.
-4. Do not tap during the battle; UI overlays cover the badges.
-5. For a mechanics question, build the **smallest board that can answer it**. Two mons with one
+5. Do not tap during the battle; UI overlays cover the badges.
+6. For a mechanics question, build the **smallest board that can answer it**. Two mons with one
    interaction produce unambiguous badge deltas; six mons under Link Cable produce cascades that
    can only be read in aggregate.
