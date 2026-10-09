@@ -11,7 +11,7 @@ import { applyShinyOverlay, findCreature, hasCreatureRecord } from "../data/corp
 import { InvalidTeamConfigurationError } from "./errors";
 
 import { damageChannelOf } from "../data/vocabularies";
-import { AbilityTagKind, DamageChannel, EventLabel, ModifierStat, StatChangeStat, StatusEffectType, TargetKind, TimelineEventKind } from "../data/enums";
+import { AbilityTagKind, DamageChannel, EventLabel, GrantableStat, ModifierStat, StatChangeStat, StatusEffectType, TargetKind, TimelineEventKind } from "../data/enums";
 import { placementKey } from "./grid";
 
 /**
@@ -1008,7 +1008,7 @@ export function simulate(
           // board to try, and both of them are Flying.
           if (
             tag.effect.statChange?.stat === "multicast" &&
-            !cannotGain(target.creature, StatChangeStat.Multicast)
+            !cannotGain(target.creature, GrantableStat.Multicast)
           ) {
             b.multicast += tag.effect.statChange.amount;
           }
@@ -1163,8 +1163,68 @@ export function simulate(
       }
     }
 
+    /*
+     * --- "Charge the ally behind by N second(s)" — the GIVING half of charge (2026-10-09) ---
+     *
+     * Dracana, Ironcore and Steamscuttle. `chargeRules` is the RECEIVING half (Cobrex pulling its
+     * own cast forward when an ally inflicts Poison) and was the only half that existed, so three
+     * creatures whose entire ability is accelerating a neighbour did nothing.
+     *
+     * Same arithmetic as the charge block further down, including the clamp: a target that charges
+     * past the current instant fires at the next step rather than retroactively (FR-040).
+     */
+    for (const caster of dueCasts) {
+      const casterResolved = resolvedByKey.get(placementKey(caster.creature.id, caster.sourceSlot));
+      if (!casterResolved) continue;
+      for (const tag of caster.creature.abilityTags) {
+        if (tag.kind !== AbilityTagKind.ChargeAlly) continue;
+        for (const target of selectTargets(tag.target, casterResolved, resolved, config)) {
+          // "(Dracana can't receive charge)". The givers are the only creatures carrying the
+          // restriction, so it is a pair of them standing together that it exists to stop.
+          if (cannotGain(target.creature, GrantableStat.Charge)) continue;
+          const entry = schedule.find((e) => e.key === target.key);
+          if (!entry) continue;
+          const pulled = roundTime(entry.nextAt - tag.seconds);
+          entry.nextAt = pulled <= tSeconds ? roundTime(tSeconds + STEP) : pulled;
+        }
+      }
+    }
+
     // Applications for this instant are in; record the resulting stack counts.
     snapshotStacks(tSeconds);
+
+    /*
+     * --- "Trigger this when an ally applies Shield" — Rhizuka (2026-10-09) ---
+     *
+     * The third reactive hook, and the cheapest of the three to add: `appliedThisInstant` is
+     * already collected for the charge and `gainOnAllyStatus` passes, so the EVENT existed and
+     * only this listener was missing.
+     *
+     * Reads `schedule` rather than `resolved` so a listener with no cast cycle is skipped the same
+     * way it is everywhere else, and queues a standalone reaction — never touching the listener's
+     * own cooldown, per FR-099.
+     */
+    for (const entry of schedule) {
+      for (const tag of entry.creature.abilityTags) {
+        if (tag.kind !== AbilityTagKind.TriggerOnAllyStatus) continue;
+        const triggered = appliedThisInstant.some((application) => {
+          if (application.type !== tag.status) return false;
+          // "an ALLY applies" — never your own application, the rule every other ally hook uses.
+          if (application.sourceKey === entry.key) return false;
+          if (!tag.excludeSameSpecies) return true;
+          return resolvedByKey.get(application.sourceKey as PlacementKey)?.creature.id !== entry.creature.id;
+        });
+        if (!triggered) continue;
+        const reactT = roundTime(tSeconds + STEP);
+        if (reactT > windowSeconds + 1e-9) continue;
+        reactions.push({
+          tSeconds: reactT,
+          sourceSlot: entry.sourceSlot,
+          creature: entry.creature,
+          modifiers: entry.modifiers,
+        });
+      }
+    }
 
     // --- T241/FR-095: reactive "permanently" gains from ally status inflictions ---
     //

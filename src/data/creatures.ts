@@ -1,5 +1,5 @@
 import type { CreatureSpecies } from "./types";
-import { AbilityTagKind, AbilityTrigger, CreatureType, DamageChannel, EventLabel, ModifierStat, Rarity, StatChangeStat, StatusEffectType, TargetKind } from "./enums";
+import { AbilityTagKind, AbilityTrigger, CreatureType, DamageChannel, EventLabel, GrantableStat, ModifierStat, Rarity, StatChangeStat, StatusEffectType, TargetKind } from "./enums";
 import { Species } from "./ids";
 
 /**
@@ -286,16 +286,27 @@ export const creatures: CreatureSpecies[] = [{
 	baseMulticast: 1,
 	publishedCast: { damage: 666, channel: DamageChannel.Direct },
 	abilityText: "Give adjacent allies +1 Multicast permanently and transform them into random monsters of their rarity.",
-	abilityTags: [],
+	abilityTags: [
+	  { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Adjacent }, effect: { statChange: { stat: StatChangeStat.Multicast, amount: 1 } } }
+	],
 	levels: {
 		2: {
 			abilityText: "Give adjacent allies +2 Multicast permanently and transform them into random monsters of their rarity.",
+			abilityTags: [
+			  { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Adjacent }, effect: { statChange: { stat: StatChangeStat.Multicast, amount: 2 } } }
+			],
 		},
 		3: {
 			abilityText: "Give adjacent allies +3 Multicast permanently and transform them into random monsters of their rarity.",
+			abilityTags: [
+			  { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Adjacent }, effect: { statChange: { stat: StatChangeStat.Multicast, amount: 3 } } }
+			],
 		},
 		4: {
 			abilityText: "Give adjacent allies +60 Multicast permanently and transform them into random monsters of their rarity.",
+			abilityTags: [
+			  { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Adjacent }, effect: { statChange: { stat: StatChangeStat.Multicast, amount: 60 } } }
+			],
 		},
 	},
 }, {
@@ -513,17 +524,28 @@ export const creatures: CreatureSpecies[] = [{
 	baseMulticast: 1,
 	appliesStatus: [{ type: StatusEffectType.Burn, amount: 30 }],
 	abilityText: "Give the Fire ally behind this monster's Burn for this battle.",
-	abilityTags: [],
+	abilityTags: [
+	  { kind: AbilityTagKind.GrantFromOwnStat, target: { kind: TargetKind.Behind, typeFilter: CreatureType.Fire }, sourceStat: StatusEffectType.Burn, grantStat: StatusEffectType.Burn, multiplier: 1 }
+	],
 	levels: {
 		2: {
 			abilityText: "Give the Fire ally behind 2x this monster's Burn for this battle.",
+			abilityTags: [
+			  { kind: AbilityTagKind.GrantFromOwnStat, target: { kind: TargetKind.Behind, typeFilter: CreatureType.Fire }, sourceStat: StatusEffectType.Burn, grantStat: StatusEffectType.Burn, multiplier: 2 }
+			],
 		},
 		3: {
 			abilityText: "Give the Fire ally behind 3x this monster's Burn for this battle.",
+			abilityTags: [
+			  { kind: AbilityTagKind.GrantFromOwnStat, target: { kind: TargetKind.Behind, typeFilter: CreatureType.Fire }, sourceStat: StatusEffectType.Burn, grantStat: StatusEffectType.Burn, multiplier: 3 }
+			],
 		},
 		4: {
 			appliesStatus: [{ type: StatusEffectType.Burn, amount: 300 }],
 			abilityText: "Give the Fire ally behind 30x this monster's Burn for this battle.",
+			abilityTags: [
+			  { kind: AbilityTagKind.GrantFromOwnStat, target: { kind: TargetKind.Behind, typeFilter: CreatureType.Fire }, sourceStat: StatusEffectType.Burn, grantStat: StatusEffectType.Burn, multiplier: 30 }
+			],
 		},
 	},
 }, {
@@ -1066,7 +1088,9 @@ export const creatures: CreatureSpecies[] = [{
 	baseMulticast: 1,
 	publishedCast: { damage: 40, channel: DamageChannel.Direct },
 	abilityText: "On ally knockout, this gains 70% of their Damage for this battle. (Except other Danuki)",
-	abilityTags: [],
+	abilityTags: [
+	  { kind: AbilityTagKind.GainOnAllyKnockout, stat: StatChangeStat.Damage, fraction: 0.7, excludeSameSpecies: true }
+	],
 	levels: {
 		2: {
 			baseCooldownSeconds: 3,
@@ -1156,19 +1180,34 @@ export const creatures: CreatureSpecies[] = [{
 	baseMulticast: 1,
 	publishedCast: { damage: 5, channel: DamageChannel.Direct },
 	abilityText: "Charge the ally behind by 1 second(s). (Dracana can't receive charge)",
-	abilityTags: [],
+	abilityTags: [
+	  { kind: AbilityTagKind.ChargeAlly, target: { kind: TargetKind.Behind }, seconds: 1 },
+	  { kind: AbilityTagKind.CannotGain, stat: GrantableStat.Charge }
+	],
 	levels: {
 		2: {
 			publishedCast: { damage: 10, channel: DamageChannel.Direct },
 			abilityText: "Charge the ally behind by 2 second(s).\n(Dracana can't receive charge)",
+			abilityTags: [
+			  { kind: AbilityTagKind.ChargeAlly, target: { kind: TargetKind.Behind }, seconds: 2 },
+			  { kind: AbilityTagKind.CannotGain, stat: GrantableStat.Charge }
+			],
 		},
 		3: {
 			publishedCast: { damage: 15, channel: DamageChannel.Direct },
 			abilityText: "Charge the ally behind by 3 second(s).\n(Dracana can't receive charge)",
+			abilityTags: [
+			  { kind: AbilityTagKind.ChargeAlly, target: { kind: TargetKind.Behind }, seconds: 3 },
+			  { kind: AbilityTagKind.CannotGain, stat: GrantableStat.Charge }
+			],
 		},
 		4: {
 			publishedCast: { damage: 45, channel: DamageChannel.Direct },
 			abilityText: "Charge the ally behind by 18 second(s).\n(Dracana can't receive charge)",
+			abilityTags: [
+			  { kind: AbilityTagKind.ChargeAlly, target: { kind: TargetKind.Behind }, seconds: 18 },
+			  { kind: AbilityTagKind.CannotGain, stat: GrantableStat.Charge }
+			],
 		},
 	},
 }, {
@@ -1897,16 +1936,31 @@ export const creatures: CreatureSpecies[] = [{
 	baseMulticast: 1,
 	publishedCast: { damage: 30, channel: DamageChannel.Direct },
 	abilityText: "Charge adjacent Electric allies by 1 second(s). (Ironcore can't receive charge)",
-	abilityTags: [],
+	abilityTags: [
+	  { kind: AbilityTagKind.ChargeAlly, target: { kind: TargetKind.Adjacent, typeFilter: CreatureType.Electric }, seconds: 1 },
+	  { kind: AbilityTagKind.CannotGain, stat: GrantableStat.Charge }
+	],
 	levels: {
 		2: {
 			abilityText: "Charge adjacent Electric allies by 2 second(s).\n(Ironcore can't receive charge)",
+			abilityTags: [
+			  { kind: AbilityTagKind.ChargeAlly, target: { kind: TargetKind.Adjacent, typeFilter: CreatureType.Electric }, seconds: 2 },
+			  { kind: AbilityTagKind.CannotGain, stat: GrantableStat.Charge }
+			],
 		},
 		3: {
 			abilityText: "Charge adjacent Electric allies by 3 second(s).\n(Ironcore can't receive charge)",
+			abilityTags: [
+			  { kind: AbilityTagKind.ChargeAlly, target: { kind: TargetKind.Adjacent, typeFilter: CreatureType.Electric }, seconds: 3 },
+			  { kind: AbilityTagKind.CannotGain, stat: GrantableStat.Charge }
+			],
 		},
 		4: {
 			abilityText: "Charge adjacent Electric allies by 6 second(s).\n(Ironcore can't receive charge)",
+			abilityTags: [
+			  { kind: AbilityTagKind.ChargeAlly, target: { kind: TargetKind.Adjacent, typeFilter: CreatureType.Electric }, seconds: 6 },
+			  { kind: AbilityTagKind.CannotGain, stat: GrantableStat.Charge }
+			],
 		},
 	},
 }, {
@@ -3172,7 +3226,9 @@ export const creatures: CreatureSpecies[] = [{
 	baseMulticast: 1,
 	publishedCast: { damage: 200, channel: DamageChannel.Direct },
 	abilityText: "Trigger this when an ally applies Shield. (Except other Rhizuka)",
-	abilityTags: [],
+	abilityTags: [
+	  { kind: AbilityTagKind.TriggerOnAllyStatus, status: StatusEffectType.Shield, excludeSameSpecies: true }
+	],
 	levels: {
 		2: {
 			baseMulticast: 2,
@@ -3568,7 +3624,9 @@ export const creatures: CreatureSpecies[] = [{
 	appliesStatus: [{ type: StatusEffectType.Burn, amount: 8 }],
 	healAmount: 40,
 	abilityText: "Trigger this when an ally of level 3 or above casts. (Except other Snapscald)",
-	abilityTags: [],
+	abilityTags: [
+	  { kind: AbilityTagKind.TriggerOnAllyCast, target: { kind: TargetKind.AllAllies, minLevelFilter: 3 }, excludeSameSpecies: true }
+	],
 	levels: {
 		2: {
 			appliesStatus: [{ type: StatusEffectType.Burn, amount: 16 }],
@@ -3697,22 +3755,41 @@ export const creatures: CreatureSpecies[] = [{
 	appliesStatus: [{ type: StatusEffectType.Burn, amount: 5 }],
 	healAmount: 30,
 	abilityText: "Charge adjacent Fire and Water allies by 1 second(s). (Steamscuttle can't receive charge)",
-	abilityTags: [],
+	abilityTags: [
+	  { kind: AbilityTagKind.ChargeAlly, target: { kind: TargetKind.Adjacent, typeFilter: CreatureType.Fire }, seconds: 1 },
+	  { kind: AbilityTagKind.ChargeAlly, target: { kind: TargetKind.Adjacent, typeFilter: CreatureType.Water }, seconds: 1 },
+	  { kind: AbilityTagKind.CannotGain, stat: GrantableStat.Charge }
+	],
 	levels: {
 		2: {
 			appliesStatus: [{ type: StatusEffectType.Burn, amount: 10 }],
 			healAmount: 60,
 			abilityText: "Charge adjacent Fire and Water allies by 2 second(s).\n(Steamscuttle can't receive charge)",
+			abilityTags: [
+			  { kind: AbilityTagKind.ChargeAlly, target: { kind: TargetKind.Adjacent, typeFilter: CreatureType.Fire }, seconds: 2 },
+			  { kind: AbilityTagKind.ChargeAlly, target: { kind: TargetKind.Adjacent, typeFilter: CreatureType.Water }, seconds: 2 },
+			  { kind: AbilityTagKind.CannotGain, stat: GrantableStat.Charge }
+			],
 		},
 		3: {
 			appliesStatus: [{ type: StatusEffectType.Burn, amount: 15 }],
 			healAmount: 90,
 			abilityText: "Charge adjacent Fire and Water allies by 3 second(s).\n(Steamscuttle can't receive charge)",
+			abilityTags: [
+			  { kind: AbilityTagKind.ChargeAlly, target: { kind: TargetKind.Adjacent, typeFilter: CreatureType.Fire }, seconds: 3 },
+			  { kind: AbilityTagKind.ChargeAlly, target: { kind: TargetKind.Adjacent, typeFilter: CreatureType.Water }, seconds: 3 },
+			  { kind: AbilityTagKind.CannotGain, stat: GrantableStat.Charge }
+			],
 		},
 		4: {
 			appliesStatus: [{ type: StatusEffectType.Burn, amount: 60 }],
 			healAmount: 360,
 			abilityText: "Charge adjacent Fire and Water allies by 12 second(s).\n(Steamscuttle can't receive charge)",
+			abilityTags: [
+			  { kind: AbilityTagKind.ChargeAlly, target: { kind: TargetKind.Adjacent, typeFilter: CreatureType.Fire }, seconds: 12 },
+			  { kind: AbilityTagKind.ChargeAlly, target: { kind: TargetKind.Adjacent, typeFilter: CreatureType.Water }, seconds: 12 },
+			  { kind: AbilityTagKind.CannotGain, stat: GrantableStat.Charge }
+			],
 		},
 	},
 }, {
@@ -3727,19 +3804,30 @@ export const creatures: CreatureSpecies[] = [{
 	baseMulticast: 1,
 	publishedCast: { damage: 150, channel: DamageChannel.Direct },
 	abilityText: "Adjacent allies with no abilities have +2 Multicast.",
-	abilityTags: [],
+	abilityTags: [
+	  { kind: AbilityTagKind.Ongoing, target: { kind: TargetKind.Adjacent, noAbilityFilter: true }, effect: { statChange: { stat: StatChangeStat.Multicast, amount: 2 } } }
+	],
 	levels: {
 		2: {
 			publishedCast: { damage: 300, channel: DamageChannel.Direct },
 			abilityText: "Adjacent allies with no abilities have +4 Multicast.",
+			abilityTags: [
+			  { kind: AbilityTagKind.Ongoing, target: { kind: TargetKind.Adjacent, noAbilityFilter: true }, effect: { statChange: { stat: StatChangeStat.Multicast, amount: 4 } } }
+			],
 		},
 		3: {
 			publishedCast: { damage: 450, channel: DamageChannel.Direct },
 			abilityText: "Adjacent allies with no abilities have +6 Multicast.",
+			abilityTags: [
+			  { kind: AbilityTagKind.Ongoing, target: { kind: TargetKind.Adjacent, noAbilityFilter: true }, effect: { statChange: { stat: StatChangeStat.Multicast, amount: 6 } } }
+			],
 		},
 		4: {
 			publishedCast: { damage: 4500, channel: DamageChannel.Direct },
 			abilityText: "Adjacent allies with no abilities have +60 Multicast.",
+			abilityTags: [
+			  { kind: AbilityTagKind.Ongoing, target: { kind: TargetKind.Adjacent, noAbilityFilter: true }, effect: { statChange: { stat: StatChangeStat.Multicast, amount: 60 } } }
+			],
 		},
 	},
 }, {
@@ -4168,21 +4256,21 @@ export const creatures: CreatureSpecies[] = [{
 	abilityText: "Give the Flying ally in front +1 Multicast permanently. (Zephyrex can't have Multicast)",
 	abilityTags: [
 	  { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.InFront, typeFilter: CreatureType.Flying }, effect: { statChange: { stat: StatChangeStat.Multicast, amount: 1 } } },
-	  { kind: AbilityTagKind.CannotGain, stat: StatChangeStat.Multicast },
+	  { kind: AbilityTagKind.CannotGain, stat: GrantableStat.Multicast },
 	],
 	levels: {
 		2: {
 			abilityText: "Give the Flying ally in front +2 Multicast permanently.\n(Zephyrex can't have Multicast)",
 			abilityTags: [
 			  { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.InFront, typeFilter: CreatureType.Flying }, effect: { statChange: { stat: StatChangeStat.Multicast, amount: 2 } } },
-			  { kind: AbilityTagKind.CannotGain, stat: StatChangeStat.Multicast },
+			  { kind: AbilityTagKind.CannotGain, stat: GrantableStat.Multicast },
 			],
 		},
 		3: {
 			abilityText: "Give the Flying ally in front +3 Multicast permanently.\n(Zephyrex can't have Multicast)",
 			abilityTags: [
 			  { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.InFront, typeFilter: CreatureType.Flying }, effect: { statChange: { stat: StatChangeStat.Multicast, amount: 3 } } },
-			  { kind: AbilityTagKind.CannotGain, stat: StatChangeStat.Multicast },
+			  { kind: AbilityTagKind.CannotGain, stat: GrantableStat.Multicast },
 			],
 		},
 		4: {
@@ -4190,7 +4278,7 @@ export const creatures: CreatureSpecies[] = [{
 			abilityText: "Give the Flying ally in front +12 Multicast permanently.\n(Zephyrex can't have Multicast)",
 			abilityTags: [
 			  { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.InFront, typeFilter: CreatureType.Flying }, effect: { statChange: { stat: StatChangeStat.Multicast, amount: 12 } } },
-			  { kind: AbilityTagKind.CannotGain, stat: StatChangeStat.Multicast },
+			  { kind: AbilityTagKind.CannotGain, stat: GrantableStat.Multicast },
 			],
 		},
 	},

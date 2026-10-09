@@ -107,30 +107,27 @@ const ACCEPTED: Partial<Record<Species, string>> = {
   // pin.
   [Species.Miasmaw]: "same-species exclusion is hard-coded in resolveBoard's battleStartStatusFromAllies pass",
 
+  // --- Modelled in PART, where the remainder has no representation --------------------------
+  // These pass the audit because their TARGETS are expressed; they are listed so a green run is
+  // not read as full coverage of the ability.
+  //   Aerophim  — the +N Multicast to adjacent allies is modelled; "transform them into random
+  //               monsters of their rarity" is not, and could not be without a shop model.
+  //
   // --- Mechanism the engine does not have ------------------------------------------------------
   // These are the honest backlog. Each names what is missing, so the next person does not have to
   // re-derive it from the ability text.
-  [Species.Dracana]: "grants Charge to a target; only the RECEIVING side of charge (chargeOnAllyStatus) is modelled",
-  [Species.Ironcore]: "grants Charge to a target; see Dracana",
-  [Species.Steamscuttle]: "grants Charge to a target; see Dracana",
   [Species.Cherubble]: "grants Protect, which is not a modelled status",
   [Species.Celestia]: "disables abilities in a row; the engine has no notion of a disabled ability",
   [Species.Null00]: "row-wide Cooldown penalty applying to ENEMIES as well, which the idealised target cannot represent",
   [Species.Tsunamere]: "levels allies up mid-battle; level is resolved once, before the battle",
-  [Species.Aerophim]: "transforms allies into random monsters; the Multicast half is modellable, the transform is not",
-  [Species.Stellagon]: "targets 'allies with no abilities', a filter the selector vocabulary has no member for",
-  [Species.Danuki]: "fires on an ally being knocked out mid-battle; the engine has no HP model to kill anyone with",
   [Species.Dirgefin]: "knocks out allies AND enemies; the enemy half is outside the idealised target",
   [Species.Riglet]: "devours an ally between days, which is a run event rather than a battle one",
   [Species.Draconarch]: "re-activates other monsters' On Battle Start abilities; the resolver is single-pass",
   [Species.Sarudo]: "re-activates On Victory abilities, which fire outside the battle",
   [Species.Gemwing]: "re-activates an On Bought ability, which fires outside the battle",
   [Species.Pompummel]: "re-activates an On Victory ability, which fires outside the battle",
-  [Species.Snapscald]: "reacts to an ally's cast filtered by LEVEL; the reactive hook reads a selector, and a level-filtered one would fire on the wrong allies",
-  [Species.Rhizuka]: "reacts to an ally APPLYING SHIELD; there is no shield-application hook",
   [Species.Faebloom]: "scales off Mythical Items used this run, which the battle does not know",
   [Species.Shrinell]: "scales off Trinkets owned, which the battle does not know",
-  [Species.Blixie]: "grants an ally an amount DERIVED from the granter's own stat ('give the Fire ally behind this monster's Burn'); every grant shape in the vocabulary carries a fixed amount, and statFromStat is the receiver's view of the same idea rather than the giver's",
 
   // --- Fires outside the battle (run economy) --------------------------------------------------
   // The engine cannot fire these at all, so a missing target qualifier changes nothing it computes.

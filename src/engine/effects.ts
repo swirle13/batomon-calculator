@@ -10,13 +10,14 @@ import type {
 } from "../data/types";
 import { aboveSlot, adjacentUnder, behindSlot, inFrontSlot, slotsEqual } from "./grid";
 import type { AbilityTag, PlacementKey } from "../data/types";
+import type { Species } from "../data/ids";
 import { applyShinyOverlay, findCreature } from "../data/corpus";
 import { creatureHasType } from "../data/typing";
 import { isWildcardType } from "../data/vocabularies";
 import { hasAbilityText } from "../data/display";
 import { addFlat, addPostMultiplier, applyMultiplier, readRounded, statValue, type StatValue } from "./statValue";
 import { TYPE_COLORS } from "../data/typeColors";
-import { AbilityTagKind, EventLabel, StatChangeStat } from "../data/enums";
+import { AbilityTagKind, EventLabel, GrantableStat, StatChangeStat } from "../data/enums";
 import { placementKey } from "./grid";
 
 /**
@@ -181,6 +182,12 @@ export const RESOLVED_TAG_KINDS = [
    * — is discharged rather than deleted, because the condition it set is the one that was met.
    */
   "trigger",
+  // 2026-10-09, the backlog pass. Three resolved here (`grantFromOwnStat`, `gainOnAllyKnockout`
+  // via the delta pass, and the `cannotGain` restriction) and two by `simulate()`'s cast loop.
+  "grantFromOwnStat",
+  "gainOnAllyKnockout",
+  "chargeAlly",
+  "triggerOnAllyStatus",
 ] as const;
 
 /** True when `tag` is one this resolver understands. Keeps the "can we act on it?" test in one place. */
@@ -198,7 +205,7 @@ export function isResolvableTag(tag: { kind: string }): boolean {
  */
 export function cannotGain(
   creature: { abilityTags: AbilityTag[] } | undefined,
-  stat: StatChangeStat.Multicast,
+  stat: GrantableStat,
 ): boolean {
   return (creature?.abilityTags ?? []).some(
     (tag) => tag.kind === AbilityTagKind.CannotGain && tag.stat === stat,
@@ -225,7 +232,10 @@ export function selectorAccepts(
   return (
     (!f.typeFilter || creatureHasType(creature, f.typeFilter, config)) &&
     (!f.rarityFilter || creature.rarity === f.rarityFilter) &&
-    (!f.minLevelFilter || creature.level >= f.minLevelFilter)
+    (!f.minLevelFilter || creature.level >= f.minLevelFilter) &&
+    // Stellagon's "allies with NO abilities", through the same predicate the coverage report
+    // uses, so the phrase means one thing across the app.
+    (!f.noAbilityFilter || !hasAbilityText(creature.abilityText))
   );
 }
 
@@ -520,12 +530,21 @@ export function resolveBoard(config: TeamConfiguration, corpus: Corpus): Resolve
     }
   }
   const casualties: ResolvedBoard["knockedOut"] = [];
+  /**
+   * What each casualty was worth, captured BEFORE it leaves `base` (2026-10-09).
+   *
+   * Danuki's "on ally knockout, this gains 70% of their Damage" needs the victim's damage, and
+   * the victim is spliced out of the board a line below — after which there is nothing left to
+   * ask. Captured here rather than re-derived later for that reason.
+   */
+  const casualtyDamage: { speciesId: Species; damage: number }[] = [];
   if (knockedOut.size > 0) {
     for (let i = base.length - 1; i >= 0; i--) {
       const victim = base[i]!;
       const killer = knockedOut.get(victim.key);
       if (killer === undefined) continue;
       casualties.unshift({ key: victim.key, name: victim.creature.name, knockedOutBy: killer });
+      casualtyDamage.unshift({ speciesId: victim.creature.id, damage: victim.baseDamage ?? 0 });
       base.splice(i, 1);
     }
   }
@@ -571,7 +590,7 @@ export function resolveBoard(config: TeamConfiguration, corpus: Corpus): Resolve
       // "(Zephyrex can't have Multicast)" — a restriction on the RECIPIENT, so it is checked here
       // where the grant lands rather than wherever it was emitted. See `AbilityTagKind.CannotGain`.
       else if (effect.statChange.stat === StatChangeStat.Multicast) {
-        if (!cannotGain(byKey.get(targetKey)?.creature, StatChangeStat.Multicast)) d.multicast += amount;
+        if (!cannotGain(byKey.get(targetKey)?.creature, GrantableStat.Multicast)) d.multicast += amount;
       }
       else if (effect.statChange.stat === StatChangeStat.Heal) d.heal += amount;
     }
@@ -675,6 +694,45 @@ export function resolveBoard(config: TeamConfiguration, corpus: Corpus): Resolve
           }, 0);
           if (total !== 0) {
             applyEffect(source.key, tag.effect, total * tag.multiplier);
+          }
+          break;
+        }
+
+        /*
+         * Blixie: "give the Fire ally behind [Nx] THIS MONSTER'S Burn" (2026-10-09).
+         *
+         * Reads the giver's POST-MULTIPLIER value — `appliesStatus` has been re-synced from
+         * `stats` by the phase-1 flatten above — so a Blixie whose Burn an aura raised passes on
+         * the raised figure. Summing its base would be the same 657-vs-1080 mistake the
+         * battle-start pass records two cases up.
+         */
+        /*
+         * Danuki: "on ally knockout, this gains 70% of their Damage for this battle" (2026-10-09).
+         *
+         * Only the battle-start knockout family can reach this, which is the whole reason it is
+         * modellable: Petrirex and Rattleghast kill by POSITION, so the casualty list is known
+         * before the first cast. On a board with no such killer Danuki gains nothing, which
+         * understates it against a real fight rather than inventing a figure — there is no HP
+         * model here for anyone to die to.
+         */
+        case "gainOnAllyKnockout": {
+          const gained = casualtyDamage
+            .filter((v) => !tag.excludeSameSpecies || v.speciesId !== source.creature.id)
+            .reduce((sum, v) => sum + v.damage * tag.fraction, 0);
+          if (gained !== 0) {
+            // Post-multiplier, like every other reactive "permanently" gain (Finding 3): a gain
+            // triggered by an event is never scaled by the holder's own multipliers.
+            addPostMultiplier(source.stats.damage, Math.round(gained));
+          }
+          break;
+        }
+
+        case "grantFromOwnStat": {
+          const own = source.appliesStatus.find((s) => s.type === tag.sourceStat)?.amount ?? 0;
+          const amount = Math.round(own * tag.multiplier);
+          if (amount === 0) break;
+          for (const target of selectTargets(tag.target, source, base, config)) {
+            addStatus(target.key, tag.grantStat, amount);
           }
           break;
         }

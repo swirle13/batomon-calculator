@@ -25,7 +25,7 @@
  * Imported for this file's own type positions AND re-exported for consumers. Both are needed: a
  * bare `export … from` does not bring the names into local scope.
  */
-import { AbilityTrigger, CreatureType, DamageChannel, EventLabel, GridRow, ItemTargetKind, ModifierScope, ModifierStat, MultiplierScope, RegionId, RosterZone, StatusEffectType, TimelineEventKind } from "./enums";
+import { AbilityTrigger, CreatureType, DamageChannel, EventLabel, GrantableStat, GridRow, ItemTargetKind, ModifierScope, ModifierStat, MultiplierScope, RegionId, RosterZone, StatusEffectType, TimelineEventKind } from "./enums";
 import { ItemId, Species, TrainerId, TrinketId } from "./ids";
 import { Rarity } from "./enums";
 import { AbilityTagKind, StatChangeStat, TargetKind } from "./enums";
@@ -105,6 +105,16 @@ export interface SelectorFilters {
   rarityFilter?: Rarity;
   /** Matches allies at or above this level. */
   minLevelFilter?: number;
+  /**
+   * Matches only allies with NO ability — Stellagon's "adjacent allies with no abilities have +2
+   * Multicast" (2026-10-09).
+   *
+   * Read through `hasAbilityText`, the same predicate the coverage report uses to decide whether
+   * a creature has an ability worth modelling at all, so "no abilities" means one thing in the
+   * engine and on screen. 62 species in the corpus publish no ability text, so this is a real
+   * archetype and not a one-creature special case.
+   */
+  noAbilityFilter?: boolean;
 }
 
 export type TargetSelector =
@@ -256,7 +266,12 @@ export type AbilityTag =
    * The creature casts in response to an ally rather than only on its own cooldown, so it needs
    * the ally-cast hook from T213. Chains are depth-capped; see `MAX_CHAIN_DEPTH` in `simulate.ts`.
    */
-  | { kind: AbilityTagKind.TriggerOnAllyCast; target: TargetSelector }
+  | {
+      kind: AbilityTagKind.TriggerOnAllyCast;
+      target: TargetSelector;
+      /** "(Except other Snapscald)". Same clause, same meaning, as on `TriggerOnAllyTrigger`. */
+      excludeSameSpecies?: boolean;
+    }
   /**
    * 2026-10-06 (T240 / FR-094). Multiplicative stat scaling — "+70% to mons with cooldown >= 5s".
    * The tag vocabulary could not express a multiplier at all; the capture shows one driving the
@@ -453,7 +468,69 @@ export type AbilityTag =
    * are deliberately NOT tagged: the granting half of their abilities is itself unmodelled, so a
    * restriction on it would guard nothing and would claim coverage this engine does not have.
    */
-  | { kind: AbilityTagKind.CannotGain; stat: StatChangeStat.Multicast };
+  | { kind: AbilityTagKind.CannotGain; stat: GrantableStat }
+  /**
+   * "Give the Fire ally behind [Nx] **this monster's Burn**" — Blixie (2026-10-09).
+   *
+   * The giver's view of `StatFromStat`, and the hole that family left. `StatFromStat` is the
+   * RECEIVER scaling off a pool of allies; every other grant shape carries a fixed amount. Blixie
+   * is neither: it hands a neighbour an amount derived from its OWN stat, so the magnitude is
+   * known only once Blixie's own line has resolved.
+   *
+   * Resolved in the delta pass for that reason — reading the giver's post-multiplier value and
+   * writing the target's, so a Blixie whose Burn an aura has raised passes on the raised figure.
+   */
+  | {
+      kind: AbilityTagKind.GrantFromOwnStat;
+      target: TargetSelector;
+      /** The giver's stat that sets the amount. */
+      sourceStat: StatusEffectType;
+      /** What the target gains. Separate from `sourceStat` because nothing says they must match. */
+      grantStat: StatusEffectType;
+      multiplier: number;
+    }
+  /**
+   * "Charge the ally behind by N second(s)" — Dracana, Ironcore, Steamscuttle (2026-10-09).
+   *
+   * The GIVING half of charge. `ChargeOnAllyStatus` is the receiving half (Cobrex pulling its own
+   * cast forward when an ally inflicts Poison), and only that half existed, so three creatures
+   * whose entire ability is accelerating a neighbour did nothing at all.
+   *
+   * Fires on the giver's cast and shortens the target's remaining cooldown, which is exactly what
+   * `simulate()` already does for `chargeRules` — the same clamp against scheduling into the past
+   * applies, so a charge that would make a creature ready retroactively fires it at the next step.
+   */
+  | { kind: AbilityTagKind.ChargeAlly; target: TargetSelector; seconds: number }
+  /**
+   * "Trigger this when an ally applies Shield. (Except other Rhizuka)" — Rhizuka (2026-10-09).
+   *
+   * A third reactive hook beside `triggerOnAllyCast` (react to the ACT of casting) and
+   * `triggerOnAllyTrigger` (react to another reaction). This one reacts to a status APPLICATION,
+   * which the engine already records per instant as `appliedThisInstant` for the charge and
+   * `gainOnAllyStatus` hooks — so the event existed and only this listener was missing.
+   */
+  | {
+      kind: AbilityTagKind.TriggerOnAllyStatus;
+      status: StatusEffectType;
+      excludeSameSpecies?: boolean;
+    }
+  /**
+   * "On ally knockout, this gains 70% of their Damage for this battle. (Except other Danuki)" —
+   * Danuki (2026-10-09).
+   *
+   * Reachable precisely because the engine models the one knockout family it can: a teammate's
+   * Petrirex or Rattleghast kills its neighbours at battle start, by POSITION, so who dies is
+   * known before the first cast. Danuki reads those casualties. A creature dying to incoming
+   * damage is still outside this engine, and on such a board Danuki simply gains nothing — which
+   * understates it rather than inventing a figure.
+   */
+  | {
+      kind: AbilityTagKind.GainOnAllyKnockout;
+      stat: StatChangeStat.Damage;
+      /** `0.7` for "70% of their Damage". */
+      fraction: number;
+      excludeSameSpecies?: boolean;
+    };
 
 // ---------------------------------------------------------------------------
 // Corpus entities

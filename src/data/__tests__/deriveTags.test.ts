@@ -312,10 +312,16 @@ describe("WI-002 coverage — reported, not implied", () => {
      * Pylong, Geminiss, Lumijel, Orcana, Talonite, Aegistruct, Gaiadrasil and Quillustrous — every
      * ability whose text narrows a target in a way the existing tag vocabulary could already
      * express. What remains untagged is listed in that file with the mechanism each one needs.
+     *
+     * 2026-10-09, same day: 342 -> 306, nine more species x 4 levels, this time by BUILDING the
+     * mechanisms the audit said were missing rather than by reaching for ones that existed —
+     * charge-giving, a grant derived from the giver's own stat, a reactive hook on status
+     * application, a gain on ally knockout, and a "no abilities" selector filter. Blixie,
+     * Stellagon, Aerophim, Dracana, Ironcore, Steamscuttle, Rhizuka, Snapscald, Danuki.
      */
-    expect(untagged.length).toBe(342);
+    expect(untagged.length).toBe(306);
     expect(newlyDerived.length).toBe(19);
-    expect(untagged.length - newlyDerived.length).toBe(323);
+    expect(untagged.length - newlyDerived.length).toBe(287);
 
     expect(Object.fromEntries([...byFamily].sort())).toEqual({
       // Engine-resolved: the counter rises by these, correctly (see the FR-114 test above).

@@ -434,4 +434,21 @@ export enum AbilityTagKind {
   StatFromOwnStat = "statFromOwnStat",
   CleanseDebuffs = "cleanseDebuffs",
   CannotGain = "cannotGain",
+  GrantFromOwnStat = "grantFromOwnStat",
+  ChargeAlly = "chargeAlly",
+  TriggerOnAllyStatus = "triggerOnAllyStatus",
+  GainOnAllyKnockout = "gainOnAllyKnockout",
+}
+
+/**
+ * What a `CannotGain` tag refuses (2026-10-09).
+ *
+ * Four creatures carry a parenthetical restriction and they name two different things: Zephyrex
+ * "can't have Multicast", while Dracana, Ironcore and Steamscuttle "can't receive charge". Both
+ * are restrictions on what a monster may RECEIVE, which is why they share a tag rather than each
+ * getting one.
+ */
+export enum GrantableStat {
+  Multicast = "multicast",
+  Charge = "charge",
 }
