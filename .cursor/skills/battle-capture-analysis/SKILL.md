@@ -141,6 +141,7 @@ Check `layout-check.png` first — a shifted box explains most bad data. Then:
 
 | Symptom | Cause | Fix |
 |---|---|---|
+| A mon appears to cast twice, a fraction of a second apart | A cast animation's flash crossed its own bar | Already rejected by the ramp test; if one survives, check `<slot>_cd` — a real cast is preceded by a ramp, a flash by a near-empty bar |
 | All badges blank | Glyph set unlabelled or wrong frame size | `bcscan glyphdump`, then `autolabel` (see reference.md) |
 | Badges blank for one mon | Band misplaced | `bcscan findtext` to re-measure, edit the layout |
 | `cd` stuck at 0 | Bar column off by a pixel or two | `bcscan findbars` to re-measure |

@@ -212,8 +212,11 @@ than dropped.
 | `FULL_FRAC` | 0.85 | How full a bar must get to count as ready |
 | `EMPTY_FRAC` | 0.25 | How empty it must then be to count as a cast |
 | `CAST_LOOKBACK` | 6 | Frames to look back for the "was full" half |
+| `CAST_RAMP_LOOKBACK` | 24 | Frames before that whose median level proves the bar really filled |
+| `CAST_RAMP_FRAC` | 0.5 | How far up the bar that median must be. This is what stops a spell effect crossing a bar from being reported as a second cast moments after the real one |
 | `CHARGE_MIN_PX` | 4 | Smallest bar jump treated as a charge |
 | `CHARGE_PERSIST` | 3 | Frames the new level must hold (VFX rejection) |
+| `CHARGE_HOLD` | 25 | Longer window over which the level must not fall back towards where it started. A flash can outlast `CHARGE_PERSIST`; a granted charge is never given back |
 | `DOT_PHASE_TOLERANCE` | 0.08 | How far off a tick a drop may sit, as a fraction of the period |
 | `DOT_MIN_COVERAGE` | 0.8 | Fraction of expected tick slots that must be filled. This is what stops the period search aliasing onto a submultiple and reporting double the speed |
 

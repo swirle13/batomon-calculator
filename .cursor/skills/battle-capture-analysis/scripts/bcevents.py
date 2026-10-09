@@ -41,10 +41,17 @@ EMPTY_FRAC = 0.25
 # How many frames back to look for the "was full" half of a cast. The bar renders a short
 # flash at full before the reset lands, so the two are never on the same frame.
 CAST_LOOKBACK = 6
+# A bar that was near-empty shortly before reading full did not fill; a spell effect crossed it.
+# A real cast is preceded by a ramp, so the typical level this far back is already well up the bar.
+CAST_RAMP_LOOKBACK = 24
+CAST_RAMP_FRAC = 0.5
 # A charge grant shows as the bar jumping further in one frame than it could have filled.
 CHARGE_MIN_PX = 4
 # Frames the new bar level must hold for a jump to count as a charge rather than a VFX flash.
 CHARGE_PERSIST = 3
+# A flash can hold for longer than CHARGE_PERSIST, so the level is also checked over a longer
+# window: a granted charge is never given back, while a flash falls off within a few frames.
+CHARGE_HOLD = 25
 # How far off a perfect tick a health drop may sit and still count as on-cadence, as a fraction
 # of the period. Loose enough to absorb render lag, tight enough that cast damage does not fit.
 DOT_PHASE_TOLERANCE = 0.08
@@ -164,6 +171,13 @@ def detect(rows, cluster_ms, charge_slots):
                 # collapse repeats: one cast per descent
                 if casts and times[i] - casts[-1] < 0.05:
                     continue
+                # Reject the flash case: the bar read full, but it was near-empty a moment
+                # earlier and near-empty again afterwards, so nothing was ever spent.
+                # The median, not the maximum: a flash can run long enough to reach into this
+                # window, but not long enough to dominate it.
+                ramp = sorted(cd[max(0, i - CAST_LOOKBACK - CAST_RAMP_LOOKBACK) : max(0, i - CAST_LOOKBACK)])
+                if ramp and ramp[len(ramp) // 2] < height * CAST_RAMP_FRAC:
+                    continue
                 casts.append(times[i])
                 events.append(
                     {
@@ -194,6 +208,11 @@ def detect(rows, cluster_ms, charge_slots):
             # falls back; requiring the new level to hold removes almost all of that.
             after = cd[i + 1 : i + 1 + CHARGE_PERSIST]
             if not after or min(after) < cd[i] - 2:
+                continue
+            # Over a longer window the bar may only leave the new level by being spent, so a
+            # fall back towards where it started — with no cast in between — was a flash.
+            held = cd[i + 1 : i + 1 + CHARGE_HOLD]
+            if held and min(held) <= cd[i - 1] + d // 2 and max(held) > empty:
                 continue
             events.append(
                 {
