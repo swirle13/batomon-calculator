@@ -8,7 +8,7 @@ import { CreatureSprite } from "../CreatureSprite";
 import styles from "./BatomonCard.module.css";
 import { isWildcardType } from "../../../data/vocabularies";
 import { AbilityText } from "../AbilityText";
-import { buildStatLines, perCastOutputOf, type StatLine } from "./perCastOutput";
+import { buildStatLines, cooldownWithModifiers, perCastOutputOf, type StatLine } from "./perCastOutput";
 
 /**
  * The one creature card, shared by the Corpus Browser and the Calculator's selected-creature panel
@@ -122,6 +122,7 @@ export function BatomonCard({ creature, children, levelLabel, fixedHeight, meta,
   const granted = (grantedTypes ?? []).filter((type) => !creature.types.includes(type));
   const rarityColor = RARITY_COLORS[creature.rarity];
   const statLines = buildStatLines(perCastOutputOf(creature, modifiers));
+  const cooldown = cooldownWithModifiers(creature, modifiers);
 
   return (
     <article
@@ -168,11 +169,8 @@ export function BatomonCard({ creature, children, levelLabel, fixedHeight, meta,
       </div>
 
       <div className={styles.output}>
-        <CooldownBlock
-          seconds={
-            creature.baseCooldownSeconds === null ? null : formatCooldown(creature.baseCooldownSeconds)
-          }
-        />
+        {/* Modifier-adjusted, like every other figure in this band — see `cooldownWithModifiers`. */}
+        <CooldownBlock seconds={cooldown === null ? null : formatCooldown(cooldown)} />
         <StatLines lines={statLines} />
       </div>
 

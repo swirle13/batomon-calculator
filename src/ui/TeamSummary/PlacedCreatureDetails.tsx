@@ -9,7 +9,7 @@ import type { GridSlot, SimulationResult } from "../../data/types";
 import {  } from "../../engine/grid";
 import { formatCooldown } from "../../data/format";
 import { BatomonCard, CooldownBlock, StatLines } from "../shared/BatomonCard/BatomonCard";
-import { buildStatLines, perCastOutputOf } from "../shared/BatomonCard/perCastOutput";
+import { buildStatLines, cooldownWithModifiers, perCastOutputOf } from "../shared/BatomonCard/perCastOutput";
 import { placementKey } from "../../engine/grid";
 
 interface PlacedCreatureDetailsProps {
@@ -95,12 +95,16 @@ export function PlacedCreatureDetails({ result, highlightedSlot }: PlacedCreatur
    */
   // Includes the user's manual modifiers, so the band compares like with like. Without that, every
   // modifier made the band appear and show a difference the user had typed in themselves.
+  //
+  // 2026-10-08: the cooldown half compared against `creature.baseCooldownSeconds`, i.e. the
+  // PUBLISHED seconds, while the output half already compared against the modified values. So a
+  // Tempo Charm press opened the band to report a 4% speed-up the user had banked themselves.
   const base = perCastOutputOf(creature, displayModifiers);
+  const baseCooldown = cooldownWithModifiers(creature, displayModifiers);
   const differs =
     effective !== undefined &&
     (JSON.stringify(effective.output) !== JSON.stringify(base) ||
-      (effective.cooldownSeconds !== null &&
-        effective.cooldownSeconds !== creature.baseCooldownSeconds));
+      (effective.cooldownSeconds !== null && effective.cooldownSeconds !== baseCooldown));
 
   return (
     <BatomonCard

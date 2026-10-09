@@ -406,6 +406,32 @@ describe("round 7 presentation fixes", () => {
     expect(screen.queryByText(/Effective this battle/i)).toBeNull();
   });
 
+  it("puts a banked cooldown modifier on the card, not in the effective band (2026-10-08)", () => {
+    // Tempo Charm's "+4% Cooldown Speed" is banked by the user on a monster they chose, so it is
+    // part of what that monster IS this run — the same argument `perCastOutput.ts` already makes
+    // for a damage or Burn modifier. The card printed the published 2.5s and let the band report
+    // 2.4s, which presents a visible, user-entered trinket as a hidden battle effect.
+    const charmed: TeamConfiguration = {
+      ...CONFIG,
+      placements: CONFIG.placements.map((p) => ({
+        ...p,
+        modifiers: [
+          { id: syntheticSpecies("charm"), stat: ModifierStat.CooldownSpeedAdd, amount: 0.04, label: "Tempo Charm" },
+        ],
+      })),
+    };
+    render(
+      <TeamConfigProvider initialConfig={charmed}>
+        <PlacedCreatureDetails result={simulate(charmed, corpus)} highlightedSlot={null} />
+      </TeamConfigProvider>,
+    );
+    // Bumblebolt: 2.5 / 1.04 = 2.403..., one decimal 2.4.
+    expect(screen.getByText("2.4")).toBeTruthy();
+    expect(screen.queryByText("2.5")).toBeNull();
+    // And with nothing left for the battle to add, the repeat band stays hidden.
+    expect(screen.queryByText(/Effective this battle/i)).toBeNull();
+  });
+
   it("hides the effective band entirely when nothing differs (item 2)", () => {
     // A second panel repeating the first invites the user to hunt for a difference and find none,
     // which is worse than no panel: it implies something changed.

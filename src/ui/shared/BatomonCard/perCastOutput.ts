@@ -2,6 +2,7 @@ import type { CreatureRecord, PerCastOutput, StatModifier, StatusEffectType } fr
 import { STATUS_COLOR_KEY } from "../../../data/format";
 import { applyModifiers } from "../../../engine/modifiers";
 import { applySelfScaling } from "../../../engine/selfScaling";
+import { effectiveCooldown } from "../../../engine/cooldown";
 import { ModifierStat, StatColorKey } from "../../../data/enums";
 
 /**
@@ -72,6 +73,40 @@ export function perCastOutputOf(creature: CreatureRecord, modifiers?: StatModifi
   // scaled number on the team-pane chip and the ability card, not as a battle effect. Last, so it
   // reads the Burn the modifiers above produced -- see engine/selfScaling.ts.
   return applySelfScaling(creature.abilityTags, modified);
+}
+
+/**
+ * The cooldown the card shows: published, plus the user's own modifiers.
+ *
+ * Cooldown was the one stat left out of the rule this file exists to state (2026-10-08,
+ * user-reported). `perCastOutputOf` folds manual modifiers into damage, statuses, heal and
+ * multicast, but `PerCastOutput` carries no cooldown, so the card went on printing the published
+ * seconds. A Panbud holding Tempo Charm therefore read "5.0 SEC" on the card and "4.8 SEC" in
+ * "Effective this battle" -- and because the band only appears when something differs, a trinket
+ * the user chose and can see was presented as a hidden battle effect.
+ *
+ * The same argument as the rest of the file: a banked Tempo Charm press is part of what the
+ * monster IS, not something this battle does to it. "Effective this battle" keeps the effects the
+ * BATTLE contributes -- ally cooldown auras, Shikitsune's revive bonus -- so with only manual
+ * modifiers in play the two now agree and the band correctly hides.
+ *
+ * Deliberately NOT ally auras: that is the band's job, and computing them needs the whole board,
+ * which the Corpus Browser (the other caller of this card) does not have.
+ */
+export function cooldownWithModifiers(
+  creature: Pick<CreatureRecord, "baseCooldownSeconds">,
+  modifiers?: StatModifier[],
+): number | null {
+  if (creature.baseCooldownSeconds === null) return null;
+  const sum = (stat: ModifierStat) =>
+    (modifiers ?? []).filter((m) => m.stat === stat).reduce((total, m) => total + m.amount, 0);
+  // Through the engine's own formula, so the card cannot disagree with the schedule about what
+  // +4% Cooldown Speed means -- the division-then-flat-addition order is easy to get backwards.
+  return effectiveCooldown(
+    creature.baseCooldownSeconds,
+    sum(ModifierStat.CooldownSpeedAdd),
+    sum(ModifierStat.CooldownFlatAddSeconds),
+  );
 }
 
 /**
