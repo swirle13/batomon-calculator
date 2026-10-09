@@ -188,7 +188,7 @@ export function PlacedCreatureDetails({ result, highlighted }: PlacedCreatureDet
           title={
             effectiveRate === null
               ? "Reflects any active modifiers and selected Trinkets"
-              : `Cast ${effective.casts} times in ${result.windowSeconds}s — one every ${formatCooldown(effectiveRate)}s on average, against a ${formatCooldown(effective.cooldownSeconds)}s cooldown.`
+              : `Cast ${effective.casts} times in ${result.windowSeconds}s, ${effective.allyTriggeredCasts} of them triggered by allies — one every ${formatCooldown(effectiveRate)}s on average, against a ${formatCooldown(effective.cooldownSeconds)}s cooldown.`
           }
         >
           <div
@@ -210,12 +210,26 @@ export function PlacedCreatureDetails({ result, highlighted }: PlacedCreatureDet
               height from the ability text. This row already exists and has slack.
 
               It is also what makes the seconds below legible: "2.9 sec" under a card publishing
-              10.0 reads as a contradiction until you know it got off ten casts to earn it.
+              10.0 reads as a contradiction until you know what earned it.
+
+              ## Why the casts are SPLIT rather than totalled (2026-10-09, user-requested)
+
+              The ask was for the total to read "10 ally casts", and it cannot: on the reported
+              board three of Puffloon's ten casts are its own 10s cycle and seven are the ally's
+              gift. Calling all ten "ally casts" would overstate the ability by its own baseline.
+
+              The ally figure leads because it is the one that answers the question being asked.
+              It is the only half that moves when you rearrange the board — the own-cycle half is
+              the same wherever the monster stands — so it is what a user deciding where to put a
+              Puffloon is actually choosing between.
             */}
             {effectiveRate !== null && (
               <span style={{ fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>
                 {" "}
-                · {effective.casts} casts in {result.windowSeconds}s
+                ·{" "}
+                {effective.allyTriggeredCasts > 0
+                  ? `${effective.allyTriggeredCasts} ally casts + ${effective.casts - effective.allyTriggeredCasts} own in ${result.windowSeconds}s`
+                  : `${effective.casts} casts in ${result.windowSeconds}s`}
               </span>
             )}
           </div>

@@ -245,6 +245,152 @@ describe("effective cast rate", () => {
     expect(aristobat.effectiveCooldownSeconds).toBeCloseTo(4, 6);
   });
 
+  it("splits the casts into the ally's gift and the monster's own cycle", () => {
+    /*
+     * 2026-10-09, user-requested, and the reason the total alone was not enough: the ask was for
+     * the card to read "10 ally casts", and three of those ten are Puffloon's own 10s cycle. The
+     * ally half is also the only half that MOVES when the board is rearranged, which makes it the
+     * figure a user choosing where to stand a Puffloon is actually comparing.
+     */
+    const pairing = board([
+      [GridRow.Top, 0, Species.Aristobat],
+      [GridRow.Top, 1, Species.Puffloon],
+    ]);
+    const puffloon = statsAt(pairing, GridRow.Top, 1);
+
+    expect(puffloon.allyTriggeredCasts).toBeGreaterThan(0);
+    expect(puffloon.casts - puffloon.allyTriggeredCasts).toBe(
+      // Its own cycle, undisturbed: a 10s cooldown over a 20s window. FR-099's rule that a
+      // reaction never reschedules its reactor is what makes this subtraction meaningful at all.
+      statsAt(board([[GridRow.Top, 1, Species.Puffloon]]), GridRow.Top, 1).casts,
+    );
+  });
+
+  it("counts nothing as ally-triggered on a board with no triggers", () => {
+    // The field has to be zero rather than absent for the card to be able to tell "no ally casts"
+    // from "this monster has no trigger" — they render differently.
+    const plain = board([
+      [GridRow.Top, 0, Species.Magmite],
+      [GridRow.Top, 2, Species.Venopuff],
+    ]);
+    expect(statsAt(plain, GridRow.Top, 0).allyTriggeredCasts).toBe(0);
+    expect(statsAt(plain, GridRow.Top, 2).allyTriggeredCasts).toBe(0);
+  });
+
+  /**
+   * N-way triggering (2026-10-09, user-asked: "would the 'effective' account for a 2-way, 3-way or
+   * N-way triggering… the math should be deterministic, thankfully").
+   *
+   * It does, and it is. Three separate mechanisms compose on a Toxic board, each measured here
+   * against the board that isolates it:
+   *
+   * - Puffloon's reactions ADD UP over every adjacent Toxic ally.
+   * - Puffloon's reactive Poison charges Cobrex, because charges read the whole instant rather than
+   *   only the scheduled casts in it — so a reaction accelerates a third monster.
+   * - Drumire's +5% per ally cast COMPOUNDS, shortening its neighbours' own cycles, which produces
+   *   more casts for Puffloon to react to in turn.
+   */
+  describe("N-way", () => {
+    /** Six slots: three Toxic monsters in the top row, three non-Toxic underneath. */
+    const toxicRow = (left: Species, middle: Species, right: Species) =>
+      board([
+        [GridRow.Top, 0, left],
+        [GridRow.Top, 1, middle],
+        [GridRow.Top, 2, right],
+        [GridRow.Bottom, 0, Species.Magmite],
+        [GridRow.Bottom, 1, Species.Pebbler],
+        [GridRow.Bottom, 2, Species.Panbud],
+      ]);
+
+    it("adds a Puffloon's reactions across every adjacent Toxic ally", () => {
+      // Pebbler is Rock, so each two-way board gives Puffloon exactly one qualifying neighbour.
+      const withDrumire = statsAt(toxicRow(Species.Drumire, Species.Puffloon, Species.Pebbler), GridRow.Top, 1);
+      const withCobrex = statsAt(toxicRow(Species.Pebbler, Species.Puffloon, Species.Cobrex), GridRow.Top, 1);
+      const withBoth = statsAt(toxicRow(Species.Drumire, Species.Puffloon, Species.Cobrex), GridRow.Top, 1);
+
+      expect(withDrumire.allyTriggeredCasts).toBeGreaterThan(0);
+      expect(withCobrex.allyTriggeredCasts).toBeGreaterThan(0);
+      // Deterministic and additive: each neighbour contributes its own cast cycle and nothing is
+      // lost or double-counted when both are present.
+      expect(withBoth.allyTriggeredCasts).toBe(
+        withDrumire.allyTriggeredCasts + withCobrex.allyTriggeredCasts,
+      );
+      expect(withBoth.effectiveCooldownSeconds!).toBeLessThan(withDrumire.effectiveCooldownSeconds!);
+      expect(withBoth.effectiveCooldownSeconds!).toBeLessThan(withCobrex.effectiveCooldownSeconds!);
+    });
+
+    it("lets a Puffloon reaction accelerate a Cobrex, which then triggers the Puffloon again", () => {
+      /*
+       * The second-order case. Cobrex charges 1s per ally Poison application and the charge hook
+       * reads the WHOLE instant, reactions included — so Puffloon's reactive Poison pulls Cobrex's
+       * cast in, and Cobrex's cast is a scheduled one, which triggers Puffloon.
+       *
+       * Measured as Cobrex's effective rate against its published 15s: the charges are the only
+       * thing that could move it.
+       */
+      // A 30s window, because Cobrex needs two casts to HAVE a rate and a charged 15s cooldown
+      // only just manages one inside 20s.
+      const fed = { ...toxicRow(Species.Drumire, Species.Puffloon, Species.Cobrex), simulationWindowSeconds: 30 };
+      const cobrex = statsAt(fed, GridRow.Top, 2);
+
+      expect(cobrex.cooldownSeconds).toBe(15);
+      expect(cobrex.effectiveCooldownSeconds!).toBeLessThan(15);
+      // Charges come from allies' Poison regardless of where they stand, so the figure that proves
+      // the REACTION contributed is the gap against a board whose Puffloon reacts to nobody.
+      const starved = {
+        ...board([
+          [GridRow.Top, 0, Species.Drumire],
+          [GridRow.Top, 2, Species.Cobrex],
+          [GridRow.Bottom, 1, Species.Puffloon],
+          [GridRow.Bottom, 0, Species.Magmite],
+          [GridRow.Bottom, 2, Species.Panbud],
+        ]),
+        simulationWindowSeconds: 30,
+      };
+      expect(cobrex.effectiveCooldownSeconds!).toBeLessThan(
+        statsAt(starved, GridRow.Top, 2).effectiveCooldownSeconds!,
+      );
+    });
+
+    it("compounds Drumire's grant into its neighbours' own cycles", () => {
+      // "When a Toxic ally casts, give it +5% Cooldown Speed for this battle" — so Venopuff's gaps
+      // shrink as the battle runs and its effective rate beats its published 3.5s.
+      const withDrumire = statsAt(toxicRow(Species.Drumire, Species.Puffloon, Species.Venopuff), GridRow.Top, 2);
+      const without = statsAt(toxicRow(Species.Pebbler, Species.Puffloon, Species.Venopuff), GridRow.Top, 2);
+
+      expect(without.effectiveCooldownSeconds).toBeCloseTo(3.5, 6);
+      expect(withDrumire.effectiveCooldownSeconds!).toBeLessThan(3.5);
+      // Earned purely from its own cycle: Venopuff has no trigger, so nothing here is a reaction.
+      expect(withDrumire.allyTriggeredCasts).toBe(0);
+    });
+
+    it("stays one level deep: a reaction never causes a second reaction", () => {
+      /*
+       * THE LIMIT, pinned so it is a decision rather than a surprise.
+       *
+       * A reaction lands in `group` but not in `dueCasts`, and both ally-cast hooks iterate
+       * `dueCasts` — so a triggered cast applies its status and deals its damage without triggering
+       * anybody. Two Puffloons would otherwise trade free casts forever, which is the runaway
+       * `MAX_CHAIN_DEPTH` exists for and this construction makes unreachable.
+       *
+       * The consequence worth knowing: a Puffloon flanked by two Toxic allies reacts once per ALLY
+       * cast, never once per reaction, so its rate is bounded by its neighbours' cast rates.
+       */
+      const flanked = toxicRow(Species.Venopuff, Species.Puffloon, Species.Aristobat);
+      const puffloon = statsAt(flanked, GridRow.Top, 1);
+      const venopuff = statsAt(flanked, GridRow.Top, 0);
+      const aristobat = statsAt(flanked, GridRow.Top, 2);
+
+      /*
+       * One reaction per neighbour cast, less exactly one: Aristobat's fifth cast lands at t=20,
+       * so its reaction would be at 20.1 — past the end of the window, and dropped rather than
+       * clamped into it. That truncation is the same rule multicast repetitions follow, and
+       * pinning it here is what stops a later "fix" from inflating a boundary cast into a free one.
+       */
+      expect(puffloon.allyTriggeredCasts).toBe(venopuff.casts + aristobat.casts - 1);
+    });
+  });
+
   it("reports no interval for a creature that cast at most once", () => {
     // One cast establishes no interval. Dividing the window by it would invent one, reporting a
     // 25s-cooldown monster in a 20s window as though it had a rate at all.

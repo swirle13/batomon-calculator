@@ -359,6 +359,7 @@ export function simulate(
       output: PerCastOutput;
       cooldownSeconds: number | null;
       casts: number;
+      allyTriggeredCasts: number;
       effectiveCooldownSeconds: number | null;
     }
   > = {};
@@ -439,6 +440,7 @@ export function simulate(
       cooldownSeconds: cooldown,
       output,
       casts: 0,
+      allyTriggeredCasts: 0,
       effectiveCooldownSeconds: null,
     };
 
@@ -742,6 +744,17 @@ export function simulate(
     else castTimesByKey.set(key, [t]);
   }
 
+  /**
+   * Of those casts, the ones an ALLY caused rather than the creature's own cooldown.
+   *
+   * The split is what makes the total legible (2026-10-09). "10 casts in 30s" on a monster
+   * publishing a 10s cooldown invites the reading that all ten were free, when three of them are
+   * its own cycle and seven are the ally's gift. Every entry in `reactions` is ally-driven — the
+   * three hooks that fill it are `TriggerOnAllyTrigger`/`TriggerOnAllyCast`, an On Cast `Trigger`
+   * aimed at an ally, and `TriggerOnAllyStatus` — so counting them is exactly this question.
+   */
+  const allyTriggeredByKey = new Map<string, number>();
+
   const runtimeBuffs = new Map<string, { damage: number; multicast: number; status: Map<StatusEffectType, number> }>();
   const buffFor = (key: string) => {
     let b = runtimeBuffs.get(key);
@@ -791,7 +804,11 @@ export function simulate(
 
     // A reaction is a cast for the purpose of "how often did this actually fire" — that is the
     // whole of what makes Puffloon's effective rate differ from its cooldown.
-    for (const r of dueReactions) recordCast(placementKey(r.creature.id, r.sourceSlot), tSeconds);
+    for (const r of dueReactions) {
+      const key = placementKey(r.creature.id, r.sourceSlot);
+      recordCast(key, tSeconds);
+      allyTriggeredByKey.set(key, (allyTriggeredByKey.get(key) ?? 0) + 1);
+    }
 
     // Queue each firing creature's remaining repetitions and its next cast before resolving, so a
     // charge landing in this instant adjusts a next-cast time that already exists.
@@ -1528,6 +1545,7 @@ export function simulate(
   for (const [key, stats] of Object.entries(perCreatureEffectiveStats)) {
     const times = castTimesByKey.get(key) ?? [];
     stats.casts = times.length;
+    stats.allyTriggeredCasts = allyTriggeredByKey.get(key) ?? 0;
     stats.effectiveCooldownSeconds =
       times.length < 2 ? null : (times[times.length - 1]! - times[0]!) / (times.length - 1);
   }

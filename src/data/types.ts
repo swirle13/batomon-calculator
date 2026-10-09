@@ -1193,6 +1193,15 @@ export interface SimulationResult {
        */
       casts: number;
       /**
+       * Of `casts`, the ones an ALLY caused rather than this creature's own cooldown.
+       *
+       * The split is what makes the total legible: "10 casts in 30s" on a monster publishing a 10s
+       * cooldown reads as though all ten were free, when three are its own cycle and seven are the
+       * ally's gift. It is also the figure that changes when you rearrange the board, so it is the
+       * one worth putting in front of someone deciding where to stand a Puffloon.
+       */
+      allyTriggeredCasts: number;
+      /**
        * The mean gap between those casts — "effectively a 2.9s cooldown this battle".
        *
        * Puffloon is why this exists. It publishes a 10s cooldown, and beside a Toxic ally on a 4s
