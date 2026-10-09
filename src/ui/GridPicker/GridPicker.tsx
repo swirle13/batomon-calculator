@@ -14,6 +14,7 @@ import {
 import type { CreatureRecord, CreatureType, GridCol, StatModifier, GridSlot } from "../../data/types";
 import { resolveCreatureVariant } from "../../data/corpus";
 import { isChefAffected, isPainted } from "../../data/typing";
+import { trainerModifiersFor } from "../../engine/trainerEffects";
 import { useTeamConfig } from "../../context/teamConfig";
 import { typeBackground } from "../../data/typeColors";
 import { STATUS_COLOR_KEY } from "../../data/format";
@@ -336,7 +337,10 @@ export const GridPicker = memo(function GridPicker({ onHighlightSlot }: GridPick
     return {
       creature,
       level: placement.level,
-      modifiers: placement.modifiers,
+      // The trainer's per-monster bonus reads as part of the creature here, the same way a manual
+      // modifier does — see `PlacedCreatureDetails` for why the chips are the third place it has
+      // to show up rather than living only in the simulation.
+      modifiers: [...(placement.modifiers ?? []), ...trainerModifiersFor(creature, config)],
       painted: creature.types.some(isWildcardType) || isPainted(creature.id, config),
       chefFire: isChefAffected(creature, config),
     };

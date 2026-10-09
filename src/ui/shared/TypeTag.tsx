@@ -10,8 +10,8 @@ import styles from "./TypeTag.module.css";
  * modifier chips and trinket badges each defined again separately — three definitions of one
  * pattern, which is exactly the divergence Principle VII exists to stop.
  */
-export function TypeTag({ type }: { type: CreatureType }) {
-  return <TypeChip type={type} />;
+export function TypeTag({ type, title }: { type: CreatureType; title?: string }) {
+  return <TypeChip type={type} title={title} />;
 }
 
 /**

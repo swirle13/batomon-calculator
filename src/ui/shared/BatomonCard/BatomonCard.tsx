@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { CreatureRecord, StatModifier } from "../../../data/types";
+import type { CreatureRecord, CreatureType, StatModifier } from "../../../data/types";
 import { RARITY_COLORS, STAT_COLORS, rarityLabel } from "../../../data/statColors";
 import { hasAbilityText } from "../../../data/display";
 import { formatCooldown } from "../../../data/format";
@@ -95,11 +95,20 @@ interface BatomonCardProps {
   painted?: boolean;
   /** True when Chef's ability reaches this creature — a prop for the same reason `painted` is. */
   chefFire?: boolean;
+  /**
+   * Types the RUN gave this creature that its record does not carry — Chef's Fire today
+   * (2026-10-08, user-reported: "the Fire type should now appear on the mon's detail card").
+   *
+   * Rendered as ordinary type chips beside the published ones, because the whole point of a
+   * granted type is that every effect which checks typing now sees it; a chip that looked
+   * different in kind would suggest it counts for less. The tooltip carries the provenance.
+   */
+  grantedTypes?: CreatureType[];
   /** The user's own manual modifiers for this placement — folded into the displayed stats. */
   modifiers?: StatModifier[];
 }
 
-export function BatomonCard({ creature, children, levelLabel, fixedHeight, meta, painted, chefFire, modifiers }: BatomonCardProps) {
+export function BatomonCard({ creature, children, levelLabel, fixedHeight, meta, painted, chefFire, grantedTypes, modifiers }: BatomonCardProps) {
   // Painted species and natively-"All" species render identically — they mean the same thing
   // in-game and differ only in where the "All" came from (run configuration vs corpus data).
   //
@@ -108,6 +117,9 @@ export function BatomonCard({ creature, children, levelLabel, fixedHeight, meta,
   // context inside the card coupled a pure presentation component to run state and broke every
   // browser test. Callers that know about a run pass it; callers that do not, do not.
   const isAllType = creature.types.some(isWildcardType) || painted === true;
+  // A grant the creature already publishes is not news — Chef reaching a Fire monster must not
+  // give it a second Fire chip.
+  const granted = (grantedTypes ?? []).filter((type) => !creature.types.includes(type));
   const rarityColor = RARITY_COLORS[creature.rarity];
   const statLines = buildStatLines(perCastOutputOf(creature, modifiers));
 
@@ -140,8 +152,15 @@ export function BatomonCard({ creature, children, levelLabel, fixedHeight, meta,
           {/* T236/FR-092: an all-type creature gets ONE rainbow chip, never one chip per type. */}
           {isAllType ? (
             <AllTypeTag />
-          ) : creature.types.length > 0 ? (
-            creature.types.map((type) => <TypeTag key={type} type={type} />)
+          ) : creature.types.length > 0 || granted.length > 0 ? (
+            <>
+              {creature.types.map((type) => (
+                <TypeTag key={type} type={type} />
+              ))}
+              {granted.map((type) => (
+                <TypeTag key={`granted-${type}`} type={type} title="Granted by your trainer" />
+              ))}
+            </>
           ) : (
             <span className={styles.noOutput}>unknown type</span>
           )}

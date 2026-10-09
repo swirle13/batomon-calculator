@@ -1,7 +1,9 @@
 import { resolveCreatureVariant } from "../../data/corpus";
 import { VariantToggles } from "../shared/VariantToggles/VariantToggles";
 import { TriggerButtons } from "./TriggerButtons";
-import { isChefAffected, isPainted } from "../../data/typing";
+import { hasChefFireTyping, isChefAffected, isPainted } from "../../data/typing";
+import { trainerModifiersFor } from "../../engine/trainerEffects";
+import { CreatureType } from "../../data/enums";
 import { useTeamConfig } from "../../context/teamConfig";
 import type { GridSlot, SimulationResult } from "../../data/types";
 import {  } from "../../engine/grid";
@@ -69,6 +71,18 @@ export function PlacedCreatureDetails({ result, highlightedSlot }: PlacedCreatur
 
   const effective = result.perCreatureEffectiveStats[placementKey(creature.id, placement.slot)];
 
+  /*
+   * The trainer's own per-monster bonus is shown as part of what the creature IS, alongside the
+   * user's manual modifiers (2026-10-08, user-reported: "the mons still don't have their extra +2
+   * burn applied to each of them").
+   *
+   * It was reaching the simulation and therefore the tables and the "Effective this battle" band,
+   * but not the card's own stat lines or the grid chips — so a Chef board read "Burn 2" in one
+   * place and nothing in the other two. Chef's Burn is a property of the run, not something this
+   * battle does, which is the same argument `perCastOutput.ts` makes for manual modifiers.
+   */
+  const displayModifiers = [...(placement.modifiers ?? []), ...trainerModifiersFor(creature, config)];
+
   /**
    * Only show "Effective this battle" when it actually differs from the card above it.
    *
@@ -81,7 +95,7 @@ export function PlacedCreatureDetails({ result, highlightedSlot }: PlacedCreatur
    */
   // Includes the user's manual modifiers, so the band compares like with like. Without that, every
   // modifier made the band appear and show a difference the user had typed in themselves.
-  const base = perCastOutputOf(creature, placement.modifiers);
+  const base = perCastOutputOf(creature, displayModifiers);
   const differs =
     effective !== undefined &&
     (JSON.stringify(effective.output) !== JSON.stringify(base) ||
@@ -95,7 +109,8 @@ export function PlacedCreatureDetails({ result, highlightedSlot }: PlacedCreatur
       fixedHeight="panel"
       painted={isPainted(creature.id, config)}
       chefFire={isChefAffected(creature, config)}
-      modifiers={placement.modifiers}
+      grantedTypes={hasChefFireTyping(creature, config) ? [CreatureType.Fire] : undefined}
+      modifiers={displayModifiers}
       meta={
         <>
           <VariantToggles placement={placement} />

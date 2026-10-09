@@ -385,6 +385,27 @@ describe("round 7 presentation fixes", () => {
     expect(screen.queryByText("2.50")).toBeNull();
   });
 
+  it("shows Chef's granted Fire type and its Burn on the card itself (2026-10-08)", () => {
+    // The trainer's effect reached the simulation first and nothing else, so the card showed a
+    // Rock-typed Pebbler with no Burn while the tables counted both. A granted type and a trainer
+    // bonus are part of what the monster IS for this run, so they belong on the card.
+    const chefTeam: TeamConfiguration = {
+      ...CONFIG,
+      placements: [{ slot: { row: GridRow.Front, col: 0 }, creatureId: Species.Pebbler, level: 1 }],
+      trainerId: TrainerId.Chef,
+    };
+    render(
+      <TeamConfigProvider initialConfig={chefTeam}>
+        <PlacedCreatureDetails result={simulate(chefTeam, corpus)} highlightedSlot={null} />
+      </TeamConfigProvider>,
+    );
+
+    expect(screen.getByTitle("Granted by your trainer").textContent).toBe("Fire");
+    expect(screen.getByText("Burn 2")).toBeTruthy();
+    // And the two bands agree, so the "Effective this battle" repeat stays hidden.
+    expect(screen.queryByText(/Effective this battle/i)).toBeNull();
+  });
+
   it("hides the effective band entirely when nothing differs (item 2)", () => {
     // A second panel repeating the first invites the user to hunt for a difference and find none,
     // which is worse than no panel: it implies something changed.

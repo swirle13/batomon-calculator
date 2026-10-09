@@ -91,9 +91,9 @@ export function Chip({ children, color, onRemove, removeLabel, title, className 
 }
 
 /** A creature type rendered as a chip — the canonical type→colour surface. */
-export function TypeChip({ type }: { type: CreatureType }) {
+export function TypeChip({ type, title }: { type: CreatureType; title?: string }) {
   return (
-    <Chip color={typeColor(type)} className={styles.chipFixedWidth}>
+    <Chip color={typeColor(type)} className={styles.chipFixedWidth} title={title}>
       {type}
     </Chip>
   );
