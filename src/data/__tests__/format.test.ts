@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatCompactValue } from "../format";
+import { formatCompactValue, formatDuration } from "../format";
 
 /**
  * A stat chip is a FIXED three characters wide (`--stat-chip-width`), and the number inside it is
@@ -40,5 +40,30 @@ describe("formatCompactValue", () => {
     // been compared as smaller than every positive bound and never abbreviated at all.
     expect(formatCompactValue(-25)).toBe("-25");
     expect(formatCompactValue(-10_000)).toBe("-10K");
+  });
+});
+
+describe("formatDuration", () => {
+  it("leaves short times in raw seconds, including the engine's half-steps", () => {
+    // Everything else on the page is in seconds on a 0.5s grid, so under a minute there is
+    // nothing to translate and "47s" needs no decoding.
+    expect(formatDuration(0)).toBe("0s");
+    expect(formatDuration(23)).toBe("23s");
+    expect(formatDuration(47.5)).toBe("47.5s");
+    expect(formatDuration(59.5)).toBe("59.5s");
+  });
+
+  it("switches to minutes where raw seconds stop meaning anything", () => {
+    // Time-to-kill stopped being capped by the simulation window on 2026-10-08, so it can now
+    // legitimately return 603 — a number a reader has to do arithmetic on.
+    expect(formatDuration(60)).toBe("1m");
+    expect(formatDuration(174)).toBe("2m 54s");
+    expect(formatDuration(603)).toBe("10m 3s");
+    expect(formatDuration(3600)).toBe("60m");
+  });
+
+  it("never renders a sixty-second remainder", () => {
+    // `119.7` rounds its remainder to 60, which would read "1m 60s".
+    expect(formatDuration(119.7)).toBe("2m");
   });
 });

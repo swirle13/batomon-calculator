@@ -135,14 +135,34 @@ describe("TTK figure (2026-10-07)", () => {
     expect(select.options[MAX_PROJECTED_DAY - 1]!.value).toBe(String(MAX_PROJECTED_DAY));
   });
 
-  it("renders '>window' rather than a dash when the team cannot finish in time", () => {
-    // A late day this pair cannot clear. "Not within this window" is a real answer and reads
-    // differently from missing data.
+  it("answers past the simulation window instead of reporting the window back", () => {
+    /*
+     * This used to assert ">30s" for day 10 — the window, not the board. The pair DOES kill day
+     * 10, at 174s, and the old figure could not say so because it only read the 30s series. Worse,
+     * it moved with the window, so two builds compared at different windows were not comparable.
+     */
     const result = simulate(poisonTeam, corpus);
     const { container } = render(<TotalDpsHarness config={poisonTeam} result={result} />);
     fireEvent.change(screen.getByLabelText("Day to compute time-to-kill against"), {
       target: { value: "10" },
     });
-    expect(container.textContent).toContain(">30s");
+    expect(container.textContent).not.toContain(">30s");
+    expect(container.textContent).toContain("2m 54s");
+  });
+
+  it("shows the search limit, not the window, for a board that never gets there", () => {
+    // "Not within an hour" is a real answer and reads differently from missing data. One Magmite
+    // is the board that earns it: the Venopuff pair above clears even day 25, at 17 minutes.
+    const trickle: TeamConfiguration = {
+      ...poisonTeam,
+      placements: [{ slot: { row: GridRow.Back, col: 0 }, creatureId: Species.Magmite, level: 1 }],
+    };
+    const { container } = render(
+      <TotalDpsHarness config={trickle} result={simulate(trickle, corpus)} />,
+    );
+    fireEvent.change(screen.getByLabelText("Day to compute time-to-kill against"), {
+      target: { value: "19" },
+    });
+    expect(container.textContent).toContain(">60m");
   });
 });

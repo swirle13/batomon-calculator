@@ -1,12 +1,13 @@
-import { memo, useState } from "react";
+import { memo, useDeferredValue, useMemo, useState } from "react";
 import type { SimulationResult, TeamConfiguration } from "../../data/types";
 import { windowAverageDps } from "../../engine/simulate";
-import { formatRate } from "../../data/format";
+import { MAX_TTK_SECONDS, timeToKillSeconds } from "../../engine/timeToKill";
+import { corpus } from "../../data/corpus";
+import { formatDuration, formatRate } from "../../data/format";
 import {
   MAX_PROJECTED_DAY,
   MAX_RECORDED_DAY,
   enemyHpEntryForDay,
-  timeToKill,
 } from "../../data/enemyHealth";
 import { Range, Select } from "../primitives";
 import styles from "./TotalDps.module.css";
@@ -78,14 +79,31 @@ export const TotalDps = memo(function TotalDps({
   const scrubPoint = series[scrubIndex] ?? null;
   const scrubbedOrZero = scrubPoint?.dps ?? 0;
 
-  /**
-   * Time to kill the day's enemy. Day 1 by default — the day most boards are built against, and
-   * the only one with an observed battle to check against.
+  /*
+   * TIME TO KILL, NO LONGER CAPPED BY THE SIMULATION WINDOW (2026-10-08, user-reported).
    *
-   * `null` means the team does not get there inside the simulated window, which is a real answer
-   * rather than a missing one, so it renders as "> <window>s" instead of a dash.
+   * This read `timeToKill(result.cumulativeSeries, day)`, so it could only see as far as the
+   * chart: a board that kills day 12 at 47s reported ">30s" at the default window. That is a
+   * statement about the window, not the board, and it changed when the window changed — so two
+   * builds compared at different windows were not comparable. `timeToKillSeconds` runs the engine
+   * out past the window to find the real crossing; see its header on why extrapolating from
+   * average DPS cannot work for a status team.
+   *
+   * ## Why this one value is deferred when nothing else in this component is
+   *
+   * The note at the top of `CalculatorView` says only the charts are deferred, because a stale
+   * number in a table misreads more easily than a chart that redraws a frame late. That still
+   * holds for every other figure here — they are microseconds of arithmetic over an existing
+   * result. This one re-runs the simulation, up to ~8ms for a board that never gets there, which
+   * is half the budget of the whole drop gesture the charts were deferred to protect. One render
+   * pass of staleness on a single derived number is the cheaper of the two costs.
    */
-  const ttkSeconds = timeToKill(result.cumulativeSeries, day);
+  const deferredConfig = useDeferredValue(config);
+  const deferredSeries = useDeferredValue(result.cumulativeSeries);
+  const ttkSeconds = useMemo(
+    () => timeToKillSeconds(deferredConfig, corpus, day, deferredSeries),
+    [deferredConfig, deferredSeries, day],
+  );
   const dayHp = enemyHpEntryForDay(day);
   const hpText = dayHp === null ? "unknown" : `${dayHp.hp.toLocaleString()} HP`;
   // Days past the recording carry their own caveat on top of the floor caveat, and the tooltip is
@@ -120,11 +138,13 @@ export const TotalDps = memo(function TotalDps({
             className={`${styles.value} ${styles.secondary}`}
             title={
               ttkSeconds === null
-                ? `This team does not clear day ${day}'s ${hpText} within the ${config.simulationWindowSeconds}s window.${projectedNote}`
-                : `Clears day ${day}'s ${hpText} at ${ttkSeconds}s. Assumes an enemy that never heals, shields or clears statuses, so this is a FLOOR on the real time.${projectedNote}`
+                ? `This team does not clear day ${day}'s ${hpText} within ${formatDuration(MAX_TTK_SECONDS)}, which is as far as the search runs.${projectedNote}`
+                : `Clears day ${day}'s ${hpText} at ${ttkSeconds}s. Independent of the ${config.simulationWindowSeconds}s simulation window — the engine is run out as far as it takes. Assumes an enemy that never heals, shields or clears statuses, so this is a FLOOR on the real time.${projectedNote}`
             }
           >
-            {ttkSeconds === null ? `>${config.simulationWindowSeconds}s` : `${ttkSeconds}s`}
+            {ttkSeconds === null
+              ? `>${formatDuration(MAX_TTK_SECONDS)}`
+              : formatDuration(ttkSeconds)}
           </div>
           <div className={styles.label}>
             TTK on day{" "}

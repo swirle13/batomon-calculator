@@ -17,6 +17,26 @@ export function formatCooldown(seconds: number | null | undefined): string {
 }
 
 /**
+ * A battle duration, as the headline time-to-kill figure reads it.
+ *
+ * Raw seconds up to a minute, because that is how the engine's grid and every other time on this
+ * page are expressed and "47s" needs no decoding. Past that, minutes: time-to-kill stopped being
+ * bounded by the simulation window on 2026-10-08 and can now legitimately return 603, which is a
+ * number a reader has to do arithmetic on before it means anything.
+ *
+ * Half-seconds survive below the minute mark (the grid is 0.5s) and are dropped above it, where
+ * they are false precision on a figure built from a projected HP table.
+ */
+export function formatDuration(seconds: number): string {
+  if (seconds < 60) return `${seconds}s`;
+  const minutes = Math.floor(seconds / 60);
+  const rest = Math.round(seconds - minutes * 60);
+  // `60s` is reachable by rounding — 119.7 would otherwise render "1m 60s".
+  if (rest === 60) return `${minutes + 1}m`;
+  return rest === 0 ? `${minutes}m` : `${minutes}m ${rest}s`;
+}
+
+/**
  * A per-second rate (DPS, status output). One decimal below 100, whole numbers at or above it —
  * hundredths of a point of DPS are noise next to a three-digit figure, and dropping them keeps
  * these to four characters so the slider readout and the table columns stay narrow.
