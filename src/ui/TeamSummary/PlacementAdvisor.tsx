@@ -9,6 +9,7 @@ import type { SimulationResult, TeamConfiguration } from "../../data/types";
 import { usePlacementAdvice } from "./usePlacementAdvice";
 import type { PlacementAdvice } from "../../engine/placementAdvice";
 import { BenchAdvice } from "./BenchAdvice";
+import { MergeAdvice } from "./MergeAdvice";
 import styles from "./PlacementAdvisor.module.css";
 
 /** The grid renders `Back` above `Front`, so name the rows the way the user sees them. */
@@ -124,6 +125,9 @@ function bestOutcomeHint(advice: PlacementAdvice): string {
     suggestedDps ?? currentDps,
     bench?.lineup?.dps ?? currentDps,
     ...(bench?.swaps ?? []).map((s) => s.dps),
+    // Merges (2026-10-09), for the reason this whole function exists: a third kind of advice added
+    // to the body and not to the header would reintroduce the "(none)" defect by a new route.
+    ...advice.merges.map((m) => Math.max(m.dps, m.bestDps ?? m.dps)),
   );
 
   // Compared as FORMATTED values, so the condition is exactly "will these two read differently".
@@ -143,6 +147,9 @@ function bestOutcomeHint(advice: PlacementAdvice): string {
    */
   const trade = bench?.lineup ?? advice.suggestion.placements;
   if (trade) return `(same damage, more survivable)`;
+  // A merge that gains no damage is still something to tell them about: it costs copies, and
+  // knowing it is available and worth nothing is what stops them spending them.
+  if (advice.merges.length > 0) return `(a merge is available)`;
 
   // Nothing on offer. FR-069's honesty requirement: silence here would read as "your placement is
   // optimal" when the usual reason is that the engine cannot see positional effects at all.
@@ -276,6 +283,23 @@ export const PlacementAdvisor = memo(function PlacementAdvisor({ result }: Place
       }
     />
   ) : null;
+  /*
+   * ABOVE the bench section, because a merge changes what the roster IS and the bench advice is
+   * about what to do with it. Reading "field this Lignite Lv.1" first and "or spend it on a Lv.2"
+   * second invites the user to take the first answer before they have seen the alternative.
+   */
+  const mergeSection = (
+    <MergeAdvice
+      merges={advice.merges}
+      currentDps={currentDps}
+      isStale={isStale}
+      // Placements and bench together, as one atomic replacement — a merge removes monsters from
+      // both, so writing one half would leave copies the merge has already spent.
+      onApply={(merge) =>
+        replaceConfig({ ...liveConfig, placements: merge.placements, bench: merge.bench })
+      }
+    />
+  );
   const blindTags = coverage.withPositionalTag.filter((n) => !coverage.actionable.includes(n));
   const gain = suggestion.bestScore - suggestion.currentScore;
   const gainPercent = suggestion.currentScore > 0 ? (gain / suggestion.currentScore) * 100 : 0;
@@ -300,6 +324,7 @@ export const PlacementAdvisor = memo(function PlacementAdvisor({ result }: Place
       <Disclosure label="Placement suggestion" hint={isStale ? "(recalculating…)" : bestOutcomeHint(advice)}>
         {notCounted}
         {survivabilitySection}
+        {mergeSection}
         {benchSection}
       </Disclosure>
     );
@@ -367,6 +392,8 @@ export const PlacementAdvisor = memo(function PlacementAdvisor({ result }: Place
       {notCounted}
 
       {survivabilitySection}
+
+      {mergeSection}
 
       {benchSection}
 

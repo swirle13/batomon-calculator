@@ -8,7 +8,7 @@ import {
 } from "./optimize";
 import { simulate, windowAverageDps } from "./simulate";
 import type { SurvivabilityEstimate } from "./survivability";
-import { computeBenchAdvice, type BenchAdvice } from "./rosterAdvice";
+import { computeBenchAdvice, computeMergeAdvice, type BenchAdvice, type MergeSuggestion } from "./rosterAdvice";
 import { slotKey } from "./grid";
 
 /**
@@ -50,6 +50,14 @@ export interface PlacementAdvice {
    * common case and the one where this must cost nothing.
    */
   bench: BenchAdvice | null;
+  /**
+   * Levels the roster can buy with duplicates (2026-10-09, user-reported).
+   *
+   * NOT part of `bench` even though it reads beside it, because a merge needs no bench: three
+   * placed copies of a species are a merge on their own. Empty on almost every board — see
+   * `computeMergeAdvice` for what it costs when it is.
+   */
+  merges: MergeSuggestion[];
 }
 
 /**
@@ -88,5 +96,10 @@ export function computePlacementAdvice(config: TeamConfiguration, corpus: Corpus
      * on precisely the scale the arrangement search used.
      */
     bench: computeBenchAdvice(config, corpus, suggestion.currentScore, currentDps),
+    /*
+     * Reuses the same `currentDps` every other figure here is relative to, so a merge's delta is on
+     * the identical scale as a bench swap's — which is the comparison the user makes between them.
+     */
+    merges: computeMergeAdvice(config, corpus, currentDps),
   };
 }

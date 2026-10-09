@@ -1,0 +1,115 @@
+/*
+ * The merge section of the placement advisor (2026-10-09).
+ *
+ * Deliberately the same shape as `BenchAdvice.module.css`: a rule above it, an uppercase heading,
+ * and a grid of rows whose deltas line up in a column. These rows are read AGAINST the bench's —
+ * "is levelling this up worth more than fielding that?" is the question — and two sections styled
+ * differently would make that comparison a visual exercise rather than a vertical one.
+ *
+ * It is a separate stylesheet rather than a shared one because the two sections are rendered by
+ * different components with different structures, and a single file serving both would make every
+ * future change to one a question about the other.
+ */
+.merge {
+  border-top: 1px solid var(--line-subtle);
+  padding-top: var(--space-sm);
+  margin-top: var(--space-md);
+  font-size: var(--font-sm);
+  line-height: 1.45;
+}
+
+/* See `PlacementAdvisor.module.css`: no rule directly under the panel's own heading. */
+.merge:nth-child(2) {
+  border-top: none;
+  padding-top: 0;
+  margin-top: 0;
+}
+
+.heading {
+  margin: 0 0 var(--space-2xs);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  font-size: var(--font-2xs);
+  color: var(--text-muted);
+}
+
+.rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+/*
+ * Each merge is a row of figures PLUS its own button, so unlike a bench swap it cannot be one grid
+ * line. The figures keep the swap table's four-column arrangement; the button sits under them.
+ */
+.row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3xs);
+}
+
+.figures {
+  width: 100%;
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr) max-content max-content;
+  align-items: baseline;
+  gap: var(--space-2xs) var(--space-sm);
+}
+
+.name {
+  font-weight: 700;
+  color: var(--text-strong);
+}
+
+.detail {
+  color: var(--text-muted);
+  font-size: var(--font-xs);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Tabular figures so the deltas line up digit-for-digit down the column. */
+.gain,
+.loss,
+.resulting {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.gain {
+  color: var(--text-accent);
+}
+
+/* Muted rather than red, for the reason `BenchAdvice.module.css` records: a worse team is not an
+   error in the tool, and "this merge is not worth it" is a useful answer. */
+.loss {
+  color: var(--text-muted);
+}
+
+.resulting {
+  color: var(--text-muted);
+  font-weight: 400;
+  font-size: var(--font-xs);
+}
+
+.cost {
+  margin: 0;
+  font-size: var(--font-2xs);
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.basis {
+  margin: var(--space-2xs) 0 0;
+  font-size: var(--font-2xs);
+  color: var(--text-muted);
+  line-height: 1.4;
+}

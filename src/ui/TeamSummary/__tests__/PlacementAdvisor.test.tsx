@@ -204,3 +204,63 @@ describe("PlacementAdvisor bench advice", () => {
     expect(boardText()!.split(" ")).toHaveLength(6);
   });
 });
+
+/**
+ * Merges (2026-10-09, user-reported): "I'm trying to tell if levelling up Lignite would be worth
+ * it." Every other figure in the panel treats a level as given, so this was the one question about
+ * the roster the tool could not answer.
+ */
+describe("PlacementAdvisor merge advice", () => {
+  /** Three Lignite Lv.1 — one placed, two benched — which is exactly one Lv.2's worth. */
+  const withCopies: TeamConfiguration = {
+    ...CONFIG,
+    placements: [
+      ...CONFIG.placements.slice(0, 5),
+      { slot: { row: GridRow.Bottom, col: 2 }, creatureId: Species.Lignite, level: 1 },
+    ],
+    bench: [
+      { index: 0, creatureId: Species.Lignite, level: 1 },
+      { index: 1, creatureId: Species.Lignite, level: 1 },
+    ],
+  };
+
+  function renderWith(config: TeamConfiguration) {
+    render(
+      <TeamConfigProvider initialConfig={config}>
+        <Advisor />
+        <Board />
+      </TeamConfigProvider>,
+    );
+  }
+
+  it("says nothing when the roster cannot pay for a merge", () => {
+    // The gate the user asked for: offered only when enough copies exist. Two is not enough.
+    renderWith({ ...withCopies, bench: [{ index: 0, creatureId: Species.Lignite, level: 1 }] });
+    expect(screen.queryByText(/level up by merging/i)).toBeNull();
+  });
+
+  it("offers the merge, and states what it spends as well as what it gains", () => {
+    renderWith(withCopies);
+    expect(screen.getByText(/level up by merging/i)).toBeTruthy();
+    expect(screen.getByText(/Lignite Lv.1 ×3/)).toBeTruthy();
+    // The price in monsters, which is the half of the decision a DPS delta cannot carry.
+    expect(screen.getByText(/spends 2 more copies/i)).toBeTruthy();
+  });
+
+  it("applies the merge as one write, spending the copies and levelling the survivor", () => {
+    renderWith(withCopies);
+    fireEvent.click(screen.getByRole("button", { name: /merge into Lignite Lv\.2/i }));
+
+    // One Lignite left, and the two benched copies are gone rather than stranded.
+    const board = boardText()!;
+    expect(board.match(/lignite/g) ?? []).toHaveLength(1);
+    expect(screen.queryByText(/level up by merging/i)).toBeNull();
+  });
+
+  it("counts the merge in the COLLAPSED header, like every other kind of advice", () => {
+    // The lesson `bestOutcomeHint` exists to record: a third search added to the body and not the
+    // header would put "(none)" above a panel holding a button.
+    renderWith(withCopies);
+    expect(document.querySelector("summary")!.textContent).not.toMatch(/\(none/);
+  });
+});

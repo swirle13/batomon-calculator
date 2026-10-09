@@ -12,6 +12,7 @@ import { BENCH_INDEXES, RosterZone } from "../data/types";
 import { analyzePositionalCoverage, permutations, scoreBoard } from "./optimize";
 import { STABLE_SLOT_ORDER, slotKey, slotsEqual } from "./grid";
 import { BENCH_SIZE, benchOf, benchRef, creatureOf, gridRef, rosterRefKey, settleOnBench, settleOnGrid } from "./roster";
+import { availableMerges } from "./merge";
 import { applyShinyOverlay, findCreature } from "../data/corpus";
 
 /**
@@ -409,6 +410,87 @@ function bestLineup(
     moves,
     evaluated,
   };
+}
+
+/**
+ * What a merge is worth, as a row the user can act on in one go (2026-10-09).
+ *
+ * Two figures rather than one, because a merge can empty a slot — three bodies become one — and a
+ * single number would then understate it. `dps` is the board the instant you merge and nothing
+ * else moves, which is exactly what the Apply button does; `bestDps` is what the SHRUNKEN roster
+ * can reach once the vacancy is filled from the bench, which is the other half of the trade and
+ * the figure that makes a merge comparable to a swap.
+ */
+export interface MergeSuggestion {
+  /** A copy as it reads now, e.g. `Lignite Lv.1`. */
+  from: string;
+  /** What the merge produces, e.g. `Lignite Lv.2`. */
+  to: string;
+  /** How many copies are spent, the survivor included. */
+  copies: number;
+  /** Where the merged monster ends up, or `null` when that is a bench position. */
+  destination: GridSlot | null;
+  /** Grid slots the merge empties. */
+  vacated: GridSlot[];
+  /** Window-average DPS immediately after merging, with nothing else moved. */
+  dps: number;
+  /** That figure minus the current board's. Negative is a real answer: some merges cost output. */
+  dpsDelta: number;
+  /** The best the post-merge roster reaches by re-fielding, or `null` when merging alone is best. */
+  bestDps: number | null;
+  /** The post-merge roster, so the UI can apply the merge without recomputing it. */
+  placements: TeamPlacement[];
+  bench: BenchedCreature[];
+}
+
+/**
+ * Every merge the roster can pay for, ranked by the best outcome it leads to.
+ *
+ * ## Why this lives beside the bench advice rather than inside it
+ *
+ * `computeBenchAdvice` returns `null` the moment the bench is empty, which is right for everything
+ * it reports and wrong for this: three placed copies of a species are a merge with no bench
+ * involved at all. So merges are their own entry point, read by `computePlacementAdvice` directly.
+ *
+ * ## What it costs
+ *
+ * `availableMerges` is a group-by that returns nothing on almost every board, and the expensive
+ * part — a lineup search per candidate — only runs when a merge actually exists. There are at most
+ * three candidates on a ten-strong roster (three copies each is the cheapest way to have three
+ * groups), and each searches a roster two monsters SMALLER than the one `computeBenchAdvice` just
+ * searched: 28 selections against 210. The ceiling is well under the cost of the advice beside it.
+ */
+export function computeMergeAdvice(
+  config: TeamConfiguration,
+  corpus: Corpus,
+  currentDps: number,
+): MergeSuggestion[] {
+  const suggestions = availableMerges(config, corpus).map((step) => {
+    const merged = step.config;
+    const { score, dps } = evaluate(merged, corpus);
+    // The post-merge roster's own best lineup. Measured on the merged board rather than the
+    // original, so "re-field after merging" is advice about the roster the merge leaves behind.
+    const lineup = bestLineup(merged, rosterOf(merged, corpus), corpus, score);
+    return {
+      from: creatureName(step.source, corpus),
+      to: creatureName(step.result, corpus),
+      copies: step.copies,
+      destination: step.destination.zone === RosterZone.Grid ? step.destination.slot : null,
+      vacated: step.vacated,
+      dps,
+      dpsDelta: dps - currentDps,
+      bestDps: lineup?.dps ?? null,
+      placements: merged.placements,
+      bench: merged.bench ?? [],
+    };
+  });
+
+  // Ranked by the best outcome each one leads to, which is the figure a user comparing a merge
+  // against a swap is actually comparing. Ranking on `dps` alone would bury a merge that empties a
+  // slot beneath one that does not, even when filling that slot is the better board.
+  return suggestions.sort(
+    (a, b) => Math.max(b.dps, b.bestDps ?? b.dps) - Math.max(a.dps, a.bestDps ?? a.dps),
+  );
 }
 
 /**
