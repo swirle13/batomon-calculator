@@ -289,20 +289,28 @@ the fix is a 1x calibration recording rather than arithmetic.
 
 Worth getting right, because re-recording is cheaper than working around a bad capture.
 
-1. **Lock the phone's screen resolution**, because a Samsung screen recording captures at
-   whatever the display is currently set to, and that is what decides the canvas size. On a
-   Galaxy S23 Ultra the three settings give frames of 3088x1440, 2316x1080 and 1544x720 — all the
-   same 2.144 aspect, holding canvases of 2560x1440, 1920x1080 and 1280x720. **FHD+ is the one to
-   pick**: it is the device default and the 1920x1080 layout and glyph set already cover it, so a
-   recording needs no calibration at all. Power saving mode silently drops the display to a lower
-   setting, which is the usual reason two recordings from one phone disagree.
+1. **Get the file off the phone without a messaging app in the path.** A USB cable, `adb pull`,
+   or a Drive upload all deliver the recording bit-for-bit. Google Messages does not: an
+   S23 Ultra capture that is 2316x1080 and 35.8 MB on the device has arrived as 1544x720 HEVC
+   at 6.6 MB, while a 28.7 MB one the same week passed through untouched. Size is not the whole
+   rule — a 31.6 MB cut of the same recording came through at 4.4 MB — so treat any
+   messaging-app transfer as an unpredictable re-encode rather than something to tune around.
+
+   This is worth caring about because the layout scales but the *evidence* does not. At a
+   1920x1080 canvas a cooldown bar is 4 px wide and a row only counts as filled when two columns
+   are bright; at 1280x720 it is 2 px and one bright column is enough. Spell effects crossing a
+   bar are the single largest source of bad readings in this pipeline, and a half-scale capture
+   doubles the sensitivity to them. Badge glyphs likewise drop from 16 px tall to 11 px.
 2. **Note the fast-forward level** and pass `--speed`. Off is ideal for timing-sensitive work, but
    ordering questions are fine at any speed.
-3. Highest frame rate available. The reference capture is 111 fps, which is ~9 ms per frame and
-   plenty to separate same-tick events. At higher fast-forward you need the frame rate more.
-   Do not worry about the rate being *steady*: a phone encoder competing with the game drops
-   frames in bursts, and every threshold in `bcevents` is resolved against the `t` column rather
-   than against a frame count precisely so that this does not matter.
+3. Highest frame rate available, and **do not worry about the rate being steady**. Both reference
+   captures run at ~120 Hz and drop 5-6% of their frames in bursts of up to a dozen, because the
+   encoder competes with the game for the GPU; the untranscoded one drops slightly more, so this
+   is the phone recording, not the transfer. It does not matter, because every threshold in
+   `bcevents` is resolved against the `t` column rather than against a frame count.
+
+   Note that the declared frame rate is not the real one. Both files announce 111-115 fps in the
+   container, which is their average including the dropped frames. Never derive timing from it.
 4. Start recording before the battle begins. The pre-battle board shows base stats, and the
    difference between those and the first in-battle frame is what reveals the battle-start
    phases.
