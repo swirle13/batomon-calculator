@@ -1,0 +1,15 @@
+dist
+package-lock.json
+public
+
+# Prettier does not CONVERGE on this file: it moves the continuation lines of list items whose
+# text contains long inline code spans, and a second pass moves them back. Left to the hook it
+# would flip on every commit that touched the file. The only one in the repo that does this.
+specs/001-batomon-dps-calculator/tasks.md
+
+# Vendored from upstream. Formatting these would only create drift to resolve the next time one
+# is updated, and their style is not ours to decide.
+.specify
+.cursor/skills/react-dev
+.cursor/skills/sickn33-antigravity-awesome-skills-frontend-design
+.cursor/skills/speckit-*
