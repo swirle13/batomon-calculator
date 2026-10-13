@@ -1,13 +1,7 @@
-import type { GridSlot } from "../../data/types";
-import { GridRow } from "../../data/enums";
-import { formatRate } from "../../data/format";
+import { formatGridSlot, formatRate } from "../../data/format";
 import type { MergeSuggestion } from "../../engine/rosterAdvice";
 import { Button } from "../primitives";
 import styles from "./MergeAdvice.module.css";
-
-/** The grid renders `Back` above `Front`, so name the rows the way the user sees them. */
-const slotLabel = (slot: GridSlot) =>
-  `${slot.row === GridRow.Top ? "top" : "bottom"} row, slot ${slot.col + 1}`;
 
 /** `+1.2k` / `-340`. The sign is the whole message, so it is never dropped. */
 function signedRate(value: number): string {
@@ -65,7 +59,7 @@ export function MergeAdvice({ merges, currentDps, isStale, onApply }: MergeAdvic
                 </span>
                 <span className={styles.detail}>
                   → {merge.to}
-                  {merge.destination ? `, ${slotLabel(merge.destination)}` : ", on your bench"}
+                  {merge.destination ? `, ${formatGridSlot(merge.destination)}` : ", on your bench"}
                 </span>
                 <span className={merge.dpsDelta >= 0 ? styles.gain : styles.loss}>
                   {signedRate(merge.dpsDelta)}
@@ -81,7 +75,7 @@ export function MergeAdvice({ merges, currentDps, isStale, onApply }: MergeAdvic
                 Spends {merge.copies - 1} more {merge.copies - 1 === 1 ? "copy" : "copies"}
                 {merge.vacated.length > 0 && (
                   <>
-                    , emptying {merge.vacated.map(slotLabel).join(" and ")}
+                    , emptying {merge.vacated.map(formatGridSlot).join(" and ")}
                   </>
                 )}
                 {refield && (

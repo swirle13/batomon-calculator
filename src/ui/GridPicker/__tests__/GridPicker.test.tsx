@@ -151,12 +151,12 @@ describe("GridPicker click-to-open (FR-047, 2026-10-06 round 7)", () => {
 });
 
 describe("GridPicker layout (FR-034/FR-035)", () => {
-  it("renders no 'back row'/'front row' label text", () => {
+  it("renders no 'top row'/'bottom row' label text", () => {
     renderWithPlacement();
     // Row geometry is self-evident on screen; GridSlot.row remains "back"|"front" as DATA (the
     // engine's adjacency resolvers depend on it) -- only the visible labels are gone.
-    expect(screen.queryByText(/^back row$/i)).toBeNull();
-    expect(screen.queryByText(/^front row$/i)).toBeNull();
+    expect(screen.queryByText(/^top row$/i)).toBeNull();
+    expect(screen.queryByText(/^bottom row$/i)).toBeNull();
   });
 
   it("renders the placed creature's sprite in its slot (FR-036, item 12)", () => {

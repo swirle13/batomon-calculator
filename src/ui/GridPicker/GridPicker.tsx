@@ -31,7 +31,7 @@ import { isWildcardType } from "../../data/vocabularies";
 import { GridRow, StatColorKey } from "../../data/enums";
 
 /**
- * 2x3 slot assignment UI (FR-005). Back row first (research.md B5 — A-row/back, B-row/front),
+ * 2x3 slot assignment UI (FR-005). Top row first (research.md B5 — A-row/back, B-row/front),
  * bound directly to TeamConfigContext; enforces data-model.md's placement rules by construction
  * (one slot per `{row, col}`, so duplicate-slot assignment is structurally impossible from this
  * UI).
@@ -43,7 +43,7 @@ import { GridRow, StatColorKey } from "../../data/enums";
  *
  * 2026-10-06 round 6: panes are square (FR-035) and show the creature's sprite (FR-036), a level
  * badge, colour-coded per-cast stat badges along the bottom matching the in-game team panel
- * (FR-035), and a clear control (FR-033). The BACK ROW / FRONT ROW labels are gone (FR-034).
+ * (FR-035), and a clear control (FR-033). The TOP ROW / BOTTOM ROW labels are gone (FR-034).
  */
 const ROWS: GridRow[] = [GridRow.Top, GridRow.Bottom];
 const COLS: GridCol[] = [0, 1, 2];
@@ -486,7 +486,7 @@ export const GridPicker = memo(function GridPicker({ onHighlight }: GridPickerPr
         sensors={sensors}
         /*
          * NO AUTO-SCROLL (2026-10-08). @dnd-kit scrolls the page whenever the pointer is within
-         * 25% of a viewport edge, which on a phone is where the FRONT ROW sits: a back-to-front
+         * 25% of a viewport edge, which on a phone is where the BOTTOM ROW sits: a back-to-front
          * drag — the most common move there is — put the finger in the bottom band and the board
          * then scrolled away under it, so the drop landed below the grid and nothing moved.
          *

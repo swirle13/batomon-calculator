@@ -252,7 +252,7 @@ correct and show their data source citation(s).
   time. A plain dropdown of trinket names MUST NOT be the primary selection control.
 - **FR-033**: Each occupied grid slot MUST offer a directly visible control to clear that slot,
   which MUST NOT also trigger slot reassignment or drag behaviour when activated.
-- **FR-034**: The team grid MUST NOT render textual row labels ("back row"/"front row"), and the
+- **FR-034**: The team grid MUST NOT render textual row labels ("top row"/"bottom row"), and the
   creature picker MUST NOT render the target slot's position in its visible heading. Slot
   position MUST remain available to assistive technology.
 - **FR-035**: Grid-slot creature icons MUST be square, and MUST display that creature's current

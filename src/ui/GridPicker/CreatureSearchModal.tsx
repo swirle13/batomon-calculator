@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { CreatureType, Rarity, RosterRef } from "../../data/types";
 import { RosterZone } from "../../data/types";
+import { formatGridSlot } from "../../data/format";
 import { distinctCreatures } from "../../data/corpus";
 import { RARITIES_ASC, RARITY_COLORS, rarityLabel } from "../../data/statColors";
 import { rosterRefKey } from "../../engine/roster";
@@ -62,7 +63,7 @@ interface CreatureSearchModalProps {
 function targetLabel(target: RosterRef | null): string {
   if (target === null) return "Choose a Batomon";
   return target.zone === RosterZone.Grid
-    ? `Choose a Batomon for ${target.slot.row} row, slot ${target.slot.col + 1}`
+    ? `Choose a Batomon for ${formatGridSlot(target.slot)}`
     : `Choose a Batomon for bench position ${target.index + 1}`;
 }
 

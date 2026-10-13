@@ -305,7 +305,7 @@ Frillet→Dewlotl, all at level 3).
 
 ## Validation scenario 23 — layout moves (FR-034/FR-037/FR-038)
 
-1. On the Calculator: **Expected** no "BACK ROW"/"FRONT ROW" text appears; the picker's heading
+1. On the Calculator: **Expected** no "TOP ROW"/"BOTTOM ROW" text appears; the picker's heading
    reads "Choose a Banto" with no slot suffix; slot position is still exposed via `aria-label`.
 2. **Expected**: the DPS table and the status-output table sit side by side as one aligned unit.
 3. **Expected**: the "Simulation window (seconds)" control sits **below** both tables and
@@ -1088,16 +1088,16 @@ and cancels the pointer before the 8px is travelled. Touch now activates on a lo
 (`dragActivation.ts`), and both inputs draw a card under the pointer while dragging.
 
 In a browser with device emulation on (any phone profile), on the calculator tab with two creatures
-placed in the back row:
+placed in the top row:
 
 1. **Swipe up and down over the board.** Expected: the page scrolls normally. A board that swallows
    vertical swipes is what `touch-action: none` would have produced, and is the regression to watch
    for whenever this area is touched.
 2. **Tap a placed card.** Expected: the creature picker opens, with no perceptible delay.
-3. **Press a placed card, hold briefly, then drag it to an empty slot in the front row.** Expected:
+3. **Press a placed card, hold briefly, then drag it to an empty slot in the bottom row.** Expected:
    a translucent, slightly enlarged copy of the card follows the finger; the slot it came from fades
    to a near-empty outline; the board does NOT scroll while dragging; releasing moves the creature.
-   The front row is the case that matters — it sits in the bottom quarter of a phone's viewport,
+   The bottom row is the case that matters — it sits in the bottom quarter of a phone's viewport,
    where @dnd-kit's auto-scroll used to run the board out from under the finger so the drop landed
    on nothing (hence `autoScroll={false}`).
 4. **Repeat on a desktop viewport with the mouse.** Expected: the same floating card, and a plain

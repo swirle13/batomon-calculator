@@ -385,7 +385,7 @@ cross-checked against the order the Poison deltas land.
 | Cluster A, t≈4.14-4.31 | Fumungus 4.2052, Cobrex 4.2231, Noxnimbus ~4.22 | (1,0), (1,2), (0,2) |
 | Cluster B, t≈5.70-5.81 | Miasmaw 5.7928, Cobrex 5.8107 | (1,1) then (1,2) |
 
-Every pairing is consistent with **front row before back row, left-to-right within a row** —
+Every pairing is consistent with **bottom row before top row, left-to-right within a row** —
 `(1,0), (1,1), (1,2), (0,0), (0,1), (0,2)`.
 
 The engine does the reverse. `STABLE_SLOT_ORDER` in `src/engine/grid.ts:14-21` lists

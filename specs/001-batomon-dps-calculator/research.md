@@ -215,7 +215,7 @@ observed so far has a single applier per status.
   confirmed game rule.
 
 ### B5. Board layout and targeting
-> The battle board is six slots: two rows of three (back row **A1–A3**, front row **B1–B3**), plus
+> The battle board is six slots: two rows of three (top row **A1–A3**, bottom row **B1–B3**), plus
 > a separate four-slot bench that does not fight and does not count for any adjacency/above/behind
 > relationship until dragged onto A/B. "Adjacent" means sharing a side (same row, neighboring
 > column) — **not** diagonal. "Above"/"behind" are relative to a unit's row and facing direction.
@@ -820,7 +820,7 @@ propagation (or the search modal will open as the slot is cleared).
   which naturally lands on 3-4 columns at common desktop widths and degrades to 1-2 on narrow
   viewports without a media-query ladder (Principle VI). A hard 4-column cap keeps card width
   from ballooning on ultrawide displays.
-- **Item 6 (row labels)**: `GridPicker`'s `BACK ROW`/`FRONT ROW` labels are removed. The 2×3
+- **Item 6 (row labels)**: `GridPicker`'s `TOP ROW`/`BOTTOM ROW` labels are removed. The 2×3
   geometry is self-evident; the labels also consumed a full grid row each. Note this does **not**
   change any engine semantics — `GridSlot.row` stays `"back" | "front"` as the data value
   (research.md B5's adjacency and `aboveSlot`/`behindSlot` resolvers depend on it); only the
@@ -875,7 +875,7 @@ Bumblebolt at `front-1` vs **2.40** at `back-0`.
   shared `shockLayers` counter as it walks that order. So whether Bumblebolt's Shock application
   at t=5 lands *before* or *after* Panbud's hit at t=5 — and therefore whether Panbud's hit procs
   against 1 layer or 2 — is decided purely by which slot each occupies. `STABLE_SLOT_ORDER` puts
-  all of `back` before all of `front`, which is why moving Bumblebolt to the back row raised it.
+  all of `back` before all of `front`, which is why moving Bumblebolt to the top row raised it.
 - **Why this is a genuine defect, not a modelling choice**: neither creature has any positional
   ability (`abilityTags: []`), so no documented game mechanic connects their slots to their
   output. The tie-break exists to make the timeline *deterministic* (contracts/engine-api.md) —

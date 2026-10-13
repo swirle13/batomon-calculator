@@ -1,5 +1,5 @@
-import type { StatusEffectType } from "./types";
-import { StatColorKey } from "./enums";
+import type { GridSlot, StatusEffectType } from "./types";
+import { GridRow, StatColorKey } from "./enums";
 
 /**
  * Shared display formatters (2026-10-06 round 7, Constitution Principle VII, FR-044).
@@ -78,6 +78,22 @@ export function formatCompactValue(value: number, formatBelow: (v: number) => st
     return `${Math.abs(scaled) < 9.95 ? scaled.toFixed(1) : Math.round(scaled)}${suffix}`;
   }
   return formatBelow(value);
+}
+
+/**
+ * A grid row, named the way the user sees it: the rows read `top` and `bottom` on screen.
+ *
+ * This cannot be `String(row)`. `GridRow`'s values are frozen as `"back"` and `"front"` because
+ * they are in the share format and `share.ts` hashes them into `buildId` (see the enum), so the
+ * serialised value and the display name are two different things that have to be mapped.
+ */
+export function formatGridRow(row: GridRow): string {
+  return row === GridRow.Top ? "top" : "bottom";
+}
+
+/** A grid position, as every surface that names one writes it: `top row, slot 2`. */
+export function formatGridSlot(slot: GridSlot): string {
+  return `${formatGridRow(slot.row)} row, slot ${slot.col + 1}`;
 }
 
 /** A signed modifier amount, e.g. `+20` / `-5`. */

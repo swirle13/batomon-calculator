@@ -1,14 +1,8 @@
 import type { ReactNode } from "react";
-import type { GridSlot } from "../../data/types";
-import { GridRow } from "../../data/enums";
-import { formatRate } from "../../data/format";
+import { formatGridSlot, formatRate } from "../../data/format";
 import type { BenchAdvice as BenchAdviceData, LineupSuggestion } from "../../engine/rosterAdvice";
 import { Button } from "../primitives";
 import styles from "./BenchAdvice.module.css";
-
-/** The grid renders `Back` above `Front`, so name the rows the way the user sees them. */
-const slotLabel = (slot: GridSlot) =>
-  `${slot.row === GridRow.Top ? "top" : "bottom"} row, slot ${slot.col + 1}`;
 
 /** `+1.2k` / `-340`. The sign is the whole message, so it is never dropped. */
 function signedRate(value: number): string {
@@ -64,7 +58,7 @@ function Lineup({
         {lineup.bringIn.length > 0 && (
           <>
             <dt>Bring on</dt>
-            <dd>{lineup.bringIn.map((b) => `${b.name} → ${slotLabel(b.slot)}`).join(" · ")}</dd>
+            <dd>{lineup.bringIn.map((b) => `${b.name} → ${formatGridSlot(b.slot)}`).join(" · ")}</dd>
           </>
         )}
         {lineup.sendOut.length > 0 && (
@@ -76,7 +70,7 @@ function Lineup({
         {lineup.moves.length > 0 && (
           <>
             <dt>Move</dt>
-            <dd>{lineup.moves.map((m) => `${m.name} → ${slotLabel(m.slot)}`).join(" · ")}</dd>
+            <dd>{lineup.moves.map((m) => `${m.name} → ${formatGridSlot(m.slot)}`).join(" · ")}</dd>
           </>
         )}
       </dl>
@@ -153,8 +147,8 @@ export function BenchAdvice({
               <span className={styles.name}>{swap.name}</span>
               <span className={styles.detail}>
                 {swap.replaces === null
-                  ? `into the empty ${slotLabel(swap.slot)}`
-                  : `for ${swap.replaces}, ${slotLabel(swap.slot)}`}
+                  ? `into the empty ${formatGridSlot(swap.slot)}`
+                  : `for ${swap.replaces}, ${formatGridSlot(swap.slot)}`}
               </span>
               <span className={swap.dpsDelta >= 0 ? styles.gain : styles.loss}>
                 {signedRate(swap.dpsDelta)}

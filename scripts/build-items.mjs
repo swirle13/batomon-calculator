@@ -31,7 +31,7 @@ const member = (id) =>
  *
  * Two readings worth stating, because both are decisions rather than transcriptions:
  *
- *  - **"the bottom right monster"** is `front/2`. The front row is the one rendered BELOW the back
+ *  - **"the bottom right monster"** is `front/2`. The bottom row is the one rendered BELOW the back
  *    row (`ModifierEditor`'s `ROWS`, the team grid's order), and col 2 is the rightmost.
  *  - **Cooldown Speed is stored as a fraction.** "+5%" is `0.05`, matching `ModifierEditor`'s own
  *    `store: (typed) => typed / 100` and the `cooldownSpeedAdd` values already in `trinkets.ts`.

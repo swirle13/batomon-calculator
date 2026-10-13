@@ -58,7 +58,7 @@ Branch: 001-batomon-dps-calculator
 - **Open item carried from the handoff**: whether a mon's own infliction counts toward its own "when allies inflict" counter — "Do not change the exclusion on the strength of one ambiguous frame."
 
 ## WI-008
-- **Ask** (verbatim, handoff Finding 8): "Tie-break order is reversed relative to every observed pairing" — "Every pairing is consistent with **front row before back row, left-to-right within a row**".
+- **Ask** (verbatim, handoff Finding 8): "Tie-break order is reversed relative to every observed pairing" — "Every pairing is consistent with **bottom row before top row, left-to-right within a row**".
 - **Type**: question to answer (explicitly gated)
 - **Confidence (handoff)**: **medium** — "Consistent with all evidence, proven by none of it." The handoff says: "it should not be committed as a confirmed rule on this evidence" and "gate it behind the experiment below rather than shipping it on medium confidence."
 - **Done means**: the finding and its gate are recorded; `STABLE_SLOT_ORDER` is **NOT** changed this round.

@@ -12,36 +12,33 @@
  * emits fixed width/height with `flex-shrink: 0`, so it cannot scale with its container.)
  */
 .grid {
-  display: grid;
-  /*
+	display: grid;
+	/*
    * minmax(0, 1fr), NOT 1fr. A bare `1fr` is `minmax(auto, 1fr)`, and that `auto` floor is the
    * card's MIN-CONTENT width — so when this column was squeezed, the tracks refused to shrink, the
    * grid grew past its own `max-width: 100%`, and it overflowed sideways across the detail panel.
    * The cards are `overflow: hidden`, so a genuinely cramped viewport now clips a card rather than
    * painting it on top of its neighbour.
    */
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--grid-gap);
-  /*
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: var(--grid-gap);
+	/*
    * Derived from the slot size rather than set to a round number, so the columns are always wide
    * enough for the sprite the cards actually contain. The old flat 30rem produced 154.67px columns
    * against ~155px of content, which is why the sprite sat on top of the name.
    */
-  width: var(--team-column-width);
-  max-width: 100%;
-  flex-shrink: 0;
+	width: var(--team-column-width);
+	max-width: 100%;
+	flex-shrink: 0;
 }
-
-/* 2026-10-06 round 6 (FR-034): the `.rowLabel` rule is gone along with the BACK ROW / FRONT ROW
+/* 2026-10-06 round 6 (FR-034): the `.rowLabel` rule is gone along with the TOP ROW / BOTTOM ROW
    elements. The 2x3 geometry is self-evident on screen, and each label consumed a whole grid row.
    `GridSlot.row` is unchanged as DATA -- adjacency, aboveSlot, and behindSlot all depend on it. */
-
 .slot {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2xs);
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-2xs);
 }
-
 /*
  * No border and no padding (2026-10-07): this wrapper is exactly its card.
  *
@@ -55,14 +52,12 @@
  * so the indicator costs nothing until it is shown.
  */
 .dropZone {
-  border-radius: var(--radius-md);
+	border-radius: var(--radius-md);
 }
-
 .dropZoneOver {
-  outline: 2px dashed var(--text-strong);
-  outline-offset: 2px;
+	outline: 2px dashed var(--text-strong);
+	outline-offset: 2px;
 }
-
 /*
  * 2026-10-06 round 6 (FR-035): square panes, matching the in-game team panel. The square shape
  * also gives the stat badges a stable area to anchor to at the bottom -- which is why `.card` is a
@@ -71,28 +66,27 @@
  */
 .card,
 .emptyCard {
-  position: relative;
-  /*
+	position: relative;
+	/*
    * Square is the TARGET shape, but the sprite is the hard constraint. If the column is ever
    * narrower than the contents need — a short viewport, a zoomed page — min-height wins and the
    * card goes slightly tall rather than overlapping its own name.
    */
-  aspect-ratio: 1;
-  min-height: var(--grid-slot-size);
-  border-radius: var(--radius-md);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+	aspect-ratio: 1;
+	min-height: var(--grid-slot-size);
+	border-radius: var(--radius-md);
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
 }
-
 .card {
-  color: var(--text-on-art);
-  /* Keeps the sprite from touching the name even when the card is at its minimum size. */
-  gap: var(--space-3xs);
-  text-shadow: var(--shadow-on-art);
-  cursor: grab;
-  user-select: none;
-  /*
+	color: var(--text-on-art);
+	/* Keeps the sprite from touching the name even when the card is at its minimum size. */
+	gap: var(--space-3xs);
+	text-shadow: var(--shadow-on-art);
+	cursor: grab;
+	user-select: none;
+	/*
    * `manipulation`, not `none` (2026-10-08). A touch drag here activates on a long press rather
    * than on distance (see `dragActivation.ts`), so the page must stay scrollable while the finger
    * is still deciding — `none` would make the board a dead zone that swallows every swipe over it.
@@ -100,27 +94,25 @@
    * spends waiting to see whether a tap is the first half of one, which is pure delay on the tap
    * that opens the picker.
    */
-  touch-action: manipulation;
-  /* iOS raises its own callout menu on a long press, which is now the drag gesture. */
-  -webkit-touch-callout: none;
-  padding: var(--grid-card-padding);
-  /*
+	touch-action: manipulation;
+	/* iOS raises its own callout menu on a long press, which is now the drag gesture. */
+	-webkit-touch-callout: none;
+	padding: var(--grid-card-padding);
+	/*
    * The chip band at the bottom of the pane (2026-10-08). `.badges` is out of flow now, so the room
    * it occupies has to be reserved here or the sprite would centre itself over the top of it. It is
    * also half of what centres the sprite: this band below balances the header row above.
    */
-  padding-bottom: calc(var(--grid-card-padding) + var(--stat-chip-height));
+	padding-bottom: calc(var(--grid-card-padding) + var(--stat-chip-height));
 }
-
 /*
  * The pane left behind while its card is in hand. Fainter than the 0.5 it was (2026-10-08): the
  * card itself is now drawn under the pointer, so this is a HOLE rather than the thing being
  * dragged, and at 0.5 the two read as two copies of equal weight.
  */
 .cardDragging {
-  opacity: 0.25;
+	opacity: 0.25;
 }
-
 /*
  * The card under the pointer, rendered into `<DragOverlay>`.
  *
@@ -134,30 +126,28 @@
  * different shape from the card it came from on phones, where the pane is taller than it is wide.
  */
 .cardGhost {
-  aspect-ratio: auto;
-  width: 100%;
-  height: 100%;
-  min-height: 0;
-  opacity: 0.85;
-  transform: scale(1.06);
-  box-shadow: var(--shadow-lifted);
-  cursor: grabbing;
-  /* Nothing is clickable in a picture of a card, and a hit-test on it would land on the ghost
+	aspect-ratio: auto;
+	width: 100%;
+	height: 100%;
+	min-height: 0;
+	opacity: 0.85;
+	transform: scale(1.06);
+	box-shadow: var(--shadow-lifted);
+	cursor: grabbing;
+	/* Nothing is clickable in a picture of a card, and a hit-test on it would land on the ghost
      instead of the slot underneath. */
-  pointer-events: none;
+	pointer-events: none;
 }
-
 /* Empty slots are square too -- square filled cards beside non-square placeholders would make the
    grid look broken in exactly the way FR-035 is meant to fix. */
 .emptyCard {
-  border: 1px dashed var(--line-strong);
-  color: var(--text-muted);
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: var(--font-md);
+	border: 1px dashed var(--line-strong);
+	color: var(--text-muted);
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	font-size: var(--font-md);
 }
-
 /*
  * Name and level on ONE row at the top of the pane (2026-10-08).
  *
@@ -170,53 +160,49 @@
  * stays centred on the pane rather than reading as offset from the X.
  */
 .header {
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: var(--space-2xs);
-  padding-inline: var(--slot-clear-gutter);
-  min-width: 0;
+	display: flex;
+	align-items: baseline;
+	justify-content: center;
+	gap: var(--space-2xs);
+	padding-inline: var(--slot-clear-gutter);
+	min-width: 0;
 }
-
 .level {
-  font-size: var(--font-2xs);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  opacity: 0.95;
-  /* The level is the short, fixed half of the row; the name is what gives way. */
-  flex-shrink: 0;
+	font-size: var(--font-2xs);
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	opacity: 0.95;
+	/* The level is the short, fixed half of the row; the name is what gives way. */
+	flex-shrink: 0;
 }
-
 .name {
-  font-weight: 700;
-  font-size: var(--font-sm);
-  line-height: 1.15;
-  /*
+	font-weight: 700;
+	font-size: var(--font-sm);
+	line-height: 1.15;
+	/*
    * ONE line, ellipsised (2026-10-08) — it was clamped to two. Nothing in the corpus needs the
    * second line, but reserving it made the header 16px taller on some panes than others, so the
    * sprite sat at a different height from one slot to the next. One line makes every pane's sprite
    * land in the same place, which is the whole point of a fixed-size pane.
    */
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
-
 .spriteWrap {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  /*
+	flex: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	/*
    * Reserves the sprite's full height. `min-height: 0` let this flex item shrink BELOW the fixed
    * 96px sprite inside it, and the sprite then overflowed onto the name rather than the layout
    * reporting that it had run out of room.
    */
-  min-height: var(--sprite-grid);
+	min-height: var(--sprite-grid);
 }
-
 /*
  * FR-035: floating, colour-coded stat chips along the bottom of the pane.
  *
@@ -236,54 +222,51 @@
  * duplication Principle VII exists to prevent.
  */
 .badges {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: var(--grid-card-padding);
-  display: flex;
-  flex-wrap: wrap-reverse;
-  justify-content: center;
-  gap: var(--stat-chip-gap);
-  max-width: var(--stat-chip-row-width);
-  margin-inline: auto;
-  /*
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: var(--grid-card-padding);
+	display: flex;
+	flex-wrap: wrap-reverse;
+	justify-content: center;
+	gap: var(--stat-chip-gap);
+	max-width: var(--stat-chip-row-width);
+	margin-inline: auto;
+	/*
    * `--stat-chip-width` is stated in `ch` — the advance of a `0` in the font of whichever element
    * reads it — so the container budgeting four of them has to read it in the chip's font, not just
    * at the chip's size. A bold digit is wider than a regular one, and inheriting the regular weight
    * here made this cap narrower than the four chips it was supposed to fit: the row wrapped after
    * three. These three declarations must stay in step with `.statBadge`.
    */
-  font-size: var(--font-2xs);
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
+	font-size: var(--font-2xs);
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
 }
-
 /* --- FR-033: per-slot clear control --- */
 .clear {
-  position: absolute;
-  top: var(--slot-clear-inset);
-  right: var(--slot-clear-inset);
-  width: var(--slot-clear-size);
-  height: var(--slot-clear-size);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  border: none;
-  border-radius: var(--radius-sm);
-  background: var(--scrim-art);
-  color: var(--text-on-art);
-  font-size: var(--font-sm);
-  line-height: 1;
-  cursor: pointer;
-  z-index: 1;
+	position: absolute;
+	top: var(--slot-clear-inset);
+	right: var(--slot-clear-inset);
+	width: var(--slot-clear-size);
+	height: var(--slot-clear-size);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0;
+	border: none;
+	border-radius: var(--radius-sm);
+	background: var(--scrim-art);
+	color: var(--text-on-art);
+	font-size: var(--font-sm);
+	line-height: 1;
+	cursor: pointer;
+	z-index: 1;
 }
-
 .clear:hover,
 .clear:focus-visible {
-  background: var(--danger-fill);
+	background: var(--danger-fill);
 }
-
 /*
  * The padlock (2026-10-09): the clear button's twin in the opposite corner.
  *
@@ -293,35 +276,33 @@
  * reserves exactly this much room on both sides of the name.
  */
 .lock {
-  position: absolute;
-  top: var(--slot-clear-inset);
-  left: var(--slot-clear-inset);
-  width: var(--slot-clear-size);
-  height: var(--slot-clear-size);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  /* The glyph fills the button, so it needs the inset the `×` gets from being a character. */
-  padding: 0.15rem;
-  border: none;
-  border-radius: var(--radius-sm);
-  background: var(--scrim-art);
-  /*
+	position: absolute;
+	top: var(--slot-clear-inset);
+	left: var(--slot-clear-inset);
+	width: var(--slot-clear-size);
+	height: var(--slot-clear-size);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	/* The glyph fills the button, so it needs the inset the `×` gets from being a character. */
+	padding: 0.15rem;
+	border: none;
+	border-radius: var(--radius-sm);
+	background: var(--scrim-art);
+	/*
    * Visible but quiet while unlocked. Hiding it until hover would have been tidier and would have
    * made it undiscoverable on a phone, which has no hover at all.
    */
-  color: var(--text-on-art);
-  opacity: 0.45;
-  line-height: 1;
-  cursor: pointer;
-  z-index: 1;
+	color: var(--text-on-art);
+	opacity: 0.45;
+	line-height: 1;
+	cursor: pointer;
+	z-index: 1;
 }
-
 .lock:hover,
 .lock:focus-visible {
-  opacity: 1;
+	opacity: 1;
 }
-
 /*
  * Locked reads as ON from across the board: full opacity, the accent fill, and a light ring.
  *
@@ -331,19 +312,16 @@
  * explanation for why the advisor is leaving that monster alone.
  */
 .lockOn {
-  opacity: 1;
-  background: var(--accent-fill);
-  box-shadow: 0 0 0 1px var(--text-on-art);
+	opacity: 1;
+	background: var(--accent-fill);
+	box-shadow: 0 0 0 1px var(--text-on-art);
 }
-
 .fallbackDetails summary {
-  font-size: var(--font-xs);
-  color: var(--text-muted);
-  cursor: pointer;
+	font-size: var(--font-xs);
+	color: var(--text-muted);
+	cursor: pointer;
 }
-
 /* --- The bench (2026-10-08) --- */
-
 /*
  * Set apart from the board by a rule and a gap rather than by a box.
  *
@@ -353,33 +331,30 @@
  * itself would break that correspondence.
  */
 .bench {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2xs);
-  padding-top: var(--space-sm);
-  border-top: 1px solid var(--line-subtle);
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-2xs);
+	padding-top: var(--space-sm);
+	border-top: 1px solid var(--line-subtle);
 }
-
 .benchHeading {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-2xs);
-  flex-wrap: wrap;
-  margin: 0;
-  font-size: var(--font-xs);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-muted);
+	display: flex;
+	align-items: baseline;
+	gap: var(--space-2xs);
+	flex-wrap: wrap;
+	margin: 0;
+	font-size: var(--font-xs);
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	color: var(--text-muted);
 }
-
 /*
  * `.benchHint` is gone (2026-10-08, user's own edit). It carried "not in the fight — drag onto
  * the board to try one" beside the heading. The BENCH label and the rule above it do the same
  * job without a sentence under the board, and the row's panes are visibly smaller than the
  * board's, which was always the stronger signal.
  */
-
 /*
  * FOUR columns in the width the board uses for three, so a bench pane is visibly smaller.
  *
@@ -409,18 +384,16 @@
  *   `overflow: hidden`. `.badges` already wraps the surplus upward.
  */
 .benchRow {
-  --sprite-grid: 48px;
-  --grid-slot-size: calc(var(--sprite-grid) + var(--grid-card-chrome) + 2 * var(--grid-card-padding));
-  --stat-chips-per-row: 3;
-
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--grid-gap);
-  width: var(--team-column-width);
-  max-width: 100%;
-  flex-shrink: 0;
+	--sprite-grid: 48px;
+	--grid-slot-size: calc(var(--sprite-grid) + var(--grid-card-chrome) + 2 * var(--grid-card-padding));
+	--stat-chips-per-row: 3;
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: var(--grid-gap);
+	width: var(--team-column-width);
+	max-width: 100%;
+	flex-shrink: 0;
 }
-
 /*
  * TWO ROWS in the header: the name, then the level under it.
  *
@@ -437,26 +410,23 @@
  * (which it matches anyway) rather than being silently overridden by it.
  */
 .benchRow .header {
-  flex-wrap: wrap;
-  justify-content: flex-start;
-  column-gap: var(--space-2xs);
-  row-gap: 0;
-  padding-inline: var(--space-3xs) var(--slot-clear-gutter);
+	flex-wrap: wrap;
+	justify-content: flex-start;
+	column-gap: var(--space-2xs);
+	row-gap: 0;
+	padding-inline: var(--space-3xs) var(--slot-clear-gutter);
 }
-
 .benchRow .name,
 .benchRow .level {
-  font-size: var(--font-2xs);
-  line-height: 1.2;
+	font-size: var(--font-2xs);
+	line-height: 1.2;
 }
-
 /* Spans the second row entirely, so `justify-content` has nothing left to place and the TEXT
    alignment is what positions it — see the phone rules for the same trap. */
 .benchRow .level {
-  flex-basis: 100%;
-  text-align: left;
+	flex-basis: 100%;
+	text-align: left;
 }
-
 /*
  * Phones: the pane keeps the desktop's 96px sprite and gives up its square instead (2026-10-08).
  *
@@ -472,17 +442,16 @@
  * nothing. Anything added here has to stay below the rule it overrides.
  */
 @media (max-width: 640px) {
-  /*
+	/*
    * FLUID, not the token. `--team-column-width` is three panes' worth of a fixed slot size, and it
    * lands tens of pixels short of a phone's width — the board sat in a column of its own with the
    * rest of the page beside it, and the panes were narrower than the screen could afford while the
    * panels above them ran the full width.
    */
-  .grid {
-    width: 100%;
-  }
-
-  /*
+	.grid {
+		width: 100%;
+	}
+	/*
    * Four columns are KEPT rather than wrapping to two rows. A bench pane is small here, but it is
    * a parking space, and halving the count on screen would make the bench look full when it is not.
    *
@@ -492,22 +461,18 @@
    * here. `min()` against the viewport for the same reason the phone's own sprite token uses it:
    * at four columns of a 320px screen there is less than 48px to give.
    */
-  .benchRow {
-    width: 100%;
-    --sprite-grid: min(
-      48px,
-      calc((100vw - 2 * var(--page-pad) - 3 * var(--grid-gap)) / 4 - 2 * var(--grid-card-padding))
-    );
-    --grid-slot-size: calc(var(--sprite-grid) + 2 * var(--grid-card-padding));
-  }
-
-  .card,
-  .emptyCard {
-    aspect-ratio: auto;
-    height: calc(var(--grid-slot-size) + var(--grid-card-chrome));
-  }
-
-  /*
+	.benchRow {
+		width: 100%;
+		--sprite-grid: min(48px,
+				calc((100vw - 2 * var(--page-pad) - 3 * var(--grid-gap)) / 4 - 2 * var(--grid-card-padding)));
+		--grid-slot-size: calc(var(--sprite-grid) + 2 * var(--grid-card-padding));
+	}
+	.card,
+	.emptyCard {
+		aspect-ratio: auto;
+		height: calc(var(--grid-slot-size) + var(--grid-card-chrome));
+	}
+	/*
    * TWO ROWS, always: the name beside the clear button, the level underneath.
    *
    * `flex-basis: 100%` on the level is what makes it always, rather than only when the name is long
@@ -523,40 +488,37 @@
    * The right padding is the clear button's corner, which only the first row actually shares — the
    * level is well short of it on the second.
    */
-  .header {
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    column-gap: var(--space-2xs);
-    row-gap: 0;
-    min-height: var(--grid-card-header);
-    padding-inline: var(--space-3xs) var(--slot-clear-gutter);
-  }
-
-  .header .name,
-  .header .level {
-    font-size: var(--font-2xs);
-    line-height: 1.15;
-  }
-
-  /*
+	.header {
+		flex-wrap: wrap;
+		justify-content: flex-start;
+		column-gap: var(--space-2xs);
+		row-gap: 0;
+		min-height: var(--grid-card-header);
+		padding-inline: var(--space-3xs) var(--slot-clear-gutter);
+	}
+	.header .name,
+	.header .level {
+		font-size: var(--font-2xs);
+		line-height: 1.15;
+	}
+	/*
    * `text-align`, not just the flex alignment above it. The level spans the whole second row
    * (`flex-basis: 100%`), so `justify-content` has nothing left to place — the item already fills
    * the line, and the TEXT inside it was still being centred by the page's inherited
    * `text-align: center`.
    */
-  .header .level {
-    flex-basis: 100%;
-    text-align: left;
-  }
-
-  /*
+	.header .level {
+		flex-basis: 100%;
+		text-align: left;
+	}
+	/*
    * Grid panes keep BOTH gutters, because grid panes are the ones with a padlock in the left
    * corner (2026-10-09). The rule above gives the left edge `--space-3xs`, which is right for a
    * bench card — nothing is up there — and would run a long name straight under the lock here.
    *
    * Below the rule it overrides, per this block's own warning about source order.
    */
-  .grid .header {
-    padding-inline: var(--slot-clear-gutter);
-  }
+	.grid .header {
+		padding-inline: var(--slot-clear-gutter);
+	}
 }

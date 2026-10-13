@@ -9,35 +9,43 @@ import type { PlacementKey } from "../data/types";
  * Source (research.md B5): "Batomon Showdown Team Planner Guide"
  * https://batomonshowdowngame.wiki/tools/team-planner/ and "Batomon Showdown Combat Mechanics"
  * https://batomonshowdowngame.wiki/guides/combat/ — the battle board is two rows of three
- * (back row / front row), bench excluded entirely. "Adjacent" means sharing a side — the four
+ * (top row / bottom row), bench excluded entirely. "Adjacent" means sharing a side — the four
  * cardinal directions, including the slot above and below — never diagonal. See `isAdjacent`,
  * which read this as same-row-only until 2026-10-08.
  */
 
 /** Stable iteration order used for tie-breaking simultaneous timeline events (contracts/engine-api.md). */
-export const STABLE_SLOT_ORDER: GridSlot[] = [
-  { row: GridRow.Top, col: 0 },
-  { row: GridRow.Top, col: 1 },
-  { row: GridRow.Top, col: 2 },
-  { row: GridRow.Bottom, col: 0 },
-  { row: GridRow.Bottom, col: 1 },
-  { row: GridRow.Bottom, col: 2 },
-];
-
+export const STABLE_SLOT_ORDER: GridSlot[] = [{
+	row: GridRow.Top,
+	col: 0
+}, {
+	row: GridRow.Top,
+	col: 1
+}, {
+	row: GridRow.Top,
+	col: 2
+}, {
+	row: GridRow.Bottom,
+	col: 0
+}, {
+	row: GridRow.Bottom,
+	col: 1
+}, {
+	row: GridRow.Bottom,
+	col: 2
+}];
 export function slotKey(slot: GridSlot): string {
-  return `${slot.row}${slot.col}`;
+	return `${slot.row}${slot.col}`;
 }
-
 export function slotsEqual(a: GridSlot, b: GridSlot): boolean {
-  return a.row === b.row && a.col === b.col;
+	return a.row === b.row && a.col === b.col;
 }
-
 export function stableSlotIndex(slot: GridSlot): number {
-  const index = STABLE_SLOT_ORDER.findIndex((s) => slotsEqual(s, slot));
-  if (index === -1) {
-    throw new Error(`Invalid grid slot: ${JSON.stringify(slot)}`);
-  }
-  return index;
+	const index = STABLE_SLOT_ORDER.findIndex(s => slotsEqual(s, slot));
+	if (index === -1) {
+		throw new Error(`Invalid grid slot: ${JSON.stringify(slot)}`);
+	}
+	return index;
 }
 
 /**
@@ -60,8 +68,8 @@ export function stableSlotIndex(slot: GridSlot): number {
  * diagonals at 2, and a slot is at 0 from itself.
  */
 export function isAdjacent(a: GridSlot, b: GridSlot): boolean {
-  const rowDistance = a.row === b.row ? 0 : 1;
-  return rowDistance + Math.abs(a.col - b.col) === 1;
+	const rowDistance = a.row === b.row ? 0 : 1;
+	return rowDistance + Math.abs(a.col - b.col) === 1;
 }
 
 /**
@@ -78,28 +86,24 @@ export function isAdjacent(a: GridSlot, b: GridSlot): boolean {
  * aura sum in `simulate.ts` — through {@link adjacentUnder} so neither can forget it.
  */
 export function hasUniversalAdjacency(config: Pick<TeamConfiguration, "trinketIds"> | undefined): boolean {
-  return (config?.trinketIds ?? []).includes(TrinketId.LinkCable);
+	return (config?.trinketIds ?? []).includes(TrinketId.LinkCable);
 }
 
 /** `isAdjacent`, except that Link Cable makes it true for every distinct pair. */
-export function adjacentUnder(
-  config: Pick<TeamConfiguration, "trinketIds"> | undefined,
-  a: GridSlot,
-  b: GridSlot,
-): boolean {
-  if (slotsEqual(a, b)) return false;
-  return hasUniversalAdjacency(config) || isAdjacent(a, b);
+export function adjacentUnder(config: Pick<TeamConfiguration, "trinketIds"> | undefined, a: GridSlot, b: GridSlot): boolean {
+	if (slotsEqual(a, b)) return false;
+	return hasUniversalAdjacency(config) || isAdjacent(a, b);
 }
 
 /*
  * --- THE THREE DIRECTIONAL WORDS, CORRECTED 2026-10-09 (user-reported) ------------------------
  *
- * "in front" means THE COLUMN TO THE RIGHT, in the same row. Not the front row.
+ * "in front" means THE COLUMN TO THE RIGHT, in the same row. Not the bottom row.
  *
  * Every one of these was wrong, and wrong in a way the row names actively encouraged: with rows
- * called `Back` and `Front`, "the ally in front" reads as "the ally in the front row", and that is
+ * called `Back` and `Front`, "the ally in front" reads as "the ally in the bottom row", and that is
  * exactly what the code did. `behindSlot` and `aboveSlot` had even converged on the identical
- * body — both returned "back row, same column" — which is the clearest possible sign that the
+ * body — both returned "top row, same column" — which is the clearest possible sign that the
  * vocabulary had stopped meaning anything. The rows are named `Top`/`Bottom` now for that reason;
  * see `GridRow`.
  *
@@ -117,17 +121,26 @@ export function adjacentUnder(
 
 /** One column LEFT, same row. `null` at the leftmost column. */
 export function behindSlot(slot: GridSlot): GridSlot | null {
-  return slot.col === 0 ? null : { row: slot.row, col: (slot.col - 1) as GridSlot["col"] };
+	return slot.col === 0 ? null : {
+		row: slot.row,
+		col: slot.col - 1 as GridSlot["col"]
+	};
 }
 
 /** One column RIGHT, same row. `null` at the rightmost column. */
 export function inFrontSlot(slot: GridSlot): GridSlot | null {
-  return slot.col === 2 ? null : { row: slot.row, col: (slot.col + 1) as GridSlot["col"] };
+	return slot.col === 2 ? null : {
+		row: slot.row,
+		col: slot.col + 1 as GridSlot["col"]
+	};
 }
 
 /** Same column, top row. `null` from the top row, which has nothing above it. */
 export function aboveSlot(slot: GridSlot): GridSlot | null {
-  return slot.row === GridRow.Bottom ? { row: GridRow.Top, col: slot.col } : null;
+	return slot.row === GridRow.Bottom ? {
+		row: GridRow.Top,
+		col: slot.col
+	} : null;
 }
 
 /**
@@ -144,5 +157,5 @@ export function aboveSlot(slot: GridSlot): GridSlot | null {
  */
 /** The one place the key format is defined. */
 export function placementKey(creatureId: Species, slot: GridSlot): PlacementKey {
-  return `${creatureId}@${slotKey(slot)}` as PlacementKey;
+	return `${creatureId}@${slotKey(slot)}` as PlacementKey;
 }

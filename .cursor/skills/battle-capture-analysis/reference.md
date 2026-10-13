@@ -83,8 +83,8 @@ Subtract the reported `canvas_x` / `canvas_y` before writing them into the layou
 Sweep a y-band that crosses them; the bars are the ~4px runs repeating at a constant pitch.
 
 ```bash
-bcscan findbars <video> 3.0 400 2000 437 507    # back row
-bcscan findbars <video> 3.0 400 2000 657 727    # front row
+bcscan findbars <video> 3.0 400 2000 437 507    # top row
+bcscan findbars <video> 3.0 400 2000 657 727    # bottom row
 ```
 
 In the reference recording (frame 2316x1080, canvas 1920x1080 at x=198) this gave back-row bars at
@@ -99,8 +99,8 @@ column that is solid bright when the mon is about to cast.
 **2. Find the badge bands.** Badges sit below each mon.
 
 ```bash
-bcscan findtext <video> 3.0 400 1150 510 555    # ally back row
-bcscan findtext <video> 3.0 380 1100 712 760    # ally front row
+bcscan findtext <video> 3.0 400 1150 510 555    # ally top row
+bcscan findtext <video> 3.0 380 1100 712 760    # ally bottom row
 ```
 
 Each reported run is one badge. Give each slot a band one slot-pitch wide, centred on its mon,

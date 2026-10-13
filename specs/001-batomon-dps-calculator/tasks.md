@@ -763,14 +763,14 @@ and 1 reported bug (FR-028..FR-040), plus the two data defects this round's inve
 | 3 | Corpus browser: 3–4 columns instead of too-wide rows | T123 | FR-031 | 20 |
 | 4 | Trinkets presented like the Batomon picker, not a dropdown, so effects are visible | T125, T139 | FR-032 | 21 |
 | 5 | Can't clear a populated slot — add a small × top-right of each mon's icon | T119, T127 | FR-033 | 22 |
-| 6 | Remove "back row"/"front row" labels | T126, T139 | FR-034 | 23 |
+| 6 | Remove "top row"/"bottom row" labels | T126, T139 | FR-034 | 23 |
 | 7 | Make the mon icons more square | T126 | FR-035 | 22 |
 | 8 | Show each mon's current stats as floating colour-coded squares at the bottom of its pane | T128, T139 | FR-035/029 | 22 |
 | 9 | Move "Simulation window (seconds)" to just above the chart, below the DPS tables | T130 | FR-037 | 23 |
 | 10 | Make the two DPS tables side by side | T131, T139 | FR-038 | 23 |
 | 11 | Modifiers: collapsible, per-mon, integrated, no team-wide option, trim the cooldown prose into subtext | T120, T132, T138 | FR-039 | 24 |
 | 12 | Each mon's sprite assets from batodex, in the picker, team display, and corpus | T114, T116, T137, T122, T123, T125, T128, T129 | FR-036 | 19/21/22 |
-| 13 | "Choose a Banto" heading: drop "— back row, slot 2" | T129, T139 | FR-034 | 23 |
+| 13 | "Choose a Banto" heading: drop "— top row, slot 2" | T129, T139 | FR-034 | 23 |
 | 14 | Bug: facilitated DPS changes 4.10→4.30 when Bumblebolt is dragged, though it has no positional ability | T117, T121 | FR-040 | 18 |
 | + | *Not requested* — round 5's "100% confirmed" claim is wrong (research.md H9) | T134 | — | — |
 | + | *Not requested* — 10 species' level-1 values contradict their own level 2-4 series (research.md H10) | T133 | — | — |
@@ -979,7 +979,7 @@ modifier wipe (T138), and tripwire assertions for the six items that had no auto
       a sibling component, and put shared grid/modal styling in one place either way.
       (depends on T115, T116, T137)
 - [x] T126 [US1] In `src/ui/GridPicker/GridPicker.tsx` + `GridPicker.module.css`: delete the
-      `BACK ROW`/`FRONT ROW` `.rowLabel` elements and their CSS (item 6 / FR-034 — `GridSlot.row`
+      `TOP ROW`/`BOTTOM ROW` `.rowLabel` elements and their CSS (item 6 / FR-034 — `GridSlot.row`
       stays `"back" | "front"` as *data*; adjacency, `aboveSlot`, and `behindSlot` all depend on
       it, so this is a text-only removal), and give the slot cards `aspect-ratio: 1` so they are
       square (item 7 / FR-035), matching the in-game team panel and giving T128's badges a stable
@@ -1121,7 +1121,7 @@ modifier wipe (T138), and tripwire assertions for the six items that had no auto
 - [x] T139 [P] Add cheap component assertions for the presentation items that otherwise have **no**
       automated coverage at all — items 4, 6, 7, 8, 10 and 13 are currently verified only by T135's
       manual walk, which is the same "verified by eye, silently regresses later" pattern that led to
-      this round's audit. In the existing/new component test files, assert: no `/back row|front row/i`
+      this round's audit. In the existing/new component test files, assert: no `/top row|bottom row/i`
       text renders in `GridPicker` (item 6); `CreatureSearchModal`'s heading is exactly
       `Choose a Banto` with no slot suffix while its dialog `aria-label` still contains the slot
       (item 13); the trinket picker renders a selected trinket's `effectText` (item 4); a placed

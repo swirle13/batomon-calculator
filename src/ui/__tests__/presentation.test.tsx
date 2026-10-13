@@ -252,11 +252,11 @@ describe("the card's output band overflows into a second column (WI-003)", () =>
 
 describe("CreatureSearchModal heading (FR-034, item 13)", () => {
   it("shows no slot position in the visible heading, but keeps it for assistive tech", () => {
-    render(<CreatureSearchModal target={gridRef({ row: GridRow.Top, col: 1 })} onClose={() => {}} onSelect={() => {}} />);
+    render(<CreatureSearchModal target={gridRef({ row: GridRow.Top, col: 1 })} onClose={() => { }} onSelect={() => { }} />);
     expect(screen.getByRole("heading", { name: "Choose a Batomon" })).toBeTruthy();
-    expect(screen.queryByRole("heading", { name: /back row, slot/i })).toBeNull();
+    expect(screen.queryByRole("heading", { name: /top row, slot/i })).toBeNull();
     // The user clicked the slot so they know which it is; a screen-reader user may not have.
-    expect(screen.getByRole("dialog").getAttribute("aria-label")).toMatch(/back row, slot 2/i);
+    expect(screen.getByRole("dialog").getAttribute("aria-label")).toMatch(/top row, slot 2/i);
   });
 });
 
@@ -312,7 +312,7 @@ describe("round 7 presentation fixes", () => {
         <PlacedCreatureDetails result={simulate(CONFIG, corpus)} highlighted={null} />
       </TeamConfigProvider>,
     );
-    render(<CreatureSearchModal target={gridRef({ row: GridRow.Top, col: 1 })} onClose={() => {}} onSelect={() => {}} />);
+    render(<CreatureSearchModal target={gridRef({ row: GridRow.Top, col: 1 })} onClose={() => { }} onSelect={() => { }} />);
     expect(screen.getByRole("heading", { name: "Choose a Batomon" })).toBeTruthy();
     expect(document.body.textContent).not.toMatch(/Banto\b/);
   });
@@ -333,7 +333,7 @@ describe("round 7 presentation fixes", () => {
   });
 
   it("renders the split type background without a gradient (FR-049, item 11)", () => {
-    render(<CreatureSearchModal target={gridRef({ row: GridRow.Top, col: 0 })} onClose={() => {}} onSelect={() => {}} />);
+    render(<CreatureSearchModal target={gridRef({ row: GridRow.Top, col: 0 })} onClose={() => { }} onSelect={() => { }} />);
     // The sliver came from a linear-gradient painted across the border box. Two explicit halves
     // cannot reproduce it, so the absence of any gradient is the structural guarantee.
     const withGradient = Array.from(document.querySelectorAll<HTMLElement>("[style]")).filter((el) =>
@@ -343,7 +343,7 @@ describe("round 7 presentation fixes", () => {
   });
 
   it("groups picker results into rarity sections and puts no rarity text on the cards (FR-048, item 10)", () => {
-    render(<CreatureSearchModal target={gridRef({ row: GridRow.Top, col: 0 })} onClose={() => {}} onSelect={() => {}} />);
+    render(<CreatureSearchModal target={gridRef({ row: GridRow.Top, col: 0 })} onClose={() => { }} onSelect={() => { }} />);
     expect(screen.getAllByRole("heading", { level: 4 }).length).toBeGreaterThan(1);
     // Rarity is structure now, not a per-card label; the only "Common" text should be headings
     // and the filter <option>, never inside a result card.
@@ -354,7 +354,7 @@ describe("round 7 presentation fixes", () => {
   it("renders grid sprites at the shared token size, not a per-call-site literal (FR-053, item 18)", () => {
     render(
       <TeamConfigProvider initialConfig={CONFIG}>
-        <GridPicker onHighlight={() => {}} />
+        <GridPicker onHighlight={() => { }} />
       </TeamConfigProvider>,
     );
     const sprite = screen.getByRole("img", { name: "Bumblebolt" });
@@ -571,7 +571,7 @@ describe("round 9: total DPS and grid sizing", () => {
     // board is no longer a pure-status team. The headline figure still matters (3 of 4 creatures
     // contribute nothing to the direct column), so the test's point survives; its premise moved.
     expect(Object.keys(result.perCreatureDps).length).toBe(1);
-    render(<TotalDps config={poisonTeam} result={result} day={1} onDayChange={() => {}} />);
+    render(<TotalDps config={poisonTeam} result={result} day={1} onDayChange={() => { }} />);
     // RE-DERIVED round 9 (T202/T200b), not re-baselined. This read 136.60 while every creature
     // ability on this board was inert. With the effect resolver and the event-driven scheduler,
     // Miasmaw applies Poison 336 instead of 10 and Cobrex fires at t=9.1 instead of t=15, so the
@@ -639,7 +639,7 @@ describe("round 9: total DPS and grid sizing", () => {
         { slot: { row: GridRow.Top, col: 1 }, creatureId: Species.Craghorn, level: 1 },
       ],
     };
-    render(<TotalDps config={team} result={simulate(team, corpus)} day={1} onDayChange={() => {}} />);
+    render(<TotalDps config={team} result={simulate(team, corpus)} day={1} onDayChange={() => { }} />);
     expect(screen.queryByText(/Not counted/)).toBeNull();
     expect(screen.queryByText(/not modelled yet/)).toBeNull();
     expect(screen.queryByText(/between battles/)).toBeNull();
@@ -720,7 +720,7 @@ describe("round 9: total DPS and grid sizing", () => {
 
   it("reads 'DPS average' until the scrubber is moved (WI-R11-003)", () => {
     const result = simulate(poisonTeam, corpus);
-    render(<TotalDps config={poisonTeam} result={result} day={1} onDayChange={() => {}} />);
+    render(<TotalDps config={poisonTeam} result={result} day={1} onDayChange={() => { }} />);
     expect(screen.getByText("DPS average")).toBeTruthy();
     // The direct-vs-facilitated explanation is gone; only the figure and its caption remain.
     expect(screen.queryByText(/status\/facilitated/)).toBeNull();
@@ -914,8 +914,8 @@ describe("region never blocks a selection (2026-10-07)", () => {
       }}>
         <CreatureSearchModal
           target={gridRef({ row: GridRow.Top, col: 0 })}
-          onClose={() => {}}
-          onSelect={() => {}}
+          onClose={() => { }}
+          onSelect={() => { }}
           config={{ selectedRegion: RegionId.Pantra }}
         />
       </TeamConfigProvider>,

@@ -2,18 +2,14 @@ import { memo } from "react";
 import { useTeamConfig } from "../../context/teamConfig";
 import { TIME_WEIGHT_HALF_LIFE_SECONDS, analyzePositionalCoverage } from "../../engine/optimize";
 import { corpus, getCreatureById } from "../../data/corpus";
-import { formatRate } from "../../data/format";
+import { formatGridSlot, formatRate } from "../../data/format";
 import { Button, Disclosure } from "../primitives";
-import { GridRow } from "../../data/enums";
 import type { SimulationResult, TeamConfiguration } from "../../data/types";
 import { usePlacementAdvice } from "./usePlacementAdvice";
 import type { PlacementAdvice } from "../../engine/placementAdvice";
 import { BenchAdvice } from "./BenchAdvice";
 import { MergeAdvice } from "./MergeAdvice";
 import styles from "./PlacementAdvisor.module.css";
-
-/** The grid renders `Back` above `Front`, so name the rows the way the user sees them. */
-const rowLabel = (row: GridRow) => (row === GridRow.Top ? "top" : "bottom");
 
 /**
  * The creatures and abilities contributing nothing to the simulated battle, moved here from under
@@ -359,8 +355,7 @@ export const PlacementAdvisor = memo(function PlacementAdvisor({ result }: Place
         <ul className={styles.moves}>
           {moves.map((p) => (
             <li key={`${p.creatureId}-${p.slot.row}${p.slot.col}`}>
-              {getCreatureById(p.creatureId)?.name ?? p.creatureId} → {rowLabel(p.slot.row)} row,
-              slot {p.slot.col + 1}
+              {getCreatureById(p.creatureId)?.name ?? p.creatureId} → {formatGridSlot(p.slot)}
             </li>
           ))}
         </ul>
