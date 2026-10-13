@@ -31,17 +31,18 @@
 
 ## Notes
 
-Two `[NEEDS CLARIFICATION]` markers remain, both on `[OPP]` requirements belonging to User Story 3
-and later. **Neither blocks planning or implementation of User Stories 1 and 2**, which are the P1
-slice and are fully specified:
+One `[NEEDS CLARIFICATION]` marker remains, on an `[OPP]` requirement belonging to User Story 3.
+**It does not block planning or implementation of User Stories 1 and 2**, which are the P1 slice and
+are fully specified.
 
-- **FR-014** — enemy ability fidelity in the first opponent-model slice (damage and HP only, or
-  healing/shielding/cleansing too).
-- **FR-017** — what an uncaptured day offers (no opponent, or a synthesised one).
-
-Both are scope decisions with materially different implications and no defensible default, which is
-why they are left open rather than guessed. They should be resolved before `/speckit-plan` is run
-for Story 3; the P1 slice can be planned immediately.
+- **FR-014** (open) — enemy ability fidelity in the first opponent-model slice: damage and HP only,
+  or healing/shielding/cleansing too. A scope decision with materially different implications and no
+  defensible default. Resolve before `/speckit-plan` is run for Story 3.
+- **FR-017** (**resolved 2026-10-13**) — what an uncaptured day offers. Answered by
+  [benchmark-opponents.md](../benchmark-opponents.md): the observed ranked meta publishes
+  phase-indexed representative boards, so the answer is neither "nothing" nor a synthesised team.
+  The dataset also added FR-021 through FR-023, which are conventions the data's gaps force rather
+  than open questions.
 
 ### Deliberate deviations from the template
 

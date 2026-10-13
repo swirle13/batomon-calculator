@@ -287,10 +287,24 @@ totals — with the divergences named.
 - **FR-015**: Users MUST [OPP] be able to choose an opponent from a stored set organised by run day.
 - **FR-016**: The system MUST [OPP] record where each opponent team came from — captured from a real
   run, or designed as a benchmark — and show it alongside the team.
-- **FR-017**: The system MUST [OPP] cover days for which no opponent team has been recorded by
-  [NEEDS CLARIFICATION: should an uncaptured day offer no opponent at all, or a team synthesised to
-  match that day's HP curve? The first is honest and leaves most of the run unplayable; the second
-  is usable everywhere and invents an opponent that was never observed.]
+- **FR-017**: The system MUST [OPP] cover days for which the user has recorded no opponent by
+  offering the observed ranked meta's board for that day's phase — neither nothing, nor a
+  synthesised team. **Resolved 2026-10-13** by the dataset in
+  [benchmark-opponents.md](./benchmark-opponents.md): the community meta publishes representative
+  boards per run phase (Early R1–4, Mid R5–8, Late R9–12, Final R13+) over tens of thousands of
+  observed rounds, which is an observation rather than an invention and is indexed the same way the
+  app already indexes a run.
+- **FR-021**: The system MUST [OPP] rank benchmark opponents by their round win rate **in the phase
+  being fought**, not by whole-run success. The two are not the same ordering — the top comp by
+  10-win rate (63%) wins only 42% of its final-phase rounds, against 67% for the comp ranked below
+  it — and a benchmark exists to be hard to beat in one round.
+- **FR-022**: The system MUST [OPP] state, wherever a benchmark result is shown, that the opponent's
+  positions were chosen by this app rather than observed. The source publishes no positions, this
+  engine's output depends on them, and an opponent arranged by our own optimiser inherits our own
+  positional blind spots on both sides of the fight.
+- **FR-023**: The system MUST [OPP] record the source level alongside the integer level it used
+  wherever a published composition gives a fractional one, so a benchmark outcome can be checked
+  against whether rounding caused it.
 - **FR-018**: The system MUST [OPP] compare a predicted fight against a recorded one and report
   fight length, per-monster cast counts and damage totals as named divergences.
 
@@ -357,9 +371,23 @@ totals — with the divergences named.
   acknowledged as plausible additional inputs and are out of scope until a second run is recorded.
 - **Sudden death is not modelled and no value is assumed for it.** It would bound fight length if it
   exists; nothing may depend on a number for it until one is observed.
-- **Opponent teams come from the existing capture pipeline and from hand-authored benchmarks.** The
-  `battle-capture-analysis` skill already extracts both teams' state from a recording frame by
-  frame, so the opponent half of a captured fight is obtainable without new tooling.
+- **Opponent teams come from three sources, now in priority order.** The observed ranked meta
+  ([benchmark-opponents.md](./benchmark-opponents.md)) supplies phase-indexed boards over tens of
+  thousands of rounds and is the broadest; the `battle-capture-analysis` skill already extracts both
+  teams' state from a recording frame by frame, so a captured fight gives an exact board with
+  positions; hand-authored benchmarks cover anything neither reaches.
+- **The meta dataset is a point-in-time snapshot of a live balance patch.** It was transcribed from
+  screenshots under Balance 25; the source removes older patches when a new one arrives, exposes no
+  public API, and its sample is self-selected by players who opt into syncing. Every figure derived
+  from it inherits that.
+- **Published compositions carry no positions and fractional levels.** The opponent is arranged by
+  this app's own placement search, and fractional levels are floored. Both are stated conventions
+  with recorded alternatives rather than incidental choices — see benchmark-opponents.md **B2** and
+  **B3**.
+- **Onsetra is a prerequisite for Comp 1 to mean anything.** It appears in the top comp at every
+  phase from Late onward, and `optimize.ts` records that its `behind` tag is present, correctly
+  typed and silently ignored by `simulate()`. A benchmark fight against that comp understates it
+  until the tag is read.
 - **The user's manual window override is retained.** The derived horizon becomes the default, not a
   replacement for the control, so an existing saved board opened after this change still reads the
   way its author set it up.
