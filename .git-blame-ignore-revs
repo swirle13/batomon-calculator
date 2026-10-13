@@ -1,0 +1,8 @@
+# Revisions that only moved whitespace around. `git blame` skips them with:
+#
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+#
+# GitHub applies this file to its own blame view with no configuration.
+
+# Format the repo with Prettier
+856d624d61cb8cf5bd04868bcbd0aa001f3f0980
