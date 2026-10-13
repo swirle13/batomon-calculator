@@ -12,47 +12,46 @@ match where the game puts them.
 
 | Document | What it answers |
 |---|---|
-| [`spec.md`](./spec.md) | What it is: the fork that gates everything, user stories, functional requirements, success criteria |
-| [`data-model.md`](./data-model.md) | The run-state systems: economy, shop offers, rarity odds, what persists, what the engine gains |
-| [`ui-architecture.md`](./ui-architecture.md) | The layout shell, the DOM/div restructuring, the component inventory, the responsive strategy, the migration sequence |
+| [`spec.md`](./spec.md) | What it is: user stories, functional requirements, success criteria |
+| [`data-model.md`](./data-model.md) | The run-state systems: economy, shop offers, acquisition sources, what persists, what the engine gains |
+| [`ui-architecture.md`](./ui-architecture.md) | The layout shell, the DOM restructuring, the breakpoint strategy, the component inventory, where the analysis UI goes |
 
-## The fork that gates everything
+## Decisions taken (2026-10-13)
 
-**Is the shop transcribed or simulated?** Every other decision hangs off this one.
+The draft left nine things open. All nine are now settled; this is the record.
 
-- **Transcribed** — you tell the app what your real shop is showing, and it prices the choice. No
-  random-number generator, no rarity-odds table, no run state machine. The app stays a calculator.
-- **Simulated** — the app rolls offers from a rank-weighted odds table and you play a fake run
-  inside it. That needs odds data this project does not have, a seeded RNG, and a run loop, and it
-  makes the app a game rather than a tool for one.
+| # | Decision | Consequence |
+|---|---|---|
+| D1 | **Transcribed, not simulated.** You enter the five offers your real shop is showing | No RNG, no run loop, no odds table. Rerolling to chase a monster is the time-waste the app exists to avoid |
+| D2 | **Acquisition sources replace the tri-state price.** Each species *and level* is tagged with where it can be obtained from | Supersedes the draft's `number \| null \| undefined`. The shop offers only shop-obtainable monsters, and "sold but unpriced" becomes a test-enforceable defect rather than an indistinguishable `0` |
+| D3 | **An explicit selection model lands before the layout moves** | Hover-only has no touch path; confirmed as step 2 of the sequence |
+| D4 | **`DndContext` is lifted out of `GridPicker`** | Board, bench and shop become independent regions sharing one provider |
+| D5 | **`ShopRef` stays separate from `RosterRef`** | "Owned" and "offered" are different types, so a future session cannot blur them by accident |
+| D6 | **Two viewport breakpoints, three layout states; everything else is a container query** | 1024px and 1280px, both derived from the token chain. See `ui-architecture.md` §3.3 |
+| D7 | **Extract a `Sheet` primitive first** | Four consumers from day one; `TeamLibrary` migrates onto it as the proof |
+| D8 | **The "Cockpit" information architecture** | DPS / mitigation / time-to-kill live in the status bar; the advisor headline docks beside the board; tables and charts move into an analysis sheet. See `ui-architecture.md` §10 |
+| D9 | **Shop rank and rarity odds are dropped entirely** | Their only consumer was reroll expected value, which only exists under D1's rejected alternative — and trinkets/items/trainers modify shop rank, so any static table would be wrong anyway |
 
-`spec.md` recommends **transcribed**, with the odds table arriving later as an *advice* input
-("rerolling is worth it at this rank") rather than as a generator. The recommendation has an
-evidence base: the question that produced this feature was *"I had $55 and four offers, which two
-should I have bought?"*, and that question needs no RNG at all.
+## The two things that still block a start
 
-## The three things that block a start
+The draft listed three. D2 and D3 turned one of them into a plan, so two remain as work:
 
-1. **65 of 149 species carry `shopCost: 0`** — 44% of the corpus is unpriced, and a shop row cannot
-   render a price it does not have. See `data-model.md` §4.
-2. **Hover is the current selection model.** The detail panel is driven by `onMouseEnter`, which has
-   no touch equivalent, and the game's layout puts the detail card where a phone has no room for it.
-   A real `selected` model has to land before the layout moves. See `ui-architecture.md` §5.
-3. **`DndContext` is owned by `GridPicker`.** The board and the bench are rendered by one component
-   because drag-and-drop requires one context; the new layout needs them in different regions, and
-   the shop needs to be a drag source into both. The context has to be lifted first. See
-   `ui-architecture.md` §3.2.
-
-None of the three is hard. All three are cheaper to do before the layout change than during it.
+1. **62 of 149 species carry `shopCost: 0`, and 56 of those are not evolution targets.** Tagging
+   acquisition sources (D2) makes the set diagnosable, but it does not make the prices appear. The
+   subset tagged `Shop` still needs real numbers. See `data-model.md` §4 for the enumerated list and
+   the invariant test that keeps it honest.
+2. **`#root` imposes `width: max(1126px, …)` and `text-align: center`.** Both have to go before a
+   grid shell can place anything. See `ui-architecture.md` §7.1.
 
 ## What this changes about advice
 
 The bench is currently modelled as monsters you already own, and the lineup search prices them at
 zero gold. On a real shop screen that produces unactionable recommendations — on the board that
-prompted this feature it advised fielding two monsters costing $75 against a $55 budget.
+prompted this feature it advised fielding two monsters costing $75 against a $55 budget, while the
+best affordable board (Aristobat + Runerock, $45) was never surfaced.
 
-Making `rosterAdvice` budget-aware is a small, self-contained change with a large payoff, and it is
-specified here (FR-S12) rather than deferred, because it is the reason the shop is worth building.
+Making `rosterAdvice` budget-aware is roughly 80 lines, needs no shop UI at all, and is step 4 of
+the sequence rather than something that waits for the layout.
 
 ## Relationship to 001
 
