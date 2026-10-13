@@ -4,7 +4,9 @@
 
 **Created**: 2026-10-13
 
-**Status**: Draft — specification only, nothing built
+**Status**: Draft — specification only, nothing built. Approach resolved in
+[research.md](./research.md); see **B1** for what the current constant actually asserts and **F**
+for the recommended first slice.
 
 **Input**: User description: *"the suggestion engine specifically orients its weight about front-loaded
 damage being more important and uses 10 seconds as that anchor point. I'm wanting to overhaul that
@@ -60,7 +62,11 @@ real fight:
 
 1. **`TIME_WEIGHT_HALF_LIFE_SECONDS = 10`** — damage ten seconds in counts half. This is the
    "front-loaded damage matters more" anchor. Its own source comment is honest that it is a
-   survivability assumption wearing a discount's clothes.
+   survivability assumption wearing a discount's clothes, and [research.md](./research.md) **B1**
+   shows it is literally one: the weight is the survival function of a constant hazard rate, so the
+   constant asserts that every fight on every day ends at a constant rate with a mean of 14.4
+   seconds. A constant hazard is the unique *memoryless* one, which is the single shape that cannot
+   represent a fight becoming likelier to end as HP depletes.
 2. **The mirror assumption** — `survivability.ts` prices shields, heals and cleanses against an
    assumed incoming DPS equal to *your own*. It is scale-free, which is why it was chosen, and it
    is still a guess about an opponent the engine does not simulate.
