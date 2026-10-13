@@ -238,16 +238,107 @@ boards, which is not a field yet.
 
 ---
 
-## G. Open questions
+## G. Loadable boards
+
+Each board below is identified by its **`buildId`** — the project's own composition fingerprint from
+`src/data/share.ts`, FNV-1a over the canonical build, "same team in, same id out — always". No new
+identity scheme was invented; these are the same ids the team library uses to recognise a duplicate.
+
+The `bat1:` code beside each one is produced by the same `exportBuild()` the Share button calls, so
+**pasting it into "Load team" loads that board**. `src/data/__tests__/benchmarkOpponents.test.ts`
+pins every id below and asserts the round trip, so if a corpus or canonical-form change moves one,
+a test names it rather than this document going quietly stale.
+
+Levels are floored per **B3**; positions are this app's own placement search per **B2**. `runDay` is
+pinned to the first round of each phase.
+
+### Formiqueen + Velocect
+
+| Phase | `buildId` | Day | Layout (top row, then bottom) |
+|---|---|---|---|
+| Early R1–4 | `c9a66948` | 1 | velocect.2 · bumblebolt.1 · brawlmantis.1 / electranade.1 · dragonegg.1 · gildshell.1 |
+| Mid R5–8 | `8874a735` | 5 | velocect.3 · formiqueen.2 · bumblebolt.2 / electranade.1 · pylong.1 · cherubble.1 |
+| Late R9–12 | `d31b1da8` | 9 | formiqueen.2 · bumblebolt.3 · pylong.2 / velocect.3 · stellagon.1 · onsetra.1 |
+| Final R13+ | `16359e2d` | 13 | velocect.3 · formiqueen.3 · onsetra.2 / stellagon.2 · bumblebolt.3 · pylong.2 |
+
+**Early R1–4** — the only board of the eight the optimiser left in reading order.
+
+```
+bat1:eyJ2IjoxLCJyZWdpb24iOm51bGwsInRyYWluZXIiOm51bGwsIndpbmRvdyI6MzAsInBsYWNlbWVudHMiOlt7InJvdyI6ImJhY2siLCJjb2wiOjAsImNyZWF0dXJlSWQiOiJ2ZWxvY2VjdCIsImxldmVsIjoyLCJzaGlueSI6ZmFsc2UsIm1vZGlmaWVycyI6W119LHsicm93IjoiYmFjayIsImNvbCI6MSwiY3JlYXR1cmVJZCI6ImJ1bWJsZWJvbHQiLCJsZXZlbCI6MSwic2hpbnkiOmZhbHNlLCJtb2RpZmllcnMiOltdfSx7InJvdyI6ImJhY2siLCJjb2wiOjIsImNyZWF0dXJlSWQiOiJicmF3bG1hbnRpcyIsImxldmVsIjoxLCJzaGlueSI6ZmFsc2UsIm1vZGlmaWVycyI6W119LHsicm93IjoiZnJvbnQiLCJjb2wiOjAsImNyZWF0dXJlSWQiOiJlbGVjdHJhbmFkZSIsImxldmVsIjoxLCJzaGlueSI6ZmFsc2UsIm1vZGlmaWVycyI6W119LHsicm93IjoiZnJvbnQiLCJjb2wiOjEsImNyZWF0dXJlSWQiOiJkcmFnb25lZ2ciLCJsZXZlbCI6MSwic2hpbnkiOmZhbHNlLCJtb2RpZmllcnMiOltdfSx7InJvdyI6ImZyb250IiwiY29sIjoyLCJjcmVhdHVyZUlkIjoiZ2lsZHNoZWxsIiwibGV2ZWwiOjEsInNoaW55IjpmYWxzZSwibW9kaWZpZXJzIjpbXX1dLCJ0cmlua2V0cyI6W10sIml0ZW1zIjpbXSwicGFpbnRlZCI6W10sInNtdWdnbGVkIjpbXSwidGVhbU1vZGlmaWVycyI6W119
+```
+
+**Mid R5–8**
+
+```
+bat1:eyJ2IjoxLCJyZWdpb24iOm51bGwsInRyYWluZXIiOm51bGwsIndpbmRvdyI6MzAsInBsYWNlbWVudHMiOlt7InJvdyI6ImJhY2siLCJjb2wiOjAsImNyZWF0dXJlSWQiOiJ2ZWxvY2VjdCIsImxldmVsIjozLCJzaGlueSI6ZmFsc2UsIm1vZGlmaWVycyI6W119LHsicm93IjoiYmFjayIsImNvbCI6MSwiY3JlYXR1cmVJZCI6ImZvcm1pcXVlZW4iLCJsZXZlbCI6Miwic2hpbnkiOmZhbHNlLCJtb2RpZmllcnMiOltdfSx7InJvdyI6ImJhY2siLCJjb2wiOjIsImNyZWF0dXJlSWQiOiJidW1ibGVib2x0IiwibGV2ZWwiOjIsInNoaW55IjpmYWxzZSwibW9kaWZpZXJzIjpbXX0seyJyb3ciOiJmcm9udCIsImNvbCI6MCwiY3JlYXR1cmVJZCI6ImVsZWN0cmFuYWRlIiwibGV2ZWwiOjEsInNoaW55IjpmYWxzZSwibW9kaWZpZXJzIjpbXX0seyJyb3ciOiJmcm9udCIsImNvbCI6MSwiY3JlYXR1cmVJZCI6InB5bG9uZyIsImxldmVsIjoxLCJzaGlueSI6ZmFsc2UsIm1vZGlmaWVycyI6W119LHsicm93IjoiZnJvbnQiLCJjb2wiOjIsImNyZWF0dXJlSWQiOiJjaGVydWJibGUiLCJsZXZlbCI6MSwic2hpbnkiOmZhbHNlLCJtb2RpZmllcnMiOltdfV0sInRyaW5rZXRzIjpbXSwiaXRlbXMiOltdLCJwYWludGVkIjpbXSwic211Z2dsZWQiOltdLCJ0ZWFtTW9kaWZpZXJzIjpbXSwiZGF5Ijo1fQ
+```
+
+**Late R9–12** — 89% round wins, the comp's strongest observed phase.
+
+```
+bat1:eyJ2IjoxLCJyZWdpb24iOm51bGwsInRyYWluZXIiOm51bGwsIndpbmRvdyI6MzAsInBsYWNlbWVudHMiOlt7InJvdyI6ImJhY2siLCJjb2wiOjAsImNyZWF0dXJlSWQiOiJmb3JtaXF1ZWVuIiwibGV2ZWwiOjIsInNoaW55IjpmYWxzZSwibW9kaWZpZXJzIjpbXX0seyJyb3ciOiJiYWNrIiwiY29sIjoxLCJjcmVhdHVyZUlkIjoiYnVtYmxlYm9sdCIsImxldmVsIjozLCJzaGlueSI6ZmFsc2UsIm1vZGlmaWVycyI6W119LHsicm93IjoiYmFjayIsImNvbCI6MiwiY3JlYXR1cmVJZCI6InB5bG9uZyIsImxldmVsIjoyLCJzaGlueSI6ZmFsc2UsIm1vZGlmaWVycyI6W119LHsicm93IjoiZnJvbnQiLCJjb2wiOjAsImNyZWF0dXJlSWQiOiJ2ZWxvY2VjdCIsImxldmVsIjozLCJzaGlueSI6ZmFsc2UsIm1vZGlmaWVycyI6W119LHsicm93IjoiZnJvbnQiLCJjb2wiOjEsImNyZWF0dXJlSWQiOiJzdGVsbGFnb24iLCJsZXZlbCI6MSwic2hpbnkiOmZhbHNlLCJtb2RpZmllcnMiOltdfSx7InJvdyI6ImZyb250IiwiY29sIjoyLCJjcmVhdHVyZUlkIjoib25zZXRyYSIsImxldmVsIjoxLCJzaGlueSI6ZmFsc2UsIm1vZGlmaWVycyI6W119XSwidHJpbmtldHMiOltdLCJpdGVtcyI6W10sInBhaW50ZWQiOltdLCJzbXVnZ2xlZCI6W10sInRlYW1Nb2RpZmllcnMiOltdLCJkYXkiOjl9
+```
+
+**Final R13+**
+
+```
+bat1:eyJ2IjoxLCJyZWdpb24iOm51bGwsInRyYWluZXIiOm51bGwsIndpbmRvdyI6MzAsInBsYWNlbWVudHMiOlt7InJvdyI6ImJhY2siLCJjb2wiOjAsImNyZWF0dXJlSWQiOiJ2ZWxvY2VjdCIsImxldmVsIjozLCJzaGlueSI6ZmFsc2UsIm1vZGlmaWVycyI6W119LHsicm93IjoiYmFjayIsImNvbCI6MSwiY3JlYXR1cmVJZCI6ImZvcm1pcXVlZW4iLCJsZXZlbCI6Mywic2hpbnkiOmZhbHNlLCJtb2RpZmllcnMiOltdfSx7InJvdyI6ImJhY2siLCJjb2wiOjIsImNyZWF0dXJlSWQiOiJvbnNldHJhIiwibGV2ZWwiOjIsInNoaW55IjpmYWxzZSwibW9kaWZpZXJzIjpbXX0seyJyb3ciOiJmcm9udCIsImNvbCI6MCwiY3JlYXR1cmVJZCI6InN0ZWxsYWdvbiIsImxldmVsIjoyLCJzaGlueSI6ZmFsc2UsIm1vZGlmaWVycyI6W119LHsicm93IjoiZnJvbnQiLCJjb2wiOjEsImNyZWF0dXJlSWQiOiJidW1ibGVib2x0IiwibGV2ZWwiOjMsInNoaW55IjpmYWxzZSwibW9kaWZpZXJzIjpbXX0seyJyb3ciOiJmcm9udCIsImNvbCI6MiwiY3JlYXR1cmVJZCI6InB5bG9uZyIsImxldmVsIjoyLCJzaGlueSI6ZmFsc2UsIm1vZGlmaWVycyI6W119XSwidHJpbmtldHMiOltdLCJpdGVtcyI6W10sInBhaW50ZWQiOltdLCJzbXVnZ2xlZCI6W10sInRlYW1Nb2RpZmllcnMiOltdLCJkYXkiOjEzfQ
+```
+
+### Bonshell + Opalion
+
+| Phase | `buildId` | Day | Layout (top row, then bottom) |
+|---|---|---|---|
+| Early R1–4 | `bd5c8282` | 1 | bonshell.1 · scorubble.1 · sukoi.1 / swoonet.2 · shellter.1 · gildshell.1 |
+| Mid R5–8 | `bd65db08` | 5 | bonshell.3 · dracana.1 · sukoi.1 / opalion.1 · boomagon.1 · rhizuka.1 |
+| Late R9–12 | `386f3f41` | 9 | opalion.2 · celestia.1 · cairnage.1 / saberhorn.1 · bonshell.3 · dracana.2 |
+| Final R13+ | `000bf6a5` | 13 | opalion.2 · cairnage.2 · celestia.1 / saberhorn.2 · bonshell.3 · dracana.2 |
+
+**Early R1–4**
+
+```
+bat1:eyJ2IjoxLCJyZWdpb24iOm51bGwsInRyYWluZXIiOm51bGwsIndpbmRvdyI6MzAsInBsYWNlbWVudHMiOlt7InJvdyI6ImJhY2siLCJjb2wiOjAsImNyZWF0dXJlSWQiOiJib25zaGVsbCIsImxldmVsIjoxLCJzaGlueSI6ZmFsc2UsIm1vZGlmaWVycyI6W119LHsicm93IjoiYmFjayIsImNvbCI6MSwiY3JlYXR1cmVJZCI6InNjb3J1YmJsZSIsImxldmVsIjoxLCJzaGlueSI6ZmFsc2UsIm1vZGlmaWVycyI6W119LHsicm93IjoiYmFjayIsImNvbCI6MiwiY3JlYXR1cmVJZCI6InN1a29pIiwibGV2ZWwiOjEsInNoaW55IjpmYWxzZSwibW9kaWZpZXJzIjpbXX0seyJyb3ciOiJmcm9udCIsImNvbCI6MCwiY3JlYXR1cmVJZCI6InN3b29uZXQiLCJsZXZlbCI6Miwic2hpbnkiOmZhbHNlLCJtb2RpZmllcnMiOltdfSx7InJvdyI6ImZyb250IiwiY29sIjoxLCJjcmVhdHVyZUlkIjoic2hlbGx0ZXIiLCJsZXZlbCI6MSwic2hpbnkiOmZhbHNlLCJtb2RpZmllcnMiOltdfSx7InJvdyI6ImZyb250IiwiY29sIjoyLCJjcmVhdHVyZUlkIjoiZ2lsZHNoZWxsIiwibGV2ZWwiOjEsInNoaW55IjpmYWxzZSwibW9kaWZpZXJzIjpbXX1dLCJ0cmlua2V0cyI6W10sIml0ZW1zIjpbXSwicGFpbnRlZCI6W10sInNtdWdnbGVkIjpbXSwidGVhbU1vZGlmaWVycyI6W119
+```
+
+**Mid R5–8**
+
+```
+bat1:eyJ2IjoxLCJyZWdpb24iOm51bGwsInRyYWluZXIiOm51bGwsIndpbmRvdyI6MzAsInBsYWNlbWVudHMiOlt7InJvdyI6ImJhY2siLCJjb2wiOjAsImNyZWF0dXJlSWQiOiJib25zaGVsbCIsImxldmVsIjozLCJzaGlueSI6ZmFsc2UsIm1vZGlmaWVycyI6W119LHsicm93IjoiYmFjayIsImNvbCI6MSwiY3JlYXR1cmVJZCI6ImRyYWNhbmEiLCJsZXZlbCI6MSwic2hpbnkiOmZhbHNlLCJtb2RpZmllcnMiOltdfSx7InJvdyI6ImJhY2siLCJjb2wiOjIsImNyZWF0dXJlSWQiOiJzdWtvaSIsImxldmVsIjoxLCJzaGlueSI6ZmFsc2UsIm1vZGlmaWVycyI6W119LHsicm93IjoiZnJvbnQiLCJjb2wiOjAsImNyZWF0dXJlSWQiOiJvcGFsaW9uIiwibGV2ZWwiOjEsInNoaW55IjpmYWxzZSwibW9kaWZpZXJzIjpbXX0seyJyb3ciOiJmcm9udCIsImNvbCI6MSwiY3JlYXR1cmVJZCI6ImJvb21hZ29uIiwibGV2ZWwiOjEsInNoaW55IjpmYWxzZSwibW9kaWZpZXJzIjpbXX0seyJyb3ciOiJmcm9udCIsImNvbCI6MiwiY3JlYXR1cmVJZCI6InJoaXp1a2EiLCJsZXZlbCI6MSwic2hpbnkiOmZhbHNlLCJtb2RpZmllcnMiOltdfV0sInRyaW5rZXRzIjpbXSwiaXRlbXMiOltdLCJwYWludGVkIjpbXSwic211Z2dsZWQiOltdLCJ0ZWFtTW9kaWZpZXJzIjpbXSwiZGF5Ijo1fQ
+```
+
+**Late R9–12**
+
+```
+bat1:eyJ2IjoxLCJyZWdpb24iOm51bGwsInRyYWluZXIiOm51bGwsIndpbmRvdyI6MzAsInBsYWNlbWVudHMiOlt7InJvdyI6ImJhY2siLCJjb2wiOjAsImNyZWF0dXJlSWQiOiJvcGFsaW9uIiwibGV2ZWwiOjIsInNoaW55IjpmYWxzZSwibW9kaWZpZXJzIjpbXX0seyJyb3ciOiJiYWNrIiwiY29sIjoxLCJjcmVhdHVyZUlkIjoiY2VsZXN0aWEiLCJsZXZlbCI6MSwic2hpbnkiOmZhbHNlLCJtb2RpZmllcnMiOltdfSx7InJvdyI6ImJhY2siLCJjb2wiOjIsImNyZWF0dXJlSWQiOiJjYWlybmFnZSIsImxldmVsIjoxLCJzaGlueSI6ZmFsc2UsIm1vZGlmaWVycyI6W119LHsicm93IjoiZnJvbnQiLCJjb2wiOjAsImNyZWF0dXJlSWQiOiJzYWJlcmhvcm4iLCJsZXZlbCI6MSwic2hpbnkiOmZhbHNlLCJtb2RpZmllcnMiOltdfSx7InJvdyI6ImZyb250IiwiY29sIjoxLCJjcmVhdHVyZUlkIjoiYm9uc2hlbGwiLCJsZXZlbCI6Mywic2hpbnkiOmZhbHNlLCJtb2RpZmllcnMiOltdfSx7InJvdyI6ImZyb250IiwiY29sIjoyLCJjcmVhdHVyZUlkIjoiZHJhY2FuYSIsImxldmVsIjoyLCJzaGlueSI6ZmFsc2UsIm1vZGlmaWVycyI6W119XSwidHJpbmtldHMiOltdLCJpdGVtcyI6W10sInBhaW50ZWQiOltdLCJzbXVnZ2xlZCI6W10sInRlYW1Nb2RpZmllcnMiOltdLCJkYXkiOjl9
+```
+
+**Final R13+** — the hardest of the eight by **F**'s ranking: 67% round wins on 48 boards.
+
+```
+bat1:eyJ2IjoxLCJyZWdpb24iOm51bGwsInRyYWluZXIiOm51bGwsIndpbmRvdyI6MzAsInBsYWNlbWVudHMiOlt7InJvdyI6ImJhY2siLCJjb2wiOjAsImNyZWF0dXJlSWQiOiJvcGFsaW9uIiwibGV2ZWwiOjIsInNoaW55IjpmYWxzZSwibW9kaWZpZXJzIjpbXX0seyJyb3ciOiJiYWNrIiwiY29sIjoxLCJjcmVhdHVyZUlkIjoiY2Fpcm5hZ2UiLCJsZXZlbCI6Miwic2hpbnkiOmZhbHNlLCJtb2RpZmllcnMiOltdfSx7InJvdyI6ImJhY2siLCJjb2wiOjIsImNyZWF0dXJlSWQiOiJjZWxlc3RpYSIsImxldmVsIjoxLCJzaGlueSI6ZmFsc2UsIm1vZGlmaWVycyI6W119LHsicm93IjoiZnJvbnQiLCJjb2wiOjAsImNyZWF0dXJlSWQiOiJzYWJlcmhvcm4iLCJsZXZlbCI6Miwic2hpbnkiOmZhbHNlLCJtb2RpZmllcnMiOltdfSx7InJvdyI6ImZyb250IiwiY29sIjoxLCJjcmVhdHVyZUlkIjoiYm9uc2hlbGwiLCJsZXZlbCI6Mywic2hpbnkiOmZhbHNlLCJtb2RpZmllcnMiOltdfSx7InJvdyI6ImZyb250IiwiY29sIjoyLCJjcmVhdHVyZUlkIjoiZHJhY2FuYSIsImxldmVsIjoyLCJzaGlueSI6ZmFsc2UsIm1vZGlmaWVycyI6W119XSwidHJpbmtldHMiOltdLCJpdGVtcyI6W10sInBhaW50ZWQiOltdLCJzbXVnZ2xlZCI6W10sInRlYW1Nb2RpZmllcnMiOltdLCJkYXkiOjEzfQ
+```
+
+### G1. What loading one of these shows today, and what it does not
+
+The app has no opponent side yet, so loading a benchmark board puts **their** team in **your** grid.
+That is still useful — it is how to inspect what the meta's boards actually do, and the Late
+Formiqueen board is the fastest way to see the Onsetra gap in **D1** for yourself — but it is not a
+fight. Fighting one needs User Story 3.
+
+---
+
+## H. Open questions
 
 1. **Rounds vs seconds.** Everything here is in rounds; `research.md` C1–C2 predict fight length in
    seconds. `ENEMY_HP_BY_DAY` is per day and the engine's clock is in seconds, so the bridge exists
    for HP but not for "average ending round 12.6" — which describes *when a run ends*, not how long
    a fight lasts. These are not the same quantity and should not be conflated.
-2. **Stable identifiers.** The user asked to "use the UUID, if possible". No UUIDs appear in the
-   captures and no public API is documented, so the two comps here are transcribed by name. If the
-   comp pages carry stable ids in their URLs, recording them would make a refresh after the next
-   balance patch a re-fetch rather than a re-transcription.
+2. **Refreshing after a balance patch.** The boards are transcribed by name and identified by this
+   project's own `buildId` (**G**), so a patch that changes the meta means re-transcribing the
+   compositions and regenerating the ids — the test in
+   `src/data/__tests__/benchmarkOpponents.test.ts` will fail until the published ids are updated to
+   match, which is the intended behaviour. batomon.com documents no public API, so there is nothing
+   to re-fetch from.
 3. **Trinkets.** Uncaptured, and the engine is sensitive to them. A benchmark opponent without
    trinkets is weaker than the real thing in a way that is not quantified.
 4. **Onsetra.** Known not to be read by `simulate()` and present in the top comp at every phase from
