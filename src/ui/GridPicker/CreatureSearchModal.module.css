@@ -48,7 +48,9 @@
  * team unselectable — the tool could not represent a board the player was looking at. Dimming
  * carries the same information without taking the option away.
  */
-.outOfRegion { opacity: 0.72; }
+.outOfRegion {
+  opacity: 0.72;
+}
 .outOfRegionTag {
   display: block;
   font-size: var(--font-2xs);

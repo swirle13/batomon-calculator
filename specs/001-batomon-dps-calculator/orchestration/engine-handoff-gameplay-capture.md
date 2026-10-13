@@ -18,20 +18,20 @@ proven from this recording and must not be implemented as though it can.
 
 Battle starts at video t ≈ 1.99 s. Team HP 68000, enemy 63000. Six mons, all Toxic-typed:
 
-| Slot | Row / Col | Species | Lv | Base CD | Base effect | Engine `abilityTags`? |
-|---|---|---|---|---|---|---|
-| (0,0) | back, left | Thorntail | 3 | 6 s | 50 Direct dmg, Poison 1; `When allies inflict Poison, this gains +24 Damage permanently.` | **none — inert** |
-| (0,1) | back, centre | Puffloon | 2 | 10 s | Heal 10, Poison 1, multicast 2; `Trigger this when adjacent Toxic allies trigger.` | **none — inert** |
-| (0,2) | back, right | Noxnimbus | 2 | 4 s | Poison 1; `Adjacent Toxic allies gain +6 Poison for this battle.` | **none — inert** |
-| (1,0) | front, left | Fumungus | 2 | 3 s | Poison 6; `Has additional Damage equal to 200% of the Poison stacks on the enemy.` | **none — inert** |
-| (1,1) | front, centre | Miasmaw | 1 | 3 s | Poison 10; `Gain Poison for this battle equal to 1x the total Poison of your allies.` | `battleStartStatusFromAllies` |
-| (1,2) | front, right | Cobrex | 2 | 15 s | Poison 600; `Whenever an ally inflicts Poison, Charge this by 1 second(s).` | `chargeOnAllyStatus` |
+| Slot  | Row / Col     | Species   | Lv  | Base CD | Base effect                                                                               | Engine `abilityTags`?         |
+| ----- | ------------- | --------- | --- | ------- | ----------------------------------------------------------------------------------------- | ----------------------------- |
+| (0,0) | back, left    | Thorntail | 3   | 6 s     | 50 Direct dmg, Poison 1; `When allies inflict Poison, this gains +24 Damage permanently.` | **none — inert**              |
+| (0,1) | back, centre  | Puffloon  | 2   | 10 s    | Heal 10, Poison 1, multicast 2; `Trigger this when adjacent Toxic allies trigger.`        | **none — inert**              |
+| (0,2) | back, right   | Noxnimbus | 2   | 4 s     | Poison 1; `Adjacent Toxic allies gain +6 Poison for this battle.`                         | **none — inert**              |
+| (1,0) | front, left   | Fumungus  | 2   | 3 s     | Poison 6; `Has additional Damage equal to 200% of the Poison stacks on the enemy.`        | **none — inert**              |
+| (1,1) | front, centre | Miasmaw   | 1   | 3 s     | Poison 10; `Gain Poison for this battle equal to 1x the total Poison of your allies.`     | `battleStartStatusFromAllies` |
+| (1,2) | front, right  | Cobrex    | 2   | 15 s    | Poison 600; `Whenever an ally inflicts Poison, Charge this by 1 second(s).`               | `chargeOnAllyStatus`          |
 
 **Four of six mons are completely inert in the current engine**, and the two that aren't are the
 two that depend on the other four. That framing matters more than any individual bug below: for
 this team the engine is not slightly wrong, it is modelling a different team.
 
-Run modifiers in play, inferred from their effects (the battle UI shows only a trinket *count* —
+Run modifiers in play, inferred from their effects (the battle UI shows only a trinket _count_ —
 10 mine, 4 theirs — never the individual trinkets):
 
 - **Link Cable** — all allies count as adjacent. Drives both Puffloon's reaction scope and
@@ -103,7 +103,7 @@ derived from a ratio against a known base cooldown, never read off the clock.
 A second, independent limit: **no two of my mons ever became ready on the same frame.** The
 tightest gap anywhere in the battle was 2 frames (17.9 ms video, ~47 ms battle). So this capture
 **cannot prove a tie-break rule by exhibiting a tie.** What it does instead, and what makes it
-worth acting on, is pin down *which values each effect reads* — which is where the engine's errors
+worth acting on, is pin down _which values each effect reads_ — which is where the engine's errors
 actually are.
 
 ---
@@ -134,14 +134,14 @@ So battle start has three phases, in this order:
 
 `src/engine/effects.ts` lines 149-151 state the opposite as a deliberate design decision:
 
-> every battle-start effect that reads *other* creatures' values must read their BASE values, or
+> every battle-start effect that reads _other_ creatures' values must read their BASE values, or
 > the result would depend on which creature happened to resolve first
 
 Pass 2 (lines 165-184) then sums `other.appliesStatus` off the **pass-1 base snapshot**. Pass 2b
 (lines 186-305) accumulates its deltas against that same base snapshot and applies them only
 afterwards, for the same stated reason.
 
-The instinct behind that comment is sound — order-dependence *is* a hazard — but the game solves
+The instinct behind that comment is sound — order-dependence _is_ a hazard — but the game solves
 it by **phase ordering**, not by reading base values. The fix is not to make pass 2 read pass-2b's
 output (that just moves the hazard); it is to split resolution into explicit phases where each
 phase reads the completed output of the previous one, and to classify every tag by which phase it
@@ -159,14 +159,14 @@ damage term (Finding 5) and Cobrex's charge rate (Finding 6).
 
 When Noxnimbus casts, it grants +6 Poison to all allies (Link Cable). The badges move:
 
-| Mon | Before | After | Delta |
-|---|---|---|---|
-| Thorntail | 5 | 11 | +6 |
-| Fumungus | 10 | 16 | +6 |
-| Miasmaw | 1080 | 1086 | +6 |
-| Noxnimbus | 5 | 5 | **+0 — excludes self** |
-| Puffloon | 19 | 29 | **+10** |
-| Cobrex | 1027 | 1037 | **+10** |
+| Mon       | Before | After | Delta                  |
+| --------- | ------ | ----- | ---------------------- |
+| Thorntail | 5      | 11    | +6                     |
+| Fumungus  | 10     | 16    | +6                     |
+| Miasmaw   | 1080   | 1086  | +6                     |
+| Noxnimbus | 5      | 5     | **+0 — excludes self** |
+| Puffloon  | 19     | 29    | **+10**                |
+| Cobrex    | 1027   | 1037  | **+10**                |
 
 Puffloon and Cobrex are exactly the two mons carrying the +70% effect, and they gained 10 rather
 than 6. Only one model produces those numbers:
@@ -175,6 +175,7 @@ than 6. Only one model produces those numbers:
 - Puffloon: `(11 + 6) x 1.7 = 28.9` -> **29**
 
 Compare the alternatives, both of which are wrong:
+
 - Snapshot-then-add: `1027 + 6 = 1033` and `19 + 6 = 25`.
 - Snapshot-then-add-scaled: `1027 + 10 = 1037` happens to match for Cobrex, but gives `19 + 10 = 29`
   for Puffloon only by coincidence of rounding; it diverges on the second Noxnimbus cast
@@ -207,7 +208,7 @@ This is the load-bearing refactor. Findings 1, 3 and 4 all depend on it existing
 
 ---
 
-## Finding 3 — Reactive flat gains are added *after* multiplicative scaling, and are never scaled
+## Finding 3 — Reactive flat gains are added _after_ multiplicative scaling, and are never scaled
 
 **Confidence: high.**
 
@@ -242,7 +243,7 @@ Miasmaw, Fumungus and Cobrex all at once.
 
 The engine treats `"On Cast"` as unresolvable by design (effects.ts:245-251 only acts on
 `OnBattleStart`, with the comment that OnCast "depend[s] on battle state this engine either
-schedules itself"). But `simulate()` *does* schedule casts — that is precisely what the event loop
+schedules itself"). But `simulate()` _does_ schedule casts — that is precisely what the event loop
 at simulate.ts:397 does. The information needed is available; the resolver just runs before it and
 never runs again.
 
@@ -250,7 +251,7 @@ never runs again.
 
 Resolution must become **time-varying**: a mutable resolved state that `simulate()` can mutate
 mid-battle when an on-cast or reactive ability fires, rather than a `ResolvedPlacement[]` computed
-once up front. Concretely, `resolveEffects` should produce the *initial* state plus a set of
+once up front. Concretely, `resolveEffects` should produce the _initial_ state plus a set of
 registered handlers keyed by trigger, and the event loop should invoke them.
 
 Also confirmed here: **self-exclusion is real.** Noxnimbus's own badge never moves.
@@ -259,7 +260,7 @@ Also confirmed here: **self-exclusion is real.** Noxnimbus's own badge never mov
 
 ---
 
-## Finding 5 — Damage scaled off the *target's* status is the team's main damage source, and is unmodelled
+## Finding 5 — Damage scaled off the _target's_ status is the team's main damage source, and is unmodelled
 
 **Confidence: high.**
 
@@ -332,25 +333,24 @@ settle with a purpose-built recording.
 
 The first cascade, read off Fumungus's badge (enemy Poison stacks in parentheses):
 
-| t | Badge | Stacks | Delta | Attribution |
-|---|---|---|---|---|
-| 3.294 | 20 | 10 | — | Fumungus's own cast (Poison 10) |
-| 3.384 | 58 | 29 | +19 | Puffloon hit 1 |
-| 3.473 | 96 | 48 | +19 | Puffloon hit 2 |
-| 3.518 | 2256 | 1128 | +1080 | Miasmaw's cast |
-| 3.608 | 2294 | 1147 | +19 | Puffloon hit 3 |
-| 3.697 | 2332 | 1166 | +19 | Puffloon hit 4 |
+| t     | Badge | Stacks | Delta | Attribution                     |
+| ----- | ----- | ------ | ----- | ------------------------------- |
+| 3.294 | 20    | 10     | —     | Fumungus's own cast (Poison 10) |
+| 3.384 | 58    | 29     | +19   | Puffloon hit 1                  |
+| 3.473 | 96    | 48     | +19   | Puffloon hit 2                  |
+| 3.518 | 2256  | 1128   | +1080 | Miasmaw's cast                  |
+| 3.608 | 2294  | 1147   | +19   | Puffloon hit 3                  |
+| 3.697 | 2332  | 1166   | +19   | Puffloon hit 4                  |
 
 Thorntail's counter over the same span: 7082 -> 7226 = +144 = **exactly 6 inflictions**, matching
 the six rows above. The window is fully accounted for with nothing left over, which is why this
 cascade is the strongest evidence in the capture.
 
-**7a — Puffloon reacts to each ally trigger independently.** Four hits = two reactions of multicast
-2. Fumungus triggered it, then Miasmaw triggered it again 233 ms later.
+**7a — Puffloon reacts to each ally trigger independently.** Four hits = two reactions of multicast 2. Fumungus triggered it, then Miasmaw triggered it again 233 ms later.
 
 **7b — a reactive trigger does not reset or consume the reactor's own cooldown.** Across this entire
 cascade Puffloon's cooldown bar climbs monotonically 13 -> 19 px with no reset, and Puffloon later
-casts off its *own* cooldown at t=6.1606 (bar 71 -> 1). Its base 10 s cycle runs independently of,
+casts off its _own_ cooldown at t=6.1606 (bar 71 -> 1). Its base 10 s cycle runs independently of,
 and in addition to, its reactions.
 
 **7c — multicast is N separate infliction events, not one event of N x magnitude.** Each Puffloon
@@ -363,10 +363,10 @@ simulate.ts:477-485's note on why Burn forces separate applications is exactly r
 have no implementation at all — Puffloon has no tags. A `triggerOnAllyTrigger` tag kind is needed,
 and it must not touch the reactor's cooldown.
 
-> **Open, and it matters for Thorntail:** whether a mon's *own* Poison infliction counts toward its
+> **Open, and it matters for Thorntail:** whether a mon's _own_ Poison infliction counts toward its
 > own `when allies inflict Poison` counter. One densely-packed frame (t=4.2745, a +40 stack delta
 > that can only decompose as Thorntail's 11 + a Puffloon 29) implies Thorntail's own infliction
-> *does* count, which would contradict the ability text. simulate.ts:521-526 currently excludes
+> _does_ count, which would contradict the ability text. simulate.ts:521-526 currently excludes
 > self for charge rules, which the Cobrex data supports. Do not change the exclusion on the
 > strength of one ambiguous frame — settle it with a two-mon recording.
 
@@ -379,11 +379,11 @@ and it must not touch the reactor's cooldown.
 Three clusters are tight enough to be informative. Order is taken from cooldown-bar resets,
 cross-checked against the order the Poison deltas land.
 
-| Cluster | Events | Slots involved |
-|---|---|---|
-| Cascade 1, t≈3.29-3.53 | Fumungus 3.2993, Miasmaw 3.5325 | (1,0) then (1,1) |
+| Cluster                | Events                                          | Slots involved      |
+| ---------------------- | ----------------------------------------------- | ------------------- |
+| Cascade 1, t≈3.29-3.53 | Fumungus 3.2993, Miasmaw 3.5325                 | (1,0) then (1,1)    |
 | Cluster A, t≈4.14-4.31 | Fumungus 4.2052, Cobrex 4.2231, Noxnimbus ~4.22 | (1,0), (1,2), (0,2) |
-| Cluster B, t≈5.70-5.81 | Miasmaw 5.7928, Cobrex 5.8107 | (1,1) then (1,2) |
+| Cluster B, t≈5.70-5.81 | Miasmaw 5.7928, Cobrex 5.8107                   | (1,1) then (1,2)    |
 
 Every pairing is consistent with **bottom row before top row, left-to-right within a row** —
 `(1,0), (1,1), (1,2), (0,0), (0,1), (0,2)`.
@@ -395,7 +395,7 @@ line 415 and the final `timeline` sort at line 522 — key off `stableSlotIndex`
 **I want to be explicit about the limit here.** Because every gap was 2 frames rather than 0, each
 pairing could equally be explained by the later mon simply being ready later. Front-row-first is
 the simplest hypothesis that fits all three clusters and contradicts none of them, and it is worth
-*testing*, but it should not be committed as a confirmed rule on this evidence. See the experiment
+_testing_, but it should not be committed as a confirmed rule on this evidence. See the experiment
 in "What to record next".
 
 ---
@@ -424,7 +424,7 @@ Two explanations fit and the footage cannot separate them:
 certain: Cobrex used 1027, not 1037. If the engine applies Noxnimbus's buff instantaneously at cast
 time and then resolves Cobrex in the same instant, it produces 1037 and diverges. Note that
 `simulate()`'s existing FR-040 snapshot rule (simulate.ts:438-443: "every event at this instant
-resolves against the state as it stood when the instant began") would *already* produce 1027 if
+resolves against the state as it stood when the instant began") would _already_ produce 1027 if
 both landed in one instant — so the engine's current semantics may well be right here for the
 right reason. Worth a test that locks the behaviour in either way.
 
@@ -456,7 +456,7 @@ otherwise.
 
 ## What to record next
 
-The gaps in this document are all gaps the *recording* has, not gaps in the analysis. Four
+The gaps in this document are all gaps the _recording_ has, not gaps in the analysis. Four
 purpose-built captures would close almost all of them:
 
 1. **A genuine tie (Finding 8).** Two mons with provably identical effective cooldowns and no

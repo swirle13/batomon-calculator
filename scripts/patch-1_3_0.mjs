@@ -42,7 +42,11 @@ const STATS = {
  * level including the unpublished level 4.
  */
 const TEXT = {
-  dollhime: { re: /\+(\d+) Damage permanently\./, scale: 50 / 40, fmt: (n) => `+${n} Damage permanently.` },
+  dollhime: {
+    re: /\+(\d+) Damage permanently\./,
+    scale: 50 / 40,
+    fmt: (n) => `+${n} Damage permanently.`,
+  },
   guardiant: {
     re: /After you buy a Bug monster, this gains \+(\d+) Damage\./,
     scale: 8 / 7,
@@ -62,8 +66,7 @@ const TEXT = {
   },
 };
 
-const PATCH_NOTE =
-  "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)";
+const PATCH_NOTE = "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06)";
 const PATCH_NOTE_INFERRED =
   "Balance 25 / 1.3.0 (Steam patch notes 2026-10-06; LEVEL 4 VALUE INFERRED -- the notes publish " +
   "levels 1-3 only, so L4 is rescaled by the same factor as L1 to preserve the existing ratio)";
@@ -95,24 +98,30 @@ src = src.replace(blockRe, (block, id) => {
   }
 
   if (text) {
-    out = out.replace(/(abilityText:\s*\n?\s*")((?:[^"\\]|\\.)*)(")/, (whole, open, body, close) => {
-      const m = text.re.exec(body);
-      if (!m) return whole;
-      const next =
-        text.fixed !== undefined ? text.fixed : Math.round(Number(m[1]) * text.scale);
-      if (level === 4 && text.fixed === undefined) inferred = true;
-      textEdits++;
-      return open + body.replace(text.re, text.fmt(next)) + close;
-    });
+    out = out.replace(
+      /(abilityText:\s*\n?\s*")((?:[^"\\]|\\.)*)(")/,
+      (whole, open, body, close) => {
+        const m = text.re.exec(body);
+        if (!m) return whole;
+        const next = text.fixed !== undefined ? text.fixed : Math.round(Number(m[1]) * text.scale);
+        if (level === 4 && text.fixed === undefined) inferred = true;
+        textEdits++;
+        return open + body.replace(text.re, text.fmt(next)) + close;
+      },
+    );
   }
 
-  out = out.replace(/(\n {4}patch:\s*)(\n?\s*)"(?:[^"\\]|\\.)*"(?:\s*\+\s*\n?\s*"(?:[^"\\]|\\.)*")*/,
-    `$1"${inferred ? PATCH_NOTE_INFERRED : PATCH_NOTE}"`);
+  out = out.replace(
+    /(\n {4}patch:\s*)(\n?\s*)"(?:[^"\\]|\\.)*"(?:\s*\+\s*\n?\s*"(?:[^"\\]|\\.)*")*/,
+    `$1"${inferred ? PATCH_NOTE_INFERRED : PATCH_NOTE}"`,
+  );
 
   touched.add(id);
   return out;
 });
 
 writeFileSync(FILE, src);
-console.log(`stat edits: ${statEdits} | text edits: ${textEdits} | species touched: ${touched.size}`);
+console.log(
+  `stat edits: ${statEdits} | text edits: ${textEdits} | species touched: ${touched.size}`,
+);
 console.log([...touched].sort().join(", "));

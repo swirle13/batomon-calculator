@@ -66,8 +66,9 @@ function renderNotCounted(config: TeamConfiguration, result: SimulationResult) {
       */}
       {casualties.length > 0 && (
         <p className={styles.coverageLine}>
-          <span className={styles.coverageNames}>{casualties.map((c) => c.name).join(", ")}</span> — knocked
-          out at battle start by {[...new Set(casualties.map((c) => c.knockedOutBy))].join(" and ")}
+          <span className={styles.coverageNames}>{casualties.map((c) => c.name).join(", ")}</span> —
+          knocked out at battle start by{" "}
+          {[...new Set(casualties.map((c) => c.knockedOutBy))].join(" and ")}
         </p>
       )}
       {unmodelled.length > 0 && (
@@ -189,8 +190,8 @@ function renderSurvivability(s: PlacementAdvice["survivability"]) {
       </p>
       {s.cleansers.length > 0 && (
         <p className={styles.coverageLine}>
-          <span className={styles.coverageNames}>{s.cleansers.join(", ")}</span> — cleansing is worth{" "}
-          <strong>nothing</strong> against an enemy that applies no debuffs.
+          <span className={styles.coverageNames}>{s.cleansers.join(", ")}</span> — cleansing is
+          worth <strong>nothing</strong> against an enemy that applies no debuffs.
         </p>
       )}
     </div>
@@ -323,7 +324,10 @@ export const PlacementAdvisor = memo(function PlacementAdvisor({ result }: Place
   // a board with no better arrangement is exactly where the user wants to know why.
   if (!suggestion.placements) {
     return (
-      <Disclosure label="Placement suggestion" hint={isStale ? "(recalculating…)" : bestOutcomeHint(advice)}>
+      <Disclosure
+        label="Placement suggestion"
+        hint={isStale ? "(recalculating…)" : bestOutcomeHint(advice)}
+      >
         {notCounted}
         {survivabilitySection}
         {mergeSection}
@@ -349,8 +353,9 @@ export const PlacementAdvisor = memo(function PlacementAdvisor({ result }: Place
         */}
         <p className={styles.headline}>
           Rearranging {moves.length === 1 ? "one Batomon" : `${moves.length} Batomon`}:{" "}
-          <strong>{formatRate(currentDps)}</strong> → <strong>{formatRate(suggestedDps ?? currentDps)}</strong>{" "}
-          DPS average <span className={styles.gainPercent}>+{gainPercent.toFixed(1)}%</span>
+          <strong>{formatRate(currentDps)}</strong> →{" "}
+          <strong>{formatRate(suggestedDps ?? currentDps)}</strong> DPS average{" "}
+          <span className={styles.gainPercent}>+{gainPercent.toFixed(1)}%</span>
         </p>
         <ul className={styles.moves}>
           {moves.map((p) => (
@@ -381,7 +386,8 @@ export const PlacementAdvisor = memo(function PlacementAdvisor({ result }: Place
              * the advisor immediately proposed another rearrangement — the "it keeps flip-flopping
              * between two suggestions" loop. The search itself was fine; only this was wrong.
              */
-            if (suggestion.placements) replaceConfig({ ...liveConfig, placements: suggestion.placements });
+            if (suggestion.placements)
+              replaceConfig({ ...liveConfig, placements: suggestion.placements });
           }}
         >
           Apply this arrangement
@@ -429,7 +435,9 @@ export const PlacementAdvisor = memo(function PlacementAdvisor({ result }: Place
         {coverage.unmodelledTrinkets.length > 0 && (
           <p className={styles.footerWarn}>
             {coverage.unmodelledTrinkets.join(", ")}{" "}
-            {coverage.unmodelledTrinkets.length === 1 ? "has a slot-based effect" : "have slot-based effects"}{" "}
+            {coverage.unmodelledTrinkets.length === 1
+              ? "has a slot-based effect"
+              : "have slot-based effects"}{" "}
             the engine cannot model, which may invalidate this result entirely.
           </p>
         )}

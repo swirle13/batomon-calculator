@@ -44,9 +44,11 @@ const creaturesSrc = await readFile(path.join(ROOT, "src/data/creatures.ts"), "u
 const trainersSrc = await readFile(path.join(ROOT, "src/data/trainers.ts"), "utf8");
 
 const ourMonsters = new Map();
-for (const m of creaturesSrc.matchAll(/id: "([^"]+)",\n    name: "([^"]+)"/g)) ourMonsters.set(m[1], m[2]);
+for (const m of creaturesSrc.matchAll(/id: "([^"]+)",\n    name: "([^"]+)"/g))
+  ourMonsters.set(m[1], m[2]);
 const ourTrainers = new Map();
-for (const m of trainersSrc.matchAll(/id: "([^"]+)",\n    name: "([^"]+)"/g)) ourTrainers.set(m[1], m[2]);
+for (const m of trainersSrc.matchAll(/id: "([^"]+)",\n    name: "([^"]+)"/g))
+  ourTrainers.set(m[1], m[2]);
 
 // --- shiny monster sprites ---
 await mkdir(path.join(ROOT, "public/sprites/monster"), { recursive: true });
@@ -56,9 +58,14 @@ let shinyOk = 0;
 const shinyMissing = [];
 for (const [id, name] of ourMonsters) {
   const entry = byMonsterName.get(norm(name));
-  if (!entry?.shinySprite) { shinyMissing.push(id); continue; }
+  if (!entry?.shinySprite) {
+    shinyMissing.push(id);
+    continue;
+  }
   const file = `${id}_shiny.png`;
-  if (await fetchInto(ORIGIN + entry.shinySprite, path.join(ROOT, "public/sprites/monster", file))) {
+  if (
+    await fetchInto(ORIGIN + entry.shinySprite, path.join(ROOT, "public/sprites/monster", file))
+  ) {
     shinyMap[id] = file;
     shinyOk++;
   } else shinyMissing.push(id);
@@ -72,7 +79,10 @@ let trainerOk = 0;
 const trainerMissing = [];
 for (const [id, name] of ourTrainers) {
   const entry = byTrainerName.get(norm(name));
-  if (!entry?.sprite) { trainerMissing.push(id); continue; }
+  if (!entry?.sprite) {
+    trainerMissing.push(id);
+    continue;
+  }
   const file = `${id}.png`;
   if (await fetchInto(ORIGIN + entry.sprite, path.join(ROOT, "public/sprites/trainer", file))) {
     trainerMap[id] = file;
@@ -86,6 +96,8 @@ await writeFile(
 );
 
 console.log(`shiny sprites  : ${shinyOk}/${ourMonsters.size}  (missing: ${shinyMissing.length})`);
-console.log(`trainer sprites: ${trainerOk}/${ourTrainers.size} (missing: ${trainerMissing.length})`);
+console.log(
+  `trainer sprites: ${trainerOk}/${ourTrainers.size} (missing: ${trainerMissing.length})`,
+);
 if (shinyMissing.length) console.log(`  no shiny sprite: ${shinyMissing.join(", ")}`);
 if (trainerMissing.length) console.log(`  no trainer sprite: ${trainerMissing.join(", ")}`);

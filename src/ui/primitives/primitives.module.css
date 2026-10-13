@@ -22,9 +22,15 @@
   background: var(--surface-1);
 }
 
-.padSm { padding: var(--space-xs) var(--space-sm); }
-.padMd { padding: var(--space-sm) var(--space-md); }
-.padNone { padding: 0; }
+.padSm {
+  padding: var(--space-xs) var(--space-sm);
+}
+.padMd {
+  padding: var(--space-sm) var(--space-md);
+}
+.padNone {
+  padding: 0;
+}
 
 /* ---------- Chip: the ONE pill (type tags, modifier chips, trinket badges) ---------- */
 .chip {
@@ -69,7 +75,9 @@
   line-height: 1;
 }
 
-.chipRemove:hover { color: var(--text-danger); }
+.chipRemove:hover {
+  color: var(--text-danger);
+}
 
 /* ---------- StatBadge: the ONE colour-coded stat pill ---------- */
 /*
@@ -122,7 +130,9 @@
   text-align: left;
 }
 
-.sectionHeadingAccent { color: var(--text-accent); }
+.sectionHeadingAccent {
+  color: var(--text-accent);
+}
 
 /* ---------- CardGrid: the ONE responsive grid ---------- */
 .cardGrid {
@@ -379,7 +389,9 @@
   z-index: 0;
 }
 
-.typeSplitHalf { flex: 1 1 0; }
+.typeSplitHalf {
+  flex: 1 1 0;
+}
 
 .typeSplitHost {
   position: relative;

@@ -67,7 +67,9 @@ const BUILD = fs.readFileSync(__dirname + "/board.txt", "utf8").trim();
 
   const total = [...agg.values()].reduce((a, b) => a + b, 0);
   const idle = agg.get("(idle)  []") || agg.get("(idle)  ") || 0;
-  console.log(`\n===== JS self-time during 6 drops — ${label} ${throttle > 1 ? `(${throttle}x throttle)` : ""} =====`);
+  console.log(
+    `\n===== JS self-time during 6 drops — ${label} ${throttle > 1 ? `(${throttle}x throttle)` : ""} =====`,
+  );
   console.log(`total sampled ${total.toFixed(0)}ms, of which idle ${idle.toFixed(0)}ms\n`);
   const rows = [...agg.entries()]
     .filter(([k]) => !k.startsWith("(idle)"))

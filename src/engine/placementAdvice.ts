@@ -8,7 +8,12 @@ import {
 } from "./optimize";
 import { simulate, windowAverageDps } from "./simulate";
 import type { SurvivabilityEstimate } from "./survivability";
-import { computeBenchAdvice, computeMergeAdvice, type BenchAdvice, type MergeSuggestion } from "./rosterAdvice";
+import {
+  computeBenchAdvice,
+  computeMergeAdvice,
+  type BenchAdvice,
+  type MergeSuggestion,
+} from "./rosterAdvice";
 import { slotKey } from "./grid";
 
 /**
@@ -86,7 +91,9 @@ export function computePlacementAdvice(config: TeamConfiguration, corpus: Corpus
     suggestedDps: suggestion.placements
       ? windowAverageDps(simulate({ ...config, placements: suggestion.placements }, corpus))
       : null,
-    moves: (suggestion.placements ?? []).filter((p) => currentBySlot.get(slotKey(p.slot)) !== p.creatureId),
+    moves: (suggestion.placements ?? []).filter(
+      (p) => currentBySlot.get(slotKey(p.slot)) !== p.creatureId,
+    ),
     placementCount: config.placements.length,
     /*
      * Reuses the two figures above rather than recomputing the current board, and returns `null`

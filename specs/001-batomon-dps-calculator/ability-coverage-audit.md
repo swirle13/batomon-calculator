@@ -19,26 +19,26 @@ a coverage figure was quoted from a one-off probe it was wrong by a factor of th
 
 Level-1 species only, since levels 2–4 repeat the same abilities at bigger numbers.
 
-| | count |
-|---|---|
-| species with a battle-relevant ability | 134 |
-| resolved by the engine | 24 |
-| banked by a button on the card (trigger fires between battles) | 10 |
-| **the gap** | **95** |
+|                                                                | count  |
+| -------------------------------------------------------------- | ------ |
+| species with a battle-relevant ability                         | 134    |
+| resolved by the engine                                         | 24     |
+| banked by a button on the card (trigger fires between battles) | 10     |
+| **the gap**                                                    | **95** |
 
 The gap is not one problem. Grouped by what is actually blocking each one:
 
-| | family | count |
-|---|---|---|
-| A | chain a cast off another creature | 14 |
-| B | charge an ally's cooldown | 4 |
-| C | scale off team or ally stats | 17 |
-| D | read the enemy's state | 3 |
-| E | knockout, the parts still outstanding | 9 |
-| F | shop / run economy | 29 |
-| G | evolution and run progress | 7 |
-| H | a mechanic the engine has no concept of | 10 |
-| I | not an ability at all — denominator defect | 2 |
+|     | family                                     | count |
+| --- | ------------------------------------------ | ----- |
+| A   | chain a cast off another creature          | 14    |
+| B   | charge an ally's cooldown                  | 4     |
+| C   | scale off team or ally stats               | 17    |
+| D   | read the enemy's state                     | 3     |
+| E   | knockout, the parts still outstanding      | 9     |
+| F   | shop / run economy                         | 29    |
+| G   | evolution and run progress                 | 7     |
+| H   | a mechanic the engine has no concept of    | 10    |
+| I   | not an ability at all — denominator defect | 2     |
 
 F and G together are 36 of the 95, and nearly all of them are outside what a battle simulator can
 ever answer. The tractable work is A, B, C and E: **44 species, and most of them are blocked by
@@ -78,7 +78,7 @@ second", and `ResolvedPlacement.chargeRules` already carries it into the simulat
 
 - **Clawnetic is the same tag with `Shock` in place of `Poison`.** It is untagged for no reason
   anyone recorded — a one-line corpus change, the cheapest item in this document.
-- Dracana, Ironcore and Steamscuttle charge *outward* ("charge adjacent Electric allies by 1
+- Dracana, Ironcore and Steamscuttle charge _outward_ ("charge adjacent Electric allies by 1
   second, Ironcore can't receive charge"). That needs a charge-on-own-cast rule pointed at a
   selector, plus a no-self-charge flag the text states explicitly in all three cases.
 
@@ -87,7 +87,7 @@ second", and `ResolvedPlacement.chargeRules` already carries it into the simulat
 Aegistruct, Blixie, Boomagon, Brimtoad, Cairnage, Gaiadrasil, Galvanine, Geminiss, Lignite,
 Lumijel, Oniclaw, Orcana, Pylong, Quillustrous, Stalagrove, Stellagon, Talonite
 
-This is the family where the engine is *closest* and the blockers are most specific. Each of these
+This is the family where the engine is _closest_ and the blockers are most specific. Each of these
 is one small widening away, and the widenings are mostly shared:
 
 - **`ongoingGrant` only emits a single flat stat.** Brimtoad (+4 Burn **and** +4 Poison), Lumijel

@@ -14,8 +14,19 @@ type Rarity = "Common" | "Uncommon" | "Rare" | "SuperRare" | "Legendary" | "Myth
 
 // B7: "Fighting" retained with a confidence flag rather than omitted or silently trusted.
 type CreatureType =
-  | "Fire" | "Water" | "Electric" | "Toxic" | "Flying" | "Rock" | "Grass" | "Bug"
-  | "Steel" | "Dragon" | "Ghost" | "Fighting" | "All";
+  | "Fire"
+  | "Water"
+  | "Electric"
+  | "Toxic"
+  | "Flying"
+  | "Rock"
+  | "Grass"
+  | "Bug"
+  | "Steel"
+  | "Dragon"
+  | "Ghost"
+  | "Fighting"
+  | "All";
 
 type DamageType = "Direct" | "Burn" | "Poison" | "Shock" | "SuddenDeath";
 
@@ -180,7 +191,7 @@ one `SimulationResult`, never re-derive their own numbers independently.
 ## State transitions
 
 - `TeamConfiguration` is edited by the user (FR-011) → triggers a fresh `simulate(config, corpus) :
-  SimulationResult` call → both UI consumers re-render from the new result. No partial/incremental
+SimulationResult` call → both UI consumers re-render from the new result. No partial/incremental
   update model is needed at this scale (≤6 creatures, bounded window).
 - `StatusEffectInstance` layer count: Burn -1 layer per tick (B2); Poison unchanged by its own tick;
   Shock unchanged by anything except an explicit new application (no natural decay, per B2/B4).
@@ -202,8 +213,13 @@ On Victory ability") without simulating the whole match history, `TeamConfigurat
 
 ```ts
 type ModifierStat =
-  | "damageFlatAdd" | "cooldownFlatAddSeconds" | "cooldownSpeedAdd"
-  | "burnAmountAdd" | "poisonAmountAdd" | "shockAmountAdd" | "shieldAmountAdd";
+  | "damageFlatAdd"
+  | "cooldownFlatAddSeconds"
+  | "cooldownSpeedAdd"
+  | "burnAmountAdd"
+  | "poisonAmountAdd"
+  | "shockAmountAdd"
+  | "shieldAmountAdd";
 
 interface StatModifier {
   id: string;
@@ -216,7 +232,7 @@ interface StatModifier {
 // TeamPlacement gains:     modifiers?: StatModifier[]       (applies to this placement only)
 ```
 
-**Known limitation** (~~a modifier can only scale an effect a creature *already has*~~ —
+**Known limitation** (~~a modifier can only scale an effect a creature _already has_~~ —
 **RETRACTED 2026-10-07**): this said a `damageFlatAdd` on a creature with `baseDamage === null` had
 no attack to attach to and was therefore a no-op, and the same for a status the creature does not
 already apply. It was wrong about the game. Trinkets and ally abilities routinely give a creature
@@ -231,7 +247,7 @@ separate times and each copy discarded the input slightly differently.
 
 ### 2026-10-05 — "Facilitated damage" per creature (user-requested)
 
-The game's own UI only shows each creature's own damage, not how much damage a *status-granting*
+The game's own UI only shows each creature's own damage, not how much damage a _status-granting_
 creature enabled on other hits (e.g. a Shock-applier's layers amplifying every subsequent direct
 hit against the target). To help a user decide whether to invest in a Shock-granter's triggers
 vs. their highest-direct-damage attacker, `SimulationResult` gains:
@@ -291,8 +307,8 @@ per-creature breakdown (item 2, see `perCreatureEffectiveStats` below).
 
 ```ts
 baseMulticast: number; // default 1 ("no stated Multicast bonus"); backfilled to 1 for all
-                        // existing records rather than flagged unconfirmed, since "1 = none" is
-                        // the reasonable baseline absent contrary evidence in abilityText
+// existing records rather than flagged unconfirmed, since "1 = none" is
+// the reasonable baseline absent contrary evidence in abilityText
 ```
 
 `ModifierStat` gains `"multicastAdd"`. Phase A cast generation fires
@@ -308,13 +324,16 @@ performs (`sumModifier` et al.) — not a second, divergent computation path, pe
 Workflow single-source-of-truth rule:
 
 ```ts
-perCreatureEffectiveStats: Record<string /* same key shape as perCreatureDps */, {
-  damage: number | null;
-  damageType: DamageType | null;
-  cooldownSeconds: number | null;
-  multicast: number; // baseMulticast + any multicastAdd modifier
-  appliesStatus: { type: StatusEffectType; amount: number }[]; // post-modifier amounts
-}>;
+perCreatureEffectiveStats: Record<
+  string /* same key shape as perCreatureDps */,
+  {
+    damage: number | null;
+    damageType: DamageType | null;
+    cooldownSeconds: number | null;
+    multicast: number; // baseMulticast + any multicastAdd modifier
+    appliesStatus: { type: StatusEffectType; amount: number }[]; // post-modifier amounts
+  }
+>;
 ```
 
 Replaces/feeds `PlacedCreatureDetails`, which currently only shows raw unmodified corpus values
@@ -364,11 +383,15 @@ Principle III when implemented):
  * no `evolvesInto` simply returns itself at `targetLevel`. Multi-stage chains (an evolved
  * species that itself evolves again) are followed transitively.
  */
-function resolveLevelUp(corpus: Corpus, baseSpeciesId: string, targetLevel: 1 | 2 | 3 | 4): CreatureRecord | null;
+function resolveLevelUp(
+  corpus: Corpus,
+  baseSpeciesId: string,
+  targetLevel: 1 | 2 | 3 | 4,
+): CreatureRecord | null;
 ```
 
 **Known limitation, recorded rather than silently guessed** (research.md E2.6): a species with
-*more than one* documented `evolvesInto` target under different conditions (a "branching"
+_more than one_ documented `evolvesInto` target under different conditions (a "branching"
 evolution) cannot be represented by a single `evolvesInto`/`evolvesAtLevel` pair. No such branch
 is populated in the corpus yet — `evolvesInto` stays a single optional field until a specific
 branching case is confirmed from a source with its trigger-condition table intact, at which
@@ -385,7 +408,7 @@ inconsistency is structurally impossible to reintroduce:
 
 ```ts
 // src/data/typeColors.ts
-const TYPE_COLORS: Record<CreatureType, string> = { /* one hex per CreatureType, incl. "All" */ };
+const TYPE_COLORS: Record<CreatureType, string> = {/* one hex per CreatureType, incl. "All" */};
 function typeColor(type: CreatureType): string; // TYPE_COLORS[type]
 ```
 
@@ -396,7 +419,7 @@ individually identifiable.
 ### 2026-10-05 (round 3) — Drag-and-drop placement editing (`@dnd-kit/core`)
 
 Per research.md E2.5 — adds a second way to assign/rearrange placements (dragging an existing
-placement onto another slot), *alongside* the existing modal/dropdown flow (kept for keyboard/
+placement onto another slot), _alongside_ the existing modal/dropdown flow (kept for keyboard/
 screen-reader users — Constitution-aligned with the still-open `tasks.md` T054 accessibility
 pass). No `TeamConfiguration`/`TeamPlacement` shape change — this is purely a new UI interaction
 over the existing `setPlacement` mutation:
@@ -483,7 +506,7 @@ interface TrinketRecord extends Provenance {
 ```
 
 **Engine implication**: `simulate()`'s Phase A modifier resolution (`sumModifier`) now also
-sums `effectTags` from every trinket in `config.trinketIds`, as an *additional* implicit team-
+sums `effectTags` from every trinket in `config.trinketIds`, as an _additional_ implicit team-
 wide modifier source alongside the user's own manual `teamModifiers` -- additive with it, same
 no-precedence rule the manual carry-over `StatModifier`s already follow with each other.
 
@@ -552,7 +575,7 @@ symmetric in the timeline. This is a pre-existing asymmetry being closed, not a 
 **Facilitated damage widened (FR-056)**: `ActiveStatus` gains the applying creature's key alongside
 its existing `sourceSlot`, and each Burn/Poison tick's damage accrues to that creature in the same
 `facilitatedDamage` map Shock procs already feed. A pure DOT applier currently reports `0.00` own
-DPS *and* `0.00` facilitated DPS, which states it contributes nothing.
+DPS _and_ `0.00` facilitated DPS, which states it contributes nothing.
 
 Facilitated output stays **separate** from own-DPS rather than being merged into it: a DOT
 applier's contribution genuinely is not direct damage, and folding them together would make a DOT
@@ -613,7 +636,10 @@ same rationale (one source of truth for a colour the UI uses in several places):
 
 ```ts
 // src/data/statColors.ts
-export const STAT_COLORS: Record<"damage" | "burn" | "poison" | "shock" | "shield" | "heal" | "multicast", string>;
+export const STAT_COLORS: Record<
+  "damage" | "burn" | "poison" | "shock" | "shield" | "heal" | "multicast",
+  string
+>;
 export const RARITY_COLORS: Record<Rarity, string>;
 ```
 
@@ -631,20 +657,20 @@ not status effects.
 Per research.md H8 — a **behavioural correction** to `simulate()`, not a type change.
 
 Previously, Phase B walked casts in `(tSeconds, stableSlotIndex)` order while mutating a single
-shared `shockLayers` counter, so a Shock layer applied by one creature at time *T* empowered
-another creature's hit at the *same* time *T* if and only if the applier happened to sort first.
+shared `shockLayers` counter, so a Shock layer applied by one creature at time _T_ empowered
+another creature's hit at the _same_ time _T_ if and only if the applier happened to sort first.
 Slot position therefore changed damage output for creatures with no positional ability at all.
 
 New rule, in **two** required parts (research.md H8 — part 1 alone leaves a second, reproducible
 manifestation via Multicast, and part 2 alone does not fix same-timestamp collisions):
 
 1. **Phase B walks a genuinely chronological event list.** Multicast repetitions are flattened into
-   the cast list and the whole list sorted by `(tSeconds, stableSlotIndex)` *before* walking it.
+   the cast list and the whole list sorted by `(tSeconds, stableSlotIndex)` _before_ walking it.
    Today repetitions are expanded inline inside the cast loop, so a cast at t=5.0 with a repetition
    at t=5.1 is processed entirely before another creature's t=5.0 cast that sorts later — meaning
    Phase B never visited timestamps in order, and round 4's 0.1 s stagger did not make it do so.
 2. **Within one timestamp, every cast's Shock proc resolves against the layer state as of the
-   moment that timestamp began.** Layers granted at *T* take effect from the next distinct
+   moment that timestamp began.** Layers granted at _T_ take effect from the next distinct
    timestamp onward. The snapshot covers **both** `shockLayers` (the scalar total) **and**
    `shockLayersBySource` (the per-source attribution map) — snapshotting only the total would fix
    `perStatusPerSecond.Shock` while leaving `perCreatureFacilitatedDps`, the column the user
@@ -653,16 +679,16 @@ manifestation via Multicast, and part 2 alone does not fix same-timestamp collis
 Consequences:
 
 - `SimulationResult` keeps its exact shape; `timeline` keeps its documented stable ordering and
-  tie-break (which remain correct for *display* — they just no longer decide damage).
+  tie-break (which remain correct for _display_ — they just no longer decide damage).
 - The invariant this establishes, and which the regression test asserts: **permuting the slots of
   creatures that have no positional `abilityTags` must leave every number in
   `perCreatureDps`, `perCreatureFacilitatedDps`, and `perStatusPerSecond` unchanged.**
 - Multicast repetitions still occupy distinct timestamps 0.1 s apart (round 4) and a burst still
-  escalates its own Shock layers across its repetitions — but they are now *sorted into* the global
+  escalates its own Shock layers across its repetitions — but they are now _sorted into_ the global
   event order rather than expanded inline, which is what makes a Multicast creature's output
   permutation-invariant too. Verified reachable with real data: 7 creature records have Multicast
-  > 1 *and* apply Shock, and Bumblebolt at level 4 reproduced 20.55/s vs 21.60/s across a slot
-  permutation before this fix.
+  > 1 _and_ apply Shock, and Bumblebolt at level 4 reproduced 20.55/s vs 21.60/s across a slot
+  > permutation before this fix.
 - Not chosen as "what the game does frame-for-frame" (undocumented, research.md H8); chosen
   because it is invariant under the permutation the user correctly says should not matter.
 
@@ -672,13 +698,13 @@ Per research.md H1/H4/H5/H6/H7. **No type changes** — recorded here so the lay
 written down rather than living only in component code:
 
 - **One shared creature-card component** renders the game's four bands (header / sprite+types /
-  cooldown+per-stat lines / ability) and is used by *both* the Corpus Browser and the Calculator's
+  cooldown+per-stat lines / ability) and is used by _both_ the Corpus Browser and the Calculator's
   selected-mon panel. The Calculator's panel adds a fifth "Effective this battle" band — this
   project's own differentiator, kept visually separate from base stats, not merged into them.
 - **Shop cost leaves the battle-stat band** (it is not on the game card) and is shown as
   secondary metadata.
 - **`teamModifiers` stays in `TeamConfiguration` and in `simulate()`.** Round 6 removes only the
-  *UI option* for creating one by hand; the field itself remains load-bearing because round 5
+  _UI option_ for creating one by hand; the field itself remains load-bearing because round 5
   routes trinket `effectTags` through it. Removing the engine path would silently disable
   trinkets.
 - **Corpus Browser stops rendering `sourceRefs`/`patch`/`conflicts`.** The data stays in the
@@ -692,7 +718,7 @@ removed; the slot's card/placeholder itself becomes the click target that opens
 `CreatureSearchModal` (coexisting with round 3's drag handlers on the same element, since
 `@dnd-kit/core`'s pointer sensor only engages past a drag-distance threshold). `TeamSummary` and
 `PlacedCreatureDetails` drop their displayed slot-position text (e.g. "Back 1") — the per-slot
-*keying* (`${creatureId}@${slotKey}`) is unchanged, only the label shown to the user.
+_keying_ (`${creatureId}@${slotKey}`) is unchanged, only the label shown to the user.
 
 ### 2026-10-05 (round 3) — Persistent side-panel "highlighted slot" is UI state, not team data
 
@@ -700,7 +726,7 @@ Per research.md E2.7 — the reference UI's hover-anchored detail popup disappea
 pointer-leave and can visually cover other cards. The redesigned detail view is a single,
 layout-reserved side panel driven by a `highlightedSlot: GridSlot | null` value that:
 
-- updates on hover/focus of a *different* placed creature's card,
+- updates on hover/focus of a _different_ placed creature's card,
 - is **never cleared** by hover/focus-leaving a card (sticky — keeps showing the last-highlighted
   creature),
 - defaults to the first placement (or an empty-state message if none) rather than nothing.
@@ -713,8 +739,8 @@ state, same category as (not merged into) `TeamConfigContext`.
 ### 2026-10-05 — Shield counted as an output stat, not just absorption
 
 `perStatusPerSecond.Shield` and `cumulativeSeries[].byStatus.Shield` now track the cumulative
-*Shield granted* by the team's own casts (same treatment as Burn/Poison/Shock), not Shield
-*absorption* against an opposing target (which still isn't modeled — see `simulate.ts`'s T037
+_Shield granted_ by the team's own casts (same treatment as Burn/Poison/Shock), not Shield
+_absorption_ against an opposing target (which still isn't modeled — see `simulate.ts`'s T037
 comment). This answers "how much Shield is this team generating over time", which is what the
 summary table and chart surface as "Shield".
 
@@ -730,7 +756,7 @@ type RegionId = "pantra" | "jinto" | (string & {});
 ```
 
 **Also on `TeamConfiguration`** (pass-1 gap): `selectedRegion: RegionId` — the ask's own wording is
-*"the player chooses a region before they choose anything else when starting a game"*, so region is
+_"the player chooses a region before they choose anything else when starting a game"_, so region is
 a configuration choice, not only a creature attribute. T235's "opposite region" filter is undefined
 without it.
 
@@ -763,8 +789,8 @@ sentinel rather than by expanding `types` to the full list, for two reasons:
 paintedCreatureIds: string[];
 ```
 
-**Species, not placements** (research.md M1): *"Whenever these specific species appear in your shop
-or on your board"*. Painting Mosslug paints every Mosslug you own, so keying by slot would be wrong
+**Species, not placements** (research.md M1): _"Whenever these specific species appear in your shop
+or on your board"_. Painting Mosslug paints every Mosslug you own, so keying by slot would be wrong
 the moment a second copy is placed.
 
 ### Type matching rule (behavioural change)
@@ -772,18 +798,17 @@ the moment a second copy is placed.
 Every `typeFilter` comparison must go through one predicate. There are **six** sites, not the four
 previously asserted here, and only two are in `effects.ts` — pass-1 validation caught the error:
 
-| Site | Painted must apply? |
-|---|---|
-| `effects.ts:122` (selector filters) | yes |
-| `effects.ts:279` (`statFromCount`) | yes |
-| `simulate.ts:118` (adjacent cooldown grants) | yes |
-| `simulate.ts:121` (allAllies cooldown grants) | yes |
-| `corpus.ts:130` (browser search filter) | yes — a painted creature should surface under any type |
-| `CreatureSearchModal.tsx:58` (picker filter) | yes — same reason |
-
+| Site                                          | Painted must apply?                                    |
+| --------------------------------------------- | ------------------------------------------------------ |
+| `effects.ts:122` (selector filters)           | yes                                                    |
+| `effects.ts:279` (`statFromCount`)            | yes                                                    |
+| `simulate.ts:118` (adjacent cooldown grants)  | yes                                                    |
+| `simulate.ts:121` (allAllies cooldown grants) | yes                                                    |
+| `corpus.ts:130` (browser search filter)       | yes — a painted creature should surface under any type |
+| `CreatureSearchModal.tsx:58` (picker filter)  | yes — same reason                                      |
 
 ```ts
-creatureHasType(creature, type, config) // true for any `type` when the creature is painted
+creatureHasType(creature, type, config); // true for any `type` when the creature is painted
 ```
 
 This replaces the four direct `creature.types.includes(...)` tests. One predicate, because the
@@ -836,8 +861,8 @@ produces the user's sequences. The change is a **constraint removal**:
 ```ts
 interface StatValue {
   base: number;
-  flatAdd: number;              // added BEFORE the multiplier
-  multiplier: number;           // default 1
+  flatAdd: number; // added BEFORE the multiplier
+  multiplier: number; // default 1
   postMultiplierFlatAdd: number; // added AFTER — reactive gains land here
 }
 const read = (v: StatValue) => (v.base + v.flatAdd) * v.multiplier + v.postMultiplierFlatAdd;
@@ -846,8 +871,7 @@ const read = (v: StatValue) => (v.base + v.flatAdd) * v.multiplier + v.postMulti
 Why each slot exists, with the capture evidence:
 
 - **`multiplier` applies at READ time, not bake time.** Noxnimbus's +6 to a creature carrying +70%
-  produced +10, not +6: `(604+6)×1.7 = 1037`, `(11+6)×1.7 = 29`. Snapshot-then-add gives 1033 and
-  25. The multiplier is re-evaluated on every change.
+  produced +10, not +6: `(604+6)×1.7 = 1037`, `(11+6)×1.7 = 29`. Snapshot-then-add gives 1033 and 25. The multiplier is re-evaluated on every change.
 - **`postMultiplierFlatAdd` is separate because reactive gains are never scaled.** Thorntail
   entered at 7082 displayed damage against a listed base of 50 — huge modifiers — yet every
   increment was exactly **+24**, its unmultiplied listed value. Adding it to `base` would inflate it
@@ -860,11 +884,11 @@ represent at all.
 
 Battle start resolves in three ordered phases, each reading the **completed** output of the previous:
 
-| phase | contents | evidence |
-|---|---|---|
-| 1 | percentage / multiplier stat scaling | Cobrex 604 → 1027 before anything else reads it |
-| 2 | position-based battle-start effects | `-COOLDOWN` popups at t=1.9948, before Miasmaw changes at t=2.0396 |
-| 3 | dynamic battle-start abilities reading team state | Miasmaw's 1080 = its 14 + allies **including post-multiplier Cobrex 1027** |
+| phase | contents                                          | evidence                                                                   |
+| ----- | ------------------------------------------------- | -------------------------------------------------------------------------- |
+| 1     | percentage / multiplier stat scaling              | Cobrex 604 → 1027 before anything else reads it                            |
+| 2     | position-based battle-start effects               | `-COOLDOWN` popups at t=1.9948, before Miasmaw changes at t=2.0396         |
+| 3     | dynamic battle-start abilities reading team state | Miasmaw's 1080 = its 14 + allies **including post-multiplier Cobrex 1027** |
 
 > **Supersedes** `effects.ts`'s current comment that battle-start effects "must read their BASE
 > values, or the result would depend on which creature happened to resolve first". The hazard is
@@ -918,8 +942,14 @@ Closed union replacing the free string, sourced from batodex's own `trigger` fie
 
 ```ts
 type AbilityTrigger =
-  | "Ongoing" | "On Cast" | "On Battle Start" | "On Bought"
-  | "On Victory" | "On Knocked Out" | "On Trinket Gained" | "On Battle Lost";
+  | "Ongoing"
+  | "On Cast"
+  | "On Battle Start"
+  | "On Bought"
+  | "On Victory"
+  | "On Knocked Out"
+  | "On Trinket Gained"
+  | "On Battle Lost";
 ```
 
 `null` is a legitimate value (an ability with no trigger), distinct from "not yet researched".
@@ -936,15 +966,15 @@ and a second override mechanism would be a third way to express an ability. When
 level-records have identical text. Shiny ability text
 differs at **343 of the 508 level-records that have both** (research.md N1), which is where shiny's
 uplift actually lives — the stat lines are identical for 299 of them.
-*Corrected in pass-2 remediation: this said "315 of 470", a figure research.md N1 had already
-retracted. Regenerate with `node scripts/audit-batodex.mjs`.*
+_Corrected in pass-2 remediation: this said "315 of 470", a figure research.md N1 had already
+retracted. Regenerate with `node scripts/audit-batodex.mjs`._
 
 > **The ask's "All shiny mons get better stats" is NOT upheld at the stat level** and the existing
 > downgrade guard in `shiny.test.ts` must not be deleted to make it true: **28 stat records across
 > 7 species** are worse (Kappow is 1s SLOWER). In aggregate throughput it is 222 better / 299 equal
-> / 15 worse. *Corrected in pass-3 remediation: this said "20", the figure research.md N1 retracts
+> / 15 worse. _Corrected in pass-3 remediation: this said "20", the figure research.md N1 retracts
 > as an undercount from not checking status amounts. Regenerate with
-> `npx vite-node scripts/audit-shiny.mjs`.*
+> `npx vite-node scripts/audit-shiny.mjs`._
 
 ## PerCastOutput (2026-10-06) — one shape for "what a creature emits per cast"
 
@@ -955,7 +985,7 @@ interface PerCastOutput {
   appliesStatus: { type: StatusEffectType; amount: number }[];
   heal: number | null;
   multicast: number;
-  damageUnconfirmed: boolean;   // all fields REQUIRED — see below
+  damageUnconfirmed: boolean; // all fields REQUIRED — see below
 }
 ```
 
@@ -966,7 +996,7 @@ Produced by both renderers of that concept:
 
 ### Why this exists, and why nothing is optional
 
-`buildStatLines` was *already* shared by the creature card and the "Effective this battle" band, so
+`buildStatLines` was _already_ shared by the creature card and the "Effective this battle" band, so
 the component was never duplicated. The duplication was one level down: the function took a loose
 parameter bag in which `healAmount` and `multicast` were **optional**, and each call site
 hand-mapped its own differently-named source onto it — `creature.healAmount` against
@@ -987,10 +1017,10 @@ concept honest (Constitution Principle VII).
 
 Two separate artefacts, deliberately not conflated:
 
-| | what it is | restores a build? |
-|---|---|---|
-| **Build code** (`bat1:<base64url>`) | the build itself | **yes** |
-| **Build id** (8 hex chars) | a fingerprint *of* the build | **no** |
+|                                     | what it is                   | restores a build? |
+| ----------------------------------- | ---------------------------- | ----------------- |
+| **Build code** (`bat1:<base64url>`) | the build itself             | **yes**           |
+| **Build id** (8 hex chars)          | a fingerprint _of_ the build | **no**            |
 
 The ask asked for export/import "with a UUID value… so that time-sensitive work isn't lost". A hash
 is not reversible, so a UUID **alone** can never restore a team — and losing work is exactly what a
@@ -1004,7 +1034,7 @@ team, defeating both uses.
 
 The same team has many representations — slots in a different array order, trinkets listed
 differently, an absent optional versus an empty array, modifiers carrying freshly-generated session
-ids. All must produce the same fingerprint, or the id fingerprints the *editing history* rather than
+ids. All must produce the same fingerprint, or the id fingerprints the _editing history_ rather than
 the team. `canonicalize()` sorts placements by slot, sorts every id list, normalizes `shiny`
 `undefined`/`false`, and strips modifier ids.
 
@@ -1040,7 +1070,7 @@ Adding a creature is a data change with no code; adding a trigger is one entry.
 
 `AbilityTrigger` gained two values batodex leaves null, read from ability text instead:
 **`On Item Used`** (Craghorn) and **`On Knockout`** — distinct from the existing `On Knocked Out`,
-which is about *this* creature dying rather than any monster.
+which is about _this_ creature dying rather than any monster.
 
 ### The double-count hazard, and the two guards against it
 
@@ -1067,10 +1097,10 @@ nothing" and would have mislabelled nine working creatures.
 The tag shipped with **no notion of a recipient**, so a press wrote to the pressing creature's slot
 by construction. Seven of the nine species are self-grants and were correct. The other two are not:
 
-| Creature | Ability text | Target |
-|---|---|---|
-| Brawlmantis | "This and **Common allies** gain +10 Damage permanently" | `{ kind: "allAllies", rarityFilter: "Common" }` |
-| Kickrane | "This and **all your allies** gain +20 Damage permanently" | `{ kind: "allAllies" }` |
+| Creature    | Ability text                                               | Target                                          |
+| ----------- | ---------------------------------------------------------- | ----------------------------------------------- |
+| Brawlmantis | "This and **Common allies** gain +10 Damage permanently"   | `{ kind: "allAllies", rarityFilter: "Common" }` |
+| Kickrane    | "This and **all your allies** gain +20 Damage permanently" | `{ kind: "allAllies" }`                         |
 
 Pressing Brawlmantis's "Win a round" raised Brawlmantis 50 → 60 and left the two Common allies on
 the same board untouched. The effects were right; the recipients were missing.
@@ -1131,7 +1161,7 @@ The five closed vocabularies describing a creature — `Rarity`, `CreatureType`,
 `StatusEffectType` and `AbilityTrigger` — are **string enums** in `src/data/enums.ts`, with a
 companion registry in `vocabularies.ts` holding each member's label, ordering and colour.
 
-> **Amended 2026-10-07.** This section first described a const-object registry *instead of* enums,
+> **Amended 2026-10-07.** This section first described a const-object registry _instead of_ enums,
 > on the reasoning in research.md R2. That conclusion was overturned — see **research.md R8** for why
 > R2's argument was wrong and what `erasableSyntaxOnly` had to do with it. The registries survive;
 > what changed is that the enum, not an object key, is now a member's identity.
@@ -1181,12 +1211,12 @@ The corollary is the rule that replaces the old "spelling bridge" comment:
 
 ```ts
 export const RARITY = defineVocabulary({
-  Common:    { label: "Common",     order: 0, color: "#70707a" },
-  Uncommon:  { label: "Uncommon",   order: 1, color: "#4ab500" },
-  Rare:      { label: "Rare",       order: 2, color: "#0084bd" },
+  Common: { label: "Common", order: 0, color: "#70707a" },
+  Uncommon: { label: "Uncommon", order: 1, color: "#4ab500" },
+  Rare: { label: "Rare", order: 2, color: "#0084bd" },
   SuperRare: { label: "Super Rare", order: 3, color: "#a040a0" },
-  Legendary: { label: "Legendary",  order: 4, color: "#d47c00" },
-  Mythical:  { label: "Mythical",   order: 5, color: "#dc2844" },
+  Legendary: { label: "Legendary", order: 4, color: "#d47c00" },
+  Mythical: { label: "Mythical", order: 5, color: "#dc2844" },
 });
 export type Rarity = VocabularyKey<typeof RARITY>;
 ```
@@ -1207,8 +1237,8 @@ export const CREATURE_TYPE = defineVocabulary({
   Fire: { label: "Fire", order: 0, kind: "element" },
   // ... the eleven other elements ...
   Curio: { label: "Curio", order: 12, kind: "placeholder" },
-  NULL:  { label: "NULL",  order: 13, kind: "placeholder" },
-  All:   { label: "All",   order: 14, kind: "wildcard" },
+  NULL: { label: "NULL", order: 13, kind: "placeholder" },
+  All: { label: "All", order: 14, kind: "wildcard" },
 });
 ```
 
@@ -1236,17 +1266,17 @@ creature rather than being one. `types: []` is not a gap to be filled with a pla
 `DamageType` was one type serving two unrelated roles, which is why it looked half-empty
 (research.md R3):
 
-| Role | Values that occur | Read by |
-| --- | --- | --- |
-| what channel **a hit** lands on | Direct, Burn, Poison, Shock | `TimelineEvent`, `shield.ts`, `status.ts` |
-| what cast **a creature** publishes | Direct, or nothing | `CreatureRecord.damageType` |
+| Role                               | Values that occur           | Read by                                   |
+| ---------------------------------- | --------------------------- | ----------------------------------------- |
+| what channel **a hit** lands on    | Direct, Burn, Poison, Shock | `TimelineEvent`, `shield.ts`, `status.ts` |
+| what cast **a creature** publishes | Direct, or nothing          | `CreatureRecord.damageType`               |
 
 ```ts
 export const DAMAGE_CHANNEL = defineVocabulary({
   Direct: { label: "Direct", order: 0 },
-  Burn:   { label: "Burn",   order: 1 },
+  Burn: { label: "Burn", order: 1 },
   Poison: { label: "Poison", order: 2 },
-  Shock:  { label: "Shock",  order: 3 },
+  Shock: { label: "Shock", order: 3 },
 });
 export type DamageChannel = VocabularyKey<typeof DAMAGE_CHANNEL>;
 ```
@@ -1260,13 +1290,13 @@ WI-004's ledger note required this to be addressed. `DamageChannel` and `StatusE
 three of four members, and the overlap is **not** duplication (research.md R3a):
 
 ```ts
-DamageChannel    = "Direct" | "Burn"   | "Poison" | "Shock"
-StatusEffectType =            "Burn"   | "Poison" | "Shock" | "Shield"
+DamageChannel = "Direct" | "Burn" | "Poison" | "Shock";
+StatusEffectType = "Burn" | "Poison" | "Shock" | "Shield";
 ```
 
 `"Direct"` is a channel and not a status (a direct hit was never a status); `"Shield"` is a status and
-not a channel (Shield absorbs damage, it never deals it). So `DamageChannel` is exactly *the statuses
-that tick for damage, plus `Direct`*, and the shared three members are a status naming the channel its
+not a channel (Shield absorbs damage, it never deals it). So `DamageChannel` is exactly _the statuses
+that tick for damage, plus `Direct`_, and the shared three members are a status naming the channel its
 own ticks land on.
 
 They stay **two registries related by a derived mapping**, following the precedent `STATUS_COLOR_KEY`
@@ -1303,7 +1333,7 @@ unobserved.
 The strongest argument for doing it surfaced during the work: `ShinyStatLine` publishes a damage
 number and **no channel**, so under the old pair a shiny could set one without the other — precisely
 the state the pair was meant to exclude, held together only because the UI read `damage` and ignored
-`damageType`. The invariant was true *by luck* on that path.
+`damageType`. The invariant was true _by luck_ on that path.
 
 Scope line: `ResolvedPlacement` and `PerCastOutput` keep their damage/channel pair deliberately.
 Those are COMPUTED values where damage legitimately exists without a published channel, because a
@@ -1349,7 +1379,7 @@ effective tags = hand-authored tags, else derived tags
    self-knockout, Fumungus's enemy-stack scaling, the Link Cable adjacency rewrite. Derivation is a
    floor, not a ceiling.
 2. **Read the TEXT; treat the trigger as corroboration.** 134 records have text and no trigger at all,
-   so keying on the trigger would miss a quarter of the corpus. Where a trigger *is* published it must
+   so keying on the trigger would miss a quarter of the corpus. Where a trigger _is_ published it must
    agree with what the text implies, and a disagreement is a test failure rather than a silent
    preference for one field.
 3. **`manualTrigger` first, across its full target range; then one further family by census.**
@@ -1378,7 +1408,7 @@ fields added earlier on 2026-10-07 are what let the ally-granting shapes be expr
 1. `"This and <filter> allies gain +N <Stat> permanently"` — `allAllies` + filter + `includeSelf`.
 2. `"+N <Stat> permanently"`, including two-stat variants — a bare self-grant.
 3. A leading trigger clause then the grant — `"When you use an item, this gains +20 Damage and
-   Shield"`. Note this one carries **no "permanently" at all**.
+Shield"`. Note this one carries **no "permanently" at all**.
 4. **Positional and filtered targets** — `adjacent` (+ optional `typeFilter`), `behind`,
    `allAllies` + `minLevelFilter`.
 
@@ -1407,7 +1437,10 @@ keyword colours inside a single sentence on the Craghorn card ("this gains +20 D
 
 ```ts
 // src/data/abilityHighlight.ts
-export interface AbilityTextRun { text: string; colorKey?: StatColorKey | KeywordColorKey; }
+export interface AbilityTextRun {
+  text: string;
+  colorKey?: StatColorKey | KeywordColorKey;
+}
 export function tokenizeAbilityText(text: string): AbilityTextRun[];
 ```
 
@@ -1421,7 +1454,7 @@ Three constraints read off the corpus rather than assumed (research.md R6):
 2. **The sign and number join the run** — "+20 Damage" is coloured entire, not just the word.
 3. **The vocabulary exceeds `STAT_COLORS`, in two tiers.** 225 of 543 texts contain none of the seven
    stat keys. Of those, **only 52 contain Protect/HP/Trigger/Ongoing** — validation pass 1 refuted an
-   earlier claim that all 225 did. The remaining 173 carry *mechanic* nouns: `level` (36),
+   earlier claim that all 225 did. The remaining 173 carry _mechanic_ nouns: `level` (36),
    `Evolve`/`Evolves` (35/19), `Knockout` (32), `Trinket` (24), `Charge` (12), `day` (12), `shop` (8),
    `Sell Value` and `Berries` (4 each). A tier-2 vocabulary of those nine terms reaches **132 of the
    173**, giving **502 of 543** texts at least one coloured run and leaving **41** bare. So "all mon's
@@ -1460,7 +1493,7 @@ front, allies. An item is used from the shop and has no position on the board, s
 targets is absolute. Reusing that selector would have meant inventing a fake source slot per use.
 
 **Why `Chosen` is user-picked and never rolled.** The game rolls; the player is reconciling a run
-that has *already* rolled. A second independent roll produces a board they cannot match against
+that has _already_ rolled. A second independent roll produces a board they cannot match against
 their screen — the same argument `AffectedCreaturePicker` makes for Painter's nine species.
 
 **`Team` carries its own two filters** rather than reusing `SelectorFilters`. The filters items
@@ -1476,7 +1509,7 @@ Picking an item in `ItemPicker` **uses** it: the pick resolves the item's recipi
 
 There was one, for about a day. The first build gave items the trinket treatment — a bag you added
 to, which then offered Use and Discard — and the user's verdict on first contact was that the bag is
-pointless. They were right, and the reason generalises: a trinket is a thing you *have* for the
+pointless. They were right, and the reason generalises: a trinket is a thing you _have_ for the
 whole battle, so holding it is the state worth modelling, whereas an item has exactly one
 interesting moment, the moment its bonus lands. An unused item changes nothing this tool computes,
 so a screen that carefully tracks unused items is tracking nothing.

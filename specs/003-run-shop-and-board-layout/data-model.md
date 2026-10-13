@@ -83,7 +83,7 @@ over. `SHOP_INDEXES` is the same thing with five entries.
 Two reasons, and the second is the real one:
 
 1. The advisor reads it. Anything `src/engine` reads has to be part of the config it is handed.
-2. A transcribed shop is *work the user did*. Typing five monsters in and then losing them to a
+2. A transcribed shop is _work the user did_. Typing five monsters in and then losing them to a
    refresh is the same complaint that moved `runDay` into the config on 2026-10-08.
 
 It is, however, **not part of the build's identity** — see §3.
@@ -94,15 +94,15 @@ It is, however, **not part of the build's identity** — see §3.
 
 `share.ts` has an established three-way split and both new structures slot into it:
 
-| | In `canonicalize` / `buildId` | In the share code | In local storage |
-|---|---|---|---|
-| `placements`, `bench`, trinkets, items | yes | yes | yes |
-| `runDay` *(today)* | **no** | yes | yes |
-| `run` *(new)* | **no** | yes | yes |
-| `shop` *(new)* | **no** | yes | yes |
+|                                        | In `canonicalize` / `buildId` | In the share code | In local storage |
+| -------------------------------------- | ----------------------------- | ----------------- | ---------------- |
+| `placements`, `bench`, trinkets, items | yes                           | yes               | yes              |
+| `runDay` _(today)_                     | **no**                        | yes               | yes              |
+| `run` _(new)_                          | **no**                        | yes               | yes              |
+| `shop` _(new)_                         | **no**                        | yes               | yes              |
 
-The rule the existing code states for `runDay` — *"two boards identical except for the day you
-fought them are the same board"* — extends unchanged: two boards identical except for what the shop
+The rule the existing code states for `runDay` — _"two boards identical except for the day you
+fought them are the same board"_ — extends unchanged: two boards identical except for what the shop
 was offering are the same board. Putting either in the fingerprint would make the library treat a
 re-visited build as a new one every time the shop rerolled.
 
@@ -165,7 +165,7 @@ Declared **per level**, on the records that already exist:
 
 A default of `[Merge]` for levels 2-4 and a required value at level 1 keeps the common case to one
 line per species. `Evolution` is derivable from the existing `evolvesInto` / `evolvesAtLevel` pair
-on the *source* species, so it should be derived rather than restated — 13 species are the target
+on the _source_ species, so it should be derived rather than restated — 13 species are the target
 of an evolution and hand-maintaining both sides is how they would disagree.
 
 ### What it buys, in order of value
@@ -187,6 +187,7 @@ of an evolution and hand-maintaining both sides is how they would disagree.
    That converts a silent 62-record ambiguity into an enumerated, shrinking list. It also means the
    tagging work can be done incrementally without the half-finished state being mistaken for a
    finished one.
+
 3. **The level selector stops lying (FR-A04).** Levels reachable only by merging can be labelled as
    such, which is the honest answer to "can I just pick level 3".
 4. **`computeMergeAdvice` gains a cost basis.** A merge to level 2 costs three level-1 purchases,
@@ -235,11 +236,11 @@ transcription ergonomics, and both are real work saved.
 a real shop that is wrong in a way that produces confident, unusable output. Measured on the board
 that prompted this feature (day 2, `rich-lady`, $55 in hand):
 
-| What the advisor said | Cost | Affordable? |
-|---|---|---|
-| "Best lineup you own": field Brawlmantis **and** Runerock, bench Puffloon — 47.3 DPS, 82 ehp/s | $75 | **no** |
-| "Highest DPS": field Brawlmantis — 51.6 DPS, 19.3 ehp/s | $55 | yes, but it is the worse board |
-| What the budget actually allowed at best: Aristobat + Runerock — 38.2 DPS, 82 ehp/s, score 748 | **$45** | yes, and $10 left over |
+| What the advisor said                                                                          | Cost    | Affordable?                    |
+| ---------------------------------------------------------------------------------------------- | ------- | ------------------------------ |
+| "Best lineup you own": field Brawlmantis **and** Runerock, bench Puffloon — 47.3 DPS, 82 ehp/s | $75     | **no**                         |
+| "Highest DPS": field Brawlmantis — 51.6 DPS, 19.3 ehp/s                                        | $55     | yes, but it is the worse board |
+| What the budget actually allowed at best: Aristobat + Runerock — 38.2 DPS, 82 ehp/s, score 748 | **$45** | yes, and $10 left over         |
 
 The best affordable answer scored 748 against the 519 the user played and the 554 of the
 damage-maximal alternative — and it was never surfaced, because nothing in the search knows that
@@ -259,7 +260,7 @@ export function computeBenchAdvice(
   corpus: Corpus,
   currentScore: number,
   currentDps: number,
-  budget?: Budget,          // absent = today's behaviour, unchanged
+  budget?: Budget, // absent = today's behaviour, unchanged
 ): BenchAdvice | null;
 ```
 
@@ -267,7 +268,7 @@ Three properties this must have, each of which is a way the obvious implementati
 
 1. **The filter is on the SELECTION, not the final board.** Stage one already enumerates selections
    before permuting them; pricing there discards unaffordable selections before they cost a
-   simulation, so the budget makes the search *cheaper*, exactly as `isLocked` already does.
+   simulation, so the budget makes the search _cheaper_, exactly as `isLocked` already does.
 2. **An unpriced candidate is excluded and SAID so**, never treated as free. `BenchAdvice` already
    carries `unreadablePositional` and `locked` for precisely this kind of "the search was
    constrained and you cannot see it from the rows" disclosure; add `unpriced`.
@@ -281,7 +282,7 @@ Baskets, not lineups. Given five offers and a budget, enumerate the affordable s
 2⁵ = 32, trivially cheap), and for each one run the existing lineup search over the roster that
 purchase would produce. Rank by the survivability-weighted score, report DPS, mitigation and cost.
 
-This is deliberately a *caller* of `rosterAdvice` rather than a change to it: the shop question is
+This is deliberately a _caller_ of `rosterAdvice` rather than a change to it: the shop question is
 "which monsters should join the roster", and the lineup question is "given a roster, who plays".
 Keeping them separate is what stops the combinatorics multiplying — see `ui-architecture.md` §7 for
 the cost ceiling and why it is the one real performance risk in this feature.
@@ -292,14 +293,14 @@ the cost ceiling and why it is the one real performance risk in this feature.
 
 Each step is independently shippable and leaves the app working.
 
-| # | Change | Depends on | Why this order |
-|---|---|---|---|
-| 1 | `AcquisitionSource` enum, `obtainedFrom` per level, the FR-A03 invariant test | — | Corpus edit, test, no UI. Smallest useful unit, and it fails safe while incomplete |
-| 2 | `RunState` group; `runDay` shimmed; share codec extended | — | Lands the persistence rule once |
-| 3 | Budget-aware `computeBenchAdvice`; cost on every advice row | — | Pure engine, test-first per Principle III. **Delivers value with no shop UI at all** |
-| 4 | `ShopOffer` on the config; shop row UI; buy / reroll / lock | 1, 2 | First visible shop |
-| 5 | `shopAdvice.ts` basket search | 3, 4 | US1 complete |
-| 6 | Layout shell and region migration | 4 | See `ui-architecture.md` — the big one, deliberately last |
+| #   | Change                                                                        | Depends on | Why this order                                                                       |
+| --- | ----------------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------ |
+| 1   | `AcquisitionSource` enum, `obtainedFrom` per level, the FR-A03 invariant test | —          | Corpus edit, test, no UI. Smallest useful unit, and it fails safe while incomplete   |
+| 2   | `RunState` group; `runDay` shimmed; share codec extended                      | —          | Lands the persistence rule once                                                      |
+| 3   | Budget-aware `computeBenchAdvice`; cost on every advice row                   | —          | Pure engine, test-first per Principle III. **Delivers value with no shop UI at all** |
+| 4   | `ShopOffer` on the config; shop row UI; buy / reroll / lock                   | 1, 2       | First visible shop                                                                   |
+| 5   | `shopAdvice.ts` basket search                                                 | 3, 4       | US1 complete                                                                         |
+| 6   | Layout shell and region migration                                             | 4          | See `ui-architecture.md` — the big one, deliberately last                            |
 
 Step 3 is worth calling out: it is maybe 80 lines, it needs no new UI, it does not even depend on
 step 1, and it fixes the defect that made the advisor recommend a $75 basket to someone holding

@@ -8,7 +8,9 @@ import { gridRef } from "../../engine/roster";
 const SLOT = { row: GridRow.Top, col: 0 } as const;
 
 function openPicker(onSelect = () => {}, onClose = () => {}) {
-  return render(<CreatureSearchModal target={gridRef(SLOT)} onClose={onClose} onSelect={onSelect} />);
+  return render(
+    <CreatureSearchModal target={gridRef(SLOT)} onClose={onClose} onSelect={onSelect} />,
+  );
 }
 
 describe("creature picker ordering (2026-10-07)", () => {
@@ -16,7 +18,9 @@ describe("creature picker ordering (2026-10-07)", () => {
     // Was Mythical-first, which put the creatures you pick LEAST at the top and pushed Commons
     // below the fold.
     const { container } = openPicker();
-    const headings = Array.from(container.querySelectorAll("h3, h4")).map((h) => h.textContent?.trim());
+    const headings = Array.from(container.querySelectorAll("h3, h4")).map((h) =>
+      h.textContent?.trim(),
+    );
     // Matched on LABELS, not stored keys. Keyed on `r` this filter silently dropped the Super Rare
     // section the moment its label gained a space, and the test kept passing while checking less.
     const labels = RARITIES_ASC.map(rarityLabel);
@@ -90,7 +94,13 @@ describe("creature picker keyboard + filters (2026-10-07)", () => {
     fireEvent.change(screen.getByLabelText("Search by name"), { target: { value: "bumble" } });
 
     // Re-open for a different slot.
-    rerender(<CreatureSearchModal target={gridRef({ row: GridRow.Bottom, col: 2 })} onClose={() => {}} onSelect={() => {}} />);
+    rerender(
+      <CreatureSearchModal
+        target={gridRef({ row: GridRow.Bottom, col: 2 })}
+        onClose={() => {}}
+        onSelect={() => {}}
+      />,
+    );
 
     expect((screen.getByLabelText("Filter by rarity") as HTMLSelectElement).value).toBe("Common");
     expect((screen.getByLabelText("Search by name") as HTMLInputElement).value).toBe("");

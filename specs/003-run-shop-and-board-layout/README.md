@@ -10,27 +10,27 @@ match where the game puts them.
 
 ## Read in this order
 
-| Document | What it answers |
-|---|---|
-| [`spec.md`](./spec.md) | What it is: user stories, functional requirements, success criteria |
-| [`data-model.md`](./data-model.md) | The run-state systems: economy, shop offers, acquisition sources, what persists, what the engine gains |
+| Document                                     | What it answers                                                                                                       |
+| -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| [`spec.md`](./spec.md)                       | What it is: user stories, functional requirements, success criteria                                                   |
+| [`data-model.md`](./data-model.md)           | The run-state systems: economy, shop offers, acquisition sources, what persists, what the engine gains                |
 | [`ui-architecture.md`](./ui-architecture.md) | The layout shell, the DOM restructuring, the breakpoint strategy, the component inventory, where the analysis UI goes |
 
 ## Decisions taken (2026-10-13)
 
 The draft left nine things open. All nine are now settled; this is the record.
 
-| # | Decision | Consequence |
-|---|---|---|
-| D1 | **Transcribed, not simulated.** You enter the five offers your real shop is showing | No RNG, no run loop, no odds table. Rerolling to chase a monster is the time-waste the app exists to avoid |
-| D2 | **Acquisition sources replace the tri-state price.** Each species *and level* is tagged with where it can be obtained from | Supersedes the draft's `number \| null \| undefined`. The shop offers only shop-obtainable monsters, and "sold but unpriced" becomes a test-enforceable defect rather than an indistinguishable `0` |
-| D3 | **An explicit selection model lands before the layout moves** | Hover-only has no touch path; confirmed as step 2 of the sequence |
-| D4 | **`DndContext` is lifted out of `GridPicker`** | Board, bench and shop become independent regions sharing one provider |
-| D5 | **`ShopRef` stays separate from `RosterRef`** | "Owned" and "offered" are different types, so a future session cannot blur them by accident |
-| D6 | **Two viewport breakpoints, three layout states; everything else is a container query** | 1024px and 1280px, both derived from the token chain. See `ui-architecture.md` §3.3 |
-| D7 | **Extract a `Sheet` primitive first** | Four consumers from day one; `TeamLibrary` migrates onto it as the proof |
-| D8 | **The "Cockpit" information architecture** | DPS / mitigation / time-to-kill live in the status bar; the advisor headline docks beside the board; tables and charts move into an analysis sheet. See `ui-architecture.md` §10 |
-| D9 | **Shop rank and rarity odds are dropped entirely** | Their only consumer was reroll expected value, which only exists under D1's rejected alternative — and trinkets/items/trainers modify shop rank, so any static table would be wrong anyway |
+| #   | Decision                                                                                                                   | Consequence                                                                                                                                                                                         |
+| --- | -------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | **Transcribed, not simulated.** You enter the five offers your real shop is showing                                        | No RNG, no run loop, no odds table. Rerolling to chase a monster is the time-waste the app exists to avoid                                                                                          |
+| D2  | **Acquisition sources replace the tri-state price.** Each species _and level_ is tagged with where it can be obtained from | Supersedes the draft's `number \| null \| undefined`. The shop offers only shop-obtainable monsters, and "sold but unpriced" becomes a test-enforceable defect rather than an indistinguishable `0` |
+| D3  | **An explicit selection model lands before the layout moves**                                                              | Hover-only has no touch path; confirmed as step 2 of the sequence                                                                                                                                   |
+| D4  | **`DndContext` is lifted out of `GridPicker`**                                                                             | Board, bench and shop become independent regions sharing one provider                                                                                                                               |
+| D5  | **`ShopRef` stays separate from `RosterRef`**                                                                              | "Owned" and "offered" are different types, so a future session cannot blur them by accident                                                                                                         |
+| D6  | **Two viewport breakpoints, three layout states; everything else is a container query**                                    | 1024px and 1280px, both derived from the token chain. See `ui-architecture.md` §3.3                                                                                                                 |
+| D7  | **Extract a `Sheet` primitive first**                                                                                      | Four consumers from day one; `TeamLibrary` migrates onto it as the proof                                                                                                                            |
+| D8  | **The "Cockpit" information architecture**                                                                                 | DPS / mitigation / time-to-kill live in the status bar; the advisor headline docks beside the board; tables and charts move into an analysis sheet. See `ui-architecture.md` §10                    |
+| D9  | **Shop rank and rarity odds are dropped entirely**                                                                         | Their only consumer was reroll expected value, which only exists under D1's rejected alternative — and trinkets/items/trainers modify shop rank, so any static table would be wrong anyway          |
 
 ## The two things that still block a start
 

@@ -15,22 +15,37 @@
 const SOURCE = "https://batodex.com/monsters/beetbud";
 
 const html = await (await fetch(SOURCE)).text();
-const chunks = [...html.matchAll(/self\.__next_f\.push\(\[1,\s*("(?:[^"\\]|\\.)*")\]\)/g)].map((m) =>
-  JSON.parse(m[1]),
+const chunks = [...html.matchAll(/self\.__next_f\.push\(\[1,\s*("(?:[^"\\]|\\.)*")\]\)/g)].map(
+  (m) => JSON.parse(m[1]),
 );
 const payload = chunks.join("");
 const start = payload.indexOf('{"category":"monsters","entries":');
 if (start < 0) throw new Error("monsters payload not found — site structure changed");
 
-let depth = 0, end = -1, inStr = false, esc = false;
+let depth = 0,
+  end = -1,
+  inStr = false,
+  esc = false;
 for (let i = start; i < payload.length; i++) {
   const ch = payload[i];
-  if (esc) { esc = false; continue; }
-  if (ch === "\\") { esc = true; continue; }
-  if (ch === '"') { inStr = !inStr; continue; }
+  if (esc) {
+    esc = false;
+    continue;
+  }
+  if (ch === "\\") {
+    esc = true;
+    continue;
+  }
+  if (ch === '"') {
+    inStr = !inStr;
+    continue;
+  }
   if (inStr) continue;
   if (ch === "{") depth++;
-  else if (ch === "}" && --depth === 0) { end = i + 1; break; }
+  else if (ch === "}" && --depth === 0) {
+    end = i + 1;
+    break;
+  }
 }
 
 const SET_TO_REGION = { starter: "pantra", oshima: "jinto" };

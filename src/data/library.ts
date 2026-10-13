@@ -176,7 +176,10 @@ interface SaveTeamInput {
   day?: number;
 }
 
-export function saveTeam(library: Library, input: SaveTeamInput): { library: Library; team: SavedTeam } {
+export function saveTeam(
+  library: Library,
+  input: SaveTeamInput,
+): { library: Library; team: SavedTeam } {
   const team: SavedTeam = {
     id: newId(),
     name: input.name.trim() === "" ? "Untitled team" : input.name.trim(),

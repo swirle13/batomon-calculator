@@ -58,7 +58,9 @@ function Lineup({
         {lineup.bringIn.length > 0 && (
           <>
             <dt>Bring on</dt>
-            <dd>{lineup.bringIn.map((b) => `${b.name} → ${formatGridSlot(b.slot)}`).join(" · ")}</dd>
+            <dd>
+              {lineup.bringIn.map((b) => `${b.name} → ${formatGridSlot(b.slot)}`).join(" · ")}
+            </dd>
           </>
         )}
         {lineup.sendOut.length > 0 && (
@@ -170,8 +172,8 @@ export function BenchAdvice({
       {locked.length > 0 && (
         <p className={styles.basis}>
           Keeping <strong>{locked.join(", ")}</strong> on the board —{" "}
-          {locked.length === 1 ? "it is locked" : "they are locked"}, so nothing here offers to bench{" "}
-          {locked.length === 1 ? "it" : "them"}.
+          {locked.length === 1 ? "it is locked" : "they are locked"}, so nothing here offers to
+          bench {locked.length === 1 ? "it" : "them"}.
         </p>
       )}
 
@@ -236,8 +238,8 @@ export function BenchAdvice({
       {unreadablePositional.length > 0 && (
         <p className={styles.caveat}>
           {unreadablePositional.join(", ")} {unreadablePositional.length === 1 ? "has a" : "have"}{" "}
-          positional {unreadablePositional.length === 1 ? "ability" : "abilities"} the engine does not
-          read, so the figures above are understated.
+          positional {unreadablePositional.length === 1 ? "ability" : "abilities"} the engine does
+          not read, so the figures above are understated.
         </p>
       )}
     </div>

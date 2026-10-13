@@ -24,23 +24,25 @@ interface TeamSummaryProps {
  */
 export const TeamSummary = memo(function TeamSummary({ config, result }: TeamSummaryProps) {
   // FR-067: placements follow insertion order, so sort for a stable, readable table.
-  const dpsRows = [...config.placements].map((placement) => {
-    const creature = getCreatureById(placement.creatureId);
-    /*
-     * Was built BY HAND here as `${creatureId}@${row}${col}`, independently of `slotKey` -- it
-     * matched only because `slotKey` happens to be `${row}${col}`, with nothing enforcing that. A
-     * change to either would have made every lookup on this page silently return 0.
-     */
-    const key = placementKey(placement.creatureId, placement.slot);
-    const dps = result.perCreatureDps[key] ?? 0;
-    // "Facilitated DPS" (user-requested, data-model.md amendment): damage this creature's own
-    // status grants enabled on OTHER hits (currently just Shock procs) — separate from its own
-    // direct-damage DPS, so a Shock-granter's real value is visible even if its own DPS is 0.
-    const facilitatedDps = result.perCreatureFacilitatedDps[key] ?? 0;
-    // 2026-10-05 round 4 (FR-024): no longer carries `slot` for display -- the grid already
-    // shows position, so repeating it as text here was redundant (user-reported).
-    return { key, name: creature?.name ?? placement.creatureId, dps, facilitatedDps };
-  }).sort((a, b) => a.name.localeCompare(b.name));
+  const dpsRows = [...config.placements]
+    .map((placement) => {
+      const creature = getCreatureById(placement.creatureId);
+      /*
+       * Was built BY HAND here as `${creatureId}@${row}${col}`, independently of `slotKey` -- it
+       * matched only because `slotKey` happens to be `${row}${col}`, with nothing enforcing that. A
+       * change to either would have made every lookup on this page silently return 0.
+       */
+      const key = placementKey(placement.creatureId, placement.slot);
+      const dps = result.perCreatureDps[key] ?? 0;
+      // "Facilitated DPS" (user-requested, data-model.md amendment): damage this creature's own
+      // status grants enabled on OTHER hits (currently just Shock procs) — separate from its own
+      // direct-damage DPS, so a Shock-granter's real value is visible even if its own DPS is 0.
+      const facilitatedDps = result.perCreatureFacilitatedDps[key] ?? 0;
+      // 2026-10-05 round 4 (FR-024): no longer carries `slot` for display -- the grid already
+      // shows position, so repeating it as text here was redundant (user-reported).
+      return { key, name: creature?.name ?? placement.creatureId, dps, facilitatedDps };
+    })
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   // FR-067 (WI-016): sorted at the point of display. These followed `Object.entries` key order,
   // i.e. the order the engine happened to build the record in -- a list whose order was an accident.
@@ -52,9 +54,10 @@ export const TeamSummary = memo(function TeamSummary({ config, result }: TeamSum
    * to build the record in -- which is the FR-067 complaint, fixed at its cause this time instead
    * of with a `localeCompare` on stringified keys.
    */
-  const statusRows = STATUS_EFFECTS_ASC
-    .map((status) => ({ status, value: result.perStatusPerSecond[status] ?? 0 }))
-    .filter(({ value }) => value > 0);
+  const statusRows = STATUS_EFFECTS_ASC.map((status) => ({
+    status,
+    value: result.perStatusPerSecond[status] ?? 0,
+  })).filter(({ value }) => value > 0);
 
   return (
     <section>
@@ -63,88 +66,94 @@ export const TeamSummary = memo(function TeamSummary({ config, result }: TeamSum
         {/* Each table scrolls inside its own box rather than widening the page — see `.tableScroll`
             for the whole-page symptom that caused. */}
         <div className={styles.tableScroll}>
-        <table>
-          <caption>Damage per second, by creature</caption>
-          <thead>
-            <tr>
-              <th>Creature</th>
-              <th className={styles.numeric}>DPS</th>
-              <th
-                className={styles.numeric}
-                title="Damage this creature caused through the statuses it applied -- Burn/Poison ticks and Shock procs on other creatures' hits. Counted separately from its own direct damage, never folded into it."
-              >
-                Facilitated DPS
-              </th>
-              {/* FR-072's argument applied per ROW (2026-10-08, user-reported). The headline figure
+          <table>
+            <caption>Damage per second, by creature</caption>
+            <thead>
+              <tr>
+                <th>Creature</th>
+                <th className={styles.numeric}>DPS</th>
+                <th
+                  className={styles.numeric}
+                  title="Damage this creature caused through the statuses it applied -- Burn/Poison ticks and Shock procs on other creatures' hits. Counted separately from its own direct damage, never folded into it."
+                >
+                  Facilitated DPS
+                </th>
+                {/* FR-072's argument applied per ROW (2026-10-08, user-reported). The headline figure
                   exists because neither column alone is a creature's output; the same is true of
                   each row, and the user was adding the two by hand to rank their own monsters. */}
-              <th
-                className={styles.numeric}
-                title="Everything this creature is worth per second: its own hits plus the damage its statuses caused. The two never overlap, so adding them double-counts nothing."
-              >
-                Total DPS
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {dpsRows.length === 0 && (
-              <tr>
-                {/* 2026-10-05 round 4 (FR-024): slot position is no longer shown as text here --
+                <th
+                  className={styles.numeric}
+                  title="Everything this creature is worth per second: its own hits plus the damage its statuses caused. The two never overlap, so adding them double-counts nothing."
+                >
+                  Total DPS
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {dpsRows.length === 0 && (
+                <tr>
+                  {/* 2026-10-05 round 4 (FR-024): slot position is no longer shown as text here --
                     the grid itself already shows it, so this is the creature column plus the
                     three figures. */}
-                <td colSpan={4}>No creatures placed yet.</td>
-              </tr>
-            )}
-            {dpsRows.map((row) => (
-              <tr key={row.key}>
-                <td>{row.name}</td>
-                <td className={styles.numeric}>{formatRate(row.dps)}</td>
-                <td className={styles.numeric}>
-                  {row.facilitatedDps > 0 ? formatRate(row.facilitatedDps) : "—"}
-                </td>
-                {/* No em-dash fallback here, unlike the column beside it: a creature really can be
+                  <td colSpan={4}>No creatures placed yet.</td>
+                </tr>
+              )}
+              {dpsRows.map((row) => (
+                <tr key={row.key}>
+                  <td>{row.name}</td>
+                  <td className={styles.numeric}>{formatRate(row.dps)}</td>
+                  <td className={styles.numeric}>
+                    {row.facilitatedDps > 0 ? formatRate(row.facilitatedDps) : "—"}
+                  </td>
+                  {/* No em-dash fallback here, unlike the column beside it: a creature really can be
                     worth 0.0/s, and that is an answer rather than an absence. */}
-                <td className={`${styles.numeric} ${styles.combined}`}>
-                  {formatRate(row.dps + row.facilitatedDps)}
-                </td>
-              </tr>
-            ))}
-            {/* FR-072 (WI-002): a combined total. Direct + facilitated partition all damage with no
+                  <td className={`${styles.numeric} ${styles.combined}`}>
+                    {formatRate(row.dps + row.facilitatedDps)}
+                  </td>
+                </tr>
+              ))}
+              {/* FR-072 (WI-002): a combined total. Direct + facilitated partition all damage with no
                 overlap, so summing them is safe -- unlike summing `perStatusPerSecond`, whose Shield
                 entry is granted-not-damage. */}
-            {dpsRows.length > 0 && (
-              <tr className={styles.totalRow}>
-                <th scope="row">Total</th>
-                <th className={styles.numeric}>
-                  {formatRate(dpsRows.reduce((sum, r) => sum + r.dps, 0))}
-                </th>
-                <th className={styles.numeric}>
-                  {formatRate(dpsRows.reduce((sum, r) => sum + r.facilitatedDps, 0))}
-                </th>
-                {/* The whole team's output, and the same figure the headline "DPS average" shows --
+              {dpsRows.length > 0 && (
+                <tr className={styles.totalRow}>
+                  <th scope="row">Total</th>
+                  <th className={styles.numeric}>
+                    {formatRate(dpsRows.reduce((sum, r) => sum + r.dps, 0))}
+                  </th>
+                  <th className={styles.numeric}>
+                    {formatRate(dpsRows.reduce((sum, r) => sum + r.facilitatedDps, 0))}
+                  </th>
+                  {/* The whole team's output, and the same figure the headline "DPS average" shows --
                     both are `windowAverageDps`'s sum, reached from the same two records. */}
-                <th className={styles.numeric}>
-                  {formatRate(dpsRows.reduce((sum, r) => sum + r.dps + r.facilitatedDps, 0))}
-                </th>
-              </tr>
-            )}
-          </tbody>
-        </table>
+                  <th className={styles.numeric}>
+                    {formatRate(dpsRows.reduce((sum, r) => sum + r.dps + r.facilitatedDps, 0))}
+                  </th>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
 
         <div className={styles.tableScroll}>
-        <table>
-          <caption>Status effect output</caption>
-          <thead>
-            <tr>
-              <th>Status</th>
-              <th className={styles.numeric} title="Damage per second, averaged across the whole simulated window">
-                Dmg/s (avg)
-              </th>
-              <th className={styles.numeric} title="Damage per second as the window closes. For a status whose stacks never decay (Poison) this is much higher than the average, because the rate climbs all battle.">
-                Dmg/s (end)
-              </th>
-              {/*
+          <table>
+            <caption>Status effect output</caption>
+            <thead>
+              <tr>
+                <th>Status</th>
+                <th
+                  className={styles.numeric}
+                  title="Damage per second, averaged across the whole simulated window"
+                >
+                  Dmg/s (avg)
+                </th>
+                <th
+                  className={styles.numeric}
+                  title="Damage per second as the window closes. For a status whose stacks never decay (Poison) this is much higher than the average, because the rate climbs all battle."
+                >
+                  Dmg/s (end)
+                </th>
+                {/*
                 Growth/s² was removed 2026-10-06. For Poison it was ALWAYS exactly equal to
                 Applied/s — not by coincidence but structurally: Poison stacks never decay and a
                 tick deals the current stack count, so the damage rate grows by precisely the
@@ -156,37 +165,38 @@ export const TeamSummary = memo(function TeamSummary({ config, result }: TeamSum
                 Applied/s stays: it is the only meaningful figure for Shield, where "damage" has no
                 meaning, and it separates "I apply a lot of Poison" from "my Poison deals a lot".
               */}
-              <th className={styles.numeric} title="Status stacks applied per second -- the input rate, NOT damage">
-                Applied/s
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {statusRows.length === 0 && (
-              <tr>
-                <td colSpan={5}>No active status effects.</td>
+                <th
+                  className={styles.numeric}
+                  title="Status stacks applied per second -- the input rate, NOT damage"
+                >
+                  Applied/s
+                </th>
               </tr>
-            )}
-            {statusRows.map(({ status, value }) => (
-              <tr key={status}>
-                {/* Shield deals no damage — it's a granted/sec rate, not a damage/sec rate like
+            </thead>
+            <tbody>
+              {statusRows.length === 0 && (
+                <tr>
+                  <td colSpan={5}>No active status effects.</td>
+                </tr>
+              )}
+              {statusRows.map(({ status, value }) => (
+                <tr key={status}>
+                  {/* Shield deals no damage — it's a granted/sec rate, not a damage/sec rate like
                     the other three (data-model.md's "Shield counted as an output stat"). The
                     status name carries its published colour (FR-029), the same colour the card
                     stat lines and the grid badges use. */}
-                <td style={{ color: statusColor(status), fontWeight: 600 }}>
-                  {status}
-                </td>
-                <td className={styles.numeric}>{formatRate(value)}</td>
-                <td className={styles.numeric}>
-                  {formatRate(result.perStatusFinalDamageRate[status as StatusEffectType])}
-                </td>
-                <td className={styles.numeric}>
-                  {formatRate(result.perStatusAppliedPerSecond[status as StatusEffectType])}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                  <td style={{ color: statusColor(status), fontWeight: 600 }}>{status}</td>
+                  <td className={styles.numeric}>{formatRate(value)}</td>
+                  <td className={styles.numeric}>
+                    {formatRate(result.perStatusFinalDamageRate[status as StatusEffectType])}
+                  </td>
+                  <td className={styles.numeric}>
+                    {formatRate(result.perStatusAppliedPerSecond[status as StatusEffectType])}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
       <p className={styles.note}>
@@ -195,9 +205,9 @@ export const TeamSummary = memo(function TeamSummary({ config, result }: TeamSum
         stacks don&rsquo;t decay at all. Burn grows too, whenever your team applies it faster than
         it drains — the enemy carries a single Burn stack that sheds 1 layer per 0.5s tick however
         many of your monsters are feeding it, so the drain is a flat 2 layers/second and everything
-        above that piles up for the rest of the fight.{" "}
-        <strong>Applied/s</strong> is the stack <em>input</em> rate, not damage — compare it with 2
-        to see which side of that line a Burn team is on.
+        above that piles up for the rest of the fight. <strong>Applied/s</strong> is the stack{" "}
+        <em>input</em> rate, not damage — compare it with 2 to see which side of that line a Burn
+        team is on.
       </p>
     </section>
   );

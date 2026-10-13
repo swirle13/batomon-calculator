@@ -21,7 +21,9 @@ export function applyShieldReduction(
   shieldRemaining: number,
 ): { damageToShield: number; damageToHp: number; shieldRemaining: number } {
   const effectiveIncoming =
-    damageType === DamageChannel.Direct ? incomingDamage : incomingDamage * (1 - STATUS_VS_SHIELD_REDUCTION);
+    damageType === DamageChannel.Direct
+      ? incomingDamage
+      : incomingDamage * (1 - STATUS_VS_SHIELD_REDUCTION);
 
   const absorbed = Math.min(effectiveIncoming, shieldRemaining);
   const overflow = effectiveIncoming - absorbed;

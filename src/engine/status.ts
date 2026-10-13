@@ -48,7 +48,10 @@ export function applyShockProc(
 ):
   | {
       shockDamage: number;
-      orderedHits: [{ damage: number; damageType: "Shock" }, { damage: number; damageType: "Direct" }];
+      orderedHits: [
+        { damage: number; damageType: "Shock" },
+        { damage: number; damageType: "Direct" },
+      ];
     }
   | { shockDamage: 0; orderedHits: [{ damage: number; damageType: "Direct" }] } {
   if (shockInstance === null || shockInstance.layers <= 0) {

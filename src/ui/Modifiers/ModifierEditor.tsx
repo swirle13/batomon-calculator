@@ -52,8 +52,22 @@ interface StatOption {
  * better output.
  */
 const STAT_OPTIONS: StatOption[] = [
-  { value: ModifierStat.DamageFlatAdd, label: "Damage", chip: "Damage", store: same, show: signed, step: "any" },
-  { value: ModifierStat.HealAmountAdd, label: "Heal", chip: "Heal", store: same, show: signed, step: "any" },
+  {
+    value: ModifierStat.DamageFlatAdd,
+    label: "Damage",
+    chip: "Damage",
+    store: same,
+    show: signed,
+    step: "any",
+  },
+  {
+    value: ModifierStat.HealAmountAdd,
+    label: "Heal",
+    chip: "Heal",
+    store: same,
+    show: signed,
+    step: "any",
+  },
   {
     value: ModifierStat.CooldownFlatAddSeconds,
     label: "Cooldown reduction (sec)",
@@ -73,10 +87,38 @@ const STAT_OPTIONS: StatOption[] = [
     show: (stored) => `${signed(Math.round(stored * 1000) / 10)}%`,
     step: "1",
   },
-  { value: ModifierStat.BurnAmountAdd, label: "Burn applied", chip: "Burn applied", store: same, show: signed, step: "any" },
-  { value: ModifierStat.PoisonAmountAdd, label: "Poison applied", chip: "Poison applied", store: same, show: signed, step: "any" },
-  { value: ModifierStat.ShockAmountAdd, label: "Shock applied", chip: "Shock applied", store: same, show: signed, step: "any" },
-  { value: ModifierStat.ShieldAmountAdd, label: "Shield applied", chip: "Shield applied", store: same, show: signed, step: "any" },
+  {
+    value: ModifierStat.BurnAmountAdd,
+    label: "Burn applied",
+    chip: "Burn applied",
+    store: same,
+    show: signed,
+    step: "any",
+  },
+  {
+    value: ModifierStat.PoisonAmountAdd,
+    label: "Poison applied",
+    chip: "Poison applied",
+    store: same,
+    show: signed,
+    step: "any",
+  },
+  {
+    value: ModifierStat.ShockAmountAdd,
+    label: "Shock applied",
+    chip: "Shock applied",
+    store: same,
+    show: signed,
+    step: "any",
+  },
+  {
+    value: ModifierStat.ShieldAmountAdd,
+    label: "Shield applied",
+    chip: "Shield applied",
+    store: same,
+    show: signed,
+    step: "any",
+  },
 ];
 
 function same(typed: number): number {
@@ -91,7 +133,16 @@ function signed(amount: number): string {
 function optionFor(stat: ModifierStat): StatOption {
   // Every `ModifierStat` the UI can produce is in the table; `multicastAdd` is engine/trigger-only,
   // so it falls back to its own key rather than rendering `undefined`.
-  return STAT_OPTIONS.find((o) => o.value === stat) ?? { value: stat, label: stat, chip: stat, store: same, show: signed, step: "any" };
+  return (
+    STAT_OPTIONS.find((o) => o.value === stat) ?? {
+      value: stat,
+      label: stat,
+      chip: stat,
+      store: same,
+      show: signed,
+      step: "any",
+    }
+  );
 }
 
 /**
@@ -169,7 +220,13 @@ export function ModifierEditor() {
         // The empty-board case states itself here rather than in a line of prose below the panel:
         // an overlay of six empty cells would be a dead end, and the hint is the one place a
         // fixed-shape panel has to say why.
-        hint={nothingPlaced ? "place a Batomon first" : activeCount === 0 ? "none active" : `${activeCount} active`}
+        hint={
+          nothingPlaced
+            ? "place a Batomon first"
+            : activeCount === 0
+              ? "none active"
+              : `${activeCount} active`
+        }
         action="Edit modifiers…"
         onOpen={() => setIsOpen(true)}
         disabled={nothingPlaced}
@@ -197,7 +254,9 @@ export function ModifierEditor() {
         <CardGrid columns={OVERLAY_COLUMNS} role="list" aria-label="Modifiers by grid slot">
           {ROWS.flatMap((row) =>
             COLS.map((col) => {
-              const placement = config.placements.find((p) => p.slot.row === row && p.slot.col === col);
+              const placement = config.placements.find(
+                (p) => p.slot.row === row && p.slot.col === col,
+              );
               if (!placement) {
                 return (
                   <div key={`${row}-${col}`} className={styles.emptyCell} aria-hidden="true">
@@ -224,10 +283,10 @@ export function ModifierEditor() {
         <p className={styles.note}>
           A <strong>positive</strong> number always means better output. Enter <code>20</code> for
           +20% Cooldown Speed, or <code>1</code> on Cooldown reduction to cast one second sooner; a
-          negative amount goes the other way. Damage and status amounts may <em>create</em> an effect
-          the creature does not publish — +4 Burn on a creature that applies none gives it Burn, the
-          way a trinket or an ally's ability would — but a cooldown change needs a published cooldown
-          to act on.
+          negative amount goes the other way. Damage and status amounts may <em>create</em> an
+          effect the creature does not publish — +4 Burn on a creature that applies none gives it
+          Burn, the way a trinket or an ally's ability would — but a cooldown change needs a
+          published cooldown to act on.
         </p>
       </Modal>
     </>
@@ -370,7 +429,12 @@ function PlacementModifierCell({ placement, onAdd, onRemove }: PlacementModifier
           aria-label={`Amount to add for ${name}`}
           className={styles.amount}
         />
-        <Button variant="primary" size="sm" onClick={handleAdd} aria-label={`Add modifier to ${name}`}>
+        <Button
+          variant="primary"
+          size="sm"
+          onClick={handleAdd}
+          aria-label={`Add modifier to ${name}`}
+        >
           Add
         </Button>
       </div>

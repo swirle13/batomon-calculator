@@ -14,7 +14,7 @@ the UI that happens to call it.
 function simulate(
   config: TeamConfiguration,
   corpus: Corpus,
-  options?: { nowSeconds?: number } // injectable clock for deterministic tests
+  options?: { nowSeconds?: number }, // injectable clock for deterministic tests
 ): SimulationResult;
 ```
 
@@ -34,7 +34,7 @@ function simulate(
 function effectiveCooldown(
   baseCooldownSeconds: number,
   cooldownSpeedTotal: number, // decimal, e.g. 0.20 for +20%
-  positiveFlatAddedSeconds: number
+  positiveFlatAddedSeconds: number,
 ): number;
 ```
 
@@ -47,7 +47,7 @@ function effectiveCooldown(
 ```ts
 function applyStatusTick(
   instance: StatusEffectInstance,
-  elapsedSinceLastTick: number
+  elapsedSinceLastTick: number,
 ): { damage: number; nextInstance: StatusEffectInstance | null }; // null = fully decayed/removed
 ```
 
@@ -60,12 +60,17 @@ function applyStatusTick(
 ```ts
 function applyShockProc(
   directHit: { damage: number; damageType: "Direct" },
-  shockInstance: StatusEffectInstance | null
-): { shockDamage: number; orderedHits: [{ damage: number; damageType: "Shock" }, typeof directHit] } | { shockDamage: 0; orderedHits: [typeof directHit] };
+  shockInstance: StatusEffectInstance | null,
+):
+  | {
+      shockDamage: number;
+      orderedHits: [{ damage: number; damageType: "Shock" }, typeof directHit];
+    }
+  | { shockDamage: 0; orderedHits: [typeof directHit] };
 ```
 
 - Implements research.md B2/B4's reactive rule: a Shock hit (if any Shock layers are present)
-  resolves *before* the direct hit it is attached to, equal to current layer count; Shock itself is
+  resolves _before_ the direct hit it is attached to, equal to current layer count; Shock itself is
   never mutated by this call (no decay) — only an explicit new application changes it.
 
 ## `applyShieldReduction`
@@ -74,12 +79,12 @@ function applyShockProc(
 function applyShieldReduction(
   incomingDamage: number,
   damageType: DamageType,
-  shieldRemaining: number
+  shieldRemaining: number,
 ): { damageToShield: number; damageToHp: number; shieldRemaining: number };
 ```
 
 - Implements research.md B3: non-`"Direct"` damage types are reduced by the current patch's
-  status-vs-shield constant (25% as of the cited patch) *before* absorption; `"Direct"` damage is
+  status-vs-shield constant (25% as of the cited patch) _before_ absorption; `"Direct"` damage is
   not reduced. The reduction percentage MUST be imported from a single named, patch-tagged constant
   (`STATUS_VS_SHIELD_REDUCTION`, defined alongside its own `Provenance`), never hardcoded at the
   call site, because this value has already changed twice in the game's history (B3).
@@ -90,7 +95,7 @@ function applyShieldReduction(
 function resolveLevelUp(
   corpus: Corpus,
   baseSpeciesId: string,
-  targetLevel: 1 | 2 | 3 | 4
+  targetLevel: 1 | 2 | 3 | 4,
 ): CreatureRecord | null;
 ```
 
@@ -154,13 +159,13 @@ unchanged** — same arity, same semantics, same return shapes — and the inhab
 four (`Direct`, `Burn`, `Poison`, `Shock`). `"SuddenDeath"` is removed from the vocabulary: no record
 and no runtime site ever produced it, and research.md P2 retracted the claim it was added for.
 
-The rename exists because the old name described two different concepts (research.md R3): a *hit's*
-channel, which is what these two functions take, and a *creature's* published cast kind, which is
+The rename exists because the old name described two different concepts (research.md R3): a _hit's_
+channel, which is what these two functions take, and a _creature's_ published cast kind, which is
 `CreatureRecord.damageType` and is redundant with `baseDamage` (596/596 correlated). Only the first is
 an engine concept, so only the first keeps a vocabulary here.
 
 `CreatureRecord.damageType`'s replacement — a single optional `publishedCast` value object — **has
-since landed** (2026-10-07). No engine *entry point* changed shape even so: `applyShieldReduction`,
+since landed** (2026-10-07). No engine _entry point_ changed shape even so: `applyShieldReduction`,
 `applyShockProc` and `isDirectDamage` keep their signatures, because `publishedCast` is a property of
 a stored record rather than a parameter of a hit. What changed is that `ResolvedPlacement` gained a
 `healAmount` field, so a GRANTED heal can exist at all — previously `simulate()` read

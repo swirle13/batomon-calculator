@@ -25,7 +25,12 @@ describe("placement optimiser (FR-069)", () => {
   it("weights earlier damage more heavily than later damage", () => {
     // The user's requirement: raw totals over-reward a slow ramp that may arrive after death.
     const early = scoreConfiguration(
-      { ...adjacent, placements: [{ slot: { row: GridRow.Top, col: 0 }, creatureId: Species.Bumblebolt, level: 1 }] },
+      {
+        ...adjacent,
+        placements: [
+          { slot: { row: GridRow.Top, col: 0 }, creatureId: Species.Bumblebolt, level: 1 },
+        ],
+      },
       corpus,
     );
     const rawTotal = 3 * 8; // Bumblebolt: 3 damage x 8 casts in 20s
@@ -62,7 +67,9 @@ describe("placement optimiser (FR-069)", () => {
     // must say so. Asserted on a trinket the engine genuinely cannot model, which Link Cable
     // stopped being on 2026-10-09 — see the case below.
     const withQuickFlag: TeamConfiguration = { ...adjacent, trinketIds: [TrinketId.QuickFlag] };
-    expect(analyzePositionalCoverage(withQuickFlag, corpus).unmodelledTrinkets).toContain("Quick Flag");
+    expect(analyzePositionalCoverage(withQuickFlag, corpus).unmodelledTrinkets).toContain(
+      "Quick Flag",
+    );
   });
 
   it("no longer caveats Link Cable, which it now models (2026-10-09)", () => {
@@ -73,7 +80,9 @@ describe("placement optimiser (FR-069)", () => {
      * rather than confessing a blind spot.
      */
     const withLinkCable: TeamConfiguration = { ...adjacent, trinketIds: [TrinketId.LinkCable] };
-    expect(analyzePositionalCoverage(withLinkCable, corpus).unmodelledTrinkets).not.toContain("Link Cable");
+    expect(analyzePositionalCoverage(withLinkCable, corpus).unmodelledTrinkets).not.toContain(
+      "Link Cable",
+    );
   });
 
   it("searches every arrangement and never claims an improvement it did not find", () => {
@@ -112,7 +121,9 @@ describe("placement optimiser (FR-069)", () => {
   it("is a no-op for a team too small to rearrange", () => {
     const solo: TeamConfiguration = {
       ...adjacent,
-      placements: [{ slot: { row: GridRow.Top, col: 0 }, creatureId: Species.Bumblebolt, level: 1 }],
+      placements: [
+        { slot: { row: GridRow.Top, col: 0 }, creatureId: Species.Bumblebolt, level: 1 },
+      ],
     };
     expect(suggestPlacement(solo, corpus).placements).toBeNull();
   });

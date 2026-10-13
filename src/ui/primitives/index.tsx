@@ -12,7 +12,16 @@ import styles from "./primitives.module.css";
  * primitives from one place (`../primitives`) and no call site has to know which file a given
  * primitive is declared in.
  */
-export { Button, ClampedNumberField, Field, NumberField, Range, Select, TextArea, TextField } from "./controls";
+export {
+  Button,
+  ClampedNumberField,
+  Field,
+  NumberField,
+  Range,
+  Select,
+  TextArea,
+  TextField,
+} from "./controls";
 
 /**
  * The shared UI primitives layer (2026-10-06 round 7, Constitution Principle VII, FR-058).
@@ -50,9 +59,18 @@ const PAD_CLASS: Record<SurfacePad, string> = {
 };
 
 /** The one card/panel container. */
-export function Surface({ children, tone = "default", pad = "md", className = "", ...rest }: SurfaceProps) {
+export function Surface({
+  children,
+  tone = "default",
+  pad = "md",
+  className = "",
+  ...rest
+}: SurfaceProps) {
   return (
-    <div className={`${styles.surface} ${TONE_CLASS[tone]} ${PAD_CLASS[pad]} ${className}`} {...rest}>
+    <div
+      className={`${styles.surface} ${TONE_CLASS[tone]} ${PAD_CLASS[pad]} ${className}`}
+      {...rest}
+    >
       {children}
     </div>
   );
@@ -82,7 +100,12 @@ export function Chip({ children, color, onRemove, removeLabel, title, className 
     >
       {children}
       {onRemove && (
-        <button type="button" className={styles.chipRemove} onClick={onRemove} aria-label={removeLabel}>
+        <button
+          type="button"
+          className={styles.chipRemove}
+          onClick={onRemove}
+          aria-label={removeLabel}
+        >
           ×
         </button>
       )}
@@ -143,8 +166,18 @@ export function StatLine({ statKey, children }: { statKey: StatColorKey; childre
 
 /* ------------------------------ SectionHeading ------------------------------- */
 
-export function SectionHeading({ children, accent = false }: { children: ReactNode; accent?: boolean }) {
-  return <div className={`${styles.sectionHeading} ${accent ? styles.sectionHeadingAccent : ""}`}>{children}</div>;
+export function SectionHeading({
+  children,
+  accent = false,
+}: {
+  children: ReactNode;
+  accent?: boolean;
+}) {
+  return (
+    <div className={`${styles.sectionHeading} ${accent ? styles.sectionHeadingAccent : ""}`}>
+      {children}
+    </div>
+  );
 }
 
 /* --------------------------------- CardGrid ---------------------------------- */
@@ -165,13 +198,22 @@ type CardGridProps = {
 } & Omit<React.ComponentPropsWithoutRef<"div">, "children" | "style">;
 
 /** The one responsive grid. Four bespoke copies existed before this. */
-export function CardGrid({ children, minWidth = "15rem", columns, maxWidth, className = "", ...rest }: CardGridProps) {
+export function CardGrid({
+  children,
+  minWidth = "15rem",
+  columns,
+  maxWidth,
+  className = "",
+  ...rest
+}: CardGridProps) {
   const fixed = columns !== undefined;
   return (
     <div
       className={`${styles.cardGrid} ${fixed ? styles.cardGridFixed : ""} ${className}`}
       style={{
-        ...(fixed ? { ["--grid-columns" as string]: String(columns) } : { ["--grid-min" as string]: minWidth }),
+        ...(fixed
+          ? { ["--grid-columns" as string]: String(columns) }
+          : { ["--grid-min" as string]: minWidth }),
         maxWidth,
         marginInline: maxWidth ? "auto" : undefined,
       }}
@@ -346,8 +388,7 @@ export function PickerSection({
       <h4 className={styles.pickerSectionHeading} style={color ? { color } : undefined}>
         {/* The space is for the ACCESSIBLE NAME, not the layout — the heading is a flex row with its
             own gap, so sighted readers already saw one while screen readers heard "Common(19)". */}
-        {heading}{" "}
-        <span className={styles.pickerSectionCount}>({count})</span>
+        {heading} <span className={styles.pickerSectionCount}>({count})</span>
       </h4>
       <CardGrid minWidth={cardMinWidth} columns={columns}>
         {children}
@@ -415,7 +456,11 @@ export function Modal({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div ref={panelRef} className={styles.modalPanel} style={width ? { ["--modal-width" as string]: width } : undefined}>
+      <div
+        ref={panelRef}
+        className={styles.modalPanel}
+        style={width ? { ["--modal-width" as string]: width } : undefined}
+      >
         <div className={styles.modalHeader}>
           <h3 className={styles.modalTitle}>{title}</h3>
           <Button onClick={onClose}>{closeLabel}</Button>
@@ -481,13 +526,25 @@ const COLOR_SPLIT_FALLBACK = "#444857";
  * across the border box, so a transparent border let the gradient repeat outward on every side
  * (research.md I8). Bands cannot produce that artifact at any size.
  */
-function ColorSplit({ colors, children, className = "" }: { colors: string[]; children?: ReactNode; className?: string }) {
+function ColorSplit({
+  colors,
+  children,
+  className = "",
+}: {
+  colors: string[];
+  children?: ReactNode;
+  className?: string;
+}) {
   const bands = colors.length === 0 ? [COLOR_SPLIT_FALLBACK] : colors;
   return (
     <div className={`${styles.typeSplitHost} ${className}`}>
       <div className={styles.typeSplit} aria-hidden="true">
         {bands.map((color, i) => (
-          <div key={`${color}-${i}`} className={styles.typeSplitHalf} style={{ background: color }} />
+          <div
+            key={`${color}-${i}`}
+            className={styles.typeSplitHalf}
+            style={{ background: color }}
+          />
         ))}
       </div>
       {children ? <div className={styles.typeSplitContent}>{children}</div> : null}
@@ -498,7 +555,15 @@ function ColorSplit({ colors, children, className = "" }: { colors: string[]; ch
 /* --------------------------------- TypeSplit --------------------------------- */
 
 /** A creature's type background: one band per type. */
-export function TypeSplit({ types, children, className = "" }: { types: CreatureType[]; children?: ReactNode; className?: string }) {
+export function TypeSplit({
+  types,
+  children,
+  className = "",
+}: {
+  types: CreatureType[];
+  children?: ReactNode;
+  className?: string;
+}) {
   return (
     <ColorSplit colors={types.map(typeColor)} className={className}>
       {children}
@@ -573,7 +638,15 @@ interface CreatureTileProps {
 }
 
 /** A `SpriteTile` whose bands are the creature's types. */
-export function CreatureTile({ name, types, spriteFile, spriteSizeVar, overlay, showName = true, className = "" }: CreatureTileProps) {
+export function CreatureTile({
+  name,
+  types,
+  spriteFile,
+  spriteSizeVar,
+  overlay,
+  showName = true,
+  className = "",
+}: CreatureTileProps) {
   return (
     <SpriteTile
       name={name}

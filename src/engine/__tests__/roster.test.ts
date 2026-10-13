@@ -17,7 +17,12 @@ const BACK_0 = { row: GridRow.Top, col: 0 } as const;
 const BACK_1 = { row: GridRow.Top, col: 1 } as const;
 
 function creatureMod(amount: number): StatModifier {
-  return { id: `c${amount}`, stat: ModifierStat.DamageFlatAdd, amount, scope: ModifierScope.Creature };
+  return {
+    id: `c${amount}`,
+    stat: ModifierStat.DamageFlatAdd,
+    amount,
+    scope: ModifierScope.Creature,
+  };
 }
 
 function slotMod(amount: number): StatModifier {
@@ -40,7 +45,13 @@ describe("moveRoster", () => {
   it("moves a placed monster to an empty bench position, keeping its own modifiers", () => {
     const before = config({
       placements: [
-        { slot: BACK_0, creatureId: Species.Bumblebolt, level: 2, shiny: true, modifiers: [creatureMod(10)] },
+        {
+          slot: BACK_0,
+          creatureId: Species.Bumblebolt,
+          level: 2,
+          shiny: true,
+          modifiers: [creatureMod(10)],
+        },
       ],
     });
 
@@ -48,7 +59,13 @@ describe("moveRoster", () => {
 
     expect(after.placements).toEqual([]);
     expect(after.bench).toEqual([
-      { index: 0, creatureId: Species.Bumblebolt, level: 2, shiny: true, modifiers: [creatureMod(10)] },
+      {
+        index: 0,
+        creatureId: Species.Bumblebolt,
+        level: 2,
+        shiny: true,
+        modifiers: [creatureMod(10)],
+      },
     ]);
   });
 
@@ -57,7 +74,12 @@ describe("moveRoster", () => {
     // it used to stand cannot travel with it. The creature-scoped half does.
     const before = config({
       placements: [
-        { slot: BACK_0, creatureId: Species.Bumblebolt, level: 1, modifiers: [creatureMod(10), slotMod(99)] },
+        {
+          slot: BACK_0,
+          creatureId: Species.Bumblebolt,
+          level: 1,
+          modifiers: [creatureMod(10), slotMod(99)],
+        },
       ],
     });
 
@@ -69,7 +91,12 @@ describe("moveRoster", () => {
   it("gives a monster coming off the bench the destination slot's slot-scoped modifiers", () => {
     const before = config({
       placements: [
-        { slot: BACK_0, creatureId: Species.Formiqueen, level: 1, modifiers: [creatureMod(5), slotMod(99)] },
+        {
+          slot: BACK_0,
+          creatureId: Species.Formiqueen,
+          level: 1,
+          modifiers: [creatureMod(5), slotMod(99)],
+        },
       ],
       bench: [{ index: 0, creatureId: Species.Bumblebolt, level: 3, modifiers: [creatureMod(10)] }],
     });
@@ -98,11 +125,15 @@ describe("moveRoster", () => {
 
     expect(after.placements).toHaveLength(1);
     expect(after.placements[0]?.creatureId).toBe(Species.Bumblebolt);
-    expect(after.bench).toEqual([{ index: 2, creatureId: Species.Formiqueen, level: 1, modifiers: undefined }]);
+    expect(after.bench).toEqual([
+      { index: 2, creatureId: Species.Formiqueen, level: 1, modifiers: undefined },
+    ]);
   });
 
   it("is a no-op when the source is empty or the two positions are the same", () => {
-    const before = config({ placements: [{ slot: BACK_0, creatureId: Species.Bumblebolt, level: 1 }] });
+    const before = config({
+      placements: [{ slot: BACK_0, creatureId: Species.Bumblebolt, level: 1 }],
+    });
 
     expect(moveRoster(before, benchRef(3), gridRef(BACK_1))).toBe(before);
     expect(moveRoster(before, gridRef(BACK_0), gridRef(BACK_0))).toBe(before);

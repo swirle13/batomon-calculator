@@ -35,8 +35,19 @@ import { Species } from "../ids";
  */
 
 const TYPES = [
-  "Fire", "Water", "Grass", "Electric", "Rock", "Toxic", "Bug",
-  "Flying", "Ghost", "Dragon", "Fighting", "Normal", "Ice",
+  "Fire",
+  "Water",
+  "Grass",
+  "Electric",
+  "Rock",
+  "Toxic",
+  "Bug",
+  "Flying",
+  "Ghost",
+  "Dragon",
+  "Fighting",
+  "Normal",
+  "Ice",
 ] as const;
 const RARITIES = ["Common", "Uncommon", "Super Rare", "Rare", "Legendary", "Mythical"] as const;
 
@@ -105,7 +116,8 @@ const ACCEPTED: Partial<Record<Species, string>> = {
   // The exclusion is real and enforced; it simply lives in `effects.ts` instead of the data. Worth
   // an entry rather than a tag change, because moving it would alter a resolver the capture tests
   // pin.
-  [Species.Miasmaw]: "same-species exclusion is hard-coded in resolveBoard's battleStartStatusFromAllies pass",
+  [Species.Miasmaw]:
+    "same-species exclusion is hard-coded in resolveBoard's battleStartStatusFromAllies pass",
 
   // --- Modelled in PART, where the remainder has no representation --------------------------
   // These pass the audit because their TARGETS are expressed; they are listed so a green run is
@@ -118,11 +130,14 @@ const ACCEPTED: Partial<Record<Species, string>> = {
   // re-derive it from the ability text.
   [Species.Cherubble]: "grants Protect, which is not a modelled status",
   [Species.Celestia]: "disables abilities in a row; the engine has no notion of a disabled ability",
-  [Species.Null00]: "row-wide Cooldown penalty applying to ENEMIES as well, which the idealised target cannot represent",
+  [Species.Null00]:
+    "row-wide Cooldown penalty applying to ENEMIES as well, which the idealised target cannot represent",
   [Species.Tsunamere]: "levels allies up mid-battle; level is resolved once, before the battle",
-  [Species.Dirgefin]: "knocks out allies AND enemies; the enemy half is outside the idealised target",
+  [Species.Dirgefin]:
+    "knocks out allies AND enemies; the enemy half is outside the idealised target",
   [Species.Riglet]: "devours an ally between days, which is a run event rather than a battle one",
-  [Species.Draconarch]: "re-activates other monsters' On Battle Start abilities; the resolver is single-pass",
+  [Species.Draconarch]:
+    "re-activates other monsters' On Battle Start abilities; the resolver is single-pass",
   [Species.Sarudo]: "re-activates On Victory abilities, which fire outside the battle",
   [Species.Gemwing]: "re-activates an On Bought ability, which fires outside the battle",
   [Species.Pompummel]: "re-activates an On Victory ability, which fires outside the battle",
@@ -152,8 +167,9 @@ describe("ability text vs ability tags", () => {
 
   it("has a non-trivial corpus to check, so a broken filter cannot pass vacuously", () => {
     expect(species.length).toBeGreaterThan(100);
-    expect(species.filter((c) => qualifiersInText(c.abilityText ?? "").length > 0).length)
-      .toBeGreaterThan(30);
+    expect(
+      species.filter((c) => qualifiersInText(c.abilityText ?? "").length > 0).length,
+    ).toBeGreaterThan(30);
   });
 
   it("expresses every target qualifier its text states, or records why not", () => {
@@ -166,7 +182,9 @@ describe("ability text vs ability tags", () => {
       const missing = qualifiersInText(text).filter((q) => !expressed.includes(q));
       if (missing.length === 0) continue;
       if (ACCEPTED[c.id]) continue;
-      unexplained.push(`${c.name} (${c.id}) missing [${missing.join(", ")}] — "${text.replace(/\n/g, " ")}"`);
+      unexplained.push(
+        `${c.name} (${c.id}) missing [${missing.join(", ")}] — "${text.replace(/\n/g, " ")}"`,
+      );
     }
 
     /*
@@ -191,8 +209,11 @@ describe("ability text vs ability tags", () => {
         continue;
       }
       const expressed = qualifiersInTags(record.abilityTags);
-      const missing = qualifiersInText(record.abilityText ?? "").filter((q) => !expressed.includes(q));
-      if (missing.length === 0) stale.push(`${id} — nothing missing any more, remove the exemption`);
+      const missing = qualifiersInText(record.abilityText ?? "").filter(
+        (q) => !expressed.includes(q),
+      );
+      if (missing.length === 0)
+        stale.push(`${id} — nothing missing any more, remove the exemption`);
     }
     expect(stale, `\n${stale.join("\n")}\n`).toEqual([]);
   });

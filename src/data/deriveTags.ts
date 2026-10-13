@@ -7,7 +7,13 @@ import type {
   TargetSelector,
 } from "./types";
 import { ABILITY_TRIGGER, CREATURE_TYPE, RARITY } from "./vocabularies";
-import { AbilityTagKind, ModifierStat, StatChangeStat, StatusEffectType, TargetKind } from "./enums";
+import {
+  AbilityTagKind,
+  ModifierStat,
+  StatChangeStat,
+  StatusEffectType,
+  TargetKind,
+} from "./enums";
 
 /**
  * Ability tags DERIVED from a creature's own published text (2026-10-07, round 7 WI-002 / FR-113).
@@ -77,7 +83,11 @@ const STAT_NAMES = Object.keys(STAT_BY_NAME).join("|");
  * Percentages store as FRACTIONS (`10%` -> `0.1`), matching `ModifierEditor`'s existing
  * `store: (typed) => typed / 100`, so a derived modifier and a typed one are the same value.
  */
-function effect(amount: string, percent: string, statName: string): { stat: ModifierStat; amount: number } | null {
+function effect(
+  amount: string,
+  percent: string,
+  statName: string,
+): { stat: ModifierStat; amount: number } | null {
   const stat = STAT_BY_NAME[statName.toLowerCase()];
   if (!stat) return null;
   const n = Number(amount);
@@ -101,22 +111,27 @@ function allEffects(clause: string): { stat: ModifierStat; amount: number }[] {
  * silently drop half the published ability.
  */
 function sharedAmountEffects(clause: string): { stat: ModifierStat; amount: number }[] {
-  const m = new RegExp(String.raw`^${AMOUNT}\s*(${STAT_NAMES})\s+and\s+(${STAT_NAMES})$`, "i").exec(clause.trim());
+  const m = new RegExp(String.raw`^${AMOUNT}\s*(${STAT_NAMES})\s+and\s+(${STAT_NAMES})$`, "i").exec(
+    clause.trim(),
+  );
   if (!m) return [];
   const a = effect(m[1]!, m[2]!, m[3]!);
   const b = effect(m[1]!, m[2]!, m[4]!);
   return a && b ? [a, b] : [];
 }
 
-const STATUS_BY_NAME = new Map(
-  Object.values(StatusEffectType).map((s) => [s.toLowerCase(), s]),
-);
+const STATUS_BY_NAME = new Map(Object.values(StatusEffectType).map((s) => [s.toLowerCase(), s]));
 
-const TYPE_BY_NAME = new Map(Object.keys(CREATURE_TYPE).map((t) => [t.toLowerCase(), t as CreatureType]));
+const TYPE_BY_NAME = new Map(
+  Object.keys(CREATURE_TYPE).map((t) => [t.toLowerCase(), t as CreatureType]),
+);
 const RARITY_BY_NAME = new Map(Object.keys(RARITY).map((r) => [r.toLowerCase(), r as Rarity]));
 
 /** "your Grass", "Common", "Water" — the filter words in front of "allies". */
-function filtersFrom(words: string | undefined): { typeFilter?: CreatureType; rarityFilter?: Rarity } {
+function filtersFrom(words: string | undefined): {
+  typeFilter?: CreatureType;
+  rarityFilter?: Rarity;
+} {
   if (!words) return {};
   const out: { typeFilter?: CreatureType; rarityFilter?: Rarity } = {};
   for (const word of words.split(/\s+/)) {
@@ -157,7 +172,13 @@ function manualTrigger(
    */
   if (ABILITY_TRIGGER[record.abilityTrigger].enginePropagated) return null;
 
-  return { kind: AbilityTagKind.ManualTrigger, trigger: record.abilityTrigger, effects, target, includeSelf };
+  return {
+    kind: AbilityTagKind.ManualTrigger,
+    trigger: record.abilityTrigger,
+    effects,
+    target,
+    includeSelf,
+  };
 }
 
 /**
@@ -204,15 +225,27 @@ function ongoingGrant(
 
 /** How a `ModifierStat` grant maps onto an `EffectDescriptor`. Absent = no slot in the vocabulary. */
 const EFFECT_FOR_STAT: Partial<Record<ModifierStat, (amount: number) => EffectDescriptor>> = {
-  [ModifierStat.DamageFlatAdd]: (amount) => ({ statChange: { stat: StatChangeStat.Damage, amount } }),
-  [ModifierStat.MulticastAdd]: (amount) => ({ statChange: { stat: StatChangeStat.Multicast, amount } }),
+  [ModifierStat.DamageFlatAdd]: (amount) => ({
+    statChange: { stat: StatChangeStat.Damage, amount },
+  }),
+  [ModifierStat.MulticastAdd]: (amount) => ({
+    statChange: { stat: StatChangeStat.Multicast, amount },
+  }),
   [ModifierStat.CooldownSpeedAdd]: (amount) => ({
     statChange: { stat: StatChangeStat.CooldownSpeed, amount },
   }),
-  [ModifierStat.BurnAmountAdd]: (amount) => ({ statusGrant: { type: StatusEffectType.Burn, amount } }),
-  [ModifierStat.PoisonAmountAdd]: (amount) => ({ statusGrant: { type: StatusEffectType.Poison, amount } }),
-  [ModifierStat.ShockAmountAdd]: (amount) => ({ statusGrant: { type: StatusEffectType.Shock, amount } }),
-  [ModifierStat.ShieldAmountAdd]: (amount) => ({ statusGrant: { type: StatusEffectType.Shield, amount } }),
+  [ModifierStat.BurnAmountAdd]: (amount) => ({
+    statusGrant: { type: StatusEffectType.Burn, amount },
+  }),
+  [ModifierStat.PoisonAmountAdd]: (amount) => ({
+    statusGrant: { type: StatusEffectType.Poison, amount },
+  }),
+  [ModifierStat.ShockAmountAdd]: (amount) => ({
+    statusGrant: { type: StatusEffectType.Shock, amount },
+  }),
+  [ModifierStat.ShieldAmountAdd]: (amount) => ({
+    statusGrant: { type: StatusEffectType.Shield, amount },
+  }),
   [ModifierStat.HealAmountAdd]: (amount) => ({ statChange: { stat: StatChangeStat.Heal, amount } }),
   // Still absent: `cooldownFlatAddSeconds`. `CooldownSpeedAdd` IS carried, but `effects.ts`
   // deliberately does not resolve it -- `simulate()` already sums it in `resolveCooldownSpeedTotal`
@@ -238,7 +271,12 @@ const RULES: DerivationRule[] = [
       "i",
     ),
     build: (m, r) =>
-      manualTrigger(r, allEffects(m[2]!), { kind: TargetKind.AllAllies, ...filtersFrom(m[1]) }, true),
+      manualTrigger(
+        r,
+        allEffects(m[2]!),
+        { kind: TargetKind.AllAllies, ...filtersFrom(m[1]) },
+        true,
+      ),
   },
 
   // "Adjacent Water allies gain +25 Heal permanently." — Aster, Ginsage. Self NOT included: the text
@@ -249,7 +287,13 @@ const RULES: DerivationRule[] = [
       String.raw`^(?:Give )?Adjacent ((?:\w+ )*?)all(?:y|ies) (?:gain )?((?:${AMOUNT}\s*(?:${STAT_NAMES})(?:,? and )?)+) permanently\.$`,
       "i",
     ),
-    build: (m, r) => manualTrigger(r, allEffects(m[2]!), { kind: TargetKind.Adjacent, ...filtersFrom(m[1]) }, false),
+    build: (m, r) =>
+      manualTrigger(
+        r,
+        allEffects(m[2]!),
+        { kind: TargetKind.Adjacent, ...filtersFrom(m[1]) },
+        false,
+      ),
   },
 
   // "Give adjacent allies +1 Multicast permanently." — the imperative word order.
@@ -259,7 +303,13 @@ const RULES: DerivationRule[] = [
       String.raw`^Give adjacent ((?:\w+ )*?)all(?:y|ies) ((?:${AMOUNT}\s*(?:${STAT_NAMES})(?:,? and )?)+) permanently\.$`,
       "i",
     ),
-    build: (m, r) => manualTrigger(r, allEffects(m[2]!), { kind: TargetKind.Adjacent, ...filtersFrom(m[1]) }, false),
+    build: (m, r) =>
+      manualTrigger(
+        r,
+        allEffects(m[2]!),
+        { kind: TargetKind.Adjacent, ...filtersFrom(m[1]) },
+        false,
+      ),
   },
 
   // "Give the ally behind +3% Cooldown Speed permanently." — Boomagon.
@@ -280,7 +330,12 @@ const RULES: DerivationRule[] = [
       "i",
     ),
     build: (m, r) =>
-      manualTrigger(r, allEffects(m[2]!), { kind: TargetKind.AllAllies, minLevelFilter: Number(m[1]) }, false),
+      manualTrigger(
+        r,
+        allEffects(m[2]!),
+        { kind: TargetKind.AllAllies, minLevelFilter: Number(m[1]) },
+        false,
+      ),
   },
 
   // "When you use an item, this gains +20 Damage and Shield." — Craghorn, Guardiant, Cawnushi,
@@ -292,7 +347,12 @@ const RULES: DerivationRule[] = [
     build: (m, r) => {
       const clause = m[1]!;
       const effects = sharedAmountEffects(clause);
-      return manualTrigger(r, effects.length > 0 ? effects : allEffects(clause), { kind: TargetKind.Self }, false);
+      return manualTrigger(
+        r,
+        effects.length > 0 ? effects : allEffects(clause),
+        { kind: TargetKind.Self },
+        false,
+      );
     },
   },
 

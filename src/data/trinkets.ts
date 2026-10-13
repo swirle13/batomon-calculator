@@ -67,7 +67,8 @@ export const trinkets: TrinketRecord[] = [
   {
     id: TrinketId.LockedBox,
     name: "Locked Box",
-    effectText: "The next time you lose a battle, gain a random non-unique Trinket of the highest rarity your shop rank allows.",
+    effectText:
+      "The next time you lose a battle, gain a random non-unique Trinket of the highest rarity your shop rank allows.",
     rarity: Rarity.Common,
     abilityTags: [],
     spriteFile: "locked_box.png",
@@ -181,7 +182,8 @@ export const trinkets: TrinketRecord[] = [
   {
     id: TrinketId.EarthCrest,
     name: "Earth Crest",
-    effectText: "On Battle Start\nYour monsters in the rightmost column gain +10% Shield permanently.",
+    effectText:
+      "On Battle Start\nYour monsters in the rightmost column gain +10% Shield permanently.",
     rarity: Rarity.Uncommon,
     abilityTags: [],
     spriteFile: "earth_crest.png",
@@ -277,7 +279,8 @@ export const trinkets: TrinketRecord[] = [
   {
     id: TrinketId.RallyFlag,
     name: "Rally Flag",
-    effectText: "On Battle Start\nYour monsters in the leftmost column gain +12 Damage permanently.",
+    effectText:
+      "On Battle Start\nYour monsters in the leftmost column gain +12 Damage permanently.",
     rarity: Rarity.Uncommon,
     abilityTags: [],
     spriteFile: "rally_flag.png",
@@ -285,7 +288,8 @@ export const trinkets: TrinketRecord[] = [
   {
     id: TrinketId.SeaCrest,
     name: "Sea Crest",
-    effectText: "On Battle Start\nYour monsters in the rightmost column gain +10% Heal permanently.",
+    effectText:
+      "On Battle Start\nYour monsters in the rightmost column gain +10% Heal permanently.",
     rarity: Rarity.Uncommon,
     abilityTags: [],
     spriteFile: "sea_crest.png",
@@ -309,7 +313,8 @@ export const trinkets: TrinketRecord[] = [
   {
     id: TrinketId.AncientPlume,
     name: "Ancient Plume",
-    effectText: "On Battle Start\nIf you only have 1 monster, give it +1 Multicast permanently and destroy this.",
+    effectText:
+      "On Battle Start\nIf you only have 1 monster, give it +1 Multicast permanently and destroy this.",
     rarity: Rarity.Rare,
     abilityTags: [],
     spriteFile: "ancient_plume.png",
@@ -390,7 +395,8 @@ export const trinkets: TrinketRecord[] = [
   {
     id: TrinketId.MetalBat,
     name: "Metal Bat",
-    effectText: "On Battle Start\nYour monster with the highest Cooldown gains +50% Damage for this battle.",
+    effectText:
+      "On Battle Start\nYour monster with the highest Cooldown gains +50% Damage for this battle.",
     rarity: Rarity.Rare,
     abilityTags: [],
     spriteFile: "metal_bat.png",
@@ -414,7 +420,8 @@ export const trinkets: TrinketRecord[] = [
   {
     id: TrinketId.RiggedDice,
     name: "Rigged Dice",
-    effectText: "The first shop each day stocks only the rarest monsters and items your shop rank allows.",
+    effectText:
+      "The first shop each day stocks only the rarest monsters and items your shop rank allows.",
     rarity: Rarity.Rare,
     abilityTags: [],
     spriteFile: "rigged_dice.png",
@@ -520,7 +527,8 @@ export const trinkets: TrinketRecord[] = [
   {
     id: TrinketId.MomentumFlag,
     name: "Momentum Flag",
-    effectText: "On Battle Start\nYour monsters in the leftmost column gain +8% Cooldown Speed permanently.",
+    effectText:
+      "On Battle Start\nYour monsters in the leftmost column gain +8% Cooldown Speed permanently.",
     rarity: Rarity.SuperRare,
     abilityTags: [],
     spriteFile: "momentum_flag.png",
@@ -600,7 +608,8 @@ export const trinkets: TrinketRecord[] = [
   {
     id: TrinketId.CandyJar,
     name: "Candy Jar",
-    effectText: "On Battle Start\nYour Common and Uncommon monsters permanently level up to level 3.",
+    effectText:
+      "On Battle Start\nYour Common and Uncommon monsters permanently level up to level 3.",
     rarity: Rarity.Legendary,
     abilityTags: [],
     spriteFile: "candy_jar.png",
@@ -624,7 +633,8 @@ export const trinkets: TrinketRecord[] = [
   {
     id: TrinketId.GiantClub,
     name: "Giant Club",
-    effectText: "Your monsters with a Cooldown of 5.0 seconds or above have +70% stats (except Cooldown and Multicast).",
+    effectText:
+      "Your monsters with a Cooldown of 5.0 seconds or above have +70% stats (except Cooldown and Multicast).",
     rarity: Rarity.Legendary,
     abilityTags: [],
     spriteFile: "giant_club.png",
@@ -696,7 +706,8 @@ export const trinkets: TrinketRecord[] = [
   {
     id: TrinketId.ZenithStone,
     name: "Zenith Stone",
-    effectText: "When your monsters gain stats, they gain +80% more (except Multicast and % bonuses).",
+    effectText:
+      "When your monsters gain stats, they gain +80% more (except Multicast and % bonuses).",
     rarity: Rarity.Legendary,
     abilityTags: [],
     spriteFile: "zenith_stone.png",
@@ -704,7 +715,8 @@ export const trinkets: TrinketRecord[] = [
   {
     id: TrinketId.AlphasCrown,
     name: "Alpha Crown",
-    effectText: "On Battle Start\nYour monsters' Damage is set to your top-middle monster's Damage for this battle.",
+    effectText:
+      "On Battle Start\nYour monsters' Damage is set to your top-middle monster's Damage for this battle.",
     rarity: Rarity.Mythical,
     abilityTags: [],
     spriteFile: "alphas_crown.png",

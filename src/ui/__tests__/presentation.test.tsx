@@ -59,9 +59,7 @@ describe("TrinketPicker (FR-032, item 4)", () => {
 
     const dialog = screen.getByRole("dialog", { name: /choose trinkets/i });
     // The whole point of item 4: a <select> of 93 names could show neither sprite nor effect.
-    expect(dialog.querySelectorAll("option").length).toBeLessThan(
-      corpus.trinkets.length,
-    );
+    expect(dialog.querySelectorAll("option").length).toBeLessThan(corpus.trinkets.length);
     // Matched on a distinctive fragment: several trinkets' effectText embeds a trigger line and a
     // newline ("On Victory\nYour team gains +5 Damage permanently."), which the DOM collapses.
     //
@@ -125,7 +123,9 @@ describe("TrinketPicker ordering (FR-032/FR-067, 2026-10-07)", () => {
     // document order ARE the rendered order. All 93 trinkets have a sprite (checked below, so this
     // test fails loudly rather than quietly comparing a short list if that ever stops being true).
     expect(corpus.trinkets.every((t) => t.spriteFile !== undefined)).toBe(true);
-    const rendered = Array.from(dialog.querySelectorAll("img")).map((img) => img.getAttribute("alt"));
+    const rendered = Array.from(dialog.querySelectorAll("img")).map((img) =>
+      img.getAttribute("alt"),
+    );
 
     const expected = RARITIES_ASC.flatMap((rarity) =>
       corpus.trinkets
@@ -160,14 +160,18 @@ describe("TrinketPicker duplicates and the Selected section (2026-10-07)", () =>
 
     // Still listed, and now stating how many are held. Removing it from the list — which is what
     // a toggle amounts to — made a second copy unreachable.
-    fireEvent.click(within(dialog).getByRole("button", { name: /^Add Bargain Bin, 1 already selected/ }));
+    fireEvent.click(
+      within(dialog).getByRole("button", { name: /^Add Bargain Bin, 1 already selected/ }),
+    );
     expect(panel().textContent).toMatch(/2 selected/);
   });
 
   it("removes one copy per click, from the Selected section", () => {
     const dialog = openPicker();
     fireEvent.click(within(dialog).getByRole("button", { name: /^Add Bargain Bin/ }));
-    fireEvent.click(within(dialog).getByRole("button", { name: /^Add Bargain Bin, 1 already selected/ }));
+    fireEvent.click(
+      within(dialog).getByRole("button", { name: /^Add Bargain Bin, 1 already selected/ }),
+    );
 
     fireEvent.click(within(dialog).getByRole("button", { name: /^Remove one Bargain Bin of 2/ }));
     // One left, not none: a `filter` by id would have dropped both.
@@ -252,7 +256,13 @@ describe("the card's output band overflows into a second column (WI-003)", () =>
 
 describe("CreatureSearchModal heading (FR-034, item 13)", () => {
   it("shows no slot position in the visible heading, but keeps it for assistive tech", () => {
-    render(<CreatureSearchModal target={gridRef({ row: GridRow.Top, col: 1 })} onClose={() => { }} onSelect={() => { }} />);
+    render(
+      <CreatureSearchModal
+        target={gridRef({ row: GridRow.Top, col: 1 })}
+        onClose={() => {}}
+        onSelect={() => {}}
+      />,
+    );
     expect(screen.getByRole("heading", { name: "Choose a Batomon" })).toBeTruthy();
     expect(screen.queryByRole("heading", { name: /top row, slot/i })).toBeNull();
     // The user clicked the slot so they know which it is; a screen-reader user may not have.
@@ -312,7 +322,13 @@ describe("round 7 presentation fixes", () => {
         <PlacedCreatureDetails result={simulate(CONFIG, corpus)} highlighted={null} />
       </TeamConfigProvider>,
     );
-    render(<CreatureSearchModal target={gridRef({ row: GridRow.Top, col: 1 })} onClose={() => { }} onSelect={() => { }} />);
+    render(
+      <CreatureSearchModal
+        target={gridRef({ row: GridRow.Top, col: 1 })}
+        onClose={() => {}}
+        onSelect={() => {}}
+      />,
+    );
     expect(screen.getByRole("heading", { name: "Choose a Batomon" })).toBeTruthy();
     expect(document.body.textContent).not.toMatch(/Banto\b/);
   });
@@ -333,28 +349,42 @@ describe("round 7 presentation fixes", () => {
   });
 
   it("renders the split type background without a gradient (FR-049, item 11)", () => {
-    render(<CreatureSearchModal target={gridRef({ row: GridRow.Top, col: 0 })} onClose={() => { }} onSelect={() => { }} />);
+    render(
+      <CreatureSearchModal
+        target={gridRef({ row: GridRow.Top, col: 0 })}
+        onClose={() => {}}
+        onSelect={() => {}}
+      />,
+    );
     // The sliver came from a linear-gradient painted across the border box. Two explicit halves
     // cannot reproduce it, so the absence of any gradient is the structural guarantee.
-    const withGradient = Array.from(document.querySelectorAll<HTMLElement>("[style]")).filter((el) =>
-      (el.getAttribute("style") ?? "").includes("linear-gradient"),
+    const withGradient = Array.from(document.querySelectorAll<HTMLElement>("[style]")).filter(
+      (el) => (el.getAttribute("style") ?? "").includes("linear-gradient"),
     );
     expect(withGradient).toEqual([]);
   });
 
   it("groups picker results into rarity sections and puts no rarity text on the cards (FR-048, item 10)", () => {
-    render(<CreatureSearchModal target={gridRef({ row: GridRow.Top, col: 0 })} onClose={() => { }} onSelect={() => { }} />);
+    render(
+      <CreatureSearchModal
+        target={gridRef({ row: GridRow.Top, col: 0 })}
+        onClose={() => {}}
+        onSelect={() => {}}
+      />,
+    );
     expect(screen.getAllByRole("heading", { level: 4 }).length).toBeGreaterThan(1);
     // Rarity is structure now, not a per-card label; the only "Common" text should be headings
     // and the filter <option>, never inside a result card.
-    const cardTexts = Array.from(document.querySelectorAll("button")).map((b) => b.textContent ?? "");
+    const cardTexts = Array.from(document.querySelectorAll("button")).map(
+      (b) => b.textContent ?? "",
+    );
     expect(cardTexts.some((t) => /Common|Rare|Mythical/.test(t))).toBe(false);
   });
 
   it("renders grid sprites at the shared token size, not a per-call-site literal (FR-053, item 18)", () => {
     render(
       <TeamConfigProvider initialConfig={CONFIG}>
-        <GridPicker onHighlight={() => { }} />
+        <GridPicker onHighlight={() => {}} />
       </TeamConfigProvider>,
     );
     const sprite = screen.getByRole("img", { name: "Bumblebolt" });
@@ -394,7 +424,9 @@ describe("round 7 presentation fixes", () => {
     // bonus are part of what the monster IS for this run, so they belong on the card.
     const chefTeam: TeamConfiguration = {
       ...CONFIG,
-      placements: [{ slot: { row: GridRow.Bottom, col: 0 }, creatureId: Species.Pebbler, level: 1 }],
+      placements: [
+        { slot: { row: GridRow.Bottom, col: 0 }, creatureId: Species.Pebbler, level: 1 },
+      ],
       trainerId: TrainerId.Chef,
     };
     render(
@@ -419,7 +451,12 @@ describe("round 7 presentation fixes", () => {
       placements: CONFIG.placements.map((p) => ({
         ...p,
         modifiers: [
-          { id: syntheticSpecies("charm"), stat: ModifierStat.CooldownSpeedAdd, amount: 0.04, label: "Tempo Charm" },
+          {
+            id: syntheticSpecies("charm"),
+            stat: ModifierStat.CooldownSpeedAdd,
+            amount: 0.04,
+            label: "Tempo Charm",
+          },
         ],
       })),
     };
@@ -474,7 +511,9 @@ describe("round 7 presentation fixes", () => {
       // showing the published figures under a heading that claims they are resolved.
       const modified: TeamConfiguration = {
         ...benched,
-        teamModifiers: [{ id: syntheticSpecies("m1"), stat: ModifierStat.DamageFlatAdd, amount: 5 }],
+        teamModifiers: [
+          { id: syntheticSpecies("m1"), stat: ModifierStat.DamageFlatAdd, amount: 5 },
+        ],
       };
       render(
         <TeamConfigProvider initialConfig={modified}>
@@ -501,7 +540,10 @@ describe("round 7 presentation fixes", () => {
       );
       const levels = screen.getByRole("radiogroup", { name: "Level" });
       fireEvent.click(within(levels).getByRole("radio", { name: "3" }));
-      expect(within(levels).getByRole("radio", { name: "3" })).toHaveAttribute("aria-checked", "true");
+      expect(within(levels).getByRole("radio", { name: "3" })).toHaveAttribute(
+        "aria-checked",
+        "true",
+      );
     });
 
     it("falls back to the first placed monster when the bench position empties", () => {
@@ -520,14 +562,32 @@ describe("round 7 presentation fixes", () => {
   });
 
   it("reports Shield without the over-qualifying parenthetical (FR-046, item 7)", () => {
-    const shieldConfig = { ...CONFIG, placements: [{ slot: { row: GridRow.Top, col: 0 as const }, creatureId: syntheticSpecies("opalion"), level: 1 as const }] };
+    const shieldConfig = {
+      ...CONFIG,
+      placements: [
+        {
+          slot: { row: GridRow.Top, col: 0 as const },
+          creatureId: syntheticSpecies("opalion"),
+          level: 1 as const,
+        },
+      ],
+    };
     render(<TeamSummary config={shieldConfig} result={simulate(shieldConfig, corpus)} />);
     expect(screen.queryByText(/Shield \(granted\)/)).toBeNull();
     expect(screen.getByText("Shield")).toBeTruthy();
   });
 
   it("reports second-order status metrics, not just one averaged figure (FR-055, item 20)", () => {
-    const poison = { ...CONFIG, placements: [{ slot: { row: GridRow.Top, col: 0 as const }, creatureId: syntheticSpecies("drumire"), level: 1 as const }] };
+    const poison = {
+      ...CONFIG,
+      placements: [
+        {
+          slot: { row: GridRow.Top, col: 0 as const },
+          creatureId: syntheticSpecies("drumire"),
+          level: 1 as const,
+        },
+      ],
+    };
     render(<TeamSummary config={poison} result={simulate(poison, corpus)} />);
     // getAllByText: earlier cases in this file also render a TeamSummary, so the header text can
     // legitimately appear more than once in the shared DOM.
@@ -571,7 +631,7 @@ describe("round 9: total DPS and grid sizing", () => {
     // board is no longer a pure-status team. The headline figure still matters (3 of 4 creatures
     // contribute nothing to the direct column), so the test's point survives; its premise moved.
     expect(Object.keys(result.perCreatureDps).length).toBe(1);
-    render(<TotalDps config={poisonTeam} result={result} day={1} onDayChange={() => { }} />);
+    render(<TotalDps config={poisonTeam} result={result} day={1} onDayChange={() => {}} />);
     // RE-DERIVED round 9 (T202/T200b), not re-baselined. This read 136.60 while every creature
     // ability on this board was inert. With the effect resolver and the event-driven scheduler,
     // Miasmaw applies Poison 336 instead of 10 and Cobrex fires at t=9.1 instead of t=15, so the
@@ -639,7 +699,9 @@ describe("round 9: total DPS and grid sizing", () => {
         { slot: { row: GridRow.Top, col: 1 }, creatureId: Species.Craghorn, level: 1 },
       ],
     };
-    render(<TotalDps config={team} result={simulate(team, corpus)} day={1} onDayChange={() => { }} />);
+    render(
+      <TotalDps config={team} result={simulate(team, corpus)} day={1} onDayChange={() => {}} />,
+    );
     expect(screen.queryByText(/Not counted/)).toBeNull();
     expect(screen.queryByText(/not modelled yet/)).toBeNull();
     expect(screen.queryByText(/between battles/)).toBeNull();
@@ -720,7 +782,7 @@ describe("round 9: total DPS and grid sizing", () => {
 
   it("reads 'DPS average' until the scrubber is moved (WI-R11-003)", () => {
     const result = simulate(poisonTeam, corpus);
-    render(<TotalDps config={poisonTeam} result={result} day={1} onDayChange={() => { }} />);
+    render(<TotalDps config={poisonTeam} result={result} day={1} onDayChange={() => {}} />);
     expect(screen.getByText("DPS average")).toBeTruthy();
     // The direct-vs-facilitated explanation is gone; only the figure and its caption remain.
     expect(screen.queryByText(/status\/facilitated/)).toBeNull();
@@ -771,11 +833,17 @@ describe("effective band renders healing (2026-10-06)", () => {
 
   it("carries heal through to the effective stats", () => {
     const result = simulate(healerTeam, corpus);
-    expect(result.perCreatureEffectiveStats[placementKey(Species.Dribblet, { row: GridRow.Top, col: 0 })]!.output.heal).toBe(15);
+    expect(
+      result.perCreatureEffectiveStats[
+        placementKey(Species.Dribblet, { row: GridRow.Top, col: 0 })
+      ]!.output.heal,
+    ).toBe(15);
   });
 
   it("renders a Heal line rather than an empty band", () => {
-    const effective = simulate(healerTeam, corpus).perCreatureEffectiveStats[placementKey(Species.Dribblet, { row: GridRow.Top, col: 0 })]!;
+    const effective = simulate(healerTeam, corpus).perCreatureEffectiveStats[
+      placementKey(Species.Dribblet, { row: GridRow.Top, col: 0 })
+    ]!;
     // The point of `PerCastOutput`: the band passes the engine's shape straight through, with no
     // field list to forget a stat in.
     const lines = buildStatLines(effective.output);
@@ -876,7 +944,9 @@ describe("the trainer card holds its selects before a trainer is chosen", () => 
       </TeamConfigProvider>,
     );
     const twins = corpus.trainers.find((t) => t.id === TrainerId.Twins)!;
-    fireEvent.change(screen.getByRole("combobox", { name: /trainer/i }), { target: { value: twins.id } });
+    fireEvent.change(screen.getByRole("combobox", { name: /trainer/i }), {
+      target: { value: twins.id },
+    });
 
     // By ROLE: the name is now in two places — the card's heading and the select's own option —
     // because the select that chooses it lives inside the card it fills in.
@@ -908,14 +978,21 @@ describe("region never blocks a selection (2026-10-07)", () => {
       (c) => c.level === 1 && regionsOf(c.id).length === 1 && regionsOf(c.id)[0] === RegionId.Jinto,
     )!;
     render(
-      <TeamConfigProvider initialConfig={{
-        placements: [], trainerId: null, trinketIds: [], itemIds: [],
-        simulationWindowSeconds: 30, teamModifiers: [], selectedRegion: RegionId.Pantra,
-      }}>
+      <TeamConfigProvider
+        initialConfig={{
+          placements: [],
+          trainerId: null,
+          trinketIds: [],
+          itemIds: [],
+          simulationWindowSeconds: 30,
+          teamModifiers: [],
+          selectedRegion: RegionId.Pantra,
+        }}
+      >
         <CreatureSearchModal
           target={gridRef({ row: GridRow.Top, col: 0 })}
-          onClose={() => { }}
-          onSelect={() => { }}
+          onClose={() => {}}
+          onSelect={() => {}}
           config={{ selectedRegion: RegionId.Pantra }}
         />
       </TeamConfigProvider>,

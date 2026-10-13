@@ -5,7 +5,17 @@ import type { Corpus, CreatureSpecies, TeamConfiguration } from "../../data/type
 import { syntheticSpecies } from "../../data/ids";
 
 import type { Species } from "../../data/ids";
-import { AbilityTagKind, AbilityTrigger, CreatureType, DamageChannel, GridRow, Rarity, StatChangeStat, TargetKind, TimelineEventKind } from "../../data/enums";
+import {
+  AbilityTagKind,
+  AbilityTrigger,
+  CreatureType,
+  DamageChannel,
+  GridRow,
+  Rarity,
+  StatChangeStat,
+  TargetKind,
+  TimelineEventKind,
+} from "../../data/enums";
 
 /**
  * T224: per-cast ACCUMULATING buffs (research.md L5).
@@ -24,12 +34,26 @@ const base: Omit<CreatureSpecies, "id" | "name"> = {
   abilityText: "+10 Damage for this battle.",
   abilityTrigger: AbilityTrigger.OnCast,
   abilityTags: [
-    { kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statChange: { stat: StatChangeStat.Damage, amount: 10 } } },
+    {
+      kind: AbilityTagKind.BuffOnCast,
+      target: { kind: TargetKind.Self },
+      effect: { statChange: { stat: StatChangeStat.Damage, amount: 10 } },
+    },
   ],
 };
 
-const grower: CreatureSpecies = { ...base, id: syntheticSpecies(syntheticSpecies("grower")), name: "Grower" };
-const flat: CreatureSpecies = { ...base, id: syntheticSpecies(syntheticSpecies("flat")), name: "Flat", abilityTags: [], abilityText: "test fixture" };
+const grower: CreatureSpecies = {
+  ...base,
+  id: syntheticSpecies(syntheticSpecies("grower")),
+  name: "Grower",
+};
+const flat: CreatureSpecies = {
+  ...base,
+  id: syntheticSpecies(syntheticSpecies("flat")),
+  name: "Flat",
+  abilityTags: [],
+  abilityText: "test fixture",
+};
 const testCorpus: Corpus = { creatures: [grower, flat], trainers: [], trinkets: [], items: [] };
 
 const team = (creatureId: Species, windowSeconds: number): TeamConfiguration => ({
@@ -46,7 +70,9 @@ describe("buffOnCast (T224)", () => {
     // FR-040 snapshot semantics: the grant lands after the instant it was granted in. Applying it
     // inline would make the buff appear one cast early and overstate the whole family.
     const r = simulate(team(syntheticSpecies("grower"), 1), testCorpus);
-    const attacks = r.timeline.filter((e) => e.kind === TimelineEventKind.Attack && e.damage !== undefined);
+    const attacks = r.timeline.filter(
+      (e) => e.kind === TimelineEventKind.Attack && e.damage !== undefined,
+    );
     expect(attacks).toHaveLength(1);
     expect(attacks[0]!.damage).toBe(10);
   });
@@ -72,7 +98,9 @@ describe("buffOnCast (T224)", () => {
     const short = simulate(team(syntheticSpecies("grower"), 4), testCorpus);
     const long = simulate(team(syntheticSpecies("grower"), 8), testCorpus);
     const total = (r: typeof short) =>
-      r.timeline.filter((e) => e.kind === TimelineEventKind.Attack).reduce((s, e) => s + (e.damage ?? 0), 0);
+      r.timeline
+        .filter((e) => e.kind === TimelineEventKind.Attack)
+        .reduce((s, e) => s + (e.damage ?? 0), 0);
     expect(total(short)).toBe(100);
     expect(total(long)).toBe(360);
   });

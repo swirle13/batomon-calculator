@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { InvalidBuildCodeError, buildId, canonicalize, exportBuild, importBuild, readBuildFromUrl } from "../share";
+import {
+  InvalidBuildCodeError,
+  buildId,
+  canonicalize,
+  exportBuild,
+  importBuild,
+  readBuildFromUrl,
+} from "../share";
 import type { TeamConfiguration } from "../types";
 
 import { syntheticSpecies } from "../ids";
@@ -12,8 +19,12 @@ const base: TeamConfiguration = {
   trainerId: TrainerId.Painter,
   placements: [
     { slot: { row: GridRow.Bottom, col: 1 }, creatureId: Species.Miasmaw, level: 2, shiny: true },
-    { slot: { row: GridRow.Top, col: 0 }, creatureId: Species.Cobrex, level: 1,
-      modifiers: [{ id: syntheticSpecies("x1"), stat: ModifierStat.DamageFlatAdd, amount: 10 }] },
+    {
+      slot: { row: GridRow.Top, col: 0 },
+      creatureId: Species.Cobrex,
+      level: 1,
+      modifiers: [{ id: syntheticSpecies("x1"), stat: ModifierStat.DamageFlatAdd, amount: 10 }],
+    },
   ],
   trinketIds: [TrinketId.LinkCable, TrinketId.GoldNugget],
   itemIds: [],
@@ -55,16 +66,52 @@ describe("build export/import", () => {
   it("the id changes when ANY build-defining field changes", () => {
     const id = buildId(base);
     const variants: [string, TeamConfiguration][] = [
-      ["level", { ...base, placements: base.placements.map((p, i) => (i === 0 ? { ...p, level: 3 as const } : p)) }],
-      ["shiny", { ...base, placements: base.placements.map((p, i) => (i === 0 ? { ...p, shiny: false } : p)) }],
-      ["slot", { ...base, placements: base.placements.map((p, i) => (i === 0 ? { ...p, slot: { row: GridRow.Top as const, col: 2 } } : p)) }],
-      ["creature", { ...base, placements: base.placements.map((p, i) => (i === 0 ? { ...p, creatureId: Species.Drumire } : p)) }],
+      [
+        "level",
+        {
+          ...base,
+          placements: base.placements.map((p, i) => (i === 0 ? { ...p, level: 3 as const } : p)),
+        },
+      ],
+      [
+        "shiny",
+        {
+          ...base,
+          placements: base.placements.map((p, i) => (i === 0 ? { ...p, shiny: false } : p)),
+        },
+      ],
+      [
+        "slot",
+        {
+          ...base,
+          placements: base.placements.map((p, i) =>
+            i === 0 ? { ...p, slot: { row: GridRow.Top as const, col: 2 } } : p,
+          ),
+        },
+      ],
+      [
+        "creature",
+        {
+          ...base,
+          placements: base.placements.map((p, i) =>
+            i === 0 ? { ...p, creatureId: Species.Drumire } : p,
+          ),
+        },
+      ],
       ["region", { ...base, selectedRegion: RegionId.Jinto }],
       ["trainer", { ...base, trainerId: TrainerId.Smuggler }],
       ["trinkets", { ...base, trinketIds: [TrinketId.LinkCable] }],
       ["painted", { ...base, paintedCreatureIds: [] }],
       ["window", { ...base, simulationWindowSeconds: 20 }],
-      ["modifier amount", { ...base, teamModifiers: [{ id: syntheticSpecies("t1"), stat: ModifierStat.PoisonAmountAdd, amount: 5 }] }],
+      [
+        "modifier amount",
+        {
+          ...base,
+          teamModifiers: [
+            { id: syntheticSpecies("t1"), stat: ModifierStat.PoisonAmountAdd, amount: 5 },
+          ],
+        },
+      ],
     ];
     for (const [label, variant] of variants) {
       expect(buildId(variant), `${label} did not change the id`).not.toBe(id);
@@ -73,8 +120,12 @@ describe("build export/import", () => {
 
   it("an empty team round-trips and has an id", () => {
     const empty: TeamConfiguration = {
-      placements: [], trainerId: null, trinketIds: [], itemIds: [],
-      simulationWindowSeconds: 20, teamModifiers: [],
+      placements: [],
+      trainerId: null,
+      trinketIds: [],
+      itemIds: [],
+      simulationWindowSeconds: 20,
+      teamModifiers: [],
     };
     expect(importBuild(exportBuild(empty)).placements).toEqual([]);
     expect(buildId(empty)).toMatch(/^[0-9a-f]{8}$/);
@@ -138,7 +189,11 @@ describe("sharing by URL", () => {
       // should not: two benches holding the same monsters in the same places are one build.
       expect(restored.bench![0]).toMatchObject({ index: 0, creatureId: Species.Mosslug, level: 2 });
       expect(restored.bench![0]!.modifiers![0]!.amount).toBe(25);
-      expect(restored.bench![1]).toMatchObject({ index: 1, creatureId: Species.Thorntail, shiny: true });
+      expect(restored.bench![1]).toMatchObject({
+        index: 1,
+        creatureId: Species.Thorntail,
+        shiny: true,
+      });
     });
 
     it("changes the build id, because a different bench is a different build", () => {
@@ -211,13 +266,17 @@ describe("sharing by URL", () => {
   describe("locked placements", () => {
     const pinned: TeamConfiguration = {
       ...base,
-      placements: base.placements.map((p) => (p.creatureId === Species.Cobrex ? { ...p, locked: true } : p)),
+      placements: base.placements.map((p) =>
+        p.creatureId === Species.Cobrex ? { ...p, locked: true } : p,
+      ),
     };
 
     it("survives a round trip, on the right placement", () => {
       const restored = importBuild(exportBuild(pinned));
       expect(restored.placements.find((p) => p.creatureId === Species.Cobrex)!.locked).toBe(true);
-      expect(restored.placements.find((p) => p.creatureId === Species.Miasmaw)!.locked).toBeUndefined();
+      expect(
+        restored.placements.find((p) => p.creatureId === Species.Miasmaw)!.locked,
+      ).toBeUndefined();
     });
 
     it("does NOT change the build id — a padlock is not a different team", () => {
@@ -227,13 +286,15 @@ describe("sharing by URL", () => {
 
     it("leaves the code of a build with no locks byte-identical", () => {
       // The compatibility guarantee that let `FORMAT_VERSION` stay at 1, same as the bench's.
-      expect(exportBuild({ ...base, placements: base.placements.map((p) => ({ ...p, locked: false })) })).toBe(
-        exportBuild(base),
-      );
+      expect(
+        exportBuild({ ...base, placements: base.placements.map((p) => ({ ...p, locked: false })) }),
+      ).toBe(exportBuild(base));
     });
 
     it("reads a code that predates the field as nothing locked", () => {
-      expect(importBuild(exportBuild(base)).placements.every((p) => p.locked === undefined)).toBe(true);
+      expect(importBuild(exportBuild(base)).placements.every((p) => p.locked === undefined)).toBe(
+        true,
+      );
     });
 
     it("produces a different CODE, even at the same id", () => {

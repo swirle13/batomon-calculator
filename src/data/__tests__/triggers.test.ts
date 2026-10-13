@@ -57,8 +57,16 @@ describe("manual trigger framework", () => {
   it("every AbilityTrigger value has a registry entry", () => {
     // Adding a trigger to the union without describing it here would render a blank button.
     const triggers: AbilityTrigger[] = [
-      AbilityTrigger.Ongoing, AbilityTrigger.OnCast, AbilityTrigger.OnBattleStart, AbilityTrigger.OnBought, AbilityTrigger.OnVictory,
-      AbilityTrigger.OnKnockedOut, AbilityTrigger.OnKnockout, AbilityTrigger.OnTrinketGained, AbilityTrigger.OnItemUsed, AbilityTrigger.OnBattleLost,
+      AbilityTrigger.Ongoing,
+      AbilityTrigger.OnCast,
+      AbilityTrigger.OnBattleStart,
+      AbilityTrigger.OnBought,
+      AbilityTrigger.OnVictory,
+      AbilityTrigger.OnKnockedOut,
+      AbilityTrigger.OnKnockout,
+      AbilityTrigger.OnTrinketGained,
+      AbilityTrigger.OnItemUsed,
+      AbilityTrigger.OnBattleLost,
     ];
     for (const t of triggers) {
       expect(TRIGGER_DEFINITIONS[t], `no definition for ${t}`).toBeDefined();
@@ -80,11 +88,18 @@ describe("manual trigger framework", () => {
 
   it("covers the creatures whose triggers the engine cannot fire", () => {
     const withButtons = new Set(
-      allCreatureRecords().filter((c) => manualTriggersFor(c).length > 0).map((c) => c.id),
+      allCreatureRecords()
+        .filter((c) => manualTriggersFor(c).length > 0)
+        .map((c) => c.id),
     );
     for (const id of [
-      Species.Craghorn, Species.Guardiant, Species.Dollhime, Species.Ratacomb,
-      Species.Cawnushi, Species.Emburn, Species.Vipair,
+      Species.Craghorn,
+      Species.Guardiant,
+      Species.Dollhime,
+      Species.Ratacomb,
+      Species.Cawnushi,
+      Species.Emburn,
+      Species.Vipair,
     ]) {
       expect(withButtons.has(id), `${id} has no manual trigger`).toBe(true);
     }
@@ -130,28 +145,46 @@ describe("manual trigger recipients", () => {
     for (const level of [1, 2, 3, 4]) {
       const c = getCreatureByIdAndLevel(Species.Brawlmantis, level)!;
       const [trigger] = manualTriggersFor(c);
-      expect(trigger!.target, `brawlmantis L${level}`).toEqual({ kind: TargetKind.AllAllies, rarityFilter: Rarity.Common });
+      expect(trigger!.target, `brawlmantis L${level}`).toEqual({
+        kind: TargetKind.AllAllies,
+        rarityFilter: Rarity.Common,
+      });
       expect(trigger!.includeSelf).toBe(true);
     }
 
     // The user's board: Pebbler and Venopuff are Common; Pyronade and Craghorn are Uncommon and
     // Shikitsune is Rare.
     const { source, members } = board([
-      Species.Brawlmantis, Species.Pebbler, Species.Venopuff, Species.Pyronade, Species.Craghorn, Species.Shikitsune,
+      Species.Brawlmantis,
+      Species.Pebbler,
+      Species.Venopuff,
+      Species.Pyronade,
+      Species.Craghorn,
+      Species.Shikitsune,
     ]);
     const got = recipientsOfPress(manualTriggersFor(source.creature)[0]!, source, members);
     expect(got.map((m) => m.creature.id).sort()).toEqual(["brawlmantis", "pebbler", "venopuff"]);
   });
 
   it("Kickrane reaches the whole board, Common or not", () => {
-    const { source, members } = board([Species.Kickrane, Species.Pebbler, Species.Pyronade, Species.Shikitsune]);
+    const { source, members } = board([
+      Species.Kickrane,
+      Species.Pebbler,
+      Species.Pyronade,
+      Species.Shikitsune,
+    ]);
     const got = recipientsOfPress(manualTriggersFor(source.creature)[0]!, source, members);
     expect(got.length).toBe(members.length);
   });
 
   it("a trigger with no target stays on the creature itself", () => {
     // The default seven rely on this. Craghorn's item bonus is its own, however many allies it has.
-    const { source, members } = board([Species.Craghorn, Species.Pebbler, Species.Venopuff, Species.Kickrane]);
+    const { source, members } = board([
+      Species.Craghorn,
+      Species.Pebbler,
+      Species.Venopuff,
+      Species.Kickrane,
+    ]);
     const got = recipientsOfPress(manualTriggersFor(source.creature)[0]!, source, members);
     expect(got.map((m) => m.creature.id)).toEqual(["craghorn"]);
   });

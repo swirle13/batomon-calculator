@@ -19,9 +19,28 @@ import { readFileSync, writeFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative, dirname } from "node:path";
 
 const ENUMS = [
-  "Rarity", "CreatureType", "DamageChannel", "StatusEffectType", "AbilityTrigger",
-  "RegionId", "GridRow", "ModifierStat", "EventLabel", "TimelineEventKind",
-  "StatChangeStat", "MultiplierScope", "StatColorKey", "ConfirmableField", "TargetKind", "AbilityTagKind", "TypeKind", "AffectedSpeciesKind", "Species", "TrainerId", "TrinketId", "ItemId",
+  "Rarity",
+  "CreatureType",
+  "DamageChannel",
+  "StatusEffectType",
+  "AbilityTrigger",
+  "RegionId",
+  "GridRow",
+  "ModifierStat",
+  "EventLabel",
+  "TimelineEventKind",
+  "StatChangeStat",
+  "MultiplierScope",
+  "StatColorKey",
+  "ConfirmableField",
+  "TargetKind",
+  "AbilityTagKind",
+  "TypeKind",
+  "AffectedSpeciesKind",
+  "Species",
+  "TrainerId",
+  "TrinketId",
+  "ItemId",
 ];
 
 function files(dir) {
@@ -61,7 +80,14 @@ for (const file of files("src")) {
       .map((s) => s.trim())
       .filter(Boolean)
       .filter((n) => !used.includes(n.split(/\s+as\s+/)[0]));
-    if (kept.length === names.split(",").map((s) => s.trim()).filter(Boolean).length) return whole;
+    if (
+      kept.length ===
+      names
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean).length
+    )
+      return whole;
     return kept.length === 0 ? "" : `import type { ${kept.join(", ")} } from ${from};`;
   });
 
@@ -73,7 +99,10 @@ for (const file of files("src")) {
    * the value import rather than a clean replacement.
    */
   t = t.replace(/import \{([^}]*)\} from ("[^"]+");/g, (whole, names, from) => {
-    const all = names.split(",").map((s) => s.trim()).filter(Boolean);
+    const all = names
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
     const kept = all.filter((n) => !used.includes(n.replace(/^type\s+/, "")));
     if (kept.length === all.length) return whole;
     return kept.length === 0 ? "" : `import { ${kept.join(", ")} } from ${from};`;

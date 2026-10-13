@@ -28,7 +28,9 @@ describe("statusStackSeries — live stacks on the enemy", () => {
     const series = simulate(solo(Species.Venopuff, 12), corpus).statusStackSeries;
     const poison = series.map((p) => p.Poison);
     for (let i = 1; i < poison.length; i++) {
-      expect(poison[i]!, `Poison fell at t=${series[i]!.tSeconds}`).toBeGreaterThanOrEqual(poison[i - 1]!);
+      expect(poison[i]!, `Poison fell at t=${series[i]!.tSeconds}`).toBeGreaterThanOrEqual(
+        poison[i - 1]!,
+      );
     }
     expect(poison[poison.length - 1]!).toBeGreaterThan(0);
   });
@@ -106,15 +108,26 @@ describe("statuses tick as ONE pool on a GLOBAL clock", () => {
       .filter((e) => e.kind === TimelineEventKind.StatusTick && e.damageType === "Poison")
       .map((e) => `${e.tSeconds}:${e.damage}`);
     expect(ticks).toEqual([
-      "4:4", "5:4", "6:4",
-      "7:4",            // cast 2 lands here; this tick still reads 4
-      "8:8", "9:8", "10:8",
-      "11:12", "12:12", "13:12",
-      "14:12",          // cast 4 lands here; still 12
-      "15:16", "16:16", "17:16",
-      "18:20", "19:20", "20:20",
-      "21:20",          // cast 6 lands here; still 20
-      "22:24", "23:24",
+      "4:4",
+      "5:4",
+      "6:4",
+      "7:4", // cast 2 lands here; this tick still reads 4
+      "8:8",
+      "9:8",
+      "10:8",
+      "11:12",
+      "12:12",
+      "13:12",
+      "14:12", // cast 4 lands here; still 12
+      "15:16",
+      "16:16",
+      "17:16",
+      "18:20",
+      "19:20",
+      "20:20",
+      "21:20", // cast 6 lands here; still 20
+      "22:24",
+      "23:24",
     ]);
   });
 
@@ -125,7 +138,8 @@ describe("statuses tick as ONE pool on a GLOBAL clock", () => {
       .timeline.filter((e) => e.kind === TimelineEventKind.StatusTick && e.damageType === "Poison")
       .map((e) => e.tSeconds);
     expect(ticks[0]).toBe(4);
-    for (const t of ticks) expect(Number.isInteger(t), `tick at ${t} is off the whole-second grid`).toBe(true);
+    for (const t of ticks)
+      expect(Number.isInteger(t), `tick at ${t} is off the whole-second grid`).toBe(true);
   });
 
   it("a tick sharing a cast's instant uses the PRE-cast stack", () => {
@@ -133,7 +147,10 @@ describe("statuses tick as ONE pool on a GLOBAL clock", () => {
     // the stack as it stood before the cast, and 8 only from the next tick.
     const r = simulate(solo(Species.Venopuff, 10), corpus);
     const at = (t: number) =>
-      r.timeline.find((e) => e.kind === TimelineEventKind.StatusTick && e.damageType === "Poison" && e.tSeconds === t)?.damage;
+      r.timeline.find(
+        (e) =>
+          e.kind === TimelineEventKind.StatusTick && e.damageType === "Poison" && e.tSeconds === t,
+      )?.damage;
     expect(at(7)).toBe(4);
     expect(at(8)).toBe(8);
   });
@@ -193,12 +210,34 @@ describe("statuses tick as ONE pool on a GLOBAL clock", () => {
 describe("observed battle: Venopuff + Magmite + shiny Dribblet vs 300 HP", () => {
   /** [time, poison damage, burn damage, enemy HP after] */
   const OBSERVED: [number, number, number, number][] = [
-    [4, 4, 0, 296], [5, 4, 4, 288], [5.5, 0, 3, 285], [6, 4, 2, 279], [6.5, 0, 1, 278],
-    [7, 4, 0, 274], [8, 8, 0, 266], [9, 8, 0, 258], [9.5, 0, 4, 254], [10, 8, 3, 243],
-    [10.5, 0, 2, 241], [11, 12, 1, 228], [12, 12, 0, 216], [13, 12, 0, 204], [14, 12, 4, 188],
-    [14.5, 0, 3, 185], [15, 16, 2, 167], [15.5, 0, 1, 166], [16, 16, 0, 150], [17, 16, 0, 134],
-    [18, 20, 0, 114], [18.5, 0, 4, 110], [19, 20, 3, 87], [19.5, 0, 2, 85], [20, 20, 1, 64],
-    [21, 20, 0, 44], [22, 24, 0, 20], [23, 24, 4, -8],
+    [4, 4, 0, 296],
+    [5, 4, 4, 288],
+    [5.5, 0, 3, 285],
+    [6, 4, 2, 279],
+    [6.5, 0, 1, 278],
+    [7, 4, 0, 274],
+    [8, 8, 0, 266],
+    [9, 8, 0, 258],
+    [9.5, 0, 4, 254],
+    [10, 8, 3, 243],
+    [10.5, 0, 2, 241],
+    [11, 12, 1, 228],
+    [12, 12, 0, 216],
+    [13, 12, 0, 204],
+    [14, 12, 4, 188],
+    [14.5, 0, 3, 185],
+    [15, 16, 2, 167],
+    [15.5, 0, 1, 166],
+    [16, 16, 0, 150],
+    [17, 16, 0, 134],
+    [18, 20, 0, 114],
+    [18.5, 0, 4, 110],
+    [19, 20, 3, 87],
+    [19.5, 0, 2, 85],
+    [20, 20, 1, 64],
+    [21, 20, 0, 44],
+    [22, 24, 0, 20],
+    [23, 24, 4, -8],
   ];
 
   const team: TeamConfiguration = {
@@ -248,10 +287,15 @@ describe("observed battle: Venopuff + Magmite + shiny Dribblet vs 300 HP", () =>
     const r = simulate(team, corpus);
     const observedTimes = new Set(OBSERVED.map(([t]) => t));
     const engineTimes = r.timeline
-      .filter((e) => e.kind === TimelineEventKind.StatusTick && (e.damage ?? 0) > 0 && e.tSeconds <= 23)
+      .filter(
+        (e) => e.kind === TimelineEventKind.StatusTick && (e.damage ?? 0) > 0 && e.tSeconds <= 23,
+      )
       .map((e) => e.tSeconds);
     for (const t of engineTimes) {
-      expect(observedTimes.has(t), `engine ticked at t=${t}, which the recording has no event for`).toBe(true);
+      expect(
+        observedTimes.has(t),
+        `engine ticked at t=${t}, which the recording has no event for`,
+      ).toBe(true);
     }
   });
 });

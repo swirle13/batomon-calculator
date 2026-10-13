@@ -69,7 +69,16 @@ interface SpriteProps {
 /** A token if one governs this axis, the plain pixel size otherwise. */
 const axis = (token: string | undefined, px: number) => (token ? `var(${token})` : `${px}px`);
 
-export function Sprite({ spriteFile, kind, size = 48, sizeVar, widthVar, heightVar, alt, className }: SpriteProps) {
+export function Sprite({
+  spriteFile,
+  kind,
+  size = 48,
+  sizeVar,
+  widthVar,
+  heightVar,
+  alt,
+  className,
+}: SpriteProps) {
   if (!spriteFile) return null;
   const sized = {
     width: axis(widthVar ?? sizeVar, size),

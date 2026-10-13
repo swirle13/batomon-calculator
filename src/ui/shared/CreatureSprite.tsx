@@ -79,24 +79,26 @@ export function CreatureSprite({
       className={`${styles.wrap} ${painted ? styles.painted : chefFire ? styles.chefFire : ""} ${className ?? ""}`}
       // The mask needs the same URL the <img> resolves, so it is passed as a custom property
       // rather than duplicating the path-building that `Sprite` already owns.
-      style={{
-        width: box,
-        height: box,
-        /*
-         * Offset via `top` on the already-relative wrapper, against the sprite's OWN box.
-         *
-         * A percentage `top` would resolve against the containing block — the card's 84px well,
-         * not the 96px sprite — and a transform would promote a layer and resample artwork that
-         * `image-rendering: pixelated` exists to keep sharp. The calc lands on a whole pixel at
-         * any integer scale of the source, because the lean is always a whole number of half
-         * source pixels.
-         *
-         * The painted/Chef overlays are `inset: 0` on this element, so they travel with it and
-         * stay masked to the artwork.
-         */
-        top: lean ? `calc(${box} * ${-lean})` : undefined,
-        "--sprite-url": `url("${url}")`,
-      } as CSSProperties}
+      style={
+        {
+          width: box,
+          height: box,
+          /*
+           * Offset via `top` on the already-relative wrapper, against the sprite's OWN box.
+           *
+           * A percentage `top` would resolve against the containing block — the card's 84px well,
+           * not the 96px sprite — and a transform would promote a layer and resample artwork that
+           * `image-rendering: pixelated` exists to keep sharp. The calc lands on a whole pixel at
+           * any integer scale of the source, because the lean is always a whole number of half
+           * source pixels.
+           *
+           * The painted/Chef overlays are `inset: 0` on this element, so they travel with it and
+           * stay masked to the artwork.
+           */
+          top: lean ? `calc(${box} * ${-lean})` : undefined,
+          "--sprite-url": `url("${url}")`,
+        } as CSSProperties
+      }
     >
       <Sprite spriteFile={spriteFile} kind="monster" size={size} sizeVar={sizeVar} alt={alt} />
     </span>

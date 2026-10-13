@@ -5,7 +5,11 @@ import { trinkets } from "/Users/matthew.johnson/Programming/batomon_calculator/
 import { items } from "/Users/matthew.johnson/Programming/batomon_calculator/src/data/items";
 
 const member = (id: string) =>
-  id.split(/[^a-zA-Z0-9]+/).filter(Boolean).map((w) => w[0]!.toUpperCase() + w.slice(1)).join("")
+  id
+    .split(/[^a-zA-Z0-9]+/)
+    .filter(Boolean)
+    .map((w) => w[0]!.toUpperCase() + w.slice(1))
+    .join("")
     .replace(/^(\d)/, "_$1");
 
 function block(name: string, ids: string[], doc: string) {
@@ -36,10 +40,28 @@ const out = `/**
  * round exists to remove.
  */
 
-${block("Species", creatures.map((c) => c.id), "/** The 149 creature species. */")}
-${block("TrainerId", trainers.map((t) => t.id), "/** The trainers. */")}
-${block("TrinketId", trinkets.map((t) => t.id), "/** The trinkets. */")}
-${block("ItemId", items.map((i) => i.id), "/** The items. */")}`;
+${block(
+  "Species",
+  creatures.map((c) => c.id),
+  "/** The 149 creature species. */",
+)}
+${block(
+  "TrainerId",
+  trainers.map((t) => t.id),
+  "/** The trainers. */",
+)}
+${block(
+  "TrinketId",
+  trinkets.map((t) => t.id),
+  "/** The trinkets. */",
+)}
+${block(
+  "ItemId",
+  items.map((i) => i.id),
+  "/** The items. */",
+)}`;
 
 writeFileSync("src/data/ids.ts", out);
-console.log(`species=${new Set(creatures.map(c=>c.id)).size} trainers=${trainers.length} trinkets=${trinkets.length} items=${items.length}`);
+console.log(
+  `species=${new Set(creatures.map((c) => c.id)).size} trainers=${trainers.length} trinkets=${trinkets.length} items=${items.length}`,
+);

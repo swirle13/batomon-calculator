@@ -74,14 +74,13 @@ export function MergeAdvice({ merges, currentDps, isStale, onApply }: MergeAdvic
               <p className={styles.cost}>
                 Spends {merge.copies - 1} more {merge.copies - 1 === 1 ? "copy" : "copies"}
                 {merge.vacated.length > 0 && (
-                  <>
-                    , emptying {merge.vacated.map(formatGridSlot).join(" and ")}
-                  </>
+                  <>, emptying {merge.vacated.map(formatGridSlot).join(" and ")}</>
                 )}
                 {refield && (
                   <>
                     {" "}
-                    — <strong>{formatRate(merge.bestDps!)} DPS</strong> once you re-field what is left
+                    — <strong>{formatRate(merge.bestDps!)} DPS</strong> once you re-field what is
+                    left
                   </>
                 )}
                 .

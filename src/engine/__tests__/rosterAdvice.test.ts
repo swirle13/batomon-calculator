@@ -48,13 +48,20 @@ describe("the bench is inert", () => {
     });
     // Level 4 Thorntail is among the heaviest hitters in the corpus. Parking it must not move
     // the needle by a single point — `simulate()` never reads `config.bench`.
-    const withBench = { ...board, bench: [{ index: 0 as const, creatureId: Species.Thorntail, level: 4 as const }] };
+    const withBench = {
+      ...board,
+      bench: [{ index: 0 as const, creatureId: Species.Thorntail, level: 4 as const }],
+    };
 
-    expect(windowAverageDps(simulate(withBench, corpus))).toBe(windowAverageDps(simulate(board, corpus)));
+    expect(windowAverageDps(simulate(withBench, corpus))).toBe(
+      windowAverageDps(simulate(board, corpus)),
+    );
   });
 
   it("returns no advice at all when nothing is benched, so an unused bench costs nothing", () => {
-    const board = config({ placements: [{ slot: BACK_0, creatureId: Species.Bumblebolt, level: 1 }] });
+    const board = config({
+      placements: [{ slot: BACK_0, creatureId: Species.Bumblebolt, level: 1 }],
+    });
     expect(computeBenchAdvice(board, corpus, 0, 0)).toBeNull();
   });
 });
@@ -127,7 +134,9 @@ describe("ranked swaps", () => {
     const swap = advice!.swaps[0]!;
     const performed = config({
       placements: [
-        ...board.placements.filter((p) => p.slot.col !== swap.slot.col || p.slot.row !== swap.slot.row),
+        ...board.placements.filter(
+          (p) => p.slot.col !== swap.slot.col || p.slot.row !== swap.slot.row,
+        ),
         { slot: swap.slot, creatureId: Species.Thorntail, level: 4, modifiers: undefined },
       ],
     });
@@ -365,7 +374,10 @@ describe("a locked monster stays on the board", () => {
   function heldBoard(locked: boolean) {
     const [held, ...rest] = fullBoardOf(Species.Thorntail, 4);
     return config({
-      placements: [{ ...held!, creatureId: Species.Bumblebolt, level: 1, ...(locked ? { locked: true } : {}) }, ...rest],
+      placements: [
+        { ...held!, creatureId: Species.Bumblebolt, level: 1, ...(locked ? { locked: true } : {}) },
+        ...rest,
+      ],
       bench: [{ index: 0, creatureId: Species.Thorntail, level: 4 }],
     });
   }
@@ -415,7 +427,10 @@ describe("a locked monster stays on the board", () => {
     };
     const unlocked = advise(config(roster)).advice!.lineup!.evaluated;
     const locked = advise(
-      config({ ...roster, placements: roster.placements.map((p, i) => (i === 0 ? { ...p, locked: true } : p)) }),
+      config({
+        ...roster,
+        placements: roster.placements.map((p, i) => (i === 0 ? { ...p, locked: true } : p)),
+      }),
     ).advice!.lineup!.evaluated;
     expect(locked).toBeLessThan(unlocked);
   });

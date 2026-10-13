@@ -2,10 +2,21 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { corpus, resolveCreatureVariant } from "../../data/corpus";
 import { useTeamConfig } from "../../context/teamConfig";
 import { RARITY_COLORS, RARITIES_ASC, rarityLabel } from "../../data/statColors";
-import type { CreatureRecord, GridSlot, ItemRecord, Rarity, TeamConfiguration } from "../../data/types";
+import type {
+  CreatureRecord,
+  GridSlot,
+  ItemRecord,
+  Rarity,
+  TeamConfiguration,
+} from "../../data/types";
 import { ItemTargetKind } from "../../data/enums";
 import { slotKey, STABLE_SLOT_ORDER } from "../../engine/grid";
-import { itemRecipients, modifiersForUse, requiredChoiceCount, type ItemBoardMember } from "../../engine/itemEffects";
+import {
+  itemRecipients,
+  modifiersForUse,
+  requiredChoiceCount,
+  type ItemBoardMember,
+} from "../../engine/itemEffects";
 import { AbilityText } from "../shared/AbilityText";
 import {
   Button,
@@ -67,9 +78,7 @@ import styles from "./ItemPicker.module.css";
  * `choosingItem`/`chosenSlots`/`isChoosing` as three loose pieces of state, so "choosing, but no
  * item" is not representable.
  */
-type Step =
-  | { kind: "browse" }
-  | { kind: "choosing"; item: ItemRecord; slots: GridSlot[] };
+type Step = { kind: "browse" } | { kind: "choosing"; item: ItemRecord; slots: GridSlot[] };
 
 /**
  * A placed monster, fully resolved. Wider than the engine's `ItemBoardMember`, which carries only
@@ -110,7 +119,9 @@ export function ItemPicker() {
    * would have gone stale the first time a chip was removed somewhere else.
    */
   const appliedCount = config.placements.reduce(
-    (sum, p) => sum + (p.modifiers ?? []).filter((m) => m.label !== undefined && ITEM_NAMES.has(m.label)).length,
+    (sum, p) =>
+      sum +
+      (p.modifiers ?? []).filter((m) => m.label !== undefined && ITEM_NAMES.has(m.label)).length,
     0,
   );
 
@@ -245,12 +256,16 @@ export function ItemPicker() {
                 const already = prev.slots.some((s) => slotKey(s) === slotKey(slot));
                 return {
                   ...prev,
-                  slots: already ? prev.slots.filter((s) => slotKey(s) !== slotKey(slot)) : [...prev.slots, slot],
+                  slots: already
+                    ? prev.slots.filter((s) => slotKey(s) !== slotKey(slot))
+                    : [...prev.slots, slot],
                 };
               })
             }
             onCancel={() => setStep({ kind: "browse" })}
-            onConfirm={() => apply(step.item, itemRecipients(step.item.effect!, board, step.slots, config))}
+            onConfirm={() =>
+              apply(step.item, itemRecipients(step.item.effect!, board, step.slots, config))
+            }
           />
         ) : (
           <>
@@ -265,14 +280,20 @@ export function ItemPicker() {
                 columns={OVERLAY_COLUMNS}
               >
                 {section.items.map((item) => (
-                  <ItemCard key={item.id} item={item} board={board} config={config} onPick={() => pick(item)} />
+                  <ItemCard
+                    key={item.id}
+                    item={item}
+                    board={board}
+                    config={config}
+                    onPick={() => pick(item)}
+                  />
                 ))}
               </PickerSection>
             ))}
 
             <p className={styles.note}>
-              Picking an item <strong>uses</strong> it: its bonus lands on the monsters that received
-              it and stays there as a modifier, which you can see and remove under{" "}
+              Picking an item <strong>uses</strong> it: its bonus lands on the monsters that
+              received it and stays there as a modifier, which you can see and remove under{" "}
               <strong>Modifiers</strong>. Pick the same item twice to apply it twice. Items whose
               effect is a reroll, a shop change or a level-up cannot be picked — they are real, but
               this calculator simulates one battle and they change no stat in it.
@@ -308,15 +329,21 @@ function ItemCard({ item, board, config, onPick }: ItemCardProps) {
   const status = ((): { text: string; usable: boolean } => {
     if (!effect) return { text: "No stat this calculator simulates.", usable: false };
     if (choiceCount > 0) return { text: `You choose ${choiceCount}.`, usable: true };
-    if (recipients.length === 0) return { text: "No monster on your board matches.", usable: false };
-    return { text: `Applies to ${recipients.length} ${recipients.length === 1 ? "monster" : "monsters"}.`, usable: true };
+    if (recipients.length === 0)
+      return { text: "No monster on your board matches.", usable: false };
+    return {
+      text: `Applies to ${recipients.length} ${recipients.length === 1 ? "monster" : "monsters"}.`,
+      usable: true,
+    };
   })();
 
   return (
     <PickerCard
       onClick={onPick}
       disabled={!status.usable}
-      aria-label={status.usable ? `Use ${item.name} — ${status.text}` : `${item.name} — ${status.text}`}
+      aria-label={
+        status.usable ? `Use ${item.name} — ${status.text}` : `${item.name} — ${status.text}`
+      }
     >
       <SpriteTile
         name={item.name}
@@ -351,7 +378,14 @@ interface ChooseRecipientsProps {
  * looking at in-game rather than against a list — the same reason the Modifiers overlay renders all
  * six cells.
  */
-function ChooseRecipients({ item, chosen, board, onToggle, onCancel, onConfirm }: ChooseRecipientsProps) {
+function ChooseRecipients({
+  item,
+  chosen,
+  board,
+  onToggle,
+  onCancel,
+  onConfirm,
+}: ChooseRecipientsProps) {
   const required = item.effect ? requiredChoiceCount(item.effect) : 0;
   const isFull = chosen.length >= required;
   const bySlot = new Map(board.map((m) => [slotKey(m.slot), m]));

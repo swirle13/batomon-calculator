@@ -61,7 +61,10 @@ export function formatRate(value: number): string {
  * ticks like "18000000.00", and `yAxisWidthFor` sizes that gutter from the widest tick it will
  * draw. The exact figure stays reachable: a chip keeps it in its `title`, a chart in its tooltip.
  */
-export function formatCompactValue(value: number, formatBelow: (v: number) => string = String): string {
+export function formatCompactValue(
+  value: number,
+  formatBelow: (v: number) => string = String,
+): string {
   const abs = Math.abs(value);
   for (const [limit, suffix] of [
     [1e9, "B"],

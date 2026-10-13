@@ -11,7 +11,16 @@ import type {
 import { BENCH_INDEXES, RosterZone } from "../data/types";
 import { analyzePositionalCoverage, permutations, scoreBoard } from "./optimize";
 import { STABLE_SLOT_ORDER, slotKey, slotsEqual } from "./grid";
-import { BENCH_SIZE, benchOf, benchRef, creatureOf, gridRef, rosterRefKey, settleOnBench, settleOnGrid } from "./roster";
+import {
+  BENCH_SIZE,
+  benchOf,
+  benchRef,
+  creatureOf,
+  gridRef,
+  rosterRefKey,
+  settleOnBench,
+  settleOnGrid,
+} from "./roster";
 import { availableMerges } from "./merge";
 import { applyShinyOverlay, findCreature } from "../data/corpus";
 
@@ -208,7 +217,10 @@ export interface BenchAdvice {
  * produce. The level is also usually the substance of the comparison.
  */
 function creatureName(member: RosteredCreature, corpus: Corpus): string {
-  const record = applyShinyOverlay(findCreature(corpus, member.creatureId, member.level), member.shiny);
+  const record = applyShinyOverlay(
+    findCreature(corpus, member.creatureId, member.level),
+    member.shiny,
+  );
   return `${record?.name ?? member.creatureId} Lv.${member.level}${member.shiny ? " ✦" : ""}`;
 }
 
@@ -220,11 +232,23 @@ function creatureName(member: RosteredCreature, corpus: Corpus): string {
  */
 function rosterOf(config: TeamConfiguration, corpus: Corpus): RosterMember[] {
   const placed = [...config.placements]
-    .sort((a, b) => STABLE_SLOT_ORDER.findIndex((s) => slotsEqual(s, a.slot)) - STABLE_SLOT_ORDER.findIndex((s) => slotsEqual(s, b.slot)))
-    .map((p) => ({ origin: gridRef(p.slot), creature: creatureOf(p), name: creatureName(p, corpus) }));
+    .sort(
+      (a, b) =>
+        STABLE_SLOT_ORDER.findIndex((s) => slotsEqual(s, a.slot)) -
+        STABLE_SLOT_ORDER.findIndex((s) => slotsEqual(s, b.slot)),
+    )
+    .map((p) => ({
+      origin: gridRef(p.slot),
+      creature: creatureOf(p),
+      name: creatureName(p, corpus),
+    }));
   const benched = [...benchOf(config)]
     .sort((a, b) => a.index - b.index)
-    .map((b) => ({ origin: benchRef(b.index), creature: creatureOf(b), name: creatureName(b, corpus) }));
+    .map((b) => ({
+      origin: benchRef(b.index),
+      creature: creatureOf(b),
+      name: creatureName(b, corpus),
+    }));
   return [...placed, ...benched];
 }
 
@@ -236,8 +260,12 @@ function rosterOf(config: TeamConfiguration, corpus: Corpus): RosterMember[] {
  * propose moving an untouched team one column to the right.
  */
 function slotsForLineup(config: TeamConfiguration, count: number): GridSlot[] {
-  const occupied = STABLE_SLOT_ORDER.filter((s) => config.placements.some((p) => slotsEqual(p.slot, s)));
-  const empty = STABLE_SLOT_ORDER.filter((s) => !config.placements.some((p) => slotsEqual(p.slot, s)));
+  const occupied = STABLE_SLOT_ORDER.filter((s) =>
+    config.placements.some((p) => slotsEqual(p.slot, s)),
+  );
+  const empty = STABLE_SLOT_ORDER.filter(
+    (s) => !config.placements.some((p) => slotsEqual(p.slot, s)),
+  );
   return [...occupied, ...empty].slice(0, count);
 }
 
@@ -251,7 +279,11 @@ function slotsForLineup(config: TeamConfiguration, count: number): GridSlot[] {
  *
  * Everyone not assigned a slot goes to the bench, renumbered from zero.
  */
-function boardFor(config: TeamConfiguration, roster: RosterMember[], assignments: Assignment[]): TeamConfiguration {
+function boardFor(
+  config: TeamConfiguration,
+  roster: RosterMember[],
+  assignments: Assignment[],
+): TeamConfiguration {
   const occupantBySlot = new Map(config.placements.map((p) => [slotKey(p.slot), p]));
   const placements = assignments.map(({ member, slot }) =>
     settleOnGrid(member.creature, slot, occupantBySlot.get(slotKey(slot))),
@@ -310,7 +342,10 @@ function bestSwaps(
       if (standing.some((a) => slotsEqual(a.slot, slot) && isLocked(a.member))) continue;
       // Everyone else stays exactly where they are; whoever held `slot` steps off the board.
       const others = standing.filter((a) => !slotsEqual(a.slot, slot));
-      const { dps } = evaluate(boardFor(config, roster, [...others, { member: candidate, slot }]), corpus);
+      const { dps } = evaluate(
+        boardFor(config, roster, [...others, { member: candidate, slot }]),
+        corpus,
+      );
       if (best !== null && dps <= best.dps) continue;
       const displaced = config.placements.find((p) => slotsEqual(p.slot, slot));
       best = {

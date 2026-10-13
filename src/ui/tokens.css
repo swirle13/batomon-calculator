@@ -220,7 +220,9 @@
    * narrower than this: the team grid and the detail panel are both fixed-width, so there is no
    * width at which they can share less than this and still fit.
    */
-  --builder-row-width: calc(var(--team-column-width) + var(--column-gap) + var(--detail-panel-width));
+  --builder-row-width: calc(
+    var(--team-column-width) + var(--column-gap) + var(--detail-panel-width)
+  );
   /* In-game type chips are a fixed width regardless of label length, so a row of them lines up.
      Ours were padding-sized, so "All" was narrow and "Electric" wide and nothing aligned. */
   --type-chip-width: 7rem;

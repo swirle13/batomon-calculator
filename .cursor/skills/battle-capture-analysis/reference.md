@@ -173,7 +173,7 @@ templates are ignored at scan time.
 
 ## How the recogniser works, and the two things that broke it
 
-Worth knowing because both failure modes produce *plausible wrong numbers*, which is the one
+Worth knowing because both failure modes produce _plausible wrong numbers_, which is the one
 outcome the dataset must not contain.
 
 **The advance is fractional.** The recording is an upscale of the game's framebuffer, so a font
@@ -197,20 +197,20 @@ A badge is only emitted if every one of its characters matched.
 
 `frames.csv`, one row per frame:
 
-| Column | Meaning |
-|---|---|
-| `t` | Video timestamp, seconds, 4dp |
-| `frame` | Frame index from `t0` |
-| `<slot>_cd` | Cooldown bar fill, px. Full height = that mon's whole cooldown. Blank once the slot has been ruled unoccupied |
-| `<slot>_dmg` | Damage badge (crimson fill) |
-| `<slot>_poison` | Poison badge (purple fill) |
-| `<slot>_heal` | Heal badge (blue fill) |
-| `<slot>_mult` | Multicast badge (`X`-prefixed) |
-| `<slot>_burn` | Burn badge (orange fill) |
-| `<slot>_other` | Badge whose fill hue is not in the table above |
-| `<slot>_raw` | Left-to-right reading, `kind=value|kind=value`; `?` = read rejected |
-| `hp_<side>_px` | Health bar fill boundary, px from the bar's left edge |
-| `hp_<side>_width` | Bar width, px, so the fraction is `px / width` |
+| Column            | Meaning                                                                                                       |
+| ----------------- | ------------------------------------------------------------------------------------------------------------- |
+| `t`               | Video timestamp, seconds, 4dp                                                                                 |
+| `frame`           | Frame index from `t0`                                                                                         |
+| `<slot>_cd`       | Cooldown bar fill, px. Full height = that mon's whole cooldown. Blank once the slot has been ruled unoccupied |
+| `<slot>_dmg`      | Damage badge (crimson fill)                                                                                   |
+| `<slot>_poison`   | Poison badge (purple fill)                                                                                    |
+| `<slot>_heal`     | Heal badge (blue fill)                                                                                        |
+| `<slot>_mult`     | Multicast badge (`X`-prefixed)                                                                                |
+| `<slot>_burn`     | Burn badge (orange fill)                                                                                      |
+| `<slot>_other`    | Badge whose fill hue is not in the table above                                                                |
+| `<slot>_raw`      | Left-to-right reading, `kind=value                                                                            | kind=value`; `?` = read rejected |
+| `hp_<side>_px`    | Health bar fill boundary, px from the bar's left edge                                                         |
+| `hp_<side>_width` | Bar width, px, so the fraction is `px / width`                                                                |
 
 Badge kinds come from the fill hue: Damage ~345°, Burn ~30°, Poison ~259°, Heal ~195°. Heal and
 Multicast share a colour, so Multicast is identified by its `X` prefix. Unknown hues land in
@@ -219,15 +219,15 @@ than dropped.
 
 `events.csv`:
 
-| Column | Meaning |
-|---|---|
-| `t` | Video timestamp |
-| `kind` | `cast`, `charge`, `stat`, `hp` |
-| `slot` | Slot id, or `ally`/`enemy` for `hp` |
-| `field` | `cooldown`, or the badge kind |
-| `from`, `to`, `delta` | The transition |
-| `confidence` | `high` / `medium` — see SKILL.md's caveats |
-| `detail` | Human-readable description |
+| Column                | Meaning                                    |
+| --------------------- | ------------------------------------------ |
+| `t`                   | Video timestamp                            |
+| `kind`                | `cast`, `charge`, `stat`, `hp`             |
+| `slot`                | Slot id, or `ally`/`enemy` for `hp`        |
+| `field`               | `cooldown`, or the badge kind              |
+| `from`, `to`, `delta` | The transition                             |
+| `confidence`          | `high` / `medium` — see SKILL.md's caveats |
+| `detail`              | Human-readable description                 |
 
 ## Tuning event detection
 
@@ -237,20 +237,20 @@ in bursts and a window of "6 frames" would otherwise mean anything between 50 ms
 depending on where it landed. Decimating a real dataset by 35% leaves every cast time and
 interval unchanged; the frame-counted version invented a phantom cast under the same test.
 
-| Constant | Default | Effect |
-|---|---|---|
-| `FULL_FRAC` | 0.85 | How full a bar must get to count as ready |
-| `EMPTY_FRAC` | 0.25 | How empty it must then be to count as a cast |
-| `CAST_LOOKBACK_SECONDS` | 0.055 | How far back to look for the "was full" half |
-| `CAST_RAMP_SECONDS` | 0.22 | Window before that whose median level proves the bar really filled |
-| `CAST_RAMP_FRAC` | 0.5 | How far up the bar that median must be. This is what stops a *bright* spell effect crossing a bar from being reported as a second cast moments after the real one |
-| `CAST_SPENT_SECONDS` | 0.6 | How long after a cast the bar's median level must stay below `EMPTY_FRAC`. The mirror of the ramp test, and what rejects a *dark* effect covering a bar. Bounded below by the shortest real cooldown, so lower it at very high fast-forward |
-| `CHARGE_MIN_PX` | 4 | Smallest bar jump treated as a charge |
-| `CHARGE_RATE_MULTIPLE` | 3 | How many times the bar's own fill rate, over *this row's* interval, a jump must exceed. Rate-based rather than step-based so that the extra travel across a dropped frame is not read as a grant |
-| `CHARGE_PERSIST_SECONDS` | 0.027 | How long the new level must hold (VFX rejection) |
-| `CHARGE_HOLD_SECONDS` | 0.22 | Longer window over which the level must not fall back towards where it started. A flash can outlast `CHARGE_PERSIST_SECONDS`; a granted charge is never given back |
-| `DOT_PHASE_TOLERANCE` | 0.08 | How far off a tick a drop may sit, as a fraction of the period |
-| `DOT_MIN_COVERAGE` | 0.8 | Fraction of expected tick slots that must be filled. This is what stops the period search aliasing onto a submultiple and reporting double the speed |
+| Constant                 | Default | Effect                                                                                                                                                                                                                                      |
+| ------------------------ | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `FULL_FRAC`              | 0.85    | How full a bar must get to count as ready                                                                                                                                                                                                   |
+| `EMPTY_FRAC`             | 0.25    | How empty it must then be to count as a cast                                                                                                                                                                                                |
+| `CAST_LOOKBACK_SECONDS`  | 0.055   | How far back to look for the "was full" half                                                                                                                                                                                                |
+| `CAST_RAMP_SECONDS`      | 0.22    | Window before that whose median level proves the bar really filled                                                                                                                                                                          |
+| `CAST_RAMP_FRAC`         | 0.5     | How far up the bar that median must be. This is what stops a _bright_ spell effect crossing a bar from being reported as a second cast moments after the real one                                                                           |
+| `CAST_SPENT_SECONDS`     | 0.6     | How long after a cast the bar's median level must stay below `EMPTY_FRAC`. The mirror of the ramp test, and what rejects a _dark_ effect covering a bar. Bounded below by the shortest real cooldown, so lower it at very high fast-forward |
+| `CHARGE_MIN_PX`          | 4       | Smallest bar jump treated as a charge                                                                                                                                                                                                       |
+| `CHARGE_RATE_MULTIPLE`   | 3       | How many times the bar's own fill rate, over _this row's_ interval, a jump must exceed. Rate-based rather than step-based so that the extra travel across a dropped frame is not read as a grant                                            |
+| `CHARGE_PERSIST_SECONDS` | 0.027   | How long the new level must hold (VFX rejection)                                                                                                                                                                                            |
+| `CHARGE_HOLD_SECONDS`    | 0.22    | Longer window over which the level must not fall back towards where it started. A flash can outlast `CHARGE_PERSIST_SECONDS`; a granted charge is never given back                                                                          |
+| `DOT_PHASE_TOLERANCE`    | 0.08    | How far off a tick a drop may sit, as a fraction of the period                                                                                                                                                                              |
+| `DOT_MIN_COVERAGE`       | 0.8     | Fraction of expected tick slots that must be filled. This is what stops the period search aliasing onto a submultiple and reporting double the speed                                                                                        |
 
 Re-running after a change costs a second, since it reads `frames.csv` rather than the video.
 `--cluster-ms=N` controls how close two casts must be to be grouped as a tie-break candidate;
@@ -296,11 +296,12 @@ Worth getting right, because re-recording is cheaper than working around a bad c
    rule — a 31.6 MB cut of the same recording came through at 4.4 MB — so treat any
    messaging-app transfer as an unpredictable re-encode rather than something to tune around.
 
-   This is worth caring about because the layout scales but the *evidence* does not. At a
+   This is worth caring about because the layout scales but the _evidence_ does not. At a
    1920x1080 canvas a cooldown bar is 4 px wide and a row only counts as filled when two columns
    are bright; at 1280x720 it is 2 px and one bright column is enough. Spell effects crossing a
    bar are the single largest source of bad readings in this pipeline, and a half-scale capture
    doubles the sensitivity to them. Badge glyphs likewise drop from 16 px tall to 11 px.
+
 2. **Note the fast-forward level** and pass `--speed`. Off is ideal for timing-sensitive work, but
    ordering questions are fine at any speed.
 3. Highest frame rate available, and **do not worry about the rate being steady**. Both reference
@@ -311,6 +312,7 @@ Worth getting right, because re-recording is cheaper than working around a bad c
 
    Note that the declared frame rate is not the real one. Both files announce 111-115 fps in the
    container, which is their average including the dropped frames. Never derive timing from it.
+
 4. Start recording before the battle begins. The pre-battle board shows base stats, and the
    difference between those and the first in-battle frame is what reveals the battle-start
    phases.

@@ -1,4 +1,9 @@
-import type { CreatureRecord, PerCastOutput, StatModifier, StatusEffectType } from "../../../data/types";
+import type {
+  CreatureRecord,
+  PerCastOutput,
+  StatModifier,
+  StatusEffectType,
+} from "../../../data/types";
 import { STATUS_COLOR_KEY } from "../../../data/format";
 import { applyModifiers } from "../../../engine/modifiers";
 import { applySelfScaling } from "../../../engine/selfScaling";
@@ -39,7 +44,10 @@ export interface StatLine {
  * resolved abilities, trinkets. With only manual modifiers in play the two now agree, so the band
  * correctly hides.
  */
-export function perCastOutputOf(creature: CreatureRecord, modifiers?: StatModifier[]): PerCastOutput {
+export function perCastOutputOf(
+  creature: CreatureRecord,
+  modifiers?: StatModifier[],
+): PerCastOutput {
   const sum = (stat: ModifierStat) =>
     (modifiers ?? []).filter((m) => m.stat === stat).reduce((total, m) => total + m.amount, 0);
 

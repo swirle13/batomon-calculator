@@ -26,7 +26,12 @@ import { DamageChannel, StatusEffectType } from "../data/enums";
  * which keeps "unknown damage renders no line" working for the 62 species with `baseDamage: null`.
  */
 
-export const STATUS_TYPES: StatusEffectType[] = [StatusEffectType.Burn, StatusEffectType.Poison, StatusEffectType.Shock, StatusEffectType.Shield];
+export const STATUS_TYPES: StatusEffectType[] = [
+  StatusEffectType.Burn,
+  StatusEffectType.Poison,
+  StatusEffectType.Shock,
+  StatusEffectType.Shield,
+];
 
 /** The modifier totals that bear on a single cast, already summed across team and placement. */
 export interface ModifierAmounts {

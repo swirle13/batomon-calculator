@@ -70,15 +70,17 @@ describe("layout width tokens", () => {
   });
 
   it("budgets the builder row as team column + gap + detail panel", () => {
-    expect(tokens).toMatch(
-      /--builder-row-width:\s*calc\(var\(--team-column-width\) \+ var\(--column-gap\) \+ var\(--detail-panel-width\)\)/,
+    expect(tokens.replace(/\s+/g, " ")).toMatch(
+      /--builder-row-width: calc\( ?var\(--team-column-width\) \+ var\(--column-gap\) \+ var\(--detail-panel-width\) ?\)/,
     );
   });
 
   it("the page frame is never narrower than the builder row", () => {
     // #root carried a flat 1126px that predated the grid growing, leaving the row fitting with
     // single-digit pixels to spare.
-    expect(read("index.css")).toMatch(/width:\s*max\(1126px,\s*calc\([^)]*var\(--builder-row-width\)/);
+    expect(read("index.css")).toMatch(
+      /width:\s*max\(1126px,\s*calc\([^)]*var\(--builder-row-width\)/,
+    );
   });
 
   it("main is never narrower than the builder row, padding included", () => {
@@ -138,7 +140,9 @@ describe("the overlays keep the board's three-column shape", () => {
 
   it("Modifiers declares no width of its own", () => {
     // It is one track of the panel pair now. A width here would fight the grid that places it.
-    expect(read("ui/Modifiers/ModifierEditor.module.css")).not.toMatch(/max-width:\s*var\(--team-column-width\)/);
+    expect(read("ui/Modifiers/ModifierEditor.module.css")).not.toMatch(
+      /max-width:\s*var\(--team-column-width\)/,
+    );
   });
 });
 
@@ -186,7 +190,11 @@ describe("stat chips hold one width and one row height", () => {
     // `ch` is the advance of a `0` in the READING element's font. Matching only the font size left
     // this cap measured in regular digits against chips painted in bold ones, which is narrower —
     // so the row wrapped after three chips instead of four.
-    for (const declaration of [/font-size: var\(--font-2xs\)/, /font-weight: 700/, /font-variant-numeric: tabular-nums/]) {
+    for (const declaration of [
+      /font-size: var\(--font-2xs\)/,
+      /font-weight: 700/,
+      /font-variant-numeric: tabular-nums/,
+    ]) {
       expect(badges).toMatch(declaration);
       expect(badge).toMatch(declaration);
     }
@@ -239,7 +247,8 @@ describe("stat chips hold one width and one row height", () => {
  */
 describe("the mobile breakpoint shrinks the pane, not the sprite", () => {
   const grid = read("ui/GridPicker/GridPicker.module.css");
-  const mobileRoot = /@media \(max-width: 640px\) \{ :root \{([^}]*)\}/.exec(tokens.replace(/\s+/g, " "))?.[1] ?? "";
+  const mobileRoot =
+    /@media \(max-width: 640px\) \{ :root \{([^}]*)\}/.exec(tokens.replace(/\s+/g, " "))?.[1] ?? "";
 
   it("caps the board's sprite at the desktop size rather than setting it below", () => {
     // `min(96px, …)` is the whole claim: the art is the desktop's 2x at any viewport that can hold
@@ -259,7 +268,9 @@ describe("the mobile breakpoint shrinks the pane, not the sprite", () => {
   });
 
   it("makes the slot size a WIDTH there: the sprite plus the card's padding", () => {
-    expect(mobileRoot).toMatch(/--grid-slot-size: calc\(var\(--sprite-grid\) \+ 2 \* var\(--grid-card-padding\)\)/);
+    expect(mobileRoot).toMatch(
+      /--grid-slot-size: calc\(var\(--sprite-grid\) \+ 2 \* var\(--grid-card-padding\)\)/,
+    );
   });
 
   it("reserves both header lines, tightly, so every pane's sprite is at one height", () => {
@@ -270,7 +281,9 @@ describe("the mobile breakpoint shrinks the pane, not the sprite", () => {
     // higher than its neighbour's.
     const mobileGrid = grid.replace(/\s+/g, " ");
     expect(mobileGrid).toMatch(/\.header \{[^}]*min-height: var\(--grid-card-header\)/);
-    expect(mobileGrid).toMatch(/\.header \.name, \.header \.level \{ font-size: var\(--font-2xs\); line-height: 1\.15/);
+    expect(mobileGrid).toMatch(
+      /\.header \.name, \.header \.level \{ font-size: var\(--font-2xs\); line-height: 1\.15/,
+    );
     expect(mobileRoot).toMatch(/--grid-card-header: calc\(2 \* 1\.15 \* var\(--font-2xs\)\)/);
   });
 
@@ -284,7 +297,9 @@ describe("the mobile breakpoint shrinks the pane, not the sprite", () => {
   it("lets the board fill the screen instead of holding a column's width", () => {
     // `--team-column-width` is three FIXED slots wide and lands short of a phone, so the board sat
     // in a narrow column with the page's second column reserved, empty, beside it.
-    expect(grid.replace(/\s+/g, " ")).toMatch(/@media \(max-width: 640px\) \{[^}]*\.grid \{ width: 100%/);
+    expect(grid.replace(/\s+/g, " ")).toMatch(
+      /@media \(max-width: 640px\) \{[^}]*\.grid \{ width: 100%/,
+    );
   });
 
   it("adds the pane's chrome to its height, since the square is gone", () => {

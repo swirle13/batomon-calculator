@@ -107,7 +107,7 @@ actually have confirmed stats before suspecting a regression.
 ## Validation scenario 8 — search modal autofocus + clears between slots (FR-018)
 
 1. Open the creature-assignment search for slot 1, type a query, pick a creature.
-2. Open the creature-assignment search for a *different* slot (slot 2).
+2. Open the creature-assignment search for a _different_ slot (slot 2).
 3. **Expected**: the search field is empty (not slot 1's leftover query) and has keyboard focus
    immediately, with no extra click required before typing.
 
@@ -150,7 +150,7 @@ check, not a manual claim:
 
 - **Scenario 8 — PASS (automated).** `src/ui/GridPicker/__tests__/CreatureSearchModal.test.tsx`
   (new — this project's first React component test): confirms the search input starts empty and
-  receives focus on open, and that typing a query then reopening the modal for a *different*
+  receives focus on open, and that typing a query then reopening the modal for a _different_
   slot clears the query and re-focuses, via React Testing Library + jsdom.
 - **Scenario 9 — PASS (automated).** `src/context/__tests__/TeamConfigContext.test.tsx` (new):
   confirms `movePlacement` moves into an empty slot and swaps with an occupied one, in both
@@ -161,7 +161,7 @@ check, not a manual claim:
 - **Scenario 10 — PASS for the mechanism (automated), honest gap for live demonstration.**
   `src/engine/__tests__/evolution.test.ts` confirms `resolveLevelUp` correctly resolves Panbud
   at level 3 to Bambudo via a synthetic fixture, returns a species to itself when it has no
-  evolution, and never falls back to a different level's record. **However**: the *real* corpus
+  evolution, and never falls back to a different level's record. **However**: the _real_ corpus
   still only has level-1 records for every species (tasks.md T075's tracked gap) — Bambudo has
   no real level-3 stat data yet, so the live level selector for Panbud currently only ever offers
   "Lv. 1" and the evolution swap cannot be visually demonstrated end-to-end in the deployed app
@@ -170,8 +170,8 @@ check, not a manual claim:
   behaves correctly at level 1 — the only level with real data today).
 - **Scenario 11 — PASS (code-level + logic trace).** `PlacedCreatureDetails` falls back to
   `config.placements[0]` whenever `highlightedSlot` is `null` or stale, and nothing in
-  `GridPicker`'s `onHighlight` wiring ever calls back with `null` on hover/focus-*leave* (only
-  on hover/focus of a *different* card) — so the panel cannot go blank once at least one
+  `GridPicker`'s `onHighlight` wiring ever calls back with `null` on hover/focus-_leave_ (only
+  on hover/focus of a _different_ card) — so the panel cannot go blank once at least one
   creature is placed. Not covered by an automated test this round (tracked as a gap, same
   honesty standard as the rest of this section).
 - **Scenario 12 — PASS (structural guarantee, not just a convention).** `TypeTag` and the card/
@@ -257,7 +257,7 @@ Frillet→Dewlotl, all at level 3).
 5. **Also expected**: the timeline's event ordering at a shared timestamp may still differ between
    the two layouts — only the computed values must be invariant (research.md H8).
 6. **Repeat the whole scenario with the Shock-applier set to a level where its Multicast is > 1**
-   (e.g. Bumblebolt at level 4, Multicast 2). This is a *second, separate* manifestation of the same
+   (e.g. Bumblebolt at level 4, Multicast 2). This is a _second, separate_ manifestation of the same
    root cause and is not fixed by the per-timestamp snapshot alone — before the fix it reproduced
    Shock 20.55/s at `front-1` versus 21.60/s at `back-1`. Both parts of the fix must be in place
    (research.md H8).
@@ -344,9 +344,9 @@ React-Server-Components JSON payload (research.md G1/G2) — not fabricated, not
 
 **Regression caught and fixed during this round**: populating levels 2-4 initially broke the
 creature-search modal, the GridPicker dropdown, and the Corpus Browser — all three previously
-assumed one record per creature *name*, and now showed up to 4 duplicate tiles/rows per species
+assumed one record per creature _name_, and now showed up to 4 duplicate tiles/rows per species
 (one per level). Fixed by introducing `distinctCreatures` (one record per species, used for all
-UI *listings*) while keeping full-corpus, level-aware lookups (`getCreatureByIdAndLevel`,
+UI _listings_) while keeping full-corpus, level-aware lookups (`getCreatureByIdAndLevel`,
 `resolveLevelUp`) unchanged. Caught by a pre-existing `CreatureSearchModal` component test
 (`getByText("Bumblebolt")` started matching 4 elements instead of 1) — a direct demonstration
 of why the round-3 investment in component tests was worth it.
@@ -387,9 +387,9 @@ of why the round-3 investment in component tests was worth it.
    **and** a clearly positive damage/s² growth figure — because Poison stacks never decay
    (research.md B2/I13).
 3. **Expected**: a real fire build (Basilord/Blixie/Pyronade) **also** reports clearly positive
-   Burn growth — do *not* expect zero. Each burn instance sheds 1 stack per tick regardless of its
+   Burn growth — do _not_ expect zero. Each burn instance sheds 1 stack per tick regardless of its
    size, so a big application (Basilord's 170 lives ~85s) outlasts the battle and new ones
-   accumulate faster than old ones drain. Only a *tiny* burn stack (e.g. a lone Brimtoad applying
+   accumulate faster than old ones drain. Only a _tiny_ burn stack (e.g. a lone Brimtoad applying
    Burn 1) settles quickly — that case is tested separately so the distinction stays recorded.
 4. **Expected**: each Poison applier now shows a non-zero **Facilitated DPS**, rather than 0.00 for
    both its own and its facilitated contribution.
@@ -437,9 +437,9 @@ of why the round-3 investment in component tests was worth it.
 - **Scenario 25 — PARTIAL (structural test + browser check required).** Honest limitation: **jsdom
   can reproduce neither half** of the click-vs-drag behaviour. Its synthetic pointer events don't
   drive `@dnd-kit`'s activation, and its `fireEvent.click` isn't subject to the capture-phase
-  suppression `@dnd-kit` installs — so a behavioural test is green in *both* directions and proves
+  suppression `@dnd-kit` installs — so a behavioural test is green in _both_ directions and proves
   nothing. (Verified: a bare `fireEvent.click` passed against the broken code.) What is pinned
-  instead is the thing whose absence *was* the bug: `POINTER_ACTIVATION_CONSTRAINT === { distance: 8 }`.
+  instead is the thing whose absence _was_ the bug: `POINTER_ACTIVATION_CONSTRAINT === { distance: 8 }`.
   End-to-end behaviour needs a real browser.
 - **Scenario 26 — PASS (code-traced).** `BatomonCard` gains `fixedHeight`, reserving every variable
   band (identity, output, ability, extra, meta) against the corpus's measured worst case — longest
@@ -457,7 +457,7 @@ of why the round-3 investment in component tests was worth it.
   Poison damage (16.00/s average), 40/s final rate, 2.00 damage/s² growth, 2.00 stacks/s applied —
   and 16.00 facilitated DPS attributed to Drumire while its own DPS stays absent. Poison's growth
   > 1 while Burn's < 0.1 over the same window, which is the mechanic (Poison stacks never decay).
-  No `NaN` at a 1-second window.
+  > No `NaN` at a 1-second window.
 - **Scenario 29 — PASS (automated).** Adding `+10` twice yields one `+20` chip; adding `-20` then
   removes it entirely rather than leaving `+0`. Rows now lay out in an auto-fit grid.
 - **Scenario 30 — PASS (automated, except the chart).** Positively asserted: the picker heading is
@@ -482,7 +482,7 @@ effective-stats band. No surface still defines its own card, chip, modal, grid, 
 
 - **Scenario 18 — PASS (automated, both shapes).** Three new `simulate.test.ts` cases, all red
   before the fix: a same-timestamp collision on synthetic creatures, the **Multicast** variant (the
-  second manifestation, which the per-timestamp snapshot alone does *not* fix), and the user's real
+  second manifestation, which the per-timestamp snapshot alone does _not_ fix), and the user's real
   Panbud + Bumblebolt formation, which reproduced 2.20 → 2.40 before and is identical after. The
   tests assert the **invariant**, not 4.10 or 4.30 — research.md H8 is explicit that neither is
   confirmed to be the game's real same-frame answer.
@@ -497,13 +497,13 @@ effective-stats band. No surface still defines its own card, chip, modal, grid, 
     one) — the reference card shows it, but `abilityText` only ever held the description, so this
     scenario could not have passed by layout change alone.
 - **Scenario 20 — PASS (automated + visual).** `presentation.test.tsx` asserts neither "Sources &
-  patch" nor "Recorded source conflicts" renders, *and* that every record still carries citations.
+  patch" nor "Recorded source conflicts" renders, _and_ that every record still carries citations.
   Column count verified visually at 1280px (3 columns) and 2560px (4, capped by `max-width`).
   SC-004's handover is live: `provenance.test.ts` passes with 8 assertions across all four record
   types.
 - **Scenario 21 — PASS (automated).** Asserts the picker is not a 93-option `<select>` and that a
   known trinket's full effect text renders, plus that the "affects DPS" distinction survives.
-- **Scenario 22 — PASS (automated, mouse *and* keyboard).** `GridPicker.test.tsx` asserts the clear
+- **Scenario 22 — PASS (automated, mouse _and_ keyboard).** `GridPicker.test.tsx` asserts the clear
   control empties the slot without opening the picker on both paths. The keyboard case was a real
   trap: the card's own `onKeyDown` hijacks Enter/Space, so a click-only test would have passed while
   keyboard users got the picker opened and the slot left populated. Sprite rendering and
@@ -515,20 +515,20 @@ effective-stats band. No surface still defines its own card, chip, modal, grid, 
 - **Scenario 24 — PASS (automated).** `ModifierEditor.test.tsx` asserts all four sub-requests
   separately: collapsed by default, no team-wide option, short labels with the decimal note as
   supporting text, and one add-control per placed creature. The companion engine assertion confirms
-  a DPS-affecting trinket still changes DPS, i.e. removing the team-wide *UI* did not remove the
+  a DPS-affecting trinket still changes DPS, i.e. removing the team-wide _UI_ did not remove the
   engine path trinkets ride on.
 
 **Corpus state, stated precisely rather than rounded up** — and correcting the previous round's
 claim rather than restating it:
 
-| Measure | Value |
-|---|---|
-| Creature records (149 species × levels 1-4) | 596 |
-| Records agreeing value-for-value with the authoritative per-level series | **596 / 596** |
-| Cooldowns published | 596 / 596 |
-| Species with a published damage value | **89 / 149** (60 have no damage line in any source) |
-| Creature sprites / trinket sprites | 149 / 149 and 93 / 93 |
-| Records carrying a recorded `FieldConflict` | 9 |
+| Measure                                                                  | Value                                               |
+| ------------------------------------------------------------------------ | --------------------------------------------------- |
+| Creature records (149 species × levels 1-4)                              | 596                                                 |
+| Records agreeing value-for-value with the authoritative per-level series | **596 / 596**                                       |
+| Cooldowns published                                                      | 596 / 596                                           |
+| Species with a published damage value                                    | **89 / 149** (60 have no damage line in any source) |
+| Creature sprites / trinket sprites                                       | 149 / 149 and 93 / 93                               |
+| Records carrying a recorded `FieldConflict`                              | 9                                                   |
 
 Two corrections this round, neither user-reported:
 
@@ -562,7 +562,7 @@ Two corrections this round, neither user-reported:
 
 1. Hover creatures with short and long names/ability text in turn.
 2. **Expected**: the selected-creature column's **width** does not change.
-3. **Note**: if the chart still redraws, that is a *separate* cause — `#root` is a fixed width and
+3. **Note**: if the chart still redraws, that is a _separate_ cause — `#root` is a fixed width and
    the chart is not a flex item in that row, so the column's width never drove it (research.md J3).
 
 ## Validation scenario 35 — display-layer sorting (FR-067)
@@ -590,7 +590,7 @@ Two corrections this round, neither user-reported:
 3. Place Formiqueen next to a Common creature.
 4. **Expected**: the count of actionable creatures rises to 1.
 5. Add **Onsetra** and **Expected**: it is listed as having a positional ability the engine does
-   *not* read — the distinction between "has a tag" and "the engine acts on it".
+   _not_ read — the distinction between "has a tag" and "the engine acts on it".
 6. Select **Link Cable** and **Expected**: a warning that a slot-based trinket effect may invalidate
    the result entirely.
 
@@ -607,7 +607,7 @@ Two corrections this round, neither user-reported:
 114 tests pass, up from 104. Per scenario:
 
 - **32 — PASS (automated).** `--sprite-picker` is now 64px with a working reader (it was 48px and
-  read by *nothing*, so round 8's first draft of "use the shared token" would have been inert).
+  read by _nothing_, so round 8's first draft of "use the shared token" would have been inert).
   `.typeSplitContent` now fills the host and carries the layout, so the art area expands and the
   name band reaches the bottom edge.
 - **33 — PASS (code-traced).** `.cooldown` has a fixed intrinsic size and `align-self: start`.
@@ -621,7 +621,7 @@ Two corrections this round, neither user-reported:
 - **36 — PASS (automated).** Three engine tests: the rate rises for a Poison team, stays flat for a
   direct-damage team, and integrating it reproduces the cumulative total.
 - **37 — PASS (automated).** Five optimiser tests, including that Onsetra is reported as having a
-  positional ability the engine does *not* read, and that Link Cable is flagged as able to
+  positional ability the engine does _not_ read, and that Link Cable is flagged as able to
   invalidate the result.
 - **38 — PASS (code-traced + automated).** Browser renamed and prose removed with the version
   rehomed to the footer (asserted); heading, dropdown, Modifiers position, and table borders done.
@@ -645,7 +645,7 @@ unit-tested only. jsdom has no layout, so sizes and borders need a real-browser 
 
 1. With that team placed, select Miasmaw.
 2. **Expected**: "Effective this battle" reads **Poison 336** — its own 10 plus allies' 6 + 20 + 300.
-3. **Expected**: the simulation *uses* that value, not just displays it — the timeline shows Miasmaw
+3. **Expected**: the simulation _uses_ that value, not just displays it — the timeline shows Miasmaw
    applying 336, not 10.
 
 ## Validation scenario 42 — the charge mechanic (FR-073 / WI-009)
@@ -722,7 +722,7 @@ implementation in `src/engine/` and `src/data/`:
 - **Scenario 2 — PASS.** Over a 10s window: Venopuff's cumulative Poison column is
   `[0, 0, 4, 8, 12, 12, 16, 20, 24, 28, 32, 36]` — constant +4 steps, never dropping between
   ticks. Scorchimp's cumulative Burn column over the same window is `[0, 0, 5, 9, 12, 14, 15,
-  15]` — visibly decaying increments (+5, +4, +3, +2, +1, 0) as its Burn layers burn down.
+15]` — visibly decaying increments (+5, +4, +3, +2, +1, 0) as its Burn layers burn down.
 - **Scenario 3 — PASS.** Scorchimp (Burn) + Formiqueen (large, infrequent direct hit) over 20s:
   the total-damage series steps sharply at each Formiqueen cast (e.g. `60 → 80` then a jump to
   `140` at the next cast) while the Burn contribution between those casts climbs in the same
@@ -749,7 +749,7 @@ npm run build
 
 1. Place **Puffloon** (its `baseDamage` is `null`) and open **Modifiers**.
 2. Choose stat **damageFlatAdd** on Puffloon's cell.
-3. **Expect**: a warning appears *before* you press Add — "Puffloon has no published damage, so a
+3. **Expect**: a warning appears _before_ you press Add — "Puffloon has no published damage, so a
    damage modifier has nothing to scale… will be recorded but will not change any output."
 4. Press **Add** anyway. **Expect**: the chip is added (the warning informs, it does not block) and
    the DPS figure does not move.
@@ -791,7 +791,7 @@ npm run build
    and its sprite carries a slowly drifting rainbow overlay.
 3. Filter the Corpus Browser by **Fire**. **Expect**: Bumblebolt appears.
 4. **Expect**: **Omnichrome** also appears under every type filter — it is natively `All`, and
-   before this round it matched *no* type filter at all.
+   before this round it matched _no_ type filter at all.
 
 ## Validation scenarios 45-48 — round 6 (2026-10-07)
 
@@ -873,13 +873,13 @@ Expected: every rarity label reads **"Super Rare"** with a space, at all six sur
 Validation pass 1 found the first draft's list missed the three dropdowns, which are the places a user
 most often sees a rarity name:
 
-| Surface | Site |
-|---|---|
-| Card header | `BatomonCard.tsx` |
-| **Rarity filter dropdowns (×3)** | `CreatureSearchModal.tsx:137`, `CorpusBrowser.tsx:70`, `TrinketPicker.tsx:202` |
-| Picker section headings | `CreatureSearchModal.tsx:97`, `TrinketPicker.tsx:159`, `AffectedCreaturePicker.tsx:119` |
-| Rarity-shape chips | `AffectedCreaturePicker.tsx:163` |
-| **`title` attribute** | `AffectedCreaturePicker.tsx:169` (`Typically ${want} ${r}`) |
+| Surface                          | Site                                                                                    |
+| -------------------------------- | --------------------------------------------------------------------------------------- |
+| Card header                      | `BatomonCard.tsx`                                                                       |
+| **Rarity filter dropdowns (×3)** | `CreatureSearchModal.tsx:137`, `CorpusBrowser.tsx:70`, `TrinketPicker.tsx:202`          |
+| Picker section headings          | `CreatureSearchModal.tsx:97`, `TrinketPicker.tsx:159`, `AffectedCreaturePicker.tsx:119` |
+| Rarity-shape chips               | `AffectedCreaturePicker.tsx:163`                                                        |
+| **`title` attribute**            | `AffectedCreaturePicker.tsx:169` (`Typically ${want} ${r}`)                             |
 
 Automated: a test scans rendered output across the card, all three pickers, **the Corpus Browser** and
 the overlay — **including `title`/`aria-label` attributes**, since a text-node-only scan misses the
@@ -903,7 +903,7 @@ npm run dev
 1. Place **Ninflora** on the board and select it.
 2. Expected: a **"+ Win a round"** button appears, previewing **+10% Cooldown Speed** at level 1.
 3. With a Grass ally also placed, the button reads **"to 2 monsters"**; pressing it banks the
-   Cooldown Speed bonus on Ninflora *and* the Grass ally, and not on a non-Grass ally.
+   Cooldown Speed bonus on Ninflora _and_ the Grass ally, and not on a non-Grass ally.
 
 The acceptance condition is that `src/data/creatures.ts` contains **no `abilityTags` entry for
 Ninflora** — `rg -n -A3 '"ninflora"' src/data/creatures.ts` still shows `abilityTags: []`. If the
@@ -916,6 +916,7 @@ npm test -- deriveTags
 ```
 
 Expected:
+
 - a per-species snapshot of the derived tag set, so any change to it shows up in review as a diff;
 - round 6's two guards still pass — no creature carries both a `manualTrigger` and an
   engine-resolved tag, and no `manualTrigger` names an `enginePropagated` trigger;
@@ -957,11 +958,11 @@ npm run dev    # Corpus Browser
 
 Compare against the three reference cards in the ask:
 
-| Creature | Expected |
-| --- | --- |
+| Creature   | Expected                                                                       |
+| ---------- | ------------------------------------------------------------------------------ |
 | Shikitsune | "+15% Cooldown Speed" rendered as one light-blue run, sign and number included |
-| Pebbler | "+30 Shield" in the Shield colour |
-| Craghorn | "+20 Damage" pink **and** "Shield" tan in the same sentence |
+| Pebbler    | "+30 Shield" in the Shield colour                                              |
+| Craghorn   | "+20 Damage" pink **and** "Shield" tan in the same sentence                    |
 
 Expected: a creature whose text contains no keyword renders exactly as before (no empty spans, no
 changed spacing). Bumblebolt's trailing flavour quote is not mangled.
@@ -1046,7 +1047,9 @@ The property the whole representation change exists for. Add this to any file an
 
 ```ts
 import { Rarity } from "./src/data/enums";
-function takesRarity(r: Rarity) { return r; }
+function takesRarity(r: Rarity) {
+  return r;
+}
 takesRarity("SuperRare"); // expected: error TS2345
 ```
 

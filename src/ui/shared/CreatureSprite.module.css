@@ -38,7 +38,7 @@
    */
   opacity: 0.6;
 
-/*
+  /*
  * REPEATING gradient, so a given pixel sweeps the whole spectrum with no discontinuity. A plain
  * `linear-gradient` is a single ramp stretched across the box, and scrolling it has to snap back
  * at the end of the cycle — a visible hard flash, because the first and last colours differ.
@@ -97,8 +97,12 @@
  * instead of scrolling colour through it.
  */
 @keyframes paintedDrift {
-  from { background-position: 0 0; }
-  to { background-position: 158.39px 158.39px; }
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 158.39px 158.39px;
+  }
 }
 
 /*
@@ -162,8 +166,12 @@
  * a strobe at a 96px one.
  */
 @keyframes chefFireDrift {
-  from { background-position: 0 0; }
-  to { background-position: 0 -28px; }
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 0 -28px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

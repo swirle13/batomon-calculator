@@ -10,7 +10,11 @@ import { RosterZone } from "../../data/types";
 import { gridRef, rosterMemberAt } from "../../engine/roster";
 import { formatCooldown } from "../../data/format";
 import { BatomonCard, CooldownBlock, StatLines } from "../shared/BatomonCard/BatomonCard";
-import { buildStatLines, cooldownWithModifiers, perCastOutputOf } from "../shared/BatomonCard/perCastOutput";
+import {
+  buildStatLines,
+  cooldownWithModifiers,
+  perCastOutputOf,
+} from "../shared/BatomonCard/perCastOutput";
 import { placementKey } from "../../engine/grid";
 
 interface PlacedCreatureDetailsProps {
@@ -74,7 +78,8 @@ export function PlacedCreatureDetails({ result, highlighted }: PlacedCreatureDet
   }
 
   /** Where the monster we actually resolved is standing — not where the hover pointed. */
-  const at: RosterRef = rosterMemberAt(config, where) === undefined ? gridRef(fallback!.slot) : where;
+  const at: RosterRef =
+    rosterMemberAt(config, where) === undefined ? gridRef(fallback!.slot) : where;
   const placement = member;
 
   const creature = resolveCreatureVariant(placement.creatureId, placement.level, placement.shiny);
@@ -108,7 +113,10 @@ export function PlacedCreatureDetails({ result, highlighted }: PlacedCreatureDet
    * place and nothing in the other two. Chef's Burn is a property of the run, not something this
    * battle does, which is the same argument `perCastOutput.ts` makes for manual modifiers.
    */
-  const displayModifiers = [...(placement.modifiers ?? []), ...trainerModifiersFor(creature, config)];
+  const displayModifiers = [
+    ...(placement.modifiers ?? []),
+    ...trainerModifiersFor(creature, config),
+  ];
 
   /**
    * Only show "Effective this battle" when it actually differs from the card above it.

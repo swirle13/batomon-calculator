@@ -9,15 +9,15 @@ Each pass is a fresh read-only `generalPurpose` subagent; it reports, the orches
 
 ### Verdict table
 
-| Item | Verdict | Evidence |
-|---|---|---|
-| WI-001 `abilityTrigger` → enum | **COVERED** | T275 moves `TRIGGER_DEFINITIONS` into an `ABILITY_TRIGGER` registry; T277 replaces the hand-written ten-value array in `triggers.test.ts:57-60`. The `undefined` decision the item "owns" is decided in writing (tasks.md:2564-2566, data-model.md:1257-1259). |
-| WI-002 derive tags / fix Ninflora | **PARTIAL** | T285-T291 fix Ninflora, but T286 scopes derivation to the `manualTrigger` family alone and T291 states 424/596 records and 16/17 families remain hand-tagged. The ask was to stop hand-managing tags across 140+ mons. |
-| WI-003 `types` → enum | **PARTIAL** | T273/T276 cover `TYPE_COLORS` and picker filter lists, but the ledger's third named consumer — `creatureHasType`'s `"All"` handling — is in no task; `src/data/typing.ts:29` still hardcodes `includes("All")`. T277's anti-drift grep covers only `RARITIES`, so `CorpusBrowser.tsx:12-15`'s hand-listed 15 members has no guard. |
-| WI-004 `damageType` proposal | **PARTIAL** | The reasoned proposal genuinely exists (research.md R3; T284 surfaces the deferral). But the ledger's explicit requirement that "the relationship between `DamageType` and `StatusEffectType` must be addressed by the proposal" is unaddressed — `StatusEffectType` appears nowhere in R1-R7, the plan amendment, data-model.md's vocabulary sections, T271-T296, or the contract amendment. |
-| WI-005 `rarity` → enum | **COVERED** | T272 declares `RARITY` with label/order/color; T276 derives the three parallel structures from `order`; T277 asserts no local `RARITIES = [...]` survives. |
-| WI-006 "Super Rare" everywhere | **PARTIAL** | T278 misses **all three rarity filter `<option>` lists** — `CreatureSearchModal.tsx:137-139`, `CorpusBrowser.tsx:70-72`, `TrinketPicker.tsx:202-204`. It also names "`PickerSection` headings in `CorpusBrowser`", which that file does not have, so CorpusBrowser's only rarity surface is missed; T279 omits CorpusBrowser from its render-scan. |
-| WI-007 inline keyword colouring | **PARTIAL** | T292/T294/T295 do apply to all creatures, but T293 closes the vocabulary at eleven terms on a premise the corpus contradicts, leaving **173 of 543** texts with no coloured keyword — against the round's own stated bar (plan.md:634-635). No task records that residue, unlike T291 for WI-002. |
+| Item                              | Verdict     | Evidence                                                                                                                                                                                                                                                                                                                                                                                      |
+| --------------------------------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| WI-001 `abilityTrigger` → enum    | **COVERED** | T275 moves `TRIGGER_DEFINITIONS` into an `ABILITY_TRIGGER` registry; T277 replaces the hand-written ten-value array in `triggers.test.ts:57-60`. The `undefined` decision the item "owns" is decided in writing (tasks.md:2564-2566, data-model.md:1257-1259).                                                                                                                                |
+| WI-002 derive tags / fix Ninflora | **PARTIAL** | T285-T291 fix Ninflora, but T286 scopes derivation to the `manualTrigger` family alone and T291 states 424/596 records and 16/17 families remain hand-tagged. The ask was to stop hand-managing tags across 140+ mons.                                                                                                                                                                        |
+| WI-003 `types` → enum             | **PARTIAL** | T273/T276 cover `TYPE_COLORS` and picker filter lists, but the ledger's third named consumer — `creatureHasType`'s `"All"` handling — is in no task; `src/data/typing.ts:29` still hardcodes `includes("All")`. T277's anti-drift grep covers only `RARITIES`, so `CorpusBrowser.tsx:12-15`'s hand-listed 15 members has no guard.                                                            |
+| WI-004 `damageType` proposal      | **PARTIAL** | The reasoned proposal genuinely exists (research.md R3; T284 surfaces the deferral). But the ledger's explicit requirement that "the relationship between `DamageType` and `StatusEffectType` must be addressed by the proposal" is unaddressed — `StatusEffectType` appears nowhere in R1-R7, the plan amendment, data-model.md's vocabulary sections, T271-T296, or the contract amendment. |
+| WI-005 `rarity` → enum            | **COVERED** | T272 declares `RARITY` with label/order/color; T276 derives the three parallel structures from `order`; T277 asserts no local `RARITIES = [...]` survives.                                                                                                                                                                                                                                    |
+| WI-006 "Super Rare" everywhere    | **PARTIAL** | T278 misses **all three rarity filter `<option>` lists** — `CreatureSearchModal.tsx:137-139`, `CorpusBrowser.tsx:70-72`, `TrinketPicker.tsx:202-204`. It also names "`PickerSection` headings in `CorpusBrowser`", which that file does not have, so CorpusBrowser's only rarity surface is missed; T279 omits CorpusBrowser from its render-scan.                                            |
+| WI-007 inline keyword colouring   | **PARTIAL** | T292/T294/T295 do apply to all creatures, but T293 closes the vocabulary at eleven terms on a premise the corpus contradicts, leaving **173 of 543** texts with no coloured keyword — against the round's own stated bar (plan.md:634-635). No task records that residue, unlike T291 for WI-002.                                                                                             |
 
 ### Gaps
 
@@ -38,22 +38,22 @@ Each pass is a fresh read-only `generalPurpose` subagent; it reports, the orches
 
 ### Factual verification (design claims checked against the code)
 
-| Claim | Result |
-|---|---|
-| `damageType` ⟺ `baseDamage` across 596 records | **Holds.** 0 mismatches; 356 Direct / 240 null. |
-| 424 of 596 records have text and zero tags; 106 of 149 species | **Holds**, via the repo's own `hasAbilityText`. |
-| Ninflora has `abilityTags: []` at all four levels | **Holds**; +10/20/30/240% confirms T285's `0.1/0.2/0.3/2.4`. |
-| Dead ternary at `BatomonCard.tsx:97`, both branches `"Deal"` | **Holds.** |
-| All four vocabularies are already closed literal unions | **Holds** (`types.ts:13-19, 33-48, 50, 94-113`). Note `RegionId:91` is deliberately open. |
-| `"SuddenDeath"` unused in records and at runtime | **Holds** — one occurrence, the declaration. |
-| 134 records have text and no trigger; 3 the reverse | **Holds.** |
-| 318 of 543 contain a `StatColorKey` term | **Holds.** The follow-on "the other 225 contain Protect/HP/Trigger/Ongoing" **does NOT hold** — 52 do. |
-| Longest ability text 169 chars | **Holds.** |
-| 8 records `types: []`; `"All"` on one species | **Holds** (`dragonegg`/`purpleegg`; `omnichrome`). |
-| `share.ts` never encodes rarity | **Holds** — R5's "no share-code risk" is correct. |
-| Three tests assert the raw rendered spelling at the cited lines | **Holds.** A fourth (`creaturePicker.test.tsx:18`) uses the raw key and was unlisted. |
-| The ledger's `"SuperRare"` occurrence inventory | **Does NOT hold.** 124 in `creatures.ts` (not ~100), 14 in `trinkets.ts`, and **zero** in `trainers.ts`, `shiny.ts` and `batodex-monsters.json`. The fixture contains "Super Rare" **with a space** twice and `"SuperRare"` never — independently confirming R5's published-spelling claim while refuting the ledger's claim that the fixture is a churn site. |
-| 9 species currently carry a `manualTrigger` tag | **Holds.** |
+| Claim                                                           | Result                                                                                                                                                                                                                                                                                                                                                         |
+| --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `damageType` ⟺ `baseDamage` across 596 records                  | **Holds.** 0 mismatches; 356 Direct / 240 null.                                                                                                                                                                                                                                                                                                                |
+| 424 of 596 records have text and zero tags; 106 of 149 species  | **Holds**, via the repo's own `hasAbilityText`.                                                                                                                                                                                                                                                                                                                |
+| Ninflora has `abilityTags: []` at all four levels               | **Holds**; +10/20/30/240% confirms T285's `0.1/0.2/0.3/2.4`.                                                                                                                                                                                                                                                                                                   |
+| Dead ternary at `BatomonCard.tsx:97`, both branches `"Deal"`    | **Holds.**                                                                                                                                                                                                                                                                                                                                                     |
+| All four vocabularies are already closed literal unions         | **Holds** (`types.ts:13-19, 33-48, 50, 94-113`). Note `RegionId:91` is deliberately open.                                                                                                                                                                                                                                                                      |
+| `"SuddenDeath"` unused in records and at runtime                | **Holds** — one occurrence, the declaration.                                                                                                                                                                                                                                                                                                                   |
+| 134 records have text and no trigger; 3 the reverse             | **Holds.**                                                                                                                                                                                                                                                                                                                                                     |
+| 318 of 543 contain a `StatColorKey` term                        | **Holds.** The follow-on "the other 225 contain Protect/HP/Trigger/Ongoing" **does NOT hold** — 52 do.                                                                                                                                                                                                                                                         |
+| Longest ability text 169 chars                                  | **Holds.**                                                                                                                                                                                                                                                                                                                                                     |
+| 8 records `types: []`; `"All"` on one species                   | **Holds** (`dragonegg`/`purpleegg`; `omnichrome`).                                                                                                                                                                                                                                                                                                             |
+| `share.ts` never encodes rarity                                 | **Holds** — R5's "no share-code risk" is correct.                                                                                                                                                                                                                                                                                                              |
+| Three tests assert the raw rendered spelling at the cited lines | **Holds.** A fourth (`creaturePicker.test.tsx:18`) uses the raw key and was unlisted.                                                                                                                                                                                                                                                                          |
+| The ledger's `"SuperRare"` occurrence inventory                 | **Does NOT hold.** 124 in `creatures.ts` (not ~100), 14 in `trinkets.ts`, and **zero** in `trainers.ts`, `shiny.ts` and `batodex-monsters.json`. The fixture contains "Super Rare" **with a space** twice and `"SuperRare"` never — independently confirming R5's published-spelling claim while refuting the ledger's claim that the fixture is a churn site. |
+| 9 species currently carry a `manualTrigger` tag                 | **Holds.**                                                                                                                                                                                                                                                                                                                                                     |
 
 ### Pass-1 note on the round's central reinterpretation
 
@@ -75,21 +75,21 @@ the same failure mode one level up.
 
 An implementer reading the design rather than the task list would have got the pre-remediation answer:
 
-| Stale claim | Where | Now |
-|---|---|---|
-| "225 of 543 texts … do contain Protect, HP, Trigger or Ongoing" (refuted: 52 do) | data-model.md's WI-007 section | Corrected, with the measured 52 / 173 / 132 / 502 / 41 chain |
-| Filter UIs enumerate `kind === "element"`, dropping `Curio`/`NULL` | plan.md decision 5, data-model.md `CreatureType` | Corrected — **only the wildcard** is withheld; the 15 species stay filterable |
-| "the ~100 occurrences in `creatures.ts`, 15 in `trinkets.ts`" plus a fixture churn claim | research.md R5 | Corrected to 124 + 14 = 138, zero elsewhere, fixture never a churn site |
+| Stale claim                                                                              | Where                                            | Now                                                                           |
+| ---------------------------------------------------------------------------------------- | ------------------------------------------------ | ----------------------------------------------------------------------------- |
+| "225 of 543 texts … do contain Protect, HP, Trigger or Ongoing" (refuted: 52 do)         | data-model.md's WI-007 section                   | Corrected, with the measured 52 / 173 / 132 / 502 / 41 chain                  |
+| Filter UIs enumerate `kind === "element"`, dropping `Curio`/`NULL`                       | plan.md decision 5, data-model.md `CreatureType` | Corrected — **only the wildcard** is withheld; the 15 species stay filterable |
+| "the ~100 occurrences in `creatures.ts`, 15 in `trinkets.ts`" plus a fixture churn claim | research.md R5                                   | Corrected to 124 + 14 = 138, zero elsewhere, fixture never a churn site       |
 
 ### 2. The remediation introduced a defect of the shape it was fixing
 
 R4's family census — added **because** pass 1 refused unmeasured family claims — itself contained
 unmeasured numbers. Re-measured and corrected:
 
-| Row | Claimed (pass-1 remediation) | Measured |
-|---|---|---|
-| mentions an ally | 108 new | **140 new** / 174 total |
-| "for this battle" | 56 new | **24 new** / 56 total |
+| Row               | Claimed (pass-1 remediation) | Measured                |
+| ----------------- | ---------------------------- | ----------------------- |
+| mentions an ally  | 108 new                      | **140 new** / 174 total |
+| "for this battle" | 56 new                       | **24 new** / 56 total   |
 
 The table declared "first shape it matches" attribution but reported `total` values for a different
 ordering; the errors offset, so the column still summed to 424 and looked right. The table now carries
@@ -113,7 +113,7 @@ design.
 - **R2a overstated the fixture.** Only **4 of 144** records carry a materialised `{label, color}`
   rarity; the other 140 hold React-flight dereference strings. Worse, the claim that its labels
   evidence the "Super Rare" spelling was false — the four labels are Common/Uncommon/Rare/Mythical, and
-  the file's two "Super Rare" strings are inside *ability text*. R2a now scopes the finding to what
+  the file's two "Super Rare" strings are inside _ability text_. R2a now scopes the finding to what
   holds, **withdraws** the label claim explicitly, and keeps the part WI-006 depends on (the fixture
   contains no `"SuperRare"`, so it was never a churn site).
 - **The round said both "one family" and "two families"** across plan.md ×2, data-model.md and
@@ -123,7 +123,7 @@ design.
   bare. Corrected and handed to T298 to report.
 - **T276 named three `"All"` consumers; there are four in production code** — `typing.ts:29`,
   `effects.ts:439`, `GridPicker.tsx:316`, `BatomonCard.tsx:190`. None was reachable by T277's guard,
-  which asserts on vocabulary *arrays* while these are inline comparisons, so the bug class the round
+  which asserts on vocabulary _arrays_ while these are inline comparisons, so the bug class the round
   cites as its motivation would have stayed live at three sites. All four now route through one
   predicate, with a grep assertion.
 - **Scenario numbering was stale.** quickstart's heading, tasks.md's two citations and **T296's own
@@ -156,15 +156,15 @@ nothing pre-existing was harmed.
 
 ### What pass 3 found, and what was then fixed
 
-| Finding | Fixed |
-|---|---|
-| **New unmeasured claim**: T286 and R4 said "two records" in the 60 are non-derivable (Mallogre, Aerophim). Measured: **27 records across 7 species**. | Both rewritten with the full measured split — **33 of 60 derivable**, 27 not, each with its reason. |
-| `StatusEffectType` was the one registry the round added and then left outside its own anti-drift guard (T277 and scenario 49 said "the four registries"). | T277 and scenario 49 now cover all **five**. |
-| research.md R4 still said "derive one family this round" while plan.md and T297 committed to two. | Reconciled. |
-| data-model.md's "The pattern family being derived" still described the pre-widening two shapes. | Rewritten as four shapes with the measured 33-of-60 reach. |
-| Four residual "four registries / four bespoke objects" miscounts. | Corrected in plan.md ×2, tasks.md ×2, quickstart.md ×1. |
-| plan.md's decision list ran 1-10, **12**, **11**, so markdown renumbered them on render and "see decision 12" pointed at the wrong decision. | Reordered; the cross-reference now resolves. |
-| R4's `"for each"/"per"` row measured 9/44 against the table's 10/45 (a `\bper\b` wording difference). | A caveat now states the table is the *shape* of the residue, accurate to a record or two per row, and that only the first row (60, exact) is load-bearing. |
+| Finding                                                                                                                                                   | Fixed                                                                                                                                                      |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **New unmeasured claim**: T286 and R4 said "two records" in the 60 are non-derivable (Mallogre, Aerophim). Measured: **27 records across 7 species**.     | Both rewritten with the full measured split — **33 of 60 derivable**, 27 not, each with its reason.                                                        |
+| `StatusEffectType` was the one registry the round added and then left outside its own anti-drift guard (T277 and scenario 49 said "the four registries"). | T277 and scenario 49 now cover all **five**.                                                                                                               |
+| research.md R4 still said "derive one family this round" while plan.md and T297 committed to two.                                                         | Reconciled.                                                                                                                                                |
+| data-model.md's "The pattern family being derived" still described the pre-widening two shapes.                                                           | Rewritten as four shapes with the measured 33-of-60 reach.                                                                                                 |
+| Four residual "four registries / four bespoke objects" miscounts.                                                                                         | Corrected in plan.md ×2, tasks.md ×2, quickstart.md ×1.                                                                                                    |
+| plan.md's decision list ran 1-10, **12**, **11**, so markdown renumbered them on render and "see decision 12" pointed at the wrong decision.              | Reordered; the cross-reference now resolves.                                                                                                               |
+| R4's `"for each"/"per"` row measured 9/44 against the table's 10/45 (a `\bper\b` wording difference).                                                     | A caveat now states the table is the _shape_ of the residue, accurate to a record or two per row, and that only the first row (60, exact) is load-bearing. |
 
 ### The finding that improved the design
 
@@ -213,7 +213,7 @@ size of that list, and every remaining entry must have a one-line reason. That i
 
 **WI-004 now carries the blast radius the deferral existed to avoid**: `ModifiableBase`,
 `PerCastOutput`, `SimulationResult.perCreatureEffectiveStats`, `BatomonCard`'s output band, ~15 engine
-fixtures, and 596 records. T282's invariant test becomes a *migration* check rather than a guard on a
+fixtures, and 596 records. T282's invariant test becomes a _migration_ check rather than a guard on a
 deferral.
 
 **Supersedes**: plan.md decision 9 (the deferral), R3's "(b) is proposed but DEFERRED", data-model.md's
@@ -229,13 +229,13 @@ so this is a decision about breadth taken on correct information.
 
 Measured, not estimated. Test suite went 330 -> 382.
 
-| Item | Shipped | Measured outcome |
-|---|---|---|
-| WI-001, WI-003, WI-005 | **Yes** | Five registries (`Rarity`, `CreatureType`, `DamageChannel`, `StatusEffectType`, `AbilityTrigger`). `RARITIES_ASC/DESC`, `RARITY_COLORS`, `TYPE_COLORS` and `TRIGGER_DEFINITIONS` are derived. Guard tests forbid restating a vocabulary, hand-writing an ordering array, or comparing the `"All"` wildcard literally. |
-| WI-006 | **Yes** | "Super Rare" on all six surface classes. **Zero** corpus records edited; the cited fixture untouched. Four tests flipped, one of which (`creaturePicker.test.tsx:18`) was a latent false-pass. |
-| WI-004 | **Partly** | Vocabulary split, `"SuddenDeath"` removed, dead ternary deleted, invariant test added (596/596 holds). The `publishedCast` restructure is **not done** — see below. |
-| WI-002 | **Partly** | Rule table + Ninflora fixed. 7 of 424 records newly derived; `healAmountAdd` added; the double-count guard refuses 6 species. See below. |
-| WI-007 | **Yes** | **542 of 543** ability texts carry a coloured keyword. All 149 Corpus Browser cards measure exactly 378px with zero clipping, so FR-043 survives. Round-trip asserted over all 543. |
+| Item                   | Shipped    | Measured outcome                                                                                                                                                                                                                                                                                                      |
+| ---------------------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| WI-001, WI-003, WI-005 | **Yes**    | Five registries (`Rarity`, `CreatureType`, `DamageChannel`, `StatusEffectType`, `AbilityTrigger`). `RARITIES_ASC/DESC`, `RARITY_COLORS`, `TYPE_COLORS` and `TRIGGER_DEFINITIONS` are derived. Guard tests forbid restating a vocabulary, hand-writing an ordering array, or comparing the `"All"` wildcard literally. |
+| WI-006                 | **Yes**    | "Super Rare" on all six surface classes. **Zero** corpus records edited; the cited fixture untouched. Four tests flipped, one of which (`creaturePicker.test.tsx:18`) was a latent false-pass.                                                                                                                        |
+| WI-004                 | **Partly** | Vocabulary split, `"SuddenDeath"` removed, dead ternary deleted, invariant test added (596/596 holds). The `publishedCast` restructure is **not done** — see below.                                                                                                                                                   |
+| WI-002                 | **Partly** | Rule table + Ninflora fixed. 7 of 424 records newly derived; `healAmountAdd` added; the double-count guard refuses 6 species. See below.                                                                                                                                                                              |
+| WI-007                 | **Yes**    | **542 of 543** ability texts carry a coloured keyword. All 149 Corpus Browser cards measure exactly 378px with zero clipping, so FR-043 survives. Round-trip asserted over all 543.                                                                                                                                   |
 
 ### Three findings the implementation forced out, which the planning had not anticipated
 
@@ -245,8 +245,7 @@ Measured, not estimated. Test suite went 330 -> 382.
    `healAmountAdd` added and wired through `applyModifiers`, `simulate` and the modifier editor. Heal
    was already a first-class output with a colour and a card line, so this closed an asymmetry rather
    than adding a concept.
-2. **The double-count guard fires on six real species, and that is why WI-002's number is 7 and not
-   30.** The rule table reads 30 records correctly; the guard then refuses 23 of them because their
+2. **The double-count guard fires on six real species, and that is why WI-002's number is 7 and not 30.** The rule table reads 30 records correctly; the guard then refuses 23 of them because their
    triggers (On Battle Start, On Cast) are ones the engine already fires. Aster, Ginsage, Lumijel,
    Brimtoad, Emperooze and Boomagon have genuine, readable permanent grants — but a manual "bank it
    once" button would let the user double a bonus the engine computes. **They want a resolvable tag,
@@ -286,7 +285,7 @@ against a shape with one field. The illegal state is unrepresentable rather than
 The strongest argument for doing it only surfaced during the work: **`ShinyStatLine` publishes a
 damage number and no channel**, so under the old pair a shiny could set one without the other —
 precisely the state the pair was meant to exclude, held together only because the UI read `damage`
-and ignored `damageType`. The invariant was true *by luck* on that path. The overlay now answers
+and ignored `damageType`. The invariant was true _by luck_ on that path. The overlay now answers
 the channel question once, explicitly.
 
 Scope line drawn and recorded: `ResolvedPlacement` and `PerCastOutput` keep their damage/channel
@@ -302,24 +301,24 @@ a tag the resolver acts on rather than a button the user presses. Derived record
 
 **The engine-coverage figure rose 83 → 87, and that is correct**, not a regression. `manualTrigger`
 is outside `RESOLVED_TAG_KINDS` so deriving it moves nothing; `ongoing` is inside it, so the engine
-genuinely does resolve those four abilities now. The test was rewritten to assert that *rule* —
+genuinely does resolve those four abilities now. The test was rewritten to assert that _rule_ —
 "the rise equals the number of records that gained a resolvable tag" — instead of a frozen number,
 which is a stronger statement of FR-114 than the original.
 
 **The finding that changes what "derive all 17 families" means.** The 417 remaining records were
 categorised, and the blocker is not regex effort:
 
-| Category | Records | Why a rule would not help |
-|---|---|---|
-| Shop / economy / run events | 96 | Outside the single battle the engine simulates, by design |
-| Chained trigger ("Trigger this", "Activate …") | 47 | Partly resolvable; needs the ally-cast hook per shape |
-| Evolution metadata ("Evolves at level 3") | 47 | Already modelled in `evolvesInto`/`evolvesAtLevel` — not an ability |
-| Knockout / death | 40 | Needs an HP model the engine explicitly lacks |
-| Charge / cooldown manipulation | 20 | Partly resolvable |
-| Protect / cleanse / disable | 16 | No model for these effects |
-| Enemy-stat scaling | 12 | No enemy model |
-| **Aura / self-buff / count-scaling** | **82** | **Derivable in principle** |
-| Uncategorised long tail | 57 | 112 distinct shapes over 417 records — under 4 records each |
+| Category                                       | Records | Why a rule would not help                                           |
+| ---------------------------------------------- | ------- | ------------------------------------------------------------------- |
+| Shop / economy / run events                    | 96      | Outside the single battle the engine simulates, by design           |
+| Chained trigger ("Trigger this", "Activate …") | 47      | Partly resolvable; needs the ally-cast hook per shape               |
+| Evolution metadata ("Evolves at level 3")      | 47      | Already modelled in `evolvesInto`/`evolvesAtLevel` — not an ability |
+| Knockout / death                               | 40      | Needs an HP model the engine explicitly lacks                       |
+| Charge / cooldown manipulation                 | 20      | Partly resolvable                                                   |
+| Protect / cleanse / disable                    | 16      | No model for these effects                                          |
+| Enemy-stat scaling                             | 12      | No enemy model                                                      |
+| **Aura / self-buff / count-scaling**           | **82**  | **Derivable in principle**                                          |
+| Uncategorised long tail                        | 57      | 112 distinct shapes over 417 records — under 4 records each         |
 
 Two hard limits inside even the "derivable" 82:
 

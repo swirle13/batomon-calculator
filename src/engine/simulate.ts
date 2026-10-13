@@ -1,9 +1,27 @@
-import type { PerCastOutput, Corpus, CreatureRecord, GridSlot, PlacementKey, StatModifier, StatusEffectInstance, TeamConfiguration, TimelineEvent } from "../data/types";
+import type {
+  PerCastOutput,
+  Corpus,
+  CreatureRecord,
+  GridSlot,
+  PlacementKey,
+  StatModifier,
+  StatusEffectInstance,
+  TeamConfiguration,
+  TimelineEvent,
+} from "../data/types";
 import { STATUS_TYPES, applyModifiers } from "./modifiers";
 import { applySelfScaling, selfScaledAmount } from "./selfScaling";
 import { effectiveCooldown } from "./cooldown";
 import { applyStatusTick, applyShockProc } from "./status";
-import { STABLE_SLOT_ORDER, adjacentUnder, behindSlot, inFrontSlot, slotKey, slotsEqual, stableSlotIndex } from "./grid";
+import {
+  STABLE_SLOT_ORDER,
+  adjacentUnder,
+  behindSlot,
+  inFrontSlot,
+  slotKey,
+  slotsEqual,
+  stableSlotIndex,
+} from "./grid";
 import { cannotGain, resolveBoard, selectTargets, selectorAccepts } from "./effects";
 import { trainerModifiersFor } from "./trainerEffects";
 import { creatureHasType } from "../data/typing";
@@ -11,7 +29,17 @@ import { applyShinyOverlay, findCreature, hasCreatureRecord } from "../data/corp
 import { InvalidTeamConfigurationError } from "./errors";
 
 import { damageChannelOf } from "../data/vocabularies";
-import { AbilityTagKind, DamageChannel, EventLabel, GrantableStat, ModifierStat, StatChangeStat, StatusEffectType, TargetKind, TimelineEventKind } from "../data/enums";
+import {
+  AbilityTagKind,
+  DamageChannel,
+  EventLabel,
+  GrantableStat,
+  ModifierStat,
+  StatChangeStat,
+  StatusEffectType,
+  TargetKind,
+  TimelineEventKind,
+} from "../data/enums";
 import { placementKey } from "./grid";
 
 /**
@@ -96,7 +124,10 @@ function validate(config: TeamConfiguration, corpus: Corpus): void {
     }
   }
   if (config.trainerId !== null && !corpus.trainers.some((t) => t.id === config.trainerId)) {
-    throw new InvalidTeamConfigurationError("trainerId", `Unknown trainerId "${config.trainerId}".`);
+    throw new InvalidTeamConfigurationError(
+      "trainerId",
+      `Unknown trainerId "${config.trainerId}".`,
+    );
   }
   for (const id of config.trinketIds) {
     if (!corpus.trinkets.some((t) => t.id === id)) {
@@ -168,7 +199,11 @@ function resolveCooldownSpeedTotal(
  * the given `stat` from both the team-wide pool and this placement's own pool. Team-wide and
  * placement-level modifiers are purely additive with each other — there is no precedence.
  */
-function sumModifier(stat: ModifierStat, teamModifiers: StatModifier[], placementModifiers: StatModifier[]): number {
+function sumModifier(
+  stat: ModifierStat,
+  teamModifiers: StatModifier[],
+  placementModifiers: StatModifier[],
+): number {
   let total = 0;
   for (const m of teamModifiers) if (m.stat === stat) total += m.amount;
   for (const m of placementModifiers) if (m.stat === stat) total += m.amount;
@@ -248,7 +283,10 @@ interface StatusPool {
  * — the advisor quoting a differently-derived DPS than the number above it would be worse than
  * quoting none.
  */
-export function windowAverageDps(result: { perCreatureDps: Record<string, number>; perCreatureFacilitatedDps: Record<string, number> }): number {
+export function windowAverageDps(result: {
+  perCreatureDps: Record<string, number>;
+  perCreatureFacilitatedDps: Record<string, number>;
+}): number {
   const direct = Object.values(result.perCreatureDps).reduce((a, b) => a + b, 0);
   const facilitated = Object.values(result.perCreatureFacilitatedDps).reduce((a, b) => a + b, 0);
   return direct + facilitated;
@@ -371,8 +409,16 @@ export function simulate(
     // Modifiers are resolved up front — even when this creature has no ordinary cooldown cast
     // — so `perCreatureEffectiveStats` can report them below regardless of cast eligibility.
     const multicastAdd = sumModifier(ModifierStat.MulticastAdd, teamModifiers, placementModifiers);
-    const damageFlatAdd = sumModifier(ModifierStat.DamageFlatAdd, teamModifiers, placementModifiers);
-    const healAmountAdd = sumModifier(ModifierStat.HealAmountAdd, teamModifiers, placementModifiers);
+    const damageFlatAdd = sumModifier(
+      ModifierStat.DamageFlatAdd,
+      teamModifiers,
+      placementModifiers,
+    );
+    const healAmountAdd = sumModifier(
+      ModifierStat.HealAmountAdd,
+      teamModifiers,
+      placementModifiers,
+    );
     const statusAmountAdd = {
       Burn: sumModifier(ModifierStat.BurnAmountAdd, teamModifiers, placementModifiers),
       Poison: sumModifier(ModifierStat.PoisonAmountAdd, teamModifiers, placementModifiers),
@@ -386,7 +432,11 @@ export function simulate(
       // this is not one — it is a property of having been revived, not an aura anyone emits.
       member.resolved.cooldownSpeedGrant +
       sumModifier(ModifierStat.CooldownSpeedAdd, teamModifiers, placementModifiers);
-    const cooldownFlatAdd = sumModifier(ModifierStat.CooldownFlatAddSeconds, teamModifiers, placementModifiers);
+    const cooldownFlatAdd = sumModifier(
+      ModifierStat.CooldownFlatAddSeconds,
+      teamModifiers,
+      placementModifiers,
+    );
 
     /*
      * A creature with no published cooldown has no cast cycle of its own, but a modifier may GIVE
@@ -556,8 +606,18 @@ export function simulate(
   // The two statuses that TICK for damage. Shield absorbs and Shock procs on a hit, so neither
   // belongs in a tick pool -- `damageChannelOf` is the general form of this distinction.
   const pools: Record<TickingStatus, StatusPool> = {
-    [StatusEffectType.Burn]: { layers: 0, nextTickAt: null, bySource: new Map(), sourceSlot: STABLE_SLOT_ORDER[0]! },
-    [StatusEffectType.Poison]: { layers: 0, nextTickAt: null, bySource: new Map(), sourceSlot: STABLE_SLOT_ORDER[0]! },
+    [StatusEffectType.Burn]: {
+      layers: 0,
+      nextTickAt: null,
+      bySource: new Map(),
+      sourceSlot: STABLE_SLOT_ORDER[0]!,
+    },
+    [StatusEffectType.Poison]: {
+      layers: 0,
+      nextTickAt: null,
+      bySource: new Map(),
+      sourceSlot: STABLE_SLOT_ORDER[0]!,
+    },
   };
 
   /**
@@ -581,7 +641,12 @@ export function simulate(
   const perCreatureDamage = new Map<string, number>();
   /** When each creature last landed a direct hit — the denominator of its DPS. See Phase C. */
   const lastDirectHitAt = new Map<string, number>();
-  const perStatusDamage: Record<StatusEffectType, number> = { Burn: 0, Poison: 0, Shock: 0, Shield: 0 };
+  const perStatusDamage: Record<StatusEffectType, number> = {
+    Burn: 0,
+    Poison: 0,
+    Shock: 0,
+    Shield: 0,
+  };
   /** HP restored to our own team across the window. Never mixed into any damage total. */
   let totalHeal = 0;
 
@@ -755,7 +820,10 @@ export function simulate(
    */
   const allyTriggeredByKey = new Map<string, number>();
 
-  const runtimeBuffs = new Map<string, { damage: number; multicast: number; status: Map<StatusEffectType, number> }>();
+  const runtimeBuffs = new Map<
+    string,
+    { damage: number; multicast: number; status: Map<StatusEffectType, number> }
+  >();
   const buffFor = (key: string) => {
     let b = runtimeBuffs.get(key);
     if (!b) {
@@ -828,7 +896,12 @@ export function simulate(
       for (let rep = 1; rep < multicastCount; rep++) {
         const repT = roundTime(tSeconds + rep * STEP);
         if (repT > windowSeconds + 1e-9) break;
-        pendingReps.push({ tSeconds: repT, sourceSlot: entry.sourceSlot, creature: entry.creature, modifiers: entry.modifiers });
+        pendingReps.push({
+          tSeconds: repT,
+          sourceSlot: entry.sourceSlot,
+          creature: entry.creature,
+          modifiers: entry.modifiers,
+        });
       }
       entry.nextAt = roundTime(tSeconds + entry.cooldown);
     }
@@ -880,7 +953,8 @@ export function simulate(
       // wrong from the second cast onward.
       let targetScaled = 0;
       for (const rule of effective?.targetStatusScaling ?? []) {
-        const stacks = rule.status === "Poison" ? poisonLayers : rule.status === "Shock" ? shockLayers : 0;
+        const stacks =
+          rule.status === "Poison" ? poisonLayers : rule.status === "Shock" ? shockLayers : 0;
         targetScaled += stacks * rule.multiplier;
       }
       /*
@@ -892,10 +966,13 @@ export function simulate(
        * its Ongoing abilities 1 additional time" repeats the application without changing the
        * monster's Burn, so multiplying by `ongoingReps` here would pay the grant twice.
        */
-      const selfScaled = selfScaledAmount(creature.abilityTags, StatChangeStat.Damage, (status) =>
-        (effective?.appliesStatus.find((s) => s.type === status)?.amount ?? 0) +
-        (accrued?.status.get(status) ?? 0) +
-        statusModifierAdd(modifiers, status),
+      const selfScaled = selfScaledAmount(
+        creature.abilityTags,
+        StatChangeStat.Damage,
+        (status) =>
+          (effective?.appliesStatus.find((s) => s.type === status)?.amount ?? 0) +
+          (accrued?.status.get(status) ?? 0) +
+          statusModifierAdd(modifiers, status),
       );
       const extra = accruedDamage + Math.round(targetScaled) + selfScaled + modifiers.damageFlatAdd;
       const resolvedDamage =
@@ -914,18 +991,39 @@ export function simulate(
         const effectiveDamage = resolvedDamage!;
         const shockInstance: StatusEffectInstance | null =
           snapshotShockLayers > 0
-            ? { type: StatusEffectType.Shock, layers: snapshotShockLayers, sourceSlot, targetSlot: placeholderTargetSlot(sourceSlot), appliedAtSeconds: tSeconds }
+            ? {
+                type: StatusEffectType.Shock,
+                layers: snapshotShockLayers,
+                sourceSlot,
+                targetSlot: placeholderTargetSlot(sourceSlot),
+                appliedAtSeconds: tSeconds,
+              }
             : null;
-        const procResult = applyShockProc({ damage: effectiveDamage, damageType: DamageChannel.Direct }, shockInstance);
+        const procResult = applyShockProc(
+          { damage: effectiveDamage, damageType: DamageChannel.Direct },
+          shockInstance,
+        );
         if (procResult.shockDamage > 0) {
-          timeline.push({ tSeconds, kind: TimelineEventKind.ShockProc, sourceSlot, damage: procResult.shockDamage, damageType: DamageChannel.Shock });
+          timeline.push({
+            tSeconds,
+            kind: TimelineEventKind.ShockProc,
+            sourceSlot,
+            damage: procResult.shockDamage,
+            damageType: DamageChannel.Shock,
+          });
           perStatusDamage.Shock += procResult.shockDamage;
           for (const [key, layers] of snapshotShockLayersBySource) {
             const share = (procResult.shockDamage * layers) / snapshotShockLayers;
             facilitatedDamage.set(key, (facilitatedDamage.get(key) ?? 0) + share);
           }
         }
-        timeline.push({ tSeconds, kind: TimelineEventKind.Attack, sourceSlot, damage: effectiveDamage, damageType: DamageChannel.Direct });
+        timeline.push({
+          tSeconds,
+          kind: TimelineEventKind.Attack,
+          sourceSlot,
+          damage: effectiveDamage,
+          damageType: DamageChannel.Direct,
+        });
         perCreatureDamage.set(sourceKey, (perCreatureDamage.get(sourceKey) ?? 0) + effectiveDamage);
         lastDirectHitAt.set(sourceKey, tSeconds);
       } else {
@@ -992,10 +1090,21 @@ export function simulate(
           const amount = applied.amount + modifiers.shockAmountAdd;
           shockLayers += amount;
           shockLayersBySource.set(sourceKey, (shockLayersBySource.get(sourceKey) ?? 0) + amount);
-          timeline.push({ tSeconds, kind: TimelineEventKind.OngoingChange, sourceSlot, statusDelta: { type: StatusEffectType.Shock, slot: placeholderTargetSlot(sourceSlot), layerDelta: amount } });
+          timeline.push({
+            tSeconds,
+            kind: TimelineEventKind.OngoingChange,
+            sourceSlot,
+            statusDelta: {
+              type: StatusEffectType.Shock,
+              slot: placeholderTargetSlot(sourceSlot),
+              layerDelta: amount,
+            },
+          });
           appliedThisInstant.push({ sourceKey, type: StatusEffectType.Shock, amount });
         } else if (applied.type === "Burn" || applied.type === "Poison") {
-          const amount = applied.amount + (applied.type === "Burn" ? modifiers.burnAmountAdd : modifiers.poisonAmountAdd);
+          const amount =
+            applied.amount +
+            (applied.type === "Burn" ? modifiers.burnAmountAdd : modifiers.poisonAmountAdd);
           const interval = applied.type === "Burn" ? BURN_TICK_SECONDS : POISON_TICK_SECONDS;
           if (applied.type === "Poison") poisonLayers += amount;
 
@@ -1018,14 +1127,35 @@ export function simulate(
           let topKey = "";
           let topAmount = -1;
           for (const [k, v] of pool.bySource) {
-            if (v > topAmount) { topAmount = v; topKey = k; }
+            if (v > topAmount) {
+              topAmount = v;
+              topKey = k;
+            }
           }
           if (topKey === sourceKey) pool.sourceSlot = sourceSlot;
-          timeline.push({ tSeconds, kind: TimelineEventKind.OngoingChange, sourceSlot, statusDelta: { type: applied.type, slot: placeholderTargetSlot(sourceSlot), layerDelta: amount } });
+          timeline.push({
+            tSeconds,
+            kind: TimelineEventKind.OngoingChange,
+            sourceSlot,
+            statusDelta: {
+              type: applied.type,
+              slot: placeholderTargetSlot(sourceSlot),
+              layerDelta: amount,
+            },
+          });
           appliedThisInstant.push({ sourceKey, type: applied.type, amount });
         } else if (applied.type === StatusEffectType.Shield) {
           const amount = applied.amount + modifiers.shieldAmountAdd;
-          timeline.push({ tSeconds, kind: TimelineEventKind.OngoingChange, sourceSlot, statusDelta: { type: StatusEffectType.Shield, slot: placeholderTargetSlot(sourceSlot), layerDelta: amount } });
+          timeline.push({
+            tSeconds,
+            kind: TimelineEventKind.OngoingChange,
+            sourceSlot,
+            statusDelta: {
+              type: StatusEffectType.Shield,
+              slot: placeholderTargetSlot(sourceSlot),
+              layerDelta: amount,
+            },
+          });
           perStatusDamage.Shield += amount;
           appliedThisInstant.push({ sourceKey, type: StatusEffectType.Shield, amount });
         }
@@ -1099,16 +1229,28 @@ export function simulate(
         if (listener.key === casterKey) continue; // "an ALLY casts" — never yourself
         for (const tag of listener.creature.abilityTags) {
           if (tag.kind === AbilityTagKind.CooldownSpeedOnAllyCast) {
-            if (tag.typeFilter && !creatureHasType(caster.creature, tag.typeFilter, config)) continue;
+            if (tag.typeFilter && !creatureHasType(caster.creature, tag.typeFilter, config))
+              continue;
             // Compounds: every qualifying ally cast adds again, for the rest of the battle.
-            allyCastSpeedBonus.set(casterKey, (allyCastSpeedBonus.get(casterKey) ?? 0) + tag.amount);
+            allyCastSpeedBonus.set(
+              casterKey,
+              (allyCastSpeedBonus.get(casterKey) ?? 0) + tag.amount,
+            );
             const entry = schedule.find((e) => e.key === casterKey);
             if (entry && entry.baseCooldown > 0) {
               const speed = 1 + (allyCastSpeedBonus.get(casterKey) ?? 0);
               entry.cooldown = roundTime(entry.baseCooldown / speed);
             }
-          } else if (tag.kind === AbilityTagKind.TriggerOnAllyTrigger || tag.kind === AbilityTagKind.TriggerOnAllyCast) {
-            if (!selectTargets(tag.target, listener, resolved, config).some((t) => t.key === casterKey)) continue;
+          } else if (
+            tag.kind === AbilityTagKind.TriggerOnAllyTrigger ||
+            tag.kind === AbilityTagKind.TriggerOnAllyCast
+          ) {
+            if (
+              !selectTargets(tag.target, listener, resolved, config).some(
+                (t) => t.key === casterKey,
+              )
+            )
+              continue;
             // "(Except other Puffloon)" — 2026-10-09. Puffloon is Toxic and reacts to adjacent
             // Toxic allies, so a pair of them satisfied each other's selector and traded free
             // casts for the whole battle.
@@ -1266,7 +1408,10 @@ export function simulate(
           // "an ALLY applies" — never your own application, the rule every other ally hook uses.
           if (application.sourceKey === entry.key) return false;
           if (!tag.excludeSameSpecies) return true;
-          return resolvedByKey.get(application.sourceKey as PlacementKey)?.creature.id !== entry.creature.id;
+          return (
+            resolvedByKey.get(application.sourceKey as PlacementKey)?.creature.id !==
+            entry.creature.id
+          );
         });
         if (!triggered) continue;
         const reactT = roundTime(tSeconds + STEP);
@@ -1287,7 +1432,9 @@ export function simulate(
     // so the gain is never scaled, which is what the capture shows: every step was exactly +24
     // despite Thorntail carrying modifiers worth ~140x.
     for (const entry of schedule) {
-      const gains = entry.creature.abilityTags.filter((t) => t.kind === AbilityTagKind.GainOnAllyStatus);
+      const gains = entry.creature.abilityTags.filter(
+        (t) => t.kind === AbilityTagKind.GainOnAllyStatus,
+      );
       if (gains.length === 0) continue;
       for (const application of appliedThisInstant) {
         // "when ALLIES inflict" — a creature's own infliction does not count. The capture has one
@@ -1321,7 +1468,10 @@ export function simulate(
 
   runTicksUpTo(windowSeconds);
   snapshotStacks(windowSeconds);
-  timeline.sort((a, b) => a.tSeconds - b.tSeconds || stableSlotIndex(a.sourceSlot) - stableSlotIndex(b.sourceSlot));
+  timeline.sort(
+    (a, b) =>
+      a.tSeconds - b.tSeconds || stableSlotIndex(a.sourceSlot) - stableSlotIndex(b.sourceSlot),
+  );
 
   // --- Phase C: derived summary + cumulative series ---
   /*
@@ -1359,7 +1509,8 @@ export function simulate(
      * certainly not zero, and it understates rather than inventing a rate from no elapsed time.
      */
     const lastHit = lastDirectHitAt.get(key);
-    perCreatureDps[key] = totalDamage / (lastHit !== undefined && lastHit > 0 ? lastHit : windowSeconds);
+    perCreatureDps[key] =
+      totalDamage / (lastHit !== undefined && lastHit > 0 ? lastHit : windowSeconds);
   }
 
   const perCreatureFacilitatedDps: Record<string, number> = {};
@@ -1377,7 +1528,12 @@ export function simulate(
   // buckets was tried and rejected: it returned 2.83/2.70 for a case whose exact answer is 2.50,
   // was sensitive to bucket-edge placement, was polluted by the zero-damage startup, and produced
   // NaN at a 1-second window (which the UI permits).
-  const appliedTotals: Record<StatusEffectType, number> = { Burn: 0, Poison: 0, Shock: 0, Shield: 0 };
+  const appliedTotals: Record<StatusEffectType, number> = {
+    Burn: 0,
+    Poison: 0,
+    Shock: 0,
+    Shield: 0,
+  };
   for (const event of timeline) {
     if (event.statusDelta) appliedTotals[event.statusDelta.type] += event.statusDelta.layerDelta;
   }
@@ -1445,7 +1601,12 @@ export function simulate(
    */
   let totalDamage = 0;
   let directDamage = 0;
-  const runningByStatus: Record<StatusEffectType, number> = { Burn: 0, Poison: 0, Shock: 0, Shield: 0 };
+  const runningByStatus: Record<StatusEffectType, number> = {
+    Burn: 0,
+    Poison: 0,
+    Shock: 0,
+    Shield: 0,
+  };
   let cursor = 0;
   const cumulativeSeries = sampleTimes.map((t) => {
     while (cursor < timeline.length && timeline[cursor]!.tSeconds <= t) {
@@ -1460,7 +1621,11 @@ export function simulate(
       }
       if (event.damage === undefined || event.damageType === undefined) continue;
       totalDamage += event.damage;
-      if (event.damageType === "Burn" || event.damageType === "Poison" || event.damageType === "Shock") {
+      if (
+        event.damageType === "Burn" ||
+        event.damageType === "Poison" ||
+        event.damageType === "Shock"
+      ) {
         runningByStatus[event.damageType] += event.damage;
       } else {
         // Direct hits, tracked as their own series. They were previously only visible inside

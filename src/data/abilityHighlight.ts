@@ -186,9 +186,7 @@ const GOLD = String.raw`\$\d+`;
  * not been read off a capture.
  */
 const COUNTED_NOUNS = [String.raw`rerolls?`];
-const COUNTED = COUNTED_NOUNS.map(
-  (noun) => String.raw`\d+(?=(?:\s+\w+)?\s+${noun}\b)`,
-).join("|");
+const COUNTED = COUNTED_NOUNS.map((noun) => String.raw`\d+(?=(?:\s+\w+)?\s+${noun}\b)`).join("|");
 
 /**
  * The stat/mechanic branch comes FIRST, so where the tiers could both claim a span the

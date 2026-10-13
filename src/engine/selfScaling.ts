@@ -65,7 +65,8 @@ export function applySelfScaling(tags: AbilityTag[], output: PerCastOutput): Per
   const healAdd = selfScaledAmount(tags, StatChangeStat.Heal, statusAmount);
   if (damageAdd === 0 && healAdd === 0) return output;
 
-  const damage = output.damage === null ? (damageAdd !== 0 ? damageAdd : null) : output.damage + damageAdd;
+  const damage =
+    output.damage === null ? (damageAdd !== 0 ? damageAdd : null) : output.damage + damageAdd;
   return {
     ...output,
     damage,

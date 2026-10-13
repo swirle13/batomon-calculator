@@ -47,7 +47,7 @@ registry, free for private repos). Both apps depend on a version.
 
 - **Keeps the public repo public.** Clean boundary; forces the engine's API to be deliberate.
 - **Cost:** every engine change becomes publish → bump → install in two places. During the period
-  when the engine is changing *because of* mobile work — which is most of this project, given the
+  when the engine is changing _because of_ mobile work — which is most of this project, given the
   opponent-modelling and coverage gaps — that friction is constant and it is the main reason people
   abandon this setup. Also needs a release workflow and auth config in both repos' CI.
 
@@ -173,7 +173,7 @@ The calculator's constitution is unusually good and most of it transfers. Specif
   cases are the project's credibility.
 - **Principle VII (shared design language, no bespoke cards).** The calculator learned this the
   expensive way — three card treatments, two cooldown formatters disagreeing on decimals, chip
-  styling in three files. A mobile app with an overlay surface *and* a full-screen surface has the
+  styling in three files. A mobile app with an overlay surface _and_ a full-screen surface has the
   same hazard in a new shape.
 
 ### Add

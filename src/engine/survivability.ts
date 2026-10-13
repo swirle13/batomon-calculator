@@ -160,7 +160,8 @@ function cleanseValue(
      * cast. A missing entry means the creature is not in the battle at all — a teammate's Petrirex
      * knocked it out — and a corpse cleanses nothing, which is what skipping it says.
      */
-    const cooldown = result.perCreatureEffectiveStats[placementKey(creature.id, placement.slot)]?.cooldownSeconds;
+    const cooldown =
+      result.perCreatureEffectiveStats[placementKey(creature.id, placement.slot)]?.cooldownSeconds;
     if (!cooldown || cooldown <= 0) continue;
     cleansers.push(creature.name);
     if (tag.stacks !== undefined) flatCapacity += tag.stacks / cooldown;

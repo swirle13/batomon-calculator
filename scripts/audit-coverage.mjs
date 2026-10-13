@@ -32,15 +32,26 @@ const EXCLUSIONS = [
 const excluded = new Set();
 for (const c of battle) {
   if (resolved.includes(c)) continue;
-  for (const e of EXCLUSIONS) if (e.re.test(c.abilityText)) { excluded.add(c.id); break; }
+  for (const e of EXCLUSIONS)
+    if (e.re.test(c.abilityText)) {
+      excluded.add(c.id);
+      break;
+    }
 }
 
 console.log(`battle-relevant abilities : ${battle.length}`);
 console.log(`  RESOLVED by the engine  : ${resolved.length}`);
-console.log(`  carry a tag             : ${tagged.length}  (tagged != resolved -- the round-10 error)`);
+console.log(
+  `  carry a tag             : ${tagged.length}  (tagged != resolved -- the round-10 error)`,
+);
 console.log(`  structurally excluded   : ${excluded.size}`);
 console.log(`  remaining unsupported   : ${battle.length - resolved.length - excluded.size}`);
-console.log(`\nresolved: ${resolved.map((c) => c.name).sort().join(", ")}`);
+console.log(
+  `\nresolved: ${resolved
+    .map((c) => c.name)
+    .sort()
+    .join(", ")}`,
+);
 
 // A tag the ENGINE does not resolve is not automatically a problem. `manualTrigger` is
 // deliberately engine-unreachable — its trigger happens outside the battle (using an item, buying
@@ -48,7 +59,8 @@ console.log(`\nresolved: ${resolved.map((c) => c.name).sort().join(", ")}`);
 // inert tags would report 9 creatures as broken when they are working as designed.
 const manual = tagged.filter((c) => c.abilityTags.some((t) => t.kind === "manualTrigger"));
 const inert = tagged.filter(
-  (c) => !c.abilityTags.some(isResolvableTag) && !c.abilityTags.some((t) => t.kind === "manualTrigger"),
+  (c) =>
+    !c.abilityTags.some(isResolvableTag) && !c.abilityTags.some((t) => t.kind === "manualTrigger"),
 );
 
 if (manual.length) {
@@ -57,7 +69,9 @@ if (manual.length) {
   );
 }
 if (inert.length) {
-  console.log(`\nINERT TAGS (recorded but read by NOTHING): ${inert.map((c) => c.name).join(", ")}`);
+  console.log(
+    `\nINERT TAGS (recorded but read by NOTHING): ${inert.map((c) => c.name).join(", ")}`,
+  );
 } else {
   console.log(`\nINERT TAGS: none — every recorded tag is read by the engine or the UI.`);
 }
@@ -75,10 +89,16 @@ if (inert.length) {
  */
 const gap = battle
   .filter((c) => abilityNeedsModelling(c))
-  .filter((c) => !c.abilityTags.some(isResolvableTag) && !c.abilityTags.some((t) => t.kind === "manualTrigger"))
+  .filter(
+    (c) =>
+      !c.abilityTags.some(isResolvableTag) &&
+      !c.abilityTags.some((t) => t.kind === "manualTrigger"),
+  )
   .sort((a, b) => a.name.localeCompare(b.name));
 
 console.log(`\nTHE GAP (${gap.length}) — neither resolved nor banked by a button:`);
 for (const c of gap) {
-  console.log(`  ${c.name}\t[${c.abilityTrigger ?? "no trigger"}]\t${c.abilityText.replace(/\n/g, " ")}`);
+  console.log(
+    `  ${c.name}\t[${c.abilityTrigger ?? "no trigger"}]\t${c.abilityText.replace(/\n/g, " ")}`,
+  );
 }

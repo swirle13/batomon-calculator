@@ -118,7 +118,10 @@ describe("TTK figure (2026-10-07)", () => {
   it("defaults to day 1 and shows a time", () => {
     const result = simulate(poisonTeam, corpus);
     render(<TotalDpsHarness config={poisonTeam} result={result} />);
-    expect(screen.getByLabelText("Day to compute time-to-kill against")).toHaveProperty("value", "1");
+    expect(screen.getByLabelText("Day to compute time-to-kill against")).toHaveProperty(
+      "value",
+      "1",
+    );
     expect(screen.getByText(/TTK on day/)).toBeTruthy();
   });
 
@@ -128,7 +131,9 @@ describe("TTK figure (2026-10-07)", () => {
     // answer. The "(est.)" suffix is what keeps the offer honest — see `enemyHealth.ts`.
     const result = simulate(poisonTeam, corpus);
     render(<TotalDpsHarness config={poisonTeam} result={result} />);
-    const select = screen.getByLabelText("Day to compute time-to-kill against") as HTMLSelectElement;
+    const select = screen.getByLabelText(
+      "Day to compute time-to-kill against",
+    ) as HTMLSelectElement;
     expect(select.options.length).toBe(MAX_PROJECTED_DAY);
     expect(select.options[MAX_RECORDED_DAY - 1]!.textContent).toBe(String(MAX_RECORDED_DAY));
     expect(select.options[MAX_RECORDED_DAY]!.textContent).toBe(`${MAX_RECORDED_DAY + 1} (est.)`);

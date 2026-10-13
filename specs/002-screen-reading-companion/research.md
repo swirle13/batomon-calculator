@@ -38,7 +38,7 @@ In practice it does not help us:
   in `NOTIFICATION_ACCESSIBILITY_UPDATE`. A shipped indie autobattler will not have done this.
 
 So: whatever Batomon Showdown draws, it draws into a single surface with no semantic structure
-behind it. **Pixels are the only interface.** This is a *closed* question, and closing it is
+behind it. **Pixels are the only interface.** This is a _closed_ question, and closing it is
 valuable — it deletes an entire branch of the design space before any code is written.
 
 **A1b — Godot's stretch model makes UI positions predictable, which is unusually good news.**
@@ -74,7 +74,7 @@ sprites as the primary prize. That was wrong, and the mistake is instructive: **
 them.** The calculator vendors all 445 sprites — 149 monsters, 93 trinkets, trainers and items —
 obtained via the batodex.com fan dex, which in all likelihood extracted them from the Steam build's
 own files by this same route. The README already describes them as "the **game's own artwork**."
-So the asset problem that would normally dominate a perception project is *already solved*, and
+So the asset problem that would normally dominate a perception project is _already solved_, and
 extraction is not on the critical path for it.
 
 What extraction would still yield, narrowed accordingly:
@@ -88,7 +88,7 @@ What extraction would still yield, narrowed accordingly:
    own README: 60 of 149 species with no published damage line, 139 of 149 with no `abilityTags`,
    87 of 93 trinkets with unmodelled effects, 29 of 40 items the same. Per `port-inventory.md` §6.1,
    corpus coverage — not search quality — is the recommendation engine's actual ceiling, so this is
-   the single intervention that would most improve the advice on *both* platforms.
+   the single intervention that would most improve the advice on _both_ platforms.
 
 The asterisk stands, and now applies to a narrower thing. It is a **paid** indie game by an active
 solo developer, and the remaining ask is for their balance data rather than their art. That is a
@@ -141,7 +141,7 @@ the user sees the dialog once per sitting rather than once per scan.
 Android 14 introduced the single-app vs. entire-screen choice at the consent dialog. A real Calcy IV
 user report from 2024-09 captures the trap exactly: the user launched the companion before the game,
 so the game wasn't in the app list and **only full-screen capture was selectable**. Our launch flow
-must therefore require the game to be running *first*. Android 16 adds
+must therefore require the game to be running _first_. Android 16 adds
 `OVERRIDE_DISABLE_MEDIA_PROJECTION_SINGLE_APP_OPTION` (change ID 316897322), which forces the choice
 to be offered — disabled by default, but it exists and could flip.
 
@@ -171,7 +171,7 @@ requires the service to be user-initiated, user-perceptible, and core to the app
 `explanation_for_special_use` placeholder shipped as-is is a likely rejection.
 
 **Mitigation worth designing in from the start:** we already require a `mediaProjection` foreground
-service, which is a *named* type with an obvious justification. A single service can declare
+service, which is a _named_ type with an obvious justification. A single service can declare
 multiple types (`android:foregroundServiceType="mediaProjection|specialUse"`, and `startForeground`
 takes a bitmask — the docs note the type defaults to the bitwise OR of the manifest's declared
 types). Hosting the overlay from the capture service rather than standing up a second `specialUse`
@@ -183,7 +183,7 @@ of Kotlin).
 ### B3. Overlay restrictions that constrain the design
 
 - **Touch passthrough (Android 12+):** touches are blocked through non-trusted overlays from another
-  UID, *except* that for `SYSTEM_ALERT_WINDOW` only layers with **opacity ≥ 0.8** are blocked. A
+  UID, _except_ that for `SYSTEM_ALERT_WINDOW` only layers with **opacity ≥ 0.8** are blocked. A
   mostly-transparent interactive overlay therefore behaves differently from an opaque one. Design
   the overlay as a compact opaque panel plus a draggable handle, not a full-screen translucent HUD.
 - **`HIDE_OVERLAY_WINDOWS` (Android 12+):** any app can opt out of being overlaid, with one manifest
@@ -249,8 +249,8 @@ extension receives sample buffers over XPC. Constraints that matter:
 Apple's ScreenCaptureKit documentation now covers iOS, with `SCContentSharingPicker` offering a
 `singleDisplay` mode and the explicit note that "a broadcast extension is no longer necessary."
 This would be a large simplification. But the availability annotations are **`ios = 27.0`**, the
-sample explicitly "requires a device running iOS 27 or later," and the pages are flagged *Beta
-Software — preliminary information about an API in development*. As of October 2026 this is a future
+sample explicitly "requires a device running iOS 27 or later," and the pages are flagged _Beta
+Software — preliminary information about an API in development_. As of October 2026 this is a future
 capability, not a shippable one.
 
 ### C4. Therefore iOS is doubly deferred, and that is fine
@@ -263,7 +263,7 @@ in-app. That is exactly what Poke Genie shipped on iOS for years, and it needs n
 entitlement at all.
 
 The practical instruction for the spec: **do not let iOS constrain the Android architecture**, but
-do keep the engine, the corpus and the perception *contract* platform-neutral so an iOS surface can
+do keep the engine, the corpus and the perception _contract_ platform-neutral so an iOS surface can
 be bolted on later without touching them.
 
 ---
@@ -275,7 +275,7 @@ be bolted on later without touching them.
 Benchmarks are consistent that Android is the weak platform for OCR. A field-level F1 comparison
 through a real React Native pipeline: **Apple Vision 85.4%, ML Kit v2 75.5%, PaddleOCR PP-OCRv4
 74.7%, tesseract.js 59.0%** — and tesseract.js "cannot run inside React Native at all, because its
-WASM build has no home in the Hermes runtime." An academic study of OCR on *game screens*
+WASM build has no home in the Hermes runtime." An academic study of OCR on _game screens_
 specifically found Tesseract inadequate (highly sensitive to text/background contrast and unusual
 fonts), EasyOCR best at detection, PaddleOCR best at accuracy, and recommended binarization plus
 region extraction as the main accuracy lever.
@@ -287,11 +287,11 @@ unusable — a board reading is six monsters plus trinkets plus items, so per-fi
 
 The reads the app needs decompose into three kinds, and only the third wants OCR:
 
-| What | Technique | Why it's reliable |
-|---|---|---|
-| **Which monster / trinket / item is this?** | Template match or perceptual hash against the known sprite set | Pixel art, integer-scaled, ~149/93/40 candidates. Near-exact (A1d). |
-| **What number is in this box?** | Bespoke digit classifier over a 10-glyph alphabet in a fixed ROI | Known font, known position, binarizable. Trivially trainable; far above general OCR. |
-| **What does this ability text say?** | ML Kit Text Recognition v2, bundled model | Only needed for unrecognized/new content, and only as a hint. |
+| What                                        | Technique                                                        | Why it's reliable                                                                    |
+| ------------------------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| **Which monster / trinket / item is this?** | Template match or perceptual hash against the known sprite set   | Pixel art, integer-scaled, ~149/93/40 candidates. Near-exact (A1d).                  |
+| **What number is in this box?**             | Bespoke digit classifier over a 10-glyph alphabet in a fixed ROI | Known font, known position, binarizable. Trivially trainable; far above general OCR. |
+| **What does this ability text say?**        | ML Kit Text Recognition v2, bundled model                        | Only needed for unrecognized/new content, and only as a hint.                        |
 
 ML Kit stays in the stack as the fallback and for free text. It needs ~16×16 px per character and
 returns boxes plus confidence, which is enough to gate low-confidence reads into "ask the user"
@@ -306,7 +306,7 @@ captures gets there without it.
 
 ### D3. Event detection from animations is a genuinely harder problem, and should not be in v1
 
-The user specifically raised detecting that an item or trinket was *taken*, from the UI animation,
+The user specifically raised detecting that an item or trinket was _taken_, from the UI animation,
 rather than requiring a trip to the trinket tab. This is a real need and a real step up in
 difficulty:
 
@@ -314,12 +314,12 @@ difficulty:
   takes a screenshot when you instruct it to," and that is not an accident — continuous
   `VirtualDisplay` + `ImageReader` at any useful frame rate costs battery and thermal headroom
   during a game that is already rendering.
-- It requires temporal state: a classifier over frame *sequences*, with debouncing, false-positive
+- It requires temporal state: a classifier over frame _sequences_, with debouncing, false-positive
   suppression during other animations, and recovery when frames are dropped.
 - It fails silently and asymmetrically: a missed pickup leaves the model stale, and the user has no
   signal that the advice is now wrong.
 
-**There is a much cheaper 90% solution:** *state diffing*. Scan the trinket tray (or the team pane)
+**There is a much cheaper 90% solution:** _state diffing_. Scan the trinket tray (or the team pane)
 on each user-initiated scan and diff against the last known state. A newly present trinket is a
 newly acquired trinket, regardless of whether the animation was seen. This gets the same information
 with no continuous capture, no temporal model and no battery cost — at the price of the state being
@@ -347,7 +347,7 @@ Both frameworks are mature and the performance debate is largely settled (RN's N
 JSI, Fabric, TurboModules — default since 0.76; Flutter's Impeller mandatory since 3.29). Neither
 has a UI advantage that matters for a mostly-forms-and-cards app with one floating panel.
 
-What is *not* symmetric is the asset being ported. From the engine analysis:
+What is _not_ symmetric is the asset being ported. From the engine analysis:
 
 - `src/engine/` is **~3,960 LOC of pure TypeScript** with **zero** DOM, `window`, `localStorage`,
   `crypto`, `Date.now`, `Intl` or `import.meta.env` usage in production code. The only browser hook
@@ -358,7 +358,7 @@ What is *not* symmetric is the asset being ported. From the engine analysis:
 - `src/data/` is **~948 KB** of typed corpus, keyed by 22-member discriminated unions.
 
 **React Native runs all of that unchanged in Hermes.** Flutter requires transliterating the
-algorithms *and* reimplementing the type system they are written in: the 22-member `AbilityTagKind`
+algorithms _and_ reimplementing the type system they are written in: the 22-member `AbilityTagKind`
 discriminated union (sealed classes or `freezed`), the branded `PlacementKey` (no equivalent —
 needs a wrapper class or discipline), structural typing in function signatures, `Partial<Record<2|3|4, …>>`
 level overrides, and `Record<StatusEffectType, number>` maps. Then it needs the 207 test cases
@@ -381,8 +381,8 @@ animation) are real and simply not what this app is.
 
 **Recommend React Native via Expo with a development build** (`expo prebuild` / dev client — not
 Expo Go, which cannot load custom native code), plus a **hand-written Kotlin module** for capture,
-overlay and vision. Rationale: it is the only option where the engine and corpus are *imported
-rather than rewritten*, and the native work it does require would have to be written in Kotlin under
+overlay and vision. Rationale: it is the only option where the engine and corpus are _imported
+rather than rewritten_, and the native work it does require would have to be written in Kotlin under
 any framework.
 
 **The option that deserves a spike before committing:** a **native Kotlin app** that embeds the
@@ -403,7 +403,7 @@ worth one week of investigation rather than an assumption.
 Both are IV calculators for Pokémon GO that have operated for years at large scale. Their shared
 architecture is exactly the one proposed here: **a movable overlay button, an on-demand screenshot,
 OCR/image analysis of known regions, and calculation entirely offline.** Calcy IV's own store listing
-is unusually explicit about the boundary: *"No login and no interaction with other applications."*
+is unusually explicit about the boundary: _"No login and no interaction with other applications."_
 
 Niantic's ToS bars "accessing Services in an unauthorized manner (including using modified or
 unofficial third party software)," and both tools are understood to comply because they never touch
@@ -418,11 +418,11 @@ it as a hard architectural boundary rather than a policy preference.
 1. Batomon Showdown is **paid**, from a **solo indie developer** with an active Discord — not a
    corporation with a published third-party-tools stance. There is no precedent to rely on.
 2. The remaining high-value ask (A1c — the stat and ability tables) is the kind of thing a solo
-   developer may feel differently about than Niantic would. Note this is an *advice-quality* ask,
+   developer may feel differently about than Niantic would. Note this is an _advice-quality_ ask,
    not a feasibility one: the sprites the perception layer needs are already vendored.
 
 A direct conversation with berrymint costs an afternoon and resolves more risk than any amount of
-analysis. It may also go *better* than neutral: a 10K-MAU game with an engaged Discord and a
+analysis. It may also go _better_ than neutral: a 10K-MAU game with an engaged Discord and a
 theorycrafting-heavy design is the kind of community where a developer sometimes just hands over
 the data tables. **Recommended early, though only the "is a companion acceptable" half needs to
 precede any code.**
@@ -447,8 +447,8 @@ The calculator's single largest structural limitation, repeated throughout its R
   the engine does not have.
 - Time-to-kill falls back to a static day-indexed HP table.
 
-Batomon Showdown is an **asynchronous PvP autobattler**: you load a saved opponent board, and *that
-board is on screen*. A screen reader that reads the opposing side converts every one of those
+Batomon Showdown is an **asynchronous PvP autobattler**: you load a saved opponent board, and _that
+board is on screen_. A screen reader that reads the opposing side converts every one of those
 assumptions into measured data. EHP and survivability stop being a half-modelled estimate and become
 a real computation against a real enemy.
 
@@ -465,6 +465,7 @@ it changes which features are worth building first.
 ## H. Source index
 
 Platform and policy:
+
 - Android Developers — Media projection (foreground service type, per-session consent, single-use token)
 - Android Developers — `MediaProjectionManager` reference (SAW auto-grant during projection)
 - Android Developers — Compatibility framework changes, Android 16 (`OVERRIDE_DISABLE_MEDIA_PROJECTION_SINGLE_APP_OPTION`, change ID 316897322)
@@ -478,6 +479,7 @@ Platform and policy:
 - Apple — `SCContentSharingPicker`, `SCContentSharingPickerMode`, `presentForCurrentApplication()`
 
 Tooling and ecosystem:
+
 - GDRETools/gdsdecomp (v2.6.0, 2026-07-16); hhyyrylainen/GodotPckTool; arkive-games/gdex
 - Godot Engine — 4.5 release notes (AccessKit, "experimental"); Godot Forum threads on Android TalkBack (2025-09, 2025-12, 2026-01)
 - Google — ML Kit Text Recognition v2 (Android guide, 16×16 px/char guidance)
@@ -489,6 +491,7 @@ Tooling and ecosystem:
 - pnpm + Turborepo monorepo guidance; Expo monorepo Metro configuration and `nodeLinker: hoisted`
 
 Game and precedent:
+
 - berrymint — Batomon Showdown (itch.io demo metadata, Steam, Google Play, batomon.com FAQ)
 - Google Play / APKMirror listings for Calcy IV; r/CalcyIV (Android 14 single-app capture report)
 - Reporting on Poke Genie / Calcy IV ToS compliance

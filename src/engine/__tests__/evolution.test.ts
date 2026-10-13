@@ -148,7 +148,12 @@ describe("resolveLevelUp", () => {
       abilityText: "Evolve on victory.",
       abilityTags: [],
     };
-    const synthetic: Corpus = { creatures: [victoryTriggered], trainers: [], trinkets: [], items: [] };
+    const synthetic: Corpus = {
+      creatures: [victoryTriggered],
+      trainers: [],
+      trinkets: [],
+      items: [],
+    };
     for (const level of [1, 2, 3, 4] as const) {
       const resolved = resolveLevelUp(synthetic, "victoryMon", level);
       if (level === 1) {

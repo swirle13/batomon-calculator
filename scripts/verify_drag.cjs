@@ -29,7 +29,10 @@ const names = (page) =>
   await page.mouse.move(a.x + a.width / 2, a.y + a.height / 2);
   await page.mouse.down();
   for (let s = 1; s <= 12; s++) {
-    await page.mouse.move(a.x + a.width / 2 + ((b.x - a.x) * s) / 12, a.y + a.height / 2 + ((b.y - a.y) * s) / 12);
+    await page.mouse.move(
+      a.x + a.width / 2 + ((b.x - a.x) * s) / 12,
+      a.y + a.height / 2 + ((b.y - a.y) * s) / 12,
+    );
     await page.waitForTimeout(16);
   }
   await page.mouse.up();
@@ -43,7 +46,9 @@ const names = (page) =>
   // A click with no movement must still open the creature picker.
   await page.mouse.click(a.x + a.width / 2, a.y + a.height / 2);
   await page.waitForTimeout(600);
-  const modalOpen = await page.evaluate(`!!document.querySelector('[role="dialog"], dialog[open]')`);
+  const modalOpen = await page.evaluate(
+    `!!document.querySelector('[role="dialog"], dialog[open]')`,
+  );
   console.log("CLICK STILL OPENS PICKER:", modalOpen);
 
   // Text selection should not be triggered by the drag either.

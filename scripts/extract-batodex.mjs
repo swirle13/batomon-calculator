@@ -29,12 +29,23 @@ async function rscPayload(url) {
 function extractObject(payload, marker) {
   const start = payload.indexOf(marker);
   if (start < 0) throw new Error(`marker not found: ${marker} — site structure changed`);
-  let depth = 0, inStr = false, esc = false;
+  let depth = 0,
+    inStr = false,
+    esc = false;
   for (let i = start; i < payload.length; i++) {
     const ch = payload[i];
-    if (esc) { esc = false; continue; }
-    if (ch === "\\") { esc = true; continue; }
-    if (ch === '"') { inStr = !inStr; continue; }
+    if (esc) {
+      esc = false;
+      continue;
+    }
+    if (ch === "\\") {
+      esc = true;
+      continue;
+    }
+    if (ch === '"') {
+      inStr = !inStr;
+      continue;
+    }
     if (inStr) continue;
     if (ch === "{") depth++;
     else if (ch === "}" && --depth === 0) return JSON.parse(payload.slice(start, i + 1));
@@ -58,11 +69,12 @@ const monsters = entries.map((e) => ({
   id: e.id,
   name: e.name,
   rarity: e.rarity,
-  trigger: e.ability && typeof e.ability === "object" && !isRef(e.ability.trigger)
-    ? (e.ability.trigger ?? null)
-    : null,
-  sprite: isRef(e.sprite) ? null : e.sprite ?? null,
-  shinySprite: isRef(e.shinySprite) ? null : e.shinySprite ?? null,
+  trigger:
+    e.ability && typeof e.ability === "object" && !isRef(e.ability.trigger)
+      ? (e.ability.trigger ?? null)
+      : null,
+  sprite: isRef(e.sprite) ? null : (e.sprite ?? null),
+  shinySprite: isRef(e.shinySprite) ? null : (e.shinySprite ?? null),
   regions: Array.isArray(e.sets) ? e.sets.map((s) => SET_TO_REGION[s] ?? s) : null,
   abilityByLevel: Object.fromEntries([1, 2, 3, 4].map((l) => [l, textAt(e.ability, l)])),
   shinyAbilityByLevel: Object.fromEntries([1, 2, 3, 4].map((l) => [l, textAt(e.shinyAbility, l)])),
@@ -80,7 +92,7 @@ try {
   trainers = te.map((e) => ({
     id: e.id,
     name: e.name,
-    sprite: isRef(e.sprite) ? null : e.sprite ?? null,
+    sprite: isRef(e.sprite) ? null : (e.sprite ?? null),
     ability: textAt(e.ability, 1),
   }));
 } catch (err) {

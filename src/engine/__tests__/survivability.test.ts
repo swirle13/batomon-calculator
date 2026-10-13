@@ -68,8 +68,12 @@ describe("survivability in the placement objective", () => {
     // The property that makes stretching the half-life safe where a bonus term is not. A board
     // with an enormous factor and no damage is still a board with no damage.
     const allDefence = board(
-      Species.Runerock, Species.Runerock, Species.Runerock,
-      Species.Runerock, Species.Runerock, Species.Runerock,
+      Species.Runerock,
+      Species.Runerock,
+      Species.Runerock,
+      Species.Runerock,
+      Species.Runerock,
+      Species.Runerock,
     );
     expect(scoreConfiguration(allDefence, corpus)).toBe(0);
     expect(scoreConfiguration(board(Species.Bumblebolt), corpus)).toBeGreaterThan(0);
@@ -79,8 +83,12 @@ describe("survivability in the placement objective", () => {
     // Runerock x5 behind a single Bumblebolt: mitigation dwarfs the 3-damage-per-cast it is
     // measured against, which is exactly where the linear approximation stops being trustworthy.
     const lopsided = board(
-      Species.Bumblebolt, Species.Runerock, Species.Runerock,
-      Species.Runerock, Species.Runerock, Species.Runerock,
+      Species.Bumblebolt,
+      Species.Runerock,
+      Species.Runerock,
+      Species.Runerock,
+      Species.Runerock,
+      Species.Runerock,
     );
     const s = estimate(lopsided);
     expect(s.mitigationPerSecond / s.assumedIncomingDps).toBeGreaterThan(MAX_SURVIVABILITY_FACTOR);
@@ -179,9 +187,9 @@ describe("survivability in the placement objective", () => {
     const attackerDps = simulate(withoutShielder, corpus);
 
     // Bumblebolt genuinely out-damages Runerock, which deals nothing...
-    expect(
-      Object.values(attackerDps.perCreatureDps).reduce((a, b) => a + b, 0),
-    ).toBeGreaterThan(Object.values(shielderDps.perCreatureDps).reduce((a, b) => a + b, 0));
+    expect(Object.values(attackerDps.perCreatureDps).reduce((a, b) => a + b, 0)).toBeGreaterThan(
+      Object.values(shielderDps.perCreatureDps).reduce((a, b) => a + b, 0),
+    );
     // ...and Runerock still wins the slot, because Venopuff's Poison needs time to pay off.
     expect(shielderScore).toBeGreaterThan(attackerScore);
   });

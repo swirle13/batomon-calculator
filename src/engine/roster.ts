@@ -110,7 +110,9 @@ export function arrivingModifiers(
   const carried = (mover.modifiers ?? []).filter(isCreatureScoped);
   // The bench owns nothing: see the asymmetry noted in this module's header.
   const inherited =
-    destination.zone === RosterZone.Grid ? (previousOccupant?.modifiers ?? []).filter(isSlotScoped) : [];
+    destination.zone === RosterZone.Grid
+      ? (previousOccupant?.modifiers ?? []).filter(isSlotScoped)
+      : [];
   return modifiersOrUndefined([...carried, ...inherited]);
 }
 
@@ -180,7 +182,11 @@ function withMemberAt(
  * That matters more with a bench than it did without one: dragging a candidate onto a full board
  * is the main gesture this feature exists for, and it has to put the displaced monster somewhere.
  */
-export function moveRoster(config: TeamConfiguration, from: RosterRef, to: RosterRef): TeamConfiguration {
+export function moveRoster(
+  config: TeamConfiguration,
+  from: RosterRef,
+  to: RosterRef,
+): TeamConfiguration {
   if (rosterRefsEqual(from, to)) return config;
   const mover = rosterMemberAt(config, from);
   if (!mover) return config;

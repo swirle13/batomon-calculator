@@ -86,7 +86,8 @@ export function AffectedCreaturePicker({ kind, onClose }: AffectedCreaturePicker
   const { config, setPaintedCreatureIds, setSmuggledCreatureIds } = useTeamConfig();
   const [query, setQuery] = useState("");
 
-  const selectedIds = (kind === "painted" ? config.paintedCreatureIds : config.smuggledCreatureIds) ?? [];
+  const selectedIds =
+    (kind === "painted" ? config.paintedCreatureIds : config.smuggledCreatureIds) ?? [];
   const setSelected = kind === "painted" ? setPaintedCreatureIds : setSmuggledCreatureIds;
   const isFull = selectedIds.length >= MAX_AFFECTED_SPECIES;
 
@@ -231,12 +232,15 @@ export function AffectedCreaturePicker({ kind, onClose }: AffectedCreaturePicker
 
       {isFull && (
         <p className={styles.pickerWarn} role="status">
-          All {MAX_AFFECTED_SPECIES} slots are taken. Remove one above to choose a different species.
+          All {MAX_AFFECTED_SPECIES} slots are taken. Remove one above to choose a different
+          species.
         </p>
       )}
 
       {sections.length === 0 && (
-        <EmptyNote>{needsRegion ? "No region selected." : "No species match this search."}</EmptyNote>
+        <EmptyNote>
+          {needsRegion ? "No region selected." : "No species match this search."}
+        </EmptyNote>
       )}
 
       {sections.map((section) => (

@@ -19,19 +19,34 @@
 
 /* One above the other on phones: half of a narrow screen fits neither the 120x80 art nor a select. */
 @media (max-width: 640px) {
-  .card { grid-template-columns: 1fr; }
+  .card {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* The art and the name. `center`, not `baseline`: the trainer icon is 120x80 landscape art, and
    baseline-aligning a block image against text pins its bottom edge to the text baseline and drags
    the row down. */
-.identity { display: flex; align-items: center; gap: var(--space-sm); min-width: 0; }
+.identity {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  min-width: 0;
+}
 
 /* The selects, stacked. Their labels share a width via Field's `labelWidth`, so the two controls
    start at the same x-position down the column. */
-.controls { display: flex; flex-direction: column; gap: var(--space-xs); min-width: 0; }
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  min-width: 0;
+}
 
-.name { margin: 0; font-size: var(--font-md); }
+.name {
+  margin: 0;
+  font-size: var(--font-md);
+}
 
 /* Exactly the art's footprint, so the card does not change size when a trainer is chosen. */
 .spritePlaceholder {
@@ -42,11 +57,21 @@
   border-radius: var(--radius-md);
 }
 
-.namePlaceholder { color: var(--text-muted); font-weight: 400; }
-.abilityPlaceholder { color: var(--text-muted); font-style: italic; }
+.namePlaceholder {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+.abilityPlaceholder {
+  color: var(--text-muted);
+  font-style: italic;
+}
 .unconfirmed {
-  font-size: var(--font-2xs); text-transform: uppercase; letter-spacing: 0.06em;
-  color: var(--text-warn); border: 1px solid currentColor; border-radius: var(--radius-pill);
+  font-size: var(--font-2xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-warn);
+  border: 1px solid currentColor;
+  border-radius: var(--radius-pill);
   padding: 0 var(--space-xs);
 }
 /*
@@ -74,7 +99,12 @@
   min-height: 4.5rem;
 }
 
-.ability { margin: 0; font-size: var(--font-sm); color: var(--text-secondary); line-height: 1.45; }
+.ability {
+  margin: 0;
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
 /*
  * `Button size="sm"` carries the look. What is left is where it sits.
  *
@@ -86,8 +116,14 @@
  * are different lengths: Painter's wraps to two lines and Smuggler's to one, so following the text
  * put the same control 21px apart between them. Anchored, it is in the same place in both.
  */
-.showButton { align-self: flex-start; margin-top: auto; }
-.hint { color: var(--text-muted); font-weight: 400; }
+.showButton {
+  align-self: flex-start;
+  margin-top: auto;
+}
+.hint {
+  color: var(--text-muted);
+  font-weight: 400;
+}
 
 /*
  * The affected-species picker is the trinket picker's shape now (2026-10-07, WI-001): `Modal`,
@@ -98,15 +134,34 @@
  *
  * What is left is the copy above the results and the two things a species slot needs.
  */
-.pickerIntro { font-size: var(--font-sm); color: var(--text-secondary); margin: 0 0 var(--space-xs); }
-.pickerWarn { font-size: var(--font-sm); color: var(--text-warn); margin: 0 0 var(--space-xs); }
-.shapeRow { display: flex; flex-wrap: wrap; gap: var(--space-2xs); margin-bottom: var(--space-xs); }
+.pickerIntro {
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
+  margin: 0 0 var(--space-xs);
+}
+.pickerWarn {
+  font-size: var(--font-sm);
+  color: var(--text-warn);
+  margin: 0 0 var(--space-xs);
+}
+.shapeRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs);
+  margin-bottom: var(--space-xs);
+}
 .shapeChip {
-  font-size: var(--font-2xs); padding: var(--space-3xs) var(--space-xs); border-radius: var(--radius-pill);
-  border: 1px dashed var(--line-subtle); color: var(--text-muted);
+  font-size: var(--font-2xs);
+  padding: var(--space-3xs) var(--space-xs);
+  border-radius: var(--radius-pill);
+  border: 1px dashed var(--line-subtle);
+  color: var(--text-muted);
 }
 /* Met is a quiet confirmation, not a reward — the shape is guidance and may be ignored. */
-.shapeMet { border-style: solid; color: var(--text-secondary); }
+.shapeMet {
+  border-style: solid;
+  color: var(--text-secondary);
+}
 
 /* A species slot's tile, sized from the same token the Modifiers cells use: nine of these plus a
    full browse grid is a tall overlay, so the tile identifies the species rather than displaying it. */

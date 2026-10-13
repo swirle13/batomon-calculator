@@ -17,9 +17,14 @@ describe("TeamConfigContext.movePlacement", () => {
 
     act(() => result.current.setPlacement({ row: GridRow.Bottom, col: 0 }, Species.Bumblebolt, 2));
     act(() =>
-      result.current.addPlacementModifier({ row: GridRow.Bottom, col: 0 }, { stat: ModifierStat.DamageFlatAdd, amount: 7 }),
+      result.current.addPlacementModifier(
+        { row: GridRow.Bottom, col: 0 },
+        { stat: ModifierStat.DamageFlatAdd, amount: 7 },
+      ),
     );
-    act(() => result.current.movePlacement({ row: GridRow.Bottom, col: 0 }, { row: GridRow.Top, col: 1 }));
+    act(() =>
+      result.current.movePlacement({ row: GridRow.Bottom, col: 0 }, { row: GridRow.Top, col: 1 }),
+    );
 
     const placements = result.current.config.placements;
     expect(placements).toHaveLength(1);
@@ -36,14 +41,25 @@ describe("TeamConfigContext.movePlacement", () => {
 
     act(() => result.current.setPlacement({ row: GridRow.Bottom, col: 0 }, Species.Bumblebolt, 1));
     act(() =>
-      result.current.addPlacementModifier({ row: GridRow.Bottom, col: 0 }, { stat: ModifierStat.DamageFlatAdd, amount: 5 }),
+      result.current.addPlacementModifier(
+        { row: GridRow.Bottom, col: 0 },
+        { stat: ModifierStat.DamageFlatAdd, amount: 5 },
+      ),
     );
     act(() => result.current.setPlacement({ row: GridRow.Bottom, col: 1 }, Species.Scorchimp, 1));
     act(() =>
-      result.current.addPlacementModifier({ row: GridRow.Bottom, col: 1 }, { stat: ModifierStat.BurnAmountAdd, amount: 2 }),
+      result.current.addPlacementModifier(
+        { row: GridRow.Bottom, col: 1 },
+        { stat: ModifierStat.BurnAmountAdd, amount: 2 },
+      ),
     );
 
-    act(() => result.current.movePlacement({ row: GridRow.Bottom, col: 0 }, { row: GridRow.Bottom, col: 1 }));
+    act(() =>
+      result.current.movePlacement(
+        { row: GridRow.Bottom, col: 0 },
+        { row: GridRow.Bottom, col: 1 },
+      ),
+    );
 
     const placements = result.current.config.placements;
     expect(placements).toHaveLength(2);
@@ -60,14 +76,21 @@ describe("TeamConfigContext.movePlacement", () => {
 
   it("is a no-op when the source slot has no placement", () => {
     const { result } = renderHook(() => useTeamConfig(), { wrapper: TeamConfigProvider });
-    act(() => result.current.movePlacement({ row: GridRow.Bottom, col: 0 }, { row: GridRow.Top, col: 2 }));
+    act(() =>
+      result.current.movePlacement({ row: GridRow.Bottom, col: 0 }, { row: GridRow.Top, col: 2 }),
+    );
     expect(result.current.config.placements).toHaveLength(0);
   });
 
   it("is a no-op when the source and destination slots are the same", () => {
     const { result } = renderHook(() => useTeamConfig(), { wrapper: TeamConfigProvider });
     act(() => result.current.setPlacement({ row: GridRow.Bottom, col: 0 }, Species.Bumblebolt, 1));
-    act(() => result.current.movePlacement({ row: GridRow.Bottom, col: 0 }, { row: GridRow.Bottom, col: 0 }));
+    act(() =>
+      result.current.movePlacement(
+        { row: GridRow.Bottom, col: 0 },
+        { row: GridRow.Bottom, col: 0 },
+      ),
+    );
     expect(result.current.config.placements).toHaveLength(1);
     expect(result.current.config.placements[0]!.creatureId).toBe("bumblebolt");
   });
@@ -177,9 +200,27 @@ describe("TeamConfigContext.setPlacement — what survives a new monster", () =>
   it("accumulates onto the matching scope rather than merging the two", () => {
     const { result } = renderHook(() => useTeamConfig(), { wrapper: TeamConfigProvider });
     act(() => result.current.setPlacement(slot, Species.Craghorn, 1));
-    act(() => result.current.addPlacementModifier(slot, { stat: ModifierStat.DamageFlatAdd, amount: 20, scope: ModifierScope.Creature }));
-    act(() => result.current.addPlacementModifier(slot, { stat: ModifierStat.DamageFlatAdd, amount: 7, scope: ModifierScope.Slot }));
-    act(() => result.current.addPlacementModifier(slot, { stat: ModifierStat.DamageFlatAdd, amount: 20, scope: ModifierScope.Creature }));
+    act(() =>
+      result.current.addPlacementModifier(slot, {
+        stat: ModifierStat.DamageFlatAdd,
+        amount: 20,
+        scope: ModifierScope.Creature,
+      }),
+    );
+    act(() =>
+      result.current.addPlacementModifier(slot, {
+        stat: ModifierStat.DamageFlatAdd,
+        amount: 7,
+        scope: ModifierScope.Slot,
+      }),
+    );
+    act(() =>
+      result.current.addPlacementModifier(slot, {
+        stat: ModifierStat.DamageFlatAdd,
+        amount: 20,
+        scope: ModifierScope.Creature,
+      }),
+    );
 
     const modifiers = result.current.config.placements[0]!.modifiers!;
     expect(modifiers.map((m) => m.amount)).toEqual([40, 7]);

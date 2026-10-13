@@ -53,7 +53,7 @@ against the authoritative per-level series by an automated test
 
 - **Cooldowns**: complete for all 596 records.
 - **Damage**: published for **89 of 149 species**; the other 60 have no damage line in any source
-  reviewed. Those record `baseDamage: null` and render as *no damage line* rather than a misleading
+  reviewed. Those record `baseDamage: null` and render as _no damage line_ rather than a misleading
   `0` — but note `null` here means "not published by our sources", **not** "confirmed to deal no
   damage". A user-supplied in-game screenshot shows Brimtoad dealing 5 damage where every source we
   have omits it, so that conflation is a real, open gap (research.md H9), not a closed question.
@@ -106,17 +106,17 @@ them with `node scripts/vendor-sprites.mjs`.
 
 - **Shield absorption isn't wired into the simulation output.** `applyShieldReduction` is
   implemented and unit-tested (`src/engine/shield.ts`), but the engine only ever models the
-  *user's team's own outgoing damage* against one implicit "idealized target" (see spec.md's
+  _user's team's own outgoing damage_ against one implicit "idealized target" (see spec.md's
   Assumptions) — there's no modeled opposing HP/Shield pool for it to reduce yet. See `tasks.md`
   T037.
 - **The placement suggester is limited by corpus coverage, not by its search.** It evaluates every
   arrangement of your placed Batomon (at most 720) against a time-weighted damage score, but the
-  engine can only *act on* one kind of positional ability: `cooldownSpeedModifier` with an
+  engine can only _act on_ one kind of positional ability: `cooldownSpeedModifier` with an
   `adjacent`/`allAllies` target. In practice that means **one creature in the whole corpus**
   (Formiqueen). Onsetra carries a `behind` tag — "the ally behind applies its Ongoing abilities 1
   additional time" — that is recorded, correctly typed, and read by nothing. Six trinkets have
   slot-scoped effects with no `abilityTags` at all, and one of them (Link Cable, "all of your team's
-  monsters are now considered adjacent") would invalidate the single interaction that *is* visible.
+  monsters are now considered adjacent") would invalidate the single interaction that _is_ visible.
   So "no improvement found" usually means "the effects that would make position matter aren't
   modelled yet". The UI says so rather than implying your layout is optimal.
 - **Creature abilities are only modelled where they carry structured tags.** Round 9 added an

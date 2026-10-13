@@ -24,29 +24,46 @@ interface DpsRateChartProps {
 import { SeriesChart } from "./SeriesChart";
 import { sameSeries } from "./sameSeries";
 /** Memoized, and compared by value, for the same reasons as `CumulativeChart` — see the notes there. */
-export const DpsRateChart = memo(function DpsRateChart({ result }: DpsRateChartProps) {
-  const xValues = result.dpsRateSeries.map((p) => p.tSeconds);
-  const windowSeconds = xValues.length > 0 ? xValues[xValues.length - 1]! : 0;
+export const DpsRateChart = memo(
+  function DpsRateChart({ result }: DpsRateChartProps) {
+    const xValues = result.dpsRateSeries.map((p) => p.tSeconds);
+    const windowSeconds = xValues.length > 0 ? xValues[xValues.length - 1]! : 0;
 
-  return (
-    <section>
-      <h2>Damage per second over time</h2>
-      <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", maxWidth: "48rem", margin: "0 auto 0.5rem" }}>
-        Output <em>at each moment</em>, not the running total. A team leaning on stacking statuses
-        ramps upward here; a direct-damage team stays flat. Use it to judge early versus late output.
-      </p>
-      {/* T256/T257: the shared chart, and the 0.5s increment stated on the axis rather than
+    return (
+      <section>
+        <h2>Damage per second over time</h2>
+        <p
+          style={{
+            fontSize: "0.8rem",
+            color: "var(--text-muted)",
+            maxWidth: "48rem",
+            margin: "0 auto 0.5rem",
+          }}
+        >
+          Output <em>at each moment</em>, not the running total. A team leaning on stacking statuses
+          ramps upward here; a direct-damage team stays flat. Use it to judge early versus late
+          output.
+        </p>
+        {/* T256/T257: the shared chart, and the 0.5s increment stated on the axis rather than
           repeated in every hover card. */}
-      <SeriesChart
-        xValues={xValues}
-        series={[{ name: "DPS", values: result.dpsRateSeries.map((p) => p.dps), color: STAT_COLORS.damage }]}
-        xLabel="seconds (0.5s increments)"
-        yLabel="damage per second"
-        xMax={windowSeconds}
-        xTickInterval={1}
-        ariaLabel="Line chart of instantaneous damage per second over the simulated time window, sampled every 0.5 seconds"
-        formatValue={formatRate}
-      />
-    </section>
-  );
-}, (prev, next) => sameSeries(prev.result.dpsRateSeries, next.result.dpsRateSeries));
+        <SeriesChart
+          xValues={xValues}
+          series={[
+            {
+              name: "DPS",
+              values: result.dpsRateSeries.map((p) => p.dps),
+              color: STAT_COLORS.damage,
+            },
+          ]}
+          xLabel="seconds (0.5s increments)"
+          yLabel="damage per second"
+          xMax={windowSeconds}
+          xTickInterval={1}
+          ariaLabel="Line chart of instantaneous damage per second over the simulated time window, sampled every 0.5 seconds"
+          formatValue={formatRate}
+        />
+      </section>
+    );
+  },
+  (prev, next) => sameSeries(prev.result.dpsRateSeries, next.result.dpsRateSeries),
+);

@@ -1,6 +1,14 @@
 import { RegionId } from "./enums";
 import { Species, TrainerId, TrinketId } from "./ids";
-import { AbilityTrigger, CreatureType, DamageChannel, Rarity, StatColorKey, StatusEffectType, TypeKind } from "./enums";
+import {
+  AbilityTrigger,
+  CreatureType,
+  DamageChannel,
+  Rarity,
+  StatColorKey,
+  StatusEffectType,
+  TypeKind,
+} from "./enums";
 
 /**
  * Per-member data for the closed vocabularies (2026-10-07, round 7).
@@ -89,7 +97,12 @@ interface CreatureTypeMember extends VocabularyMember {
 export const CREATURE_TYPE: Readonly<Record<CreatureType, CreatureTypeMember>> = Object.freeze({
   [CreatureType.Fire]: { label: "Fire", order: 0, color: "#e05a2b", kind: TypeKind.Element },
   [CreatureType.Water]: { label: "Water", order: 1, color: "#2e86de", kind: TypeKind.Element },
-  [CreatureType.Electric]: { label: "Electric", order: 2, color: "#d4b106", kind: TypeKind.Element },
+  [CreatureType.Electric]: {
+    label: "Electric",
+    order: 2,
+    color: "#d4b106",
+    kind: TypeKind.Element,
+  },
   [CreatureType.Toxic]: { label: "Toxic", order: 3, color: "#8e44ad", kind: TypeKind.Element },
   [CreatureType.Flying]: { label: "Flying", order: 4, color: "#70a1d7", kind: TypeKind.Element },
   [CreatureType.Rock]: { label: "Rock", order: 5, color: "#8d6e63", kind: TypeKind.Element },
@@ -98,7 +111,12 @@ export const CREATURE_TYPE: Readonly<Record<CreatureType, CreatureTypeMember>> =
   [CreatureType.Steel]: { label: "Steel", order: 8, color: "#90a4ae", kind: TypeKind.Element },
   [CreatureType.Dragon]: { label: "Dragon", order: 9, color: "#5c6bc0", kind: TypeKind.Element },
   [CreatureType.Ghost]: { label: "Ghost", order: 10, color: "#512da8", kind: TypeKind.Element },
-  [CreatureType.Fighting]: { label: "Fighting", order: 11, color: "#c0392b", kind: TypeKind.Element },
+  [CreatureType.Fighting]: {
+    label: "Fighting",
+    order: 11,
+    color: "#c0392b",
+    kind: TypeKind.Element,
+  },
   [CreatureType.Curio]: { label: "Curio", order: 12, color: "#26a69a", kind: TypeKind.Placeholder },
   [CreatureType.NULL]: { label: "NULL", order: 13, color: "#37474f", kind: TypeKind.Placeholder },
   // No single real-world analog; a distinct accent flags it as the special case it is.

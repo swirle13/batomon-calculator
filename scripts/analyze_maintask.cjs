@@ -18,7 +18,8 @@ const ev = (() => {
 
 const threadName = new Map();
 for (const e of ev) {
-  if (e.name === "thread_name" && e.args && e.args.name) threadName.set(`${e.pid}:${e.tid}`, e.args.name);
+  if (e.name === "thread_name" && e.args && e.args.name)
+    threadName.set(`${e.pid}:${e.tid}`, e.args.name);
 }
 const mainKey = [...threadName.entries()].find(([, n]) => n === "CrRendererMain");
 if (!mainKey) {
@@ -37,13 +38,18 @@ for (const e of ev) {
     const b = begins.get(e.id);
     if (!b) continue;
     const d = (b.args && b.args.data) || {};
-    if (d.interactionId) interactions.push({ start: b.ts, end: e.ts, type: d.type, id: d.interactionId });
+    if (d.interactionId)
+      interactions.push({ start: b.ts, end: e.ts, type: d.type, id: d.interactionId });
   }
 }
-const firstInteraction = interactions.length ? Math.min(...interactions.map((i) => i.start)) : Infinity;
+const firstInteraction = interactions.length
+  ? Math.min(...interactions.map((i) => i.start))
+  : Infinity;
 
 const mainEvents = ev.filter((e) => e.pid === mpid && e.tid === mtid);
-const tasks = mainEvents.filter((e) => e.name === "RunTask" && e.dur > 40000).sort((a, b) => b.dur - a.dur);
+const tasks = mainEvents
+  .filter((e) => e.name === "RunTask" && e.dur > 40000)
+  .sort((a, b) => b.dur - a.dur);
 
 console.log(`\n================ ${label} — MAIN THREAD TASKS ================`);
 console.log(`CrRendererMain = ${mpid}:${mtid};  ${tasks.length} tasks > 40ms\n`);
@@ -60,7 +66,10 @@ for (const t of tasks.slice(0, 6)) {
   console.log(`--- ${(t.dur / 1000).toFixed(0)}ms task, ${when}`);
 
   const inside = mainEvents
-    .filter((e) => e.ph === "X" && e.dur > 2000 && e.ts >= lo && e.ts + e.dur <= hi && e.name !== "RunTask")
+    .filter(
+      (e) =>
+        e.ph === "X" && e.dur > 2000 && e.ts >= lo && e.ts + e.dur <= hi && e.name !== "RunTask",
+    )
     .sort((a, b) => b.dur - a.dur);
 
   // Roll up by event name, which is what tells you layout vs script vs paint.
@@ -73,7 +82,10 @@ for (const t of tasks.slice(0, 6)) {
   const fns = inside
     .filter((e) => e.args && e.args.data && e.args.data.functionName)
     .slice(0, 5)
-    .map((e) => `${e.args.data.functionName}@${(e.args.data.url || "").split("/").pop()}:${e.args.data.lineNumber}`);
+    .map(
+      (e) =>
+        `${e.args.data.functionName}@${(e.args.data.url || "").split("/").pop()}:${e.args.data.lineNumber}`,
+    );
   if (fns.length) console.log(`      functions: ${[...new Set(fns)].join(", ")}`);
   console.log();
 }

@@ -50,8 +50,10 @@ const str = (s: string) => JSON.stringify(s);
 function selector(sel: any, where: string): string {
   const parts = [`kind: ${member(TARGET_KIND, sel.kind, where)}`];
   if (sel.sameTeamOnly !== undefined) parts.push(`sameTeamOnly: ${sel.sameTeamOnly}`);
-  if (sel.typeFilter !== undefined) parts.push(`typeFilter: ${member(CREATURE_TYPE, sel.typeFilter, where)}`);
-  if (sel.rarityFilter !== undefined) parts.push(`rarityFilter: ${member(RARITY, sel.rarityFilter, where)}`);
+  if (sel.typeFilter !== undefined)
+    parts.push(`typeFilter: ${member(CREATURE_TYPE, sel.typeFilter, where)}`);
+  if (sel.rarityFilter !== undefined)
+    parts.push(`rarityFilter: ${member(RARITY, sel.rarityFilter, where)}`);
   if (sel.minLevelFilter !== undefined) parts.push(`minLevelFilter: ${sel.minLevelFilter}`);
   return `{ ${parts.join(", ")} }`;
 }
@@ -59,10 +61,14 @@ function selector(sel: any, where: string): string {
 function effect(eff: any, where: string): string {
   const parts: string[] = [];
   if (eff.statChange) {
-    parts.push(`statChange: { stat: ${member(STAT_CHANGE, eff.statChange.stat, where)}, amount: ${eff.statChange.amount} }`);
+    parts.push(
+      `statChange: { stat: ${member(STAT_CHANGE, eff.statChange.stat, where)}, amount: ${eff.statChange.amount} }`,
+    );
   }
   if (eff.statusGrant) {
-    parts.push(`statusGrant: { type: ${member(STATUS, eff.statusGrant.type, where)}, amount: ${eff.statusGrant.amount} }`);
+    parts.push(
+      `statusGrant: { type: ${member(STATUS, eff.statusGrant.type, where)}, amount: ${eff.statusGrant.amount} }`,
+    );
   }
   if (eff.extraOngoingApplications !== undefined) {
     parts.push(`extraOngoingApplications: ${eff.extraOngoingApplications}`);
@@ -85,7 +91,9 @@ function tag(t: any, where: string): string {
         parts.push(`${key}: ${effect(value, at)}`);
         break;
       case "effects":
-        parts.push(`effects: [${(value as any[]).map((e) => `{ stat: ${member(MODIFIER_STAT, e.stat, at)}, amount: ${e.amount} }`).join(", ")}]`);
+        parts.push(
+          `effects: [${(value as any[]).map((e) => `{ stat: ${member(MODIFIER_STAT, e.stat, at)}, amount: ${e.amount} }`).join(", ")}]`,
+        );
         break;
       case "event":
         parts.push(`event: ${member(EVENT_LABEL, value, at)}`);
@@ -103,7 +111,9 @@ function tag(t: any, where: string): string {
         parts.push(`rowFilter: ${member(ROW, value, at)}`);
         break;
       case "stat":
-        parts.push(`stat: ${t.kind === AbilityTagKind.StatMultiplier ? member(MULTIPLIER_SCOPE, value, at) : member(STAT_CHANGE, value, at)}`);
+        parts.push(
+          `stat: ${t.kind === AbilityTagKind.StatMultiplier ? member(MULTIPLIER_SCOPE, value, at) : member(STAT_CHANGE, value, at)}`,
+        );
         break;
       case "sourceStat":
         parts.push(`sourceStat: ${STATUS.get(String(value)) ?? member(STAT_CHANGE, value, at)}`);
@@ -159,7 +169,9 @@ for (const list of bySpecies.values()) list.sort((a, b) => a.level - b.level);
 const blocks: string[] = [];
 for (const [id, levels] of [...bySpecies].sort(([a], [b]) => a.localeCompare(b))) {
   if (levels.length !== 4 || levels.some((l, i) => l.level !== i + 1)) {
-    throw new Error(`${id}: expected exactly shiny levels 1-4, got [${levels.map((l) => l.level)}]`);
+    throw new Error(
+      `${id}: expected exactly shiny levels 1-4, got [${levels.map((l) => l.level)}]`,
+    );
   }
   const [l1] = levels;
 
@@ -319,4 +331,6 @@ export function allShinyLines(): { id: Species; line: ShinyStatLine }[] {
 `;
 
 writeFileSync(new URL("../src/data/shiny.ts", import.meta.url), `${header}${body}\n${footer}`);
-console.log(`Wrote ${blocks.length} shiny species (from ${Object.keys(SHINY_STATS).length} level records).`);
+console.log(
+  `Wrote ${blocks.length} shiny species (from ${Object.keys(SHINY_STATS).length} level records).`,
+);

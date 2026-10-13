@@ -82,7 +82,15 @@ describe("text fields", () => {
 
 describe("ClampedNumberField", () => {
   /** Renders the field against real state, the way every call site drives it. */
-  function Harness({ min = 1, max = 120, start = 10 }: { min?: number; max?: number; start?: number }) {
+  function Harness({
+    min = 1,
+    max = 120,
+    start = 10,
+  }: {
+    min?: number;
+    max?: number;
+    start?: number;
+  }) {
     const [value, setValue] = useState(start);
     return (
       <Field label="Simulation window (seconds)" inline>

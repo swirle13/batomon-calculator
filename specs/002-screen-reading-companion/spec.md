@@ -29,7 +29,7 @@ Batomon Showdown is an **asynchronous PvP autobattler** — you load a saved opp
 board is on screen. The calculator's single largest structural limitation, stated repeatedly in its
 own source, is that there is no modeled opponent: `applyShieldReduction` is implemented, unit-tested
 and **wired to nothing**; healing and shielding are computed and then absorbed by nothing;
-`CleanseDebuffs` is priced against an *assumed* incoming debuff rate that `survivability.ts` itself
+`CleanseDebuffs` is priced against an _assumed_ incoming debuff rate that `survivability.ts` itself
 flags as "the one tag whose value depends on an assumption about the opponent."
 
 A screen reader sees the enemy. It also sees the shop, the gold, and the current levels — which is
@@ -48,7 +48,7 @@ and the phasing is built so that stopping after any phase still leaves something
 
 ---
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 — Read my board and tell me its DPS (Priority: P1)
 
@@ -125,8 +125,8 @@ appear without the player ever opening the trinket tab.
 3. **Given** the player closes and reopens the app mid-run, **When** they return, **Then** the run
    state is intact.
 
-> **Scope note on the brief's animation-detection request.** Detecting a pickup *from the UI
-> animation* requires continuous capture, a temporal model, and battery the game is already
+> **Scope note on the brief's animation-detection request.** Detecting a pickup _from the UI
+> animation_ requires continuous capture, a temporal model, and battery the game is already
 > spending — and it fails silently when it misses one. State diffing gets the same information for
 > a fraction of the cost, at the price of being current only as of the last scan, which is
 > acceptable in a game with **no timers**. Animation detection is deferred to Phase 4 behind its own
@@ -166,7 +166,7 @@ engine's shield and heal terms are non-zero where the web app's are structurally
 - **Scan taken mid-animation or over a popup.** Must be detected and reported as a bad scan rather
   than parsed into a wrong board.
 - **Capture consent dialog appears every session.** Unavoidable (`research.md` B1). Onboarding must
-  explain it and the flow must require the game running *first*, or only full-screen capture will be
+  explain it and the flow must require the game running _first_, or only full-screen capture will be
   offered.
 - **Overlay blocks the permission prompts we need.** Request every permission before the overlay is
   first shown, or hit the classic "Screen overlay detected" deadlock.
@@ -182,7 +182,7 @@ engine's shield and heal terms are non-zero where the web app's are structurally
 
 ---
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### Functional Requirements — capture and overlay
 
@@ -273,7 +273,7 @@ engine's shield and heal terms are non-zero where the web app's are structurally
 
 ---
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 - **SC-001**: A player goes from "game on screen" to "DPS displayed" in **under 5 seconds** and
   **zero typed characters**, on an already-consented session.
@@ -301,14 +301,14 @@ Each phase ends at something independently useful and shippable. This is deliber
 risk on a hobby project of this size is not technical failure but abandonment at month three
 (`uncertainty-register.md`, unknown-unknowns §6).
 
-| Phase | Delivers | Gated on |
-|---|---|---|
-| **0 — Go / no-go** | Answers: does the game block capture or overlays? Will berrymint permit this? Does the Godot layout calibrate? Is RN earning its keep? | Nothing. ~2 weeks, mostly not coding. KU-1 first, in under an hour. |
-| **1 — Extraction** | The workspace: engine + corpus as shared packages, web app still green, 207 tests still passing. | Phase 0 go. `project-setup.md` §3. |
-| **2 — Read and report** | US1. Capture, overlay, calibration, sprite matching, digit reading, DPS panel, correction UI, golden-frame corpus. The whole risky path, end to end. | Phase 1. **The real project.** |
-| **3 — Advise** | US2 + US3. Placement advisor on the phone, run-state tracking, trinket/item diffing. | Phase 2. Cheapest phase — the engine already exists. |
-| **4 — Opponent** | US4. Modeled target: real EHP, shields that absorb, cleanse priced against measured debuffs. | Phase 3. New engine work; highest value. |
-| **5 — Deferred** | Animation-based pickup detection; iOS screenshot-import companion. | Evidence that Phase 3's diffing is insufficient; an iOS build of the game existing. |
+| Phase                   | Delivers                                                                                                                                             | Gated on                                                                            |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| **0 — Go / no-go**      | Answers: does the game block capture or overlays? Will berrymint permit this? Does the Godot layout calibrate? Is RN earning its keep?               | Nothing. ~2 weeks, mostly not coding. KU-1 first, in under an hour.                 |
+| **1 — Extraction**      | The workspace: engine + corpus as shared packages, web app still green, 207 tests still passing.                                                     | Phase 0 go. `project-setup.md` §3.                                                  |
+| **2 — Read and report** | US1. Capture, overlay, calibration, sprite matching, digit reading, DPS panel, correction UI, golden-frame corpus. The whole risky path, end to end. | Phase 1. **The real project.**                                                      |
+| **3 — Advise**          | US2 + US3. Placement advisor on the phone, run-state tracking, trinket/item diffing.                                                                 | Phase 2. Cheapest phase — the engine already exists.                                |
+| **4 — Opponent**        | US4. Modeled target: real EHP, shields that absorb, cleanse priced against measured debuffs.                                                         | Phase 3. New engine work; highest value.                                            |
+| **5 — Deferred**        | Animation-based pickup detection; iOS screenshot-import companion.                                                                                   | Evidence that Phase 3's diffing is insufficient; an iOS build of the game existing. |
 
 Corpus coverage work (widening ability tags, trinket and item effects) runs **in parallel from Phase
 1**, because it is the engine's real ceiling (`port-inventory.md` §6.1) and it benefits the web app

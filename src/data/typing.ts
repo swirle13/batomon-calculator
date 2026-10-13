@@ -108,7 +108,7 @@ export function regionsOf(creatureId: Species): readonly RegionId[] {
 export function isInOppositeRegion(creatureId: Species, current: RegionId | undefined): boolean {
   if (!current) return false;
   const regions = regionsOf(creatureId);
-  return regions.length > 0 && !regions.includes(current) ;
+  return regions.length > 0 && !regions.includes(current);
 }
 
 /**

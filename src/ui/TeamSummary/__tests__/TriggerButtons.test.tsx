@@ -113,7 +113,8 @@ describe("TriggerButtons — who a press lands on", () => {
 
     // Pyronade and Craghorn are Uncommon, Shikitsune is Rare. A fix that simply wrote to every
     // placement would pass the test above and fail this one.
-    for (const id of [Species.Shikitsune, Species.Pyronade, Species.Craghorn]) expect(banked(id)).toBe("");
+    for (const id of [Species.Shikitsune, Species.Pyronade, Species.Craghorn])
+      expect(banked(id)).toBe("");
   });
 
   it("accumulates per press rather than appending a chip each time", () => {
@@ -149,7 +150,8 @@ describe("TriggerButtons — who a press lands on", () => {
     fireEvent.click(plus(/use an item/));
 
     expect(banked(Species.Craghorn)).toBe("20");
-    for (const id of [Species.Brawlmantis, Species.Pebbler, Species.Venopuff]) expect(banked(id)).toBe("");
+    for (const id of [Species.Brawlmantis, Species.Pebbler, Species.Venopuff])
+      expect(banked(id)).toBe("");
   });
 });
 
@@ -160,7 +162,8 @@ describe("TriggerButtons — stepping back down", () => {
     fireEvent.click(minus(/win a round/));
 
     // Undoing only the presser would leave the allies carrying a bonus with no control to remove it.
-    for (const id of [Species.Brawlmantis, Species.Pebbler, Species.Venopuff]) expect(banked(id)).toBe("");
+    for (const id of [Species.Brawlmantis, Species.Pebbler, Species.Venopuff])
+      expect(banked(id)).toBe("");
   });
 
   it("removes one press at a time rather than clearing the lot", () => {
@@ -204,9 +207,10 @@ describe("TriggerButtons — stepping back down", () => {
  */
 describe("TriggerButtons — a trinket that grants to one chosen monster", () => {
   /** A board with no manual triggers on the open card, so the only row is the trinket's. */
-  const PEBBLER = [BOARD.find((b) => b.id === Species.Pebbler)!, BOARD.find((b) => b.id === Species.Venopuff)!].map(
-    toPlacement,
-  );
+  const PEBBLER = [
+    BOARD.find((b) => b.id === Species.Pebbler)!,
+    BOARD.find((b) => b.id === Species.Venopuff)!,
+  ].map(toPlacement);
 
   function cooldown(creatureId: Species): string {
     return screen.getByTestId(`cooldown-${creatureId}`).textContent ?? "";
@@ -258,7 +262,12 @@ describe("TriggerButtons — a trinket that grants to one chosen monster", () =>
     const typed: TeamPlacement = {
       ...PEBBLER[0]!,
       modifiers: [
-        { id: "typed", stat: ModifierStat.CooldownSpeedAdd, amount: 0.1, scope: ModifierScope.Creature },
+        {
+          id: "typed",
+          stat: ModifierStat.CooldownSpeedAdd,
+          amount: 0.1,
+          scope: ModifierScope.Creature,
+        },
       ],
     };
     renderBoard("pebbler", [typed, PEBBLER[1]!], [TrinketId.TempoCharm]);

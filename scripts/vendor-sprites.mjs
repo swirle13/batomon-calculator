@@ -79,7 +79,9 @@ async function main() {
     const { filename } = await download(entry.sprite, trinketDir);
     trinketByName.set(entry.name.toLowerCase(), { spriteFile: filename });
   }
-  console.log(`downloaded: ${monsterByName.size} monster sprites, ${trinketByName.size} trinket sprites`);
+  console.log(
+    `downloaded: ${monsterByName.size} monster sprites, ${trinketByName.size} trinket sprites`,
+  );
 
   // --- populate spriteFile/abilityTrigger on every corpus record ---
   // Anchored on each record's `sourceRefs:` line, inserting just before it. Every record has
@@ -113,13 +115,18 @@ async function main() {
   const creaturesPath = path.join(ROOT, "src/data/creatures.ts");
   const creatures = patch(await readFile(creaturesPath, "utf8"), monsterByName, (d, indent) => {
     const lines = [`\n${indent}spriteFile: "${d.spriteFile}",`];
-    if (d.abilityTrigger) lines.push(`\n${indent}abilityTrigger: ${JSON.stringify(d.abilityTrigger)},`);
+    if (d.abilityTrigger)
+      lines.push(`\n${indent}abilityTrigger: ${JSON.stringify(d.abilityTrigger)},`);
     return lines.join("");
   });
   await writeFile(creaturesPath, creatures);
 
   const trinketsPath = path.join(ROOT, "src/data/trinkets.ts");
-  const trinketsSrc = patch(await readFile(trinketsPath, "utf8"), trinketByName, (d, indent) => `\n${indent}spriteFile: "${d.spriteFile}",`);
+  const trinketsSrc = patch(
+    await readFile(trinketsPath, "utf8"),
+    trinketByName,
+    (d, indent) => `\n${indent}spriteFile: "${d.spriteFile}",`,
+  );
   await writeFile(trinketsPath, trinketsSrc);
 
   console.log(`patched ${matched} corpus records`);

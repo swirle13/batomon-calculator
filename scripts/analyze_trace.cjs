@@ -29,10 +29,15 @@ const isDev =
   list.some((u) => /localhost:\d+/.test(u) && /\/src\/|\/@vite|\/node_modules\/\.vite/.test(u)) ||
   list.some((u) => /@react-refresh|\/@vite\/client/.test(u));
 const isProd = list.some((u) => /\/assets\/index-[A-Za-z0-9_-]+\.js/.test(u));
-console.log(`origin: ${[...new Set(list.map((u) => u.replace(/^(https?:\/\/[^/]+).*/, "$1")))].join(", ")}`);
-console.log(`looks like: ${isDev ? "DEV (unbundled /src modules or vite client present)" : isProd ? "PRODUCTION (hashed /assets bundle)" : "unclear"}`);
+console.log(
+  `origin: ${[...new Set(list.map((u) => u.replace(/^(https?:\/\/[^/]+).*/, "$1")))].join(", ")}`,
+);
+console.log(
+  `looks like: ${isDev ? "DEV (unbundled /src modules or vite client present)" : isProd ? "PRODUCTION (hashed /assets bundle)" : "unclear"}`,
+);
 const sample = list.filter((u) => /\.js|\.tsx|\.ts/.test(u)).slice(0, 6);
-if (sample.length) console.log("  js urls seen: " + sample.map((u) => u.split("/").slice(-1)[0]).join(", "));
+if (sample.length)
+  console.log("  js urls seen: " + sample.map((u) => u.split("/").slice(-1)[0]).join(", "));
 
 // ---------- 2. Interactions ----------
 const begins = new Map();
@@ -63,10 +68,17 @@ for (const i of withId) {
 }
 console.log(`\ninteractions (distinct non-zero interactionId): ${byId.size}`);
 const groups = [...byId.entries()]
-  .map(([id, g]) => ({ id, dur: Math.max(...g.map((x) => x.dur)), types: [...new Set(g.map((x) => x.type))], ts: Math.min(...g.map((x) => x.ts)) }))
+  .map(([id, g]) => ({
+    id,
+    dur: Math.max(...g.map((x) => x.dur)),
+    types: [...new Set(g.map((x) => x.type))],
+    ts: Math.min(...g.map((x) => x.ts)),
+  }))
   .sort((a, b) => a.ts - b.ts);
 for (const g of groups) {
-  console.log(`  id ${String(g.id).padStart(5)}  ${g.dur.toFixed(0).padStart(5)}ms   ${g.types.join(",")}`);
+  console.log(
+    `  id ${String(g.id).padStart(5)}  ${g.dur.toFixed(0).padStart(5)}ms   ${g.types.join(",")}`,
+  );
 }
 if (groups.length) {
   const sorted = [...groups].sort((a, b) => b.dur - a.dur);
@@ -92,7 +104,7 @@ for (const c of ev) {
   const cpu = c.args && c.args.data && c.args.data.cpuProfile;
   if (!cpu) continue;
   for (const n of cpu.nodes || []) nodesById.set(n.id, n);
-  const deltas = (c.args.data.timeDeltas) || [];
+  const deltas = c.args.data.timeDeltas || [];
   const samples = cpu.samples || [];
   for (let i = 0; i < samples.length; i++) {
     const dt = (deltas[i] || 0) / 1000;
@@ -111,10 +123,17 @@ if (totalMs > 0) {
     const key = `${cf.functionName || "(anonymous)"}  [${fileName.slice(0, 40)}]`;
     agg.set(key, (agg.get(key) || 0) + ms);
   }
-  const idle = [...agg.entries()].filter(([k]) => k.startsWith("(idle)")).reduce((s, [, v]) => s + v, 0);
-  console.log(`\nCPU: ${totalMs.toFixed(0)}ms sampled, ${idle.toFixed(0)}ms idle, ${(totalMs - idle).toFixed(0)}ms busy`);
+  const idle = [...agg.entries()]
+    .filter(([k]) => k.startsWith("(idle)"))
+    .reduce((s, [, v]) => s + v, 0);
+  console.log(
+    `\nCPU: ${totalMs.toFixed(0)}ms sampled, ${idle.toFixed(0)}ms idle, ${(totalMs - idle).toFixed(0)}ms busy`,
+  );
   console.log("top self-time (excluding idle):");
-  for (const [k, ms] of [...agg.entries()].filter(([k]) => !k.startsWith("(idle)")).sort((a, b) => b[1] - a[1]).slice(0, 22)) {
+  for (const [k, ms] of [...agg.entries()]
+    .filter(([k]) => !k.startsWith("(idle)"))
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 22)) {
     console.log(`  ${ms.toFixed(1).padStart(8)}ms  ${k}`);
   }
   const byFile = new Map();

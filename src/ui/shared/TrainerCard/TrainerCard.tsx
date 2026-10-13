@@ -82,7 +82,10 @@ export function TrainerCard({ trainer, controls }: TrainerCardProps) {
               {designation.label} <span className={styles.hint}>— {designation.hint}</span>
             </Button>
             {pickerOpen && (
-              <AffectedCreaturePicker kind={designation.kind} onClose={() => setPickerOpen(false)} />
+              <AffectedCreaturePicker
+                kind={designation.kind}
+                onClose={() => setPickerOpen(false)}
+              />
             )}
           </>
         )}

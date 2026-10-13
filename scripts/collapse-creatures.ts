@@ -68,8 +68,10 @@ const str = (s: string) => JSON.stringify(s);
 function selector(sel: any, where: string): string {
   const parts = [`kind: ${member(TARGET_KIND, sel.kind, where)}`];
   if (sel.sameTeamOnly !== undefined) parts.push(`sameTeamOnly: ${sel.sameTeamOnly}`);
-  if (sel.typeFilter !== undefined) parts.push(`typeFilter: ${member(CREATURE_TYPE, sel.typeFilter, where)}`);
-  if (sel.rarityFilter !== undefined) parts.push(`rarityFilter: ${member(RARITY, sel.rarityFilter, where)}`);
+  if (sel.typeFilter !== undefined)
+    parts.push(`typeFilter: ${member(CREATURE_TYPE, sel.typeFilter, where)}`);
+  if (sel.rarityFilter !== undefined)
+    parts.push(`rarityFilter: ${member(RARITY, sel.rarityFilter, where)}`);
   if (sel.minLevelFilter !== undefined) parts.push(`minLevelFilter: ${sel.minLevelFilter}`);
   return `{ ${parts.join(", ")} }`;
 }
@@ -233,7 +235,15 @@ for (const [id, levels] of bySpecies) {
   }
 
   // Level-invariant fields must genuinely be invariant, or hoisting them loses data.
-  for (const key of ["name", "rarity", "types", "confirmedMaxLevel", "sellValue", "abilityTrigger", "spriteFile"]) {
+  for (const key of [
+    "name",
+    "rarity",
+    "types",
+    "confirmedMaxLevel",
+    "sellValue",
+    "abilityTrigger",
+    "spriteFile",
+  ]) {
     const values = new Set(levels.map((r) => JSON.stringify(r[key] ?? null)));
     if (values.size > 1) throw new Error(`${id}: "${key}" is not level-invariant: ${[...values]}`);
   }
@@ -243,7 +253,8 @@ for (const [id, levels] of bySpecies) {
   lines.push(`\tname: ${str(l1.name)},`);
   lines.push(`\trarity: ${member(RARITY, l1.rarity, id)},`);
   lines.push(`\ttypes: [${l1.types.map((t: string) => member(CREATURE_TYPE, t, id)).join(", ")}],`);
-  if (l1.confirmedMaxLevel !== undefined) lines.push(`\tconfirmedMaxLevel: ${l1.confirmedMaxLevel},`);
+  if (l1.confirmedMaxLevel !== undefined)
+    lines.push(`\tconfirmedMaxLevel: ${l1.confirmedMaxLevel},`);
   if (l1.sellValue !== undefined) lines.push(`\tsellValue: ${l1.sellValue},`);
 
   /*
@@ -259,7 +270,8 @@ for (const [id, levels] of bySpecies) {
   const evolvesInto = levels.map((r) => r.evolvesInto).find((v) => v !== undefined);
   if (evolvesInto !== undefined) lines.push(`\tevolvesInto: ${member(SPECIES, evolvesInto, id)},`);
   if (l1.evolvesAtLevel !== undefined) lines.push(`\tevolvesAtLevel: ${l1.evolvesAtLevel},`);
-  if (l1.abilityTrigger !== undefined) lines.push(`\tabilityTrigger: ${member(TRIGGER, l1.abilityTrigger, id)},`);
+  if (l1.abilityTrigger !== undefined)
+    lines.push(`\tabilityTrigger: ${member(TRIGGER, l1.abilityTrigger, id)},`);
   if (l1.spriteFile !== undefined) lines.push(`\tspriteFile: ${str(l1.spriteFile)},`);
 
   for (const key of LEVEL_KEYS) {

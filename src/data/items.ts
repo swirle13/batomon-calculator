@@ -146,7 +146,8 @@ export const items: ItemRecord[] = [
   {
     id: ItemId.NanaBerry,
     name: "Nana Berry",
-    effectText: "Give the bottom right monster +5% Cooldown Speed. You can use 1 more item(s) today.",
+    effectText:
+      "Give the bottom right monster +5% Cooldown Speed. You can use 1 more item(s) today.",
     rarity: Rarity.Uncommon,
     cost: 1,
     effect: {
@@ -284,7 +285,8 @@ export const items: ItemRecord[] = [
   {
     id: ItemId.Coffee,
     name: "Coffee",
-    effectText: "At the start of the next battle, Batomon On Battle Start abilities activate an additional time.",
+    effectText:
+      "At the start of the next battle, Batomon On Battle Start abilities activate an additional time.",
     rarity: Rarity.SuperRare,
     cost: 5,
     abilityTags: [],

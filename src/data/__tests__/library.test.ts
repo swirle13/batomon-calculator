@@ -74,15 +74,30 @@ describe("run numbering", () => {
   it("follows the LAST day, not the most recently saved one", () => {
     // A board filed retroactively into day 2 must not pull the next save back behind day 5.
     const { library: withRun, run } = createRun(emptyLibrary(), "NL run 1");
-    const { library: a } = saveTeam(withRun, { name: "d5", config: config(Species.Venopuff), runId: run.id, day: 5 });
-    const { library: b } = saveTeam(a, { name: "d2", config: config(Species.Pebbler), runId: run.id, day: 2 });
+    const { library: a } = saveTeam(withRun, {
+      name: "d5",
+      config: config(Species.Venopuff),
+      runId: run.id,
+      day: 5,
+    });
+    const { library: b } = saveTeam(a, {
+      name: "d2",
+      config: config(Species.Pebbler),
+      runId: run.id,
+      day: 2,
+    });
     expect(nextDay(b, run.id)).toBe(6);
   });
 
   it("numbers each run independently", () => {
     const { library: one, run: runA } = createRun(emptyLibrary(), "A");
     const { library: two, run: runB } = createRun(one, "B");
-    const { library } = saveTeam(two, { name: "a1", config: config(Species.Venopuff), runId: runA.id, day: 1 });
+    const { library } = saveTeam(two, {
+      name: "a1",
+      config: config(Species.Venopuff),
+      runId: runA.id,
+      day: 1,
+    });
     expect(nextDay(library, runB.id)).toBe(1);
   });
 });
@@ -92,7 +107,8 @@ describe("ordering", () => {
     const { library: withRun, run } = createRun(emptyLibrary(), "NL run 1");
     const library = [3, 1, 2].reduce<Library>(
       (acc, day) =>
-        saveTeam(acc, { name: `d${day}`, config: config(Species.Venopuff), runId: run.id, day }).library,
+        saveTeam(acc, { name: `d${day}`, config: config(Species.Venopuff), runId: run.id, day })
+          .library,
       withRun,
     );
     expect(teamsForRun(library, run.id).map((team) => team.name)).toEqual(["d1", "d2", "d3"]);
@@ -100,7 +116,12 @@ describe("ordering", () => {
 
   it("keeps the teams in no run queryable on their own", () => {
     const { library: withRun, run } = createRun(emptyLibrary(), "NL run 1");
-    const { library: a } = saveTeam(withRun, { name: "in run", config: config(Species.Venopuff), runId: run.id, day: 1 });
+    const { library: a } = saveTeam(withRun, {
+      name: "in run",
+      config: config(Species.Venopuff),
+      runId: run.id,
+      day: 1,
+    });
     const { library } = saveTeam(a, { name: "loose", config: config(Species.Pebbler) });
     expect(teamsForRun(library, undefined).map((t) => t.name)).toEqual(["loose"]);
     expect(teamsForRun(library, run.id).map((t) => t.name)).toEqual(["in run"]);
@@ -111,7 +132,12 @@ describe("mutations", () => {
   it("keeps a deleted run's teams, as loose saves", () => {
     // Discarding the grouping must not discard the boards filed in it.
     const { library: withRun, run } = createRun(emptyLibrary(), "NL run 1");
-    const { library: saved } = saveTeam(withRun, { name: "d1", config: config(Species.Venopuff), runId: run.id, day: 1 });
+    const { library: saved } = saveTeam(withRun, {
+      name: "d1",
+      config: config(Species.Venopuff),
+      runId: run.id,
+      day: 1,
+    });
     const library = deleteRun(saved, run.id);
 
     expect(library.runs).toEqual([]);
@@ -138,12 +164,18 @@ describe("mutations", () => {
   });
 
   it("ignores a rename to blank, which is what an accidentally-cleared field sends", () => {
-    const { library, team } = saveTeam(emptyLibrary(), { name: "Keep me", config: config(Species.Venopuff) });
+    const { library, team } = saveTeam(emptyLibrary(), {
+      name: "Keep me",
+      config: config(Species.Venopuff),
+    });
     expect(renameTeam(library, team.id, "  ").teams[0]?.name).toBe("Keep me");
   });
 
   it("deletes one team without touching the rest", () => {
-    const { library: a, team } = saveTeam(emptyLibrary(), { name: "go", config: config(Species.Venopuff) });
+    const { library: a, team } = saveTeam(emptyLibrary(), {
+      name: "go",
+      config: config(Species.Venopuff),
+    });
     const { library: b } = saveTeam(a, { name: "stay", config: config(Species.Pebbler) });
     expect(deleteTeam(b, team.id).teams.map((t) => t.name)).toEqual(["stay"]);
   });
@@ -161,18 +193,25 @@ describe("duplicate detection", () => {
 describe("persistence", () => {
   it("round-trips through storage", () => {
     const storage = fakeStorage();
-    const { library } = saveTeam(emptyLibrary(), { name: "Saved", config: config(Species.Venopuff) });
+    const { library } = saveTeam(emptyLibrary(), {
+      name: "Saved",
+      config: config(Species.Venopuff),
+    });
     writeLibrary(library, storage);
     expect(readLibrary(storage)).toEqual(library);
   });
 
   it("returns an empty library rather than throwing on corrupt data", () => {
     // The alternative is an app that will not start until the user clears site data by hand.
-    expect(readLibrary(fakeStorage({ [LIBRARY_STORAGE_KEY]: "{not json" }))).toEqual(emptyLibrary());
-    expect(readLibrary(fakeStorage({ [LIBRARY_STORAGE_KEY]: '{"version":99,"runs":[],"teams":[]}' }))).toEqual(
+    expect(readLibrary(fakeStorage({ [LIBRARY_STORAGE_KEY]: "{not json" }))).toEqual(
       emptyLibrary(),
     );
-    expect(readLibrary(fakeStorage({ [LIBRARY_STORAGE_KEY]: '{"teams":"nope"}' }))).toEqual(emptyLibrary());
+    expect(
+      readLibrary(fakeStorage({ [LIBRARY_STORAGE_KEY]: '{"version":99,"runs":[],"teams":[]}' })),
+    ).toEqual(emptyLibrary());
+    expect(readLibrary(fakeStorage({ [LIBRARY_STORAGE_KEY]: '{"teams":"nope"}' }))).toEqual(
+      emptyLibrary(),
+    );
   });
 
   it("works with no storage at all, which is what a blocked cookie policy looks like", () => {

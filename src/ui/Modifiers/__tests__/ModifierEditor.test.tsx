@@ -75,7 +75,9 @@ describe("ModifierEditor (FR-039)", () => {
     renderEditor(TWO_PLACEMENTS);
     const overlay = openOverlay();
     // (d): the creature a modifier belongs to is structural, not something the user selects.
-    expect(within(overlay).getByRole("button", { name: /add modifier to bumblebolt/i })).toBeTruthy();
+    expect(
+      within(overlay).getByRole("button", { name: /add modifier to bumblebolt/i }),
+    ).toBeTruthy();
     expect(within(overlay).getByRole("button", { name: /add modifier to panbud/i })).toBeTruthy();
   });
 
@@ -91,12 +93,16 @@ describe("ModifierEditor (FR-039)", () => {
   it("uses short stat labels, with the unit convention as supporting text", () => {
     renderEditor(TWO_PLACEMENTS);
     const overlay = openOverlay();
-    const statSelect = within(overlay).getByLabelText(/stat to modify for bumblebolt/i) as HTMLSelectElement;
+    const statSelect = within(overlay).getByLabelText(
+      /stat to modify for bumblebolt/i,
+    ) as HTMLSelectElement;
     const labels = Array.from(statSelect.options).map((o) => o.textContent ?? "");
     expect(labels).toContain("Cooldown Speed (%)");
     // (c): an option label carries its UNIT, never a worked example. "enter 0.2 for +20%" inside a
     // dropdown is unreadable without opening it.
-    expect(labels.some((l) => l.includes("0.2") || l.includes("decimal") || l.includes("enter"))).toBe(false);
+    expect(
+      labels.some((l) => l.includes("0.2") || l.includes("decimal") || l.includes("enter")),
+    ).toBe(false);
     // ...but the convention must still be stated somewhere. Matched on the container's full
     // textContent, since the note interleaves <code> and <strong> and so spans several text nodes.
     // Matched on the paragraph's own text, not the <strong> inside it.
@@ -117,7 +123,9 @@ describe("ModifierEditor (FR-039)", () => {
       fireEvent.change(within(overlay).getByLabelText(/stat to modify for bumblebolt/i), {
         target: { value: label },
       });
-      fireEvent.change(within(overlay).getByLabelText(/amount to add for bumblebolt/i), { target: { value: typed } });
+      fireEvent.change(within(overlay).getByLabelText(/amount to add for bumblebolt/i), {
+        target: { value: typed },
+      });
       fireEvent.click(within(overlay).getByRole("button", { name: /add modifier to bumblebolt/i }));
     }
 
@@ -175,13 +183,17 @@ describe("ModifierEditor (FR-039)", () => {
   it("shows a count on the panel, and nothing on it that can change its height", () => {
     renderEditor(TWO_PLACEMENTS);
     const overlay = openOverlay();
-    fireEvent.change(within(overlay).getByLabelText(/amount to add for panbud/i), { target: { value: "5" } });
+    fireEvent.change(within(overlay).getByLabelText(/amount to add for panbud/i), {
+      target: { value: "5" },
+    });
     fireEvent.click(within(overlay).getByRole("button", { name: /add modifier to panbud/i }));
     fireEvent.click(screen.getByRole("button", { name: "Done" }));
 
     expect(screen.getByRole("button", { name: /edit modifiers/i }).textContent).toMatch(/1 active/);
     expect(screen.queryByText(/Damage \+5/)).toBeNull();
-    expect(screen.queryByRole("button", { name: /remove damage modifier from panbud/i })).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: /remove damage modifier from panbud/i }),
+    ).toBeNull();
   });
 
   it("the panel is itself the control that opens the editor", () => {
@@ -199,6 +211,8 @@ describe("ModifierEditor (FR-039)", () => {
     // The reason rides in the panel's own hint, because a fixed-shape panel has nowhere else to put
     // it — a line of prose below the panel was the thing that could grow.
     expect(screen.getByText(/place a batomon/i)).toBeTruthy();
-    expect((screen.getByRole("button", { name: /edit modifiers/i }) as HTMLButtonElement).disabled).toBe(true);
+    expect(
+      (screen.getByRole("button", { name: /edit modifiers/i }) as HTMLButtonElement).disabled,
+    ).toBe(true);
   });
 });

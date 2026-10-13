@@ -1,5 +1,12 @@
 import { createContext, useContext } from "react";
-import type { BenchIndex, TeamConfiguration, GridSlot, RegionId, RosterRef, StatModifier } from "../data/types";
+import type {
+  BenchIndex,
+  TeamConfiguration,
+  GridSlot,
+  RegionId,
+  RosterRef,
+  StatModifier,
+} from "../data/types";
 import type { Species, TrainerId, TrinketId } from "../data/ids";
 
 /**

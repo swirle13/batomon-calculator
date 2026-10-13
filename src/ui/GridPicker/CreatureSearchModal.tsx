@@ -67,13 +67,21 @@ function targetLabel(target: RosterRef | null): string {
     : `Choose a Batomon for bench position ${target.index + 1}`;
 }
 
-export function CreatureSearchModal({ target, onClose, onSelect, config}: CreatureSearchModalProps) {
+export function CreatureSearchModal({
+  target,
+  onClose,
+  onSelect,
+  config,
+}: CreatureSearchModalProps) {
   const [query, setQuery] = useState("");
   const [rarityFilter, setRarityFilter] = useState<Rarity | "">("");
   const [typeFilter, setTypeFilter] = useState<CreatureType | "">("");
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const allTypes = useMemo(() => Array.from(new Set(distinctCreatures.flatMap((c) => c.types))).sort(), []);
+  const allTypes = useMemo(
+    () => Array.from(new Set(distinctCreatures.flatMap((c) => c.types))).sort(),
+    [],
+  );
 
   // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally keyed on the position's
   // identity (rosterRefKey), not the ref object reference, so re-opening for a *different*
@@ -112,7 +120,9 @@ export function CreatureSearchModal({ target, onClose, onSelect, config}: Creatu
   // unchanged.
   const sections = RARITIES_ASC.map((rarity) => ({
     rarity,
-    creatures: results.filter((c) => c.rarity === rarity).sort((a, b) => a.name.localeCompare(b.name)),
+    creatures: results
+      .filter((c) => c.rarity === rarity)
+      .sort((a, b) => a.name.localeCompare(b.name)),
   })).filter((section) => section.creatures.length > 0);
 
   return (
@@ -223,7 +233,10 @@ export function CreatureSearchModal({ target, onClose, onSelect, config}: Creatu
               />
               {/* Marked, not hidden: an event can legitimately put this on your team. */}
               {isOutOfRegion(creature.id, config) && (
-                <span className={styles.outOfRegionTag} title="Not from your selected region — reachable via events, gifts or Smuggler">
+                <span
+                  className={styles.outOfRegionTag}
+                  title="Not from your selected region — reachable via events, gifts or Smuggler"
+                >
                   other region
                 </span>
               )}

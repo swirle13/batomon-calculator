@@ -6,7 +6,7 @@ Three categories, per the brief: **known knowns**, **known unknowns**, and the *
 unknown unknowns live**. There is no fourth category — you cannot have an unknown known; the phrase
 is an oxymoron and it is not used here.
 
-The third category cannot be enumerated by definition. What it *can* do is name the regions where
+The third category cannot be enumerated by definition. What it _can_ do is name the regions where
 surprises historically come from in projects of this shape, so that when one arrives it is at least
 recognized as the kind of thing that was expected to happen rather than treated as a novel crisis.
 
@@ -16,23 +16,23 @@ recognized as the kind of thing that was expected to happen rather than treated 
 
 Established by the research, with enough confidence to design against.
 
-| # | Fact | Evidence |
-|---|---|---|
-| KK-1 | **The game is Godot.** Pixel art, 2D, `com.batomon.showdown`, 250 MB, v1.2.0, paid $5.09, ~16K installs / ~10K MAU. | itch.io "Made with: Godot"; Play/AppBrain/Steam listings |
-| KK-2 | **There is no accessibility tree to read.** Godot's AccessKit integration is experimental, reported broken on Android TalkBack, and opt-in per node. | Godot 4.5 notes; three forum threads 2025-09 → 2026-01 |
-| KK-3 | **The AccessibilityService route is also closed by policy**, independently of KK-2, as of 2026-01-28; Android 17 Advanced Protection removes it entirely for non-accessibility tools. | Play Console sensitive-permissions policy; Google security blog |
-| KK-4 | **MediaProjection is the only sanctioned read path**, requires a `mediaProjection` foreground service started *before* the token is obtained, and demands **fresh user consent per session** with a single-use token. | Android Developers media projection + `MediaProjectionManager` |
-| KK-5 | **`SYSTEM_ALERT_WINDOW` is auto-granted while a projection is active** (Android R+), if not previously denied — the two permissions are designed to pair. | `MediaProjectionManager` reference |
-| KK-6 | **iOS cannot draw over other apps.** Only system-rendered surfaces (custom-content PiP, Live Activities) cross app boundaries. | Apple docs; no public API exists |
-| KK-7 | **iOS system-wide capture today means a ReplayKit Broadcast Upload Extension**, with a 50 MB process cap and App Group IPC. ScreenCaptureKit's iOS picker is **iOS 27, beta** — not shippable in 2026. | Apple ReplayKit security; ScreenCaptureKit availability annotations |
-| KK-8 | **The game has no iOS build.** berrymint: "iOS coming soon," no date. | batomon.com FAQ |
-| KK-9 | **The engine ports for free to React Native.** ~3,960 LOC with zero platform coupling outside a 36-line worker adapter; 207 tests with no Vitest-specific machinery. | Direct code audit |
-| KK-10 | **Flutter costs an engine rewrite**: 22-member discriminated unions, branded types, structural typing, 948 KB corpus, and 207 unrepeatable test cases. | Direct code audit |
-| KK-11 | **General OCR is too weak to be the foundation** (~75% field F1 on Android), but **does not have to be**: pixel-art template matching plus a fixed-ROI digit classifier covers the reads that matter. | OCR benchmarks; game-screen OCR study; sprite characteristics |
-| KK-12 | **The legitimate precedent is well established**: overlay + on-demand screenshot + offline calculation, no login, no API, no injection. Calcy IV and Poke Genie have run this way for years. | Store listings; Niantic ToS commentary |
-| KK-13 | **The recommendation engine's ceiling is corpus coverage, not search quality.** 10/149 creatures have ability tags; the positional search can act on exactly one creature's ability. | Calculator README; `optimize.ts`; `effects.ts` |
-| KK-14 | **The mobile app can see inputs the web app never can** — most importantly the opponent's board, which is what `shield.ts`, `survivability.ts` and `StatFromTargetStatus` have always been missing. | Game is async PvP; engine source comments |
-| KK-15 | **`specialUse` foreground services are reviewed by Google** with a required justification and demo video; generic descriptions are rejected. Every off-the-shelf overlay plugin uses one. | Play Device and Network Abuse policy; plugin manifests |
+| #     | Fact                                                                                                                                                                                                                  | Evidence                                                            |
+| ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| KK-1  | **The game is Godot.** Pixel art, 2D, `com.batomon.showdown`, 250 MB, v1.2.0, paid $5.09, ~16K installs / ~10K MAU.                                                                                                   | itch.io "Made with: Godot"; Play/AppBrain/Steam listings            |
+| KK-2  | **There is no accessibility tree to read.** Godot's AccessKit integration is experimental, reported broken on Android TalkBack, and opt-in per node.                                                                  | Godot 4.5 notes; three forum threads 2025-09 → 2026-01              |
+| KK-3  | **The AccessibilityService route is also closed by policy**, independently of KK-2, as of 2026-01-28; Android 17 Advanced Protection removes it entirely for non-accessibility tools.                                 | Play Console sensitive-permissions policy; Google security blog     |
+| KK-4  | **MediaProjection is the only sanctioned read path**, requires a `mediaProjection` foreground service started _before_ the token is obtained, and demands **fresh user consent per session** with a single-use token. | Android Developers media projection + `MediaProjectionManager`      |
+| KK-5  | **`SYSTEM_ALERT_WINDOW` is auto-granted while a projection is active** (Android R+), if not previously denied — the two permissions are designed to pair.                                                             | `MediaProjectionManager` reference                                  |
+| KK-6  | **iOS cannot draw over other apps.** Only system-rendered surfaces (custom-content PiP, Live Activities) cross app boundaries.                                                                                        | Apple docs; no public API exists                                    |
+| KK-7  | **iOS system-wide capture today means a ReplayKit Broadcast Upload Extension**, with a 50 MB process cap and App Group IPC. ScreenCaptureKit's iOS picker is **iOS 27, beta** — not shippable in 2026.                | Apple ReplayKit security; ScreenCaptureKit availability annotations |
+| KK-8  | **The game has no iOS build.** berrymint: "iOS coming soon," no date.                                                                                                                                                 | batomon.com FAQ                                                     |
+| KK-9  | **The engine ports for free to React Native.** ~3,960 LOC with zero platform coupling outside a 36-line worker adapter; 207 tests with no Vitest-specific machinery.                                                  | Direct code audit                                                   |
+| KK-10 | **Flutter costs an engine rewrite**: 22-member discriminated unions, branded types, structural typing, 948 KB corpus, and 207 unrepeatable test cases.                                                                | Direct code audit                                                   |
+| KK-11 | **General OCR is too weak to be the foundation** (~75% field F1 on Android), but **does not have to be**: pixel-art template matching plus a fixed-ROI digit classifier covers the reads that matter.                 | OCR benchmarks; game-screen OCR study; sprite characteristics       |
+| KK-12 | **The legitimate precedent is well established**: overlay + on-demand screenshot + offline calculation, no login, no API, no injection. Calcy IV and Poke Genie have run this way for years.                          | Store listings; Niantic ToS commentary                              |
+| KK-13 | **The recommendation engine's ceiling is corpus coverage, not search quality.** 10/149 creatures have ability tags; the positional search can act on exactly one creature's ability.                                  | Calculator README; `optimize.ts`; `effects.ts`                      |
+| KK-14 | **The mobile app can see inputs the web app never can** — most importantly the opponent's board, which is what `shield.ts`, `survivability.ts` and `StatFromTargetStatus` have always been missing.                   | Game is async PvP; engine source comments                           |
+| KK-15 | **`specialUse` foreground services are reviewed by Google** with a required justification and demo video; generic descriptions are rejected. Every off-the-shelf overlay plugin uses one.                             | Play Device and Network Abuse policy; plugin manifests              |
 
 ---
 
@@ -77,7 +77,7 @@ need to produce predictable element positions across devices after one letterbox
   carries weight that Niantic's boilerplate does not.
 - **If (b) is no:** nothing in the perception pipeline is blocked — the sprites are already in hand
   (research A1c). The existing corpus gaps simply persist, exactly as they do on the web app today.
-- **If (b) is yes:** the largest single improvement available to the advice quality on *both*
+- **If (b) is yes:** the largest single improvement available to the advice quality on _both_
   platforms — potentially closing the damage-data gap for 60 species, the ability-tag gap for 139,
   and the trinket/item effect gaps (`port-inventory.md` §6.1).
 
@@ -204,7 +204,7 @@ Pixel and that arrive as user reports rather than crash logs. Budget for it; do 
 **2. Policy drift.** The accessibility policy change of 2026-01-28 is the existence proof that this
 moves, and it moved in a direction that deleted an entire technical approach. Android 17 is already
 adding dynamic signal monitoring that flags overlay behavior. Assume the rules for overlays and
-capture will be *stricter* in two years than today, and prefer designs that would survive that.
+capture will be _stricter_ in two years than today, and prefer designs that would survive that.
 
 **3. The game as a moving target.** Not just patches (KU-10) but structural change: new UI screens,
 a redesigned team pane, new entity kinds the corpus has no type for, a localization pass that

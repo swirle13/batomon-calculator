@@ -9,12 +9,12 @@ last changes that might've caused this behaviour".
 I traced each one. The picker modal itself is responsive and was not touched in a way that affects
 width:
 
-| mechanism | value | responsive? |
-|---|---|---|
-| modal panel | `width: min(var(--modal-width, 900px), 94vw)` | **yes** — viewport-capped |
-| card grid | `repeat(auto-fill, minmax(11rem, 1fr))` | **yes** — collapses to one column |
-| filter toolbar | `display: flex; flex-wrap: wrap` | **yes** — wraps |
-| search field | `flex: 1 1 12rem` | **yes** — shrinks |
+| mechanism      | value                                         | responsive?                       |
+| -------------- | --------------------------------------------- | --------------------------------- |
+| modal panel    | `width: min(var(--modal-width, 900px), 94vw)` | **yes** — viewport-capped         |
+| card grid      | `repeat(auto-fill, minmax(11rem, 1fr))`       | **yes** — collapses to one column |
+| filter toolbar | `display: flex; flex-wrap: wrap`              | **yes** — wraps                   |
+| search field   | `flex: 1 1 12rem`                             | **yes** — shrinks                 |
 
 The recent CSS additions — the out-of-region dim and label, the Clear button — are additive, carry
 no fixed dimensions, and sit inside containers that already wrap.
@@ -84,7 +84,6 @@ Fixed in the same commit — the 640px rule now also sets `--sprite-picker: 72px
 `--picker-card-min-width: 8rem`. Worth recording because it is exactly the failure mode the mobile
 spec needs to prevent: a desktop-motivated size change with no viewport counterpart.
 
-
 ## Addendum: sprite sizes must be integer multiples of 48 (2026-10-07)
 
 Raising `--sprite-picker` to 112px made sprites render visibly off-centre and slightly stretched.
@@ -95,13 +94,13 @@ All source art is **48x48** (288 files; only `aviarab` and `aviarab_shiny` diffe
 renders with `image-rendering: pixelated`. That tells the browser to map each source pixel to whole
 device pixels, so a non-integer scale has to distribute the remainder unevenly:
 
-| size | scale | result |
-|---|---|---|
-| 48 | 1x | crisp |
-| 64 | 1.333x | uneven |
-| 96 | **2x** | crisp |
-| 112 | 2.333x | uneven — the reported bug |
-| 144 | **3x** | crisp |
+| size | scale  | result                    |
+| ---- | ------ | ------------------------- |
+| 48   | 1x     | crisp                     |
+| 64   | 1.333x | uneven                    |
+| 96   | **2x** | crisp                     |
+| 112  | 2.333x | uneven — the reported bug |
+| 144  | **3x** | crisp                     |
 
 Settled on **96px** (2x), which is also the "50% bump" from 64 that was actually asked for, with
 **48px** (1x) under the 640px breakpoint.

@@ -35,17 +35,17 @@
 // ---------------------------------------------------------------------------
 
 export enum Rarity {
-	Common = "Common",
-	Uncommon = "Uncommon",
-	Rare = "Rare",
-	/**
-	 * The STORED value stays `"SuperRare"`. The published spelling is "Super Rare" with a space and
-	 * lives in `RARITY[Rarity.SuperRare].label` — separating the two is what makes the round-6 chip
-	 * bug unrepresentable rather than merely fixed.
-	 */
-	SuperRare = "SuperRare",
-	Legendary = "Legendary",
-	Mythical = "Mythical",
+  Common = "Common",
+  Uncommon = "Uncommon",
+  Rare = "Rare",
+  /**
+   * The STORED value stays `"SuperRare"`. The published spelling is "Super Rare" with a space and
+   * lives in `RARITY[Rarity.SuperRare].label` — separating the two is what makes the round-6 chip
+   * bug unrepresentable rather than merely fixed.
+   */
+  SuperRare = "SuperRare",
+  Legendary = "Legendary",
+  Mythical = "Mythical",
 }
 
 /**
@@ -63,21 +63,21 @@ export enum Rarity {
  * what caused round 10's Omnichrome bug.
  */
 export enum CreatureType {
-	Fire = "Fire",
-	Water = "Water",
-	Electric = "Electric",
-	Toxic = "Toxic",
-	Flying = "Flying",
-	Rock = "Rock",
-	Grass = "Grass",
-	Bug = "Bug",
-	Steel = "Steel",
-	Dragon = "Dragon",
-	Ghost = "Ghost",
-	Fighting = "Fighting",
-	Curio = "Curio",
-	NULL = "NULL",
-	All = "All",
+  Fire = "Fire",
+  Water = "Water",
+  Electric = "Electric",
+  Toxic = "Toxic",
+  Flying = "Flying",
+  Rock = "Rock",
+  Grass = "Grass",
+  Bug = "Bug",
+  Steel = "Steel",
+  Dragon = "Dragon",
+  Ghost = "Ghost",
+  Fighting = "Fighting",
+  Curio = "Curio",
+  NULL = "NULL",
+  All = "All",
 }
 
 /**
@@ -91,10 +91,10 @@ export enum CreatureType {
  * retracted the sudden-death claim it was added for.
  */
 export enum DamageChannel {
-	Direct = "Direct",
-	Burn = "Burn",
-	Poison = "Poison",
-	Shock = "Shock",
+  Direct = "Direct",
+  Burn = "Burn",
+  Poison = "Poison",
+  Shock = "Shock",
 }
 
 /**
@@ -104,10 +104,10 @@ export enum DamageChannel {
  * let the compiler accept `applyShieldReduction(n, Shield, s)` (research.md R3a).
  */
 export enum StatusEffectType {
-	Burn = "Burn",
-	Poison = "Poison",
-	Shock = "Shock",
-	Shield = "Shield",
+  Burn = "Burn",
+  Poison = "Poison",
+  Shock = "Shock",
+  Shield = "Shield",
 }
 
 /**
@@ -117,16 +117,16 @@ export enum StatusEffectType {
  * any monster dying. Different events, easily conflated, so both are spelled out.
  */
 export enum AbilityTrigger {
-	Ongoing = "Ongoing",
-	OnCast = "On Cast",
-	OnBattleStart = "On Battle Start",
-	OnBought = "On Bought",
-	OnVictory = "On Victory",
-	OnKnockedOut = "On Knocked Out",
-	OnKnockout = "On Knockout",
-	OnTrinketGained = "On Trinket Gained",
-	OnItemUsed = "On Item Used",
-	OnBattleLost = "On Battle Lost",
+  Ongoing = "Ongoing",
+  OnCast = "On Cast",
+  OnBattleStart = "On Battle Start",
+  OnBought = "On Bought",
+  OnVictory = "On Victory",
+  OnKnockedOut = "On Knocked Out",
+  OnKnockout = "On Knockout",
+  OnTrinketGained = "On Trinket Gained",
+  OnItemUsed = "On Item Used",
+  OnBattleLost = "On Battle Lost",
 }
 
 /**
@@ -139,8 +139,8 @@ export enum AbilityTrigger {
  * the type unable to catch a mistake.
  */
 export enum RegionId {
-	Pantra = "pantra",
-	Jinto = "jinto",
+  Pantra = "pantra",
+  Jinto = "jinto",
 }
 
 // ---------------------------------------------------------------------------
@@ -171,10 +171,10 @@ export enum RegionId {
  * wire format was only ever opaque.
  */
 export enum GridRow {
-	/** Drawn on top. Serialised as `"back"` — see above; do not "fix" this. */
-	Top = "back",
-	/** Drawn underneath. Serialised as `"front"`. */
-	Bottom = "front",
+  /** Drawn on top. Serialised as `"back"` — see above; do not "fix" this. */
+  Top = "back",
+  /** Drawn underneath. Serialised as `"front"`. */
+  Bottom = "front",
 }
 
 /**
@@ -189,8 +189,8 @@ export enum GridRow {
  * makes "benched" and "not placed yet" the same value, and they are not the same thing.
  */
 export enum RosterZone {
-	Grid = "grid",
-	Bench = "bench",
+  Grid = "grid",
+  Bench = "bench",
 }
 
 // ---------------------------------------------------------------------------
@@ -202,21 +202,21 @@ export enum RosterZone {
  * an effect and not only scale one (see `engine/modifiers.ts` for why that rule was retired).
  */
 export enum ModifierStat {
-	DamageFlatAdd = "damageFlatAdd",
-	CooldownFlatAddSeconds = "cooldownFlatAddSeconds",
-	CooldownSpeedAdd = "cooldownSpeedAdd",
-	BurnAmountAdd = "burnAmountAdd",
-	PoisonAmountAdd = "poisonAmountAdd",
-	ShockAmountAdd = "shockAmountAdd",
-	ShieldAmountAdd = "shieldAmountAdd",
-	/** 2026-10-05 round 2 (research.md D3): adds to a creature's `baseMulticast` count. */
-	MulticastAdd = "multicastAdd",
-	/**
-	 * 2026-10-07 (round 7 WI-002). Heal was the one output stat with no modifier, which made four
-	 * species' abilities HALF unexpressible — "gain +15 Damage and +15 Heal permanently" would have
-	 * derived the damage and silently dropped the heal.
-	 */
-	HealAmountAdd = "healAmountAdd",
+  DamageFlatAdd = "damageFlatAdd",
+  CooldownFlatAddSeconds = "cooldownFlatAddSeconds",
+  CooldownSpeedAdd = "cooldownSpeedAdd",
+  BurnAmountAdd = "burnAmountAdd",
+  PoisonAmountAdd = "poisonAmountAdd",
+  ShockAmountAdd = "shockAmountAdd",
+  ShieldAmountAdd = "shieldAmountAdd",
+  /** 2026-10-05 round 2 (research.md D3): adds to a creature's `baseMulticast` count. */
+  MulticastAdd = "multicastAdd",
+  /**
+   * 2026-10-07 (round 7 WI-002). Heal was the one output stat with no modifier, which made four
+   * species' abilities HALF unexpressible — "gain +15 Damage and +15 Heal permanently" would have
+   * derived the damage and silently dropped the heal.
+   */
+  HealAmountAdd = "healAmountAdd",
 }
 
 /**
@@ -240,8 +240,8 @@ export enum ModifierStat {
  * monster that earned it is the behaviour every existing source wants.
  */
 export enum ModifierScope {
-	Creature = "creature",
-	Slot = "slot",
+  Creature = "creature",
+  Slot = "slot",
 }
 
 /**
@@ -258,44 +258,44 @@ export enum ModifierScope {
  * whoever the user says.
  */
 export enum ItemTargetKind {
-	/** "Give your monsters ..." — every placed monster, optionally narrowed by a filter. */
-	Team = "team",
-	/** "Give the bottom right monster ..." — one slot, named by the item itself. */
-	FixedSlot = "fixedSlot",
-	/**
-	 * "Give 2 random monsters ..." — the game rolls, the USER picks.
-	 *
-	 * Rolling here would be useless for the same reason `AffectedCreaturePicker` gives: the player
-	 * is reconciling a run that has already rolled, and a second independent roll produces a board
-	 * they cannot match against their screen.
-	 */
-	Chosen = "chosen",
+  /** "Give your monsters ..." — every placed monster, optionally narrowed by a filter. */
+  Team = "team",
+  /** "Give the bottom right monster ..." — one slot, named by the item itself. */
+  FixedSlot = "fixedSlot",
+  /**
+   * "Give 2 random monsters ..." — the game rolls, the USER picks.
+   *
+   * Rolling here would be useless for the same reason `AffectedCreaturePicker` gives: the player
+   * is reconciling a run that has already rolled, and a second independent roll produces a board
+   * they cannot match against their screen.
+   */
+  Chosen = "chosen",
 }
 
 /** The event names `onEvent` tags fire on. Distinct spelling from `AbilityTrigger` by design:
  * these are engine-internal labels, while `AbilityTrigger` carries the published wording. */
 export enum EventLabel {
-	OnCast = "OnCast",
-	OnBattleStart = "OnBattleStart",
-	OnVictory = "OnVictory",
-	OnKnockout = "OnKnockout",
+  OnCast = "OnCast",
+  OnBattleStart = "OnBattleStart",
+  OnVictory = "OnVictory",
+  OnKnockout = "OnKnockout",
 }
 
 /** What a timeline entry records. */
 export enum TimelineEventKind {
-	Attack = "attack",
-	Trigger = "trigger",
-	StatusTick = "statusTick",
-	ShockProc = "shockProc",
-	OngoingChange = "ongoingChange",
-	/**
-	 * 2026-10-08. A cast's healing, which the engine resolved into `perCreatureEffectiveStats` and
-	 * then dropped on the floor — thirteen species publish a `healAmount` and not one point of it
-	 * reached the timeline. It carries `heal`, never `damage`, so nothing that sums damage (the
-	 * cumulative series, the DPS buckets, the placement objective's own damage term) picks it up by
-	 * accident. See `engine/survivability.ts` for what reads it.
-	 */
-	Heal = "heal",
+  Attack = "attack",
+  Trigger = "trigger",
+  StatusTick = "statusTick",
+  ShockProc = "shockProc",
+  OngoingChange = "ongoingChange",
+  /**
+   * 2026-10-08. A cast's healing, which the engine resolved into `perCreatureEffectiveStats` and
+   * then dropped on the floor — thirteen species publish a `healAmount` and not one point of it
+   * reached the timeline. It carries `heal`, never `damage`, so nothing that sums damage (the
+   * cumulative series, the DPS buckets, the placement objective's own damage term) picks it up by
+   * accident. See `engine/survivability.ts` for what reads it.
+   */
+  Heal = "heal",
 }
 
 /**
@@ -306,25 +306,25 @@ export enum TimelineEventKind {
  * cooldown, which is not what the ability says.
  */
 export enum StatChangeStat {
-	CooldownSpeed = "cooldownSpeed",
-	Damage = "damage",
-	Multicast = "multicast",
-	CooldownFlatSeconds = "cooldownFlatSeconds",
-	/**
-	 * 2026-10-07. Added because its absence was a hard ceiling on ability derivation, not a
-	 * nice-to-have: Heal is a published output stat with its own colour and card line, but it had no
-	 * `EffectDescriptor` slot, so "Adjacent Water allies gain +25 Heal permanently" (Aster) had
-	 * nowhere to be written however the text was matched. Lumijel, Emperooze and Dewlotl were blocked
-	 * identically. Refusing to derive them was correct while this was missing; now they can be.
-	 */
-	Heal = "heal",
+  CooldownSpeed = "cooldownSpeed",
+  Damage = "damage",
+  Multicast = "multicast",
+  CooldownFlatSeconds = "cooldownFlatSeconds",
+  /**
+   * 2026-10-07. Added because its absence was a hard ceiling on ability derivation, not a
+   * nice-to-have: Heal is a published output stat with its own colour and card line, but it had no
+   * `EffectDescriptor` slot, so "Adjacent Water allies gain +25 Heal permanently" (Aster) had
+   * nowhere to be written however the text was matched. Lumijel, Emperooze and Dewlotl were blocked
+   * identically. Refusing to derive them was correct while this was missing; now they can be.
+   */
+  Heal = "heal",
 }
 
 /** What a `statMultiplier` tag scales. */
 export enum MultiplierScope {
-	Damage = "damage",
-	Status = "status",
-	All = "all",
+  Damage = "damage",
+  Status = "status",
+  All = "all",
 }
 
 // ---------------------------------------------------------------------------
@@ -337,24 +337,24 @@ export enum MultiplierScope {
  * status effects.
  */
 export enum StatColorKey {
-	Damage = "damage",
-	Burn = "burn",
-	Poison = "poison",
-	Shock = "shock",
-	Shield = "shield",
-	Heal = "heal",
-	Multicast = "multicast",
-	/**
-	 * 2026-10-07. The one key here that is NOT a published game value.
-	 *
-	 * The other seven are the game's own extracted colours and must never be adjusted to taste. This
-	 * one exists because Cooldown Speed had no entry at all, so the trigger-button preview and the
-	 * ability-text highlighter were borrowing `Multicast`'s blue -- rendering Ninflora's "+10%
-	 * Cooldown Speed" in a colour that means a different stat. A distinct hue is less wrong than a
-	 * borrowed one; it is flagged as an original choice so a future published value replaces it
-	 * rather than being argued with.
-	 */
-	Cooldown = "cooldown",
+  Damage = "damage",
+  Burn = "burn",
+  Poison = "poison",
+  Shock = "shock",
+  Shield = "shield",
+  Heal = "heal",
+  Multicast = "multicast",
+  /**
+   * 2026-10-07. The one key here that is NOT a published game value.
+   *
+   * The other seven are the game's own extracted colours and must never be adjusted to taste. This
+   * one exists because Cooldown Speed had no entry at all, so the trigger-button preview and the
+   * ability-text highlighter were borrowing `Multicast`'s blue -- rendering Ninflora's "+10%
+   * Cooldown Speed" in a colour that means a different stat. A distinct hue is less wrong than a
+   * borrowed one; it is flagged as an original choice so a future published value replaces it
+   * rather than being argued with.
+   */
+  Cooldown = "cooldown",
 }
 
 // ---------------------------------------------------------------------------
@@ -381,24 +381,24 @@ export enum StatColorKey {
  * withheld from filter lists.
  */
 export enum TypeKind {
-	Element = "element",
-	Wildcard = "wildcard",
-	Placeholder = "placeholder",
+  Element = "element",
+  Wildcard = "wildcard",
+  Placeholder = "placeholder",
 }
 
 /** The two affected-species sets a trainer ability can own (FR-087/FR-088). */
 export enum AffectedSpeciesKind {
-	Painted = "painted",
-	Smuggled = "smuggled",
+  Painted = "painted",
+  Smuggled = "smuggled",
 }
 export enum TargetKind {
-	Self = "self",
-	Adjacent = "adjacent",
-	Row = "row",
-	Behind = "behind",
-	Above = "above",
-	InFront = "inFront",
-	AllAllies = "allAllies",
+  Self = "self",
+  Adjacent = "adjacent",
+  Row = "row",
+  Behind = "behind",
+  Above = "above",
+  InFront = "inFront",
+  AllAllies = "allAllies",
 }
 
 /**
@@ -410,33 +410,33 @@ export enum TargetKind {
  * abilities the engine does not compute.
  */
 export enum AbilityTagKind {
-	Ongoing = "ongoing",
-	Trigger = "trigger",
-	OnEvent = "onEvent",
-	CooldownSpeedModifier = "cooldownSpeedModifier",
-	StatusGrant = "statusGrant",
-	BattleStartStatusFromAllies = "battleStartStatusFromAllies",
-	ChargeOnAllyStatus = "chargeOnAllyStatus",
-	CooldownSpeedOnAllyCast = "cooldownSpeedOnAllyCast",
-	StatFromCount = "statFromCount",
-	BuffOnCast = "buffOnCast",
-	TriggerOnAllyCast = "triggerOnAllyCast",
-	StatMultiplier = "statMultiplier",
-	StatFromTargetStatus = "statFromTargetStatus",
-	TriggerOnAllyTrigger = "triggerOnAllyTrigger",
-	ManualTrigger = "manualTrigger",
-	GainOnAllyStatus = "gainOnAllyStatus",
-	StatFromUniqueTypes = "statFromUniqueTypes",
-	KnockoutAlliesOnBattleStart = "knockoutAlliesOnBattleStart",
-	ReviveKnockedOutAllies = "reviveKnockedOutAllies",
-	StatFromStat = "statFromStat",
-	StatFromOwnStat = "statFromOwnStat",
-	CleanseDebuffs = "cleanseDebuffs",
-	CannotGain = "cannotGain",
-	GrantFromOwnStat = "grantFromOwnStat",
-	ChargeAlly = "chargeAlly",
-	TriggerOnAllyStatus = "triggerOnAllyStatus",
-	GainOnAllyKnockout = "gainOnAllyKnockout",
+  Ongoing = "ongoing",
+  Trigger = "trigger",
+  OnEvent = "onEvent",
+  CooldownSpeedModifier = "cooldownSpeedModifier",
+  StatusGrant = "statusGrant",
+  BattleStartStatusFromAllies = "battleStartStatusFromAllies",
+  ChargeOnAllyStatus = "chargeOnAllyStatus",
+  CooldownSpeedOnAllyCast = "cooldownSpeedOnAllyCast",
+  StatFromCount = "statFromCount",
+  BuffOnCast = "buffOnCast",
+  TriggerOnAllyCast = "triggerOnAllyCast",
+  StatMultiplier = "statMultiplier",
+  StatFromTargetStatus = "statFromTargetStatus",
+  TriggerOnAllyTrigger = "triggerOnAllyTrigger",
+  ManualTrigger = "manualTrigger",
+  GainOnAllyStatus = "gainOnAllyStatus",
+  StatFromUniqueTypes = "statFromUniqueTypes",
+  KnockoutAlliesOnBattleStart = "knockoutAlliesOnBattleStart",
+  ReviveKnockedOutAllies = "reviveKnockedOutAllies",
+  StatFromStat = "statFromStat",
+  StatFromOwnStat = "statFromOwnStat",
+  CleanseDebuffs = "cleanseDebuffs",
+  CannotGain = "cannotGain",
+  GrantFromOwnStat = "grantFromOwnStat",
+  ChargeAlly = "chargeAlly",
+  TriggerOnAllyStatus = "triggerOnAllyStatus",
+  GainOnAllyKnockout = "gainOnAllyKnockout",
 }
 
 /**
@@ -448,6 +448,6 @@ export enum AbilityTagKind {
  * getting one.
  */
 export enum GrantableStat {
-	Multicast = "multicast",
-	Charge = "charge",
+  Multicast = "multicast",
+  Charge = "charge",
 }

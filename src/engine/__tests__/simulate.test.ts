@@ -1,12 +1,27 @@
 import { describe, expect, it } from "vitest";
 import { simulate } from "../simulate";
 import { corpus } from "../../data/corpus";
-import type { Corpus, CreatureSpecies, GridSlot, TeamConfiguration, TeamPlacement, TrinketRecord } from "../../data/types";
+import type {
+  Corpus,
+  CreatureSpecies,
+  GridSlot,
+  TeamConfiguration,
+  TeamPlacement,
+  TrinketRecord,
+} from "../../data/types";
 import { InvalidTeamConfigurationError } from "../errors";
 import { placementKey } from "../grid";
 
-import { syntheticSpecies , syntheticTrinketId } from "../../data/ids";
-import { CreatureType, DamageChannel, GridRow, ModifierStat, Rarity, StatusEffectType, TimelineEventKind } from "../../data/enums";
+import { syntheticSpecies, syntheticTrinketId } from "../../data/ids";
+import {
+  CreatureType,
+  DamageChannel,
+  GridRow,
+  ModifierStat,
+  Rarity,
+  StatusEffectType,
+  TimelineEventKind,
+} from "../../data/enums";
 import { Species } from "../../data/ids";
 
 /** Minimal synthetic corpus for isolating "facilitated damage" attribution from real game data. */
@@ -100,7 +115,9 @@ function multiLevelCorpus(): Corpus {
 describe("simulate", () => {
   it("single Bumblebolt: DPS equals 3 / 2.5 = 1.2", () => {
     const config: TeamConfiguration = {
-      placements: [{ slot: { row: GridRow.Bottom, col: 0 }, creatureId: Species.Bumblebolt, level: 1 }],
+      placements: [
+        { slot: { row: GridRow.Bottom, col: 0 }, creatureId: Species.Bumblebolt, level: 1 },
+      ],
       trainerId: null,
       trinketIds: [],
       itemIds: [],
@@ -134,7 +151,13 @@ describe("simulate", () => {
 
   it("rejects a configuration referencing an unknown creature id", () => {
     const bad: TeamConfiguration = {
-      placements: [{ slot: { row: GridRow.Bottom, col: 0 }, creatureId: syntheticSpecies("not-a-real-creature"), level: 1 }],
+      placements: [
+        {
+          slot: { row: GridRow.Bottom, col: 0 },
+          creatureId: syntheticSpecies("not-a-real-creature"),
+          level: 1,
+        },
+      ],
       trainerId: null,
       trinketIds: [],
       itemIds: [],
@@ -198,12 +221,21 @@ describe("simulate", () => {
    */
   it("teamModifiers damageFlatAdd raises DPS by the flat amount for every placement", () => {
     const config: TeamConfiguration = {
-      placements: [{ slot: { row: GridRow.Bottom, col: 0 }, creatureId: Species.Bumblebolt, level: 1 }],
+      placements: [
+        { slot: { row: GridRow.Bottom, col: 0 }, creatureId: Species.Bumblebolt, level: 1 },
+      ],
       trainerId: null,
       trinketIds: [],
       itemIds: [],
       simulationWindowSeconds: 20,
-      teamModifiers: [{ id: syntheticSpecies("m1"), label: "Round 2 win bonus", stat: ModifierStat.DamageFlatAdd, amount: 10 }],
+      teamModifiers: [
+        {
+          id: syntheticSpecies("m1"),
+          label: "Round 2 win bonus",
+          stat: ModifierStat.DamageFlatAdd,
+          amount: 10,
+        },
+      ],
     };
     const result = simulate(config, corpus);
     const dps = Object.values(result.perCreatureDps)[0];
@@ -217,14 +249,28 @@ describe("simulate", () => {
           slot: { row: GridRow.Bottom, col: 0 },
           creatureId: Species.Bumblebolt,
           level: 1,
-          modifiers: [{ id: syntheticSpecies("p1"), label: "Per-banto bonus", stat: ModifierStat.DamageFlatAdd, amount: 7 }],
+          modifiers: [
+            {
+              id: syntheticSpecies("p1"),
+              label: "Per-banto bonus",
+              stat: ModifierStat.DamageFlatAdd,
+              amount: 7,
+            },
+          ],
         },
       ],
       trainerId: null,
       trinketIds: [],
       itemIds: [],
       simulationWindowSeconds: 20,
-      teamModifiers: [{ id: syntheticSpecies("m1"), label: "Round 2 win bonus", stat: ModifierStat.DamageFlatAdd, amount: 10 }],
+      teamModifiers: [
+        {
+          id: syntheticSpecies("m1"),
+          label: "Round 2 win bonus",
+          stat: ModifierStat.DamageFlatAdd,
+          amount: 10,
+        },
+      ],
     };
     const result = simulate(config, corpus);
     const dps = Object.values(result.perCreatureDps)[0];
@@ -233,12 +279,21 @@ describe("simulate", () => {
 
   it("cooldownFlatAddSeconds and cooldownSpeedAdd modifiers change effective cooldown", () => {
     const config: TeamConfiguration = {
-      placements: [{ slot: { row: GridRow.Bottom, col: 0 }, creatureId: Species.Bumblebolt, level: 1 }],
+      placements: [
+        { slot: { row: GridRow.Bottom, col: 0 }, creatureId: Species.Bumblebolt, level: 1 },
+      ],
       trainerId: null,
       trinketIds: [],
       itemIds: [],
       simulationWindowSeconds: 2.5,
-      teamModifiers: [{ id: syntheticSpecies("m1"), label: "Slow aura", stat: ModifierStat.CooldownFlatAddSeconds, amount: 2.5 }],
+      teamModifiers: [
+        {
+          id: syntheticSpecies("m1"),
+          label: "Slow aura",
+          stat: ModifierStat.CooldownFlatAddSeconds,
+          amount: 2.5,
+        },
+      ],
     };
     const result = simulate(config, corpus);
     // Effective cooldown becomes 2.5 (base) + 2.5 (flat add) = 5s, so within a 2.5s window the
@@ -257,12 +312,21 @@ describe("simulate", () => {
    */
   it("a damage modifier gives a cast to a creature with no published damage", () => {
     const config: TeamConfiguration = {
-      placements: [{ slot: { row: GridRow.Bottom, col: 0 }, creatureId: Species.Venopuff, level: 1 }],
+      placements: [
+        { slot: { row: GridRow.Bottom, col: 0 }, creatureId: Species.Venopuff, level: 1 },
+      ],
       trainerId: null,
       trinketIds: [],
       itemIds: [],
       simulationWindowSeconds: 10,
-      teamModifiers: [{ id: syntheticSpecies("m1"), label: "Damage trinket", stat: ModifierStat.DamageFlatAdd, amount: 99 }],
+      teamModifiers: [
+        {
+          id: syntheticSpecies("m1"),
+          label: "Damage trinket",
+          stat: ModifierStat.DamageFlatAdd,
+          amount: 99,
+        },
+      ],
     };
     const result = simulate(config, corpus);
     // Venopuff casts every 3.5s, so a 10s window holds two casts — 3.5 and 7.0, with the third at
@@ -294,7 +358,14 @@ describe("simulate", () => {
     };
     const charmed: TeamConfiguration = {
       ...base,
-      teamModifiers: [{ id: syntheticSpecies("m1"), label: "Tempo Charm", stat: ModifierStat.CooldownSpeedAdd, amount: 0.04 }],
+      teamModifiers: [
+        {
+          id: syntheticSpecies("m1"),
+          label: "Tempo Charm",
+          stat: ModifierStat.CooldownSpeedAdd,
+          amount: 0.04,
+        },
+      ],
     };
     const key = placementKey(Species.Panbud, { row: GridRow.Top, col: 2 });
 
@@ -305,7 +376,9 @@ describe("simulate", () => {
 
   it("status-amount modifiers increase the applied layer count for a creature that already applies that status", () => {
     const withoutModifier: TeamConfiguration = {
-      placements: [{ slot: { row: GridRow.Bottom, col: 0 }, creatureId: Species.Venopuff, level: 1 }],
+      placements: [
+        { slot: { row: GridRow.Bottom, col: 0 }, creatureId: Species.Venopuff, level: 1 },
+      ],
       trainerId: null,
       trinketIds: [],
       itemIds: [],
@@ -314,7 +387,14 @@ describe("simulate", () => {
     };
     const withModifier: TeamConfiguration = {
       ...withoutModifier,
-      teamModifiers: [{ id: syntheticSpecies("m1"), label: "+2 Poison", stat: ModifierStat.PoisonAmountAdd, amount: 2 }],
+      teamModifiers: [
+        {
+          id: syntheticSpecies("m1"),
+          label: "+2 Poison",
+          stat: ModifierStat.PoisonAmountAdd,
+          amount: 2,
+        },
+      ],
     };
     const base = simulate(withoutModifier, corpus).perStatusPerSecond.Poison;
     const boosted = simulate(withModifier, corpus).perStatusPerSecond.Poison;
@@ -332,8 +412,16 @@ describe("simulate", () => {
     const synthetic = syntheticCorpus();
     const config: TeamConfiguration = {
       placements: [
-        { slot: { row: GridRow.Bottom, col: 0 }, creatureId: syntheticSpecies("shockApplier"), level: 1 },
-        { slot: { row: GridRow.Bottom, col: 1 }, creatureId: syntheticSpecies("attacker"), level: 1 },
+        {
+          slot: { row: GridRow.Bottom, col: 0 },
+          creatureId: syntheticSpecies("shockApplier"),
+          level: 1,
+        },
+        {
+          slot: { row: GridRow.Bottom, col: 1 },
+          creatureId: syntheticSpecies("attacker"),
+          level: 1,
+        },
       ],
       trainerId: null,
       trinketIds: [],
@@ -342,12 +430,16 @@ describe("simulate", () => {
     };
     const result = simulate(config, synthetic);
 
-    const shockApplierKey = Object.keys(result.perCreatureFacilitatedDps).find((k) => k.startsWith("shockApplier@"));
+    const shockApplierKey = Object.keys(result.perCreatureFacilitatedDps).find((k) =>
+      k.startsWith("shockApplier@"),
+    );
     expect(shockApplierKey).toBeDefined();
     expect(result.perCreatureFacilitatedDps[shockApplierKey!]).toBeGreaterThan(0);
 
     // shockApplier never deals direct damage itself.
-    expect(Object.keys(result.perCreatureDps).some((k) => k.startsWith("shockApplier@"))).toBe(false);
+    expect(Object.keys(result.perCreatureDps).some((k) => k.startsWith("shockApplier@"))).toBe(
+      false,
+    );
 
     // attacker's own DPS is exactly its own direct damage (5 dmg / 1s cooldown = 5/s), not
     // inflated by the Shock proc damage its hits triggered.
@@ -377,7 +469,9 @@ describe("simulate", () => {
    */
   it("Shield grants are tracked in perStatusPerSecond and cumulativeSeries", () => {
     const config: TeamConfiguration = {
-      placements: [{ slot: { row: GridRow.Bottom, col: 0 }, creatureId: Species.Pebbler, level: 1 }],
+      placements: [
+        { slot: { row: GridRow.Bottom, col: 0 }, creatureId: Species.Pebbler, level: 1 },
+      ],
       trainerId: null,
       trinketIds: [],
       itemIds: [],
@@ -398,7 +492,13 @@ describe("simulate", () => {
   it("Multicast fires N independent direct-damage events, staggered 0.1s apart (research.md F2, round 4)", () => {
     const synthetic = multicastCorpus();
     const config: TeamConfiguration = {
-      placements: [{ slot: { row: GridRow.Bottom, col: 0 }, creatureId: syntheticSpecies("multiCaster"), level: 1 }],
+      placements: [
+        {
+          slot: { row: GridRow.Bottom, col: 0 },
+          creatureId: syntheticSpecies("multiCaster"),
+          level: 1,
+        },
+      ],
       trainerId: null,
       trinketIds: [],
       itemIds: [],
@@ -436,7 +536,13 @@ describe("simulate", () => {
   it("a Multicast repetition staggered past the simulation window is not generated", () => {
     const synthetic = multicastCorpus(); // baseMulticast: 3, baseCooldownSeconds: 1
     const config: TeamConfiguration = {
-      placements: [{ slot: { row: GridRow.Bottom, col: 0 }, creatureId: syntheticSpecies("multiCaster"), level: 1 }],
+      placements: [
+        {
+          slot: { row: GridRow.Bottom, col: 0 },
+          creatureId: syntheticSpecies("multiCaster"),
+          level: 1,
+        },
+      ],
       trainerId: null,
       trinketIds: [],
       itemIds: [],
@@ -454,7 +560,9 @@ describe("simulate", () => {
    */
   it("perCreatureEffectiveStats reflects an active damageFlatAdd modifier", () => {
     const config: TeamConfiguration = {
-      placements: [{ slot: { row: GridRow.Bottom, col: 0 }, creatureId: Species.Bumblebolt, level: 1 }],
+      placements: [
+        { slot: { row: GridRow.Bottom, col: 0 }, creatureId: Species.Bumblebolt, level: 1 },
+      ],
       trainerId: null,
       trinketIds: [],
       itemIds: [],
@@ -462,7 +570,9 @@ describe("simulate", () => {
       teamModifiers: [{ id: syntheticSpecies("m1"), stat: ModifierStat.DamageFlatAdd, amount: 10 }],
     };
     const result = simulate(config, corpus);
-    const key = Object.keys(result.perCreatureEffectiveStats).find((k) => k.startsWith("bumblebolt@"));
+    const key = Object.keys(result.perCreatureEffectiveStats).find((k) =>
+      k.startsWith("bumblebolt@"),
+    );
     expect(key).toBeDefined();
     const stats = result.perCreatureEffectiveStats[key!]!;
     expect(stats.output.damage).toBeCloseTo(3 + 10, 5);
@@ -478,14 +588,22 @@ describe("simulate", () => {
   it("cast times never accumulate floating-point drift across many casts", () => {
     const synthetic = driftCorpus();
     const config: TeamConfiguration = {
-      placements: [{ slot: { row: GridRow.Bottom, col: 0 }, creatureId: syntheticSpecies("driftCreature"), level: 1 }],
+      placements: [
+        {
+          slot: { row: GridRow.Bottom, col: 0 },
+          creatureId: syntheticSpecies("driftCreature"),
+          level: 1,
+        },
+      ],
       trainerId: null,
       trinketIds: [],
       itemIds: [],
       simulationWindowSeconds: 4.9 * 25, // 25 casts
     };
     const result = simulate(config, synthetic);
-    const attackTimes = result.timeline.filter((e) => e.kind === TimelineEventKind.Attack).map((e) => e.tSeconds);
+    const attackTimes = result.timeline
+      .filter((e) => e.kind === TimelineEventKind.Attack)
+      .map((e) => e.tSeconds);
     expect(attackTimes.length).toBeGreaterThanOrEqual(24);
     for (const t of attackTimes) {
       // Rounding to 6 decimal places must be a no-op if there is no drift beyond that
@@ -502,13 +620,22 @@ describe("simulate", () => {
   it("resolves a placement's creature by the exact (id, level) pair, not id alone", () => {
     const synthetic = multiLevelCorpus();
     const level1Config: TeamConfiguration = {
-      placements: [{ slot: { row: GridRow.Bottom, col: 0 }, creatureId: syntheticSpecies("leveledMon"), level: 1 }],
+      placements: [
+        {
+          slot: { row: GridRow.Bottom, col: 0 },
+          creatureId: syntheticSpecies("leveledMon"),
+          level: 1,
+        },
+      ],
       trainerId: null,
       trinketIds: [],
       itemIds: [],
       simulationWindowSeconds: 2,
     };
-    const level2Config: TeamConfiguration = { ...level1Config, placements: [{ ...level1Config.placements[0]!, level: 2 }] };
+    const level2Config: TeamConfiguration = {
+      ...level1Config,
+      placements: [{ ...level1Config.placements[0]!, level: 2 }],
+    };
 
     const level1Result = simulate(level1Config, synthetic);
     const level2Result = simulate(level2Config, synthetic);
@@ -540,9 +667,9 @@ describe("simulate", () => {
     );
     // A level outside 1-4. Only reachable past the type, which is the point: `validate()` is the
     // runtime backstop for a config that arrived from storage or a share link, not from the UI.
-    expect(() => simulate(place(syntheticSpecies("leveledMon"), 5 as TeamPlacement["level"]), synthetic)).toThrow(
-      InvalidTeamConfigurationError,
-    );
+    expect(() =>
+      simulate(place(syntheticSpecies("leveledMon"), 5 as TeamPlacement["level"]), synthetic),
+    ).toThrow(InvalidTeamConfigurationError);
     // And the levels it does publish all resolve.
     for (const level of [1, 2, 3, 4] as const) {
       expect(() => simulate(place(syntheticSpecies("leveledMon"), level), synthetic)).not.toThrow();
@@ -565,7 +692,13 @@ describe("simulate", () => {
     };
     const synthetic = { ...base, trinkets: [bonusTrinket] };
     const config: TeamConfiguration = {
-      placements: [{ slot: { row: GridRow.Bottom, col: 0 }, creatureId: syntheticSpecies("multiCaster"), level: 1 }],
+      placements: [
+        {
+          slot: { row: GridRow.Bottom, col: 0 },
+          creatureId: syntheticSpecies("multiCaster"),
+          level: 1,
+        },
+      ],
       trainerId: null,
       trinketIds: [syntheticTrinketId("test-trinket")],
       itemIds: [],
@@ -590,7 +723,13 @@ describe("simulate", () => {
     };
     const synthetic = { ...base, trinkets: [bonusTrinket] };
     const config: TeamConfiguration = {
-      placements: [{ slot: { row: GridRow.Bottom, col: 0 }, creatureId: syntheticSpecies("multiCaster"), level: 1 }],
+      placements: [
+        {
+          slot: { row: GridRow.Bottom, col: 0 },
+          creatureId: syntheticSpecies("multiCaster"),
+          level: 1,
+        },
+      ],
       trainerId: null,
       trinketIds: [], // not selected
       itemIds: [],
@@ -807,7 +946,9 @@ describe("second-order status metrics (FR-055/056/057)", () => {
     // burn stack DOES plateau fast, because its instance expires in well under a second.
     const tinyBurn = simulate(
       {
-        placements: [{ slot: { row: GridRow.Top, col: 0 }, creatureId: Species.Brimtoad, level: 1 }],
+        placements: [
+          { slot: { row: GridRow.Top, col: 0 }, creatureId: Species.Brimtoad, level: 1 },
+        ],
         trainerId: null,
         trinketIds: [],
         itemIds: [],
@@ -863,10 +1004,16 @@ describe("second-order status metrics (FR-055/056/057)", () => {
 describe("instantaneous DPS series (FR-068)", () => {
   function teamOf(ids: string[], windowSeconds: number): TeamConfiguration {
     const slots = [
-      { row: GridRow.Top, col: 0 }, { row: GridRow.Top, col: 1 }, { row: GridRow.Top, col: 2 },
+      { row: GridRow.Top, col: 0 },
+      { row: GridRow.Top, col: 1 },
+      { row: GridRow.Top, col: 2 },
     ] as const;
     return {
-      placements: ids.map((id, i) => ({ creatureId: syntheticSpecies(id), level: 1 as const, slot: slots[i]! })),
+      placements: ids.map((id, i) => ({
+        creatureId: syntheticSpecies(id),
+        level: 1 as const,
+        slot: slots[i]!,
+      })),
       trainerId: null,
       trinketIds: [],
       itemIds: [],
@@ -887,7 +1034,8 @@ describe("instantaneous DPS series (FR-068)", () => {
     // second half's average must not exceed the first half's by a meaningful margin.
     const series = simulate(teamOf(["rubbin"], 60), corpus).dpsRateSeries;
     const mid = Math.floor(series.length / 2);
-    const avg = (xs: { dps: number }[]) => xs.reduce((s, x) => s + x.dps, 0) / Math.max(1, xs.length);
+    const avg = (xs: { dps: number }[]) =>
+      xs.reduce((s, x) => s + x.dps, 0) / Math.max(1, xs.length);
     expect(avg(series.slice(mid))).toBeLessThan(avg(series.slice(1, mid)) * 1.5);
   });
 

@@ -71,7 +71,10 @@ export function usePlacementAdvice(config: TeamConfiguration): PlacementAdviceSt
   const inFlightFor = useRef<TeamConfiguration | null>(null);
   /** The latest board that still needs searching once the worker frees up. */
   const queued = useRef<TeamConfiguration | null>(null);
-  const [result, setResult] = useState<{ advice: PlacementAdvice; config: TeamConfiguration } | null>(null);
+  const [result, setResult] = useState<{
+    advice: PlacementAdvice;
+    config: TeamConfiguration;
+  } | null>(null);
 
   // Created once and kept, rather than per search: spawning a thread costs more than the message
   // it would carry. Declared before the posting effect below so the worker exists by the time

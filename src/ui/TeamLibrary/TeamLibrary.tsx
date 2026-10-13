@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type PointerEvent as ReactPointerEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
 import { useTeamConfig } from "../../context/teamConfig";
 import { DEFAULT_RUN_DAY } from "../../data/enemyHealth";
 import { formatRate } from "../../data/format";
@@ -239,7 +246,11 @@ export function TeamLibrary() {
         inert={!open}
         // Follows the finger while dragging, and is dropped on release so the class transition
         // takes over — snapping back or sliding the rest of the way out.
-        style={dragOffset > 0 ? { transform: `translateY(${dragOffset}px)`, transition: "none" } : undefined}
+        style={
+          dragOffset > 0
+            ? { transform: `translateY(${dragOffset}px)`, transition: "none" }
+            : undefined
+        }
       >
         {/* The handle and the header are ONE grip. A sheet is dragged by its top, and a 4px bar is
             not a target — the header is the part a thumb actually lands on. */}
@@ -272,7 +283,12 @@ export function TeamLibrary() {
                   // The same card a run holds, in the same frame a run gets, with no heading above
                   // it — it is one board, and there is nothing to expand or collapse.
                   <section key={entry.team.id} className={`${styles.group} ${styles.standalone}`}>
-                    <TeamList teams={[entry.team]} library={library} commit={commit} onLoad={handleLoad} />
+                    <TeamList
+                      teams={[entry.team]}
+                      library={library}
+                      commit={commit}
+                      onLoad={handleLoad}
+                    />
                   </section>
                 ),
               )}
@@ -281,8 +297,8 @@ export function TeamLibrary() {
                   list, and "nothing saved yet" underneath it would be contradicting it. */}
               {entries.length === 0 && (
                 <p className={styles.empty}>
-                  Nothing saved yet. Build a board, then save it here — start a run first if you want the
-                  day-by-day boards kept together.
+                  Nothing saved yet. Build a board, then save it here — start a run first if you
+                  want the day-by-day boards kept together.
                 </p>
               )}
             </div>
@@ -421,7 +437,9 @@ function SaveForm({
         </Button>
       </div>
 
-      {!activeRunId && <p className={styles.runHint}>This board will sit in the list on its own.</p>}
+      {!activeRunId && (
+        <p className={styles.runHint}>This board will sit in the list on its own.</p>
+      )}
 
       {newRunName !== null && (
         <div className={styles.runRow}>
@@ -549,7 +567,9 @@ function RunGroup({
                 size="sm"
                 value={run.outcome}
                 aria-label={`Outcome of ${run.name}`}
-                onChange={(e) => commit(setRunOutcome(library, run.id, e.target.value as RunOutcome))}
+                onChange={(e) =>
+                  commit(setRunOutcome(library, run.id, e.target.value as RunOutcome))
+                }
               >
                 {OUTCOMES.map((outcome) => (
                   <option key={outcome.value} value={outcome.value}>
@@ -679,7 +699,9 @@ function TeamCard({
         <div className={styles.cardStats}>
           <span className={styles.dps}>{preview.dps === null ? "—" : formatRate(preview.dps)}</span>
           <span className={styles.dpsLabel}>DPS avg</span>
-          <span className={styles.roster}>{preview.broken ? "Code unreadable" : roster.join(", ")}</span>
+          <span className={styles.roster}>
+            {preview.broken ? "Code unreadable" : roster.join(", ")}
+          </span>
         </div>
       </div>
 

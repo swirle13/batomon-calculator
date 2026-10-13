@@ -38,16 +38,16 @@ simulated at a time; simulation windows on the order of 10–60 simulated second
 
 ## Constitution Check
 
-*GATE: evaluated before Phase 0 research and re-evaluated after Phase 1 design below.*
+_GATE: evaluated before Phase 0 research and re-evaluated after Phase 1 design below._
 
-| Principle | Compliant? | How |
-|---|---|---|
-| I. Static-Data, Engine-Driven Architecture | ✅ | `src/data/**` (corpus) / `src/engine/**` (pure `simulate`, `effectiveCooldown`, etc.) / `src/ui/**` are three separate directories; engine contract (contracts/engine-api.md) takes plain data in, plain data out, no React import |
-| II. TypeScript Strict Mode | ✅ | `tsconfig.json` strict family enabled from project scaffold; data-model.md defines closed discriminated unions for every enum-like field (`Rarity`, `CreatureType`, `DamageType`, `StatusEffectType`, `AbilityTag`, `TargetSelector`) |
-| III. Test-First Engine | ✅ | contracts/engine-api.md calls out exactly which functions need worked-example tests before dependents are written (`effectiveCooldown` against B1's 3 examples first) |
-| IV. Cited, Versioned Corpus | ✅ | `Provenance`/`SourceRef`/`FieldConflict` are first-class data-model types every corpus record extends; `STATUS_VS_SHIELD_REDUCTION`-style engine constants also carry provenance per research.md B3 |
-| V. Zero-Backend, Static Hosting | ✅ | No API routes, no server directory in the structure below; GitHub Actions → gh-pages |
-| VI. Simplicity & Incremental Delivery | ✅ | tasks.md (next command) will sequence a small real slice (one DOT applier, one Shield/support unit, one positional-ability unit) before widening corpus coverage, per spec's own User Story priorities |
+| Principle                                  | Compliant? | How                                                                                                                                                                                                                                   |
+| ------------------------------------------ | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| I. Static-Data, Engine-Driven Architecture | ✅         | `src/data/**` (corpus) / `src/engine/**` (pure `simulate`, `effectiveCooldown`, etc.) / `src/ui/**` are three separate directories; engine contract (contracts/engine-api.md) takes plain data in, plain data out, no React import    |
+| II. TypeScript Strict Mode                 | ✅         | `tsconfig.json` strict family enabled from project scaffold; data-model.md defines closed discriminated unions for every enum-like field (`Rarity`, `CreatureType`, `DamageType`, `StatusEffectType`, `AbilityTag`, `TargetSelector`) |
+| III. Test-First Engine                     | ✅         | contracts/engine-api.md calls out exactly which functions need worked-example tests before dependents are written (`effectiveCooldown` against B1's 3 examples first)                                                                 |
+| IV. Cited, Versioned Corpus                | ✅         | `Provenance`/`SourceRef`/`FieldConflict` are first-class data-model types every corpus record extends; `STATUS_VS_SHIELD_REDUCTION`-style engine constants also carry provenance per research.md B3                                   |
+| V. Zero-Backend, Static Hosting            | ✅         | No API routes, no server directory in the structure below; GitHub Actions → gh-pages                                                                                                                                                  |
+| VI. Simplicity & Incremental Delivery      | ✅         | tasks.md (next command) will sequence a small real slice (one DOT applier, one Shield/support unit, one positional-ability unit) before widening corpus coverage, per spec's own User Story priorities                                |
 
 No violations — Complexity Tracking table is intentionally empty.
 
@@ -120,7 +120,7 @@ monorepo/workspace split, because the project has exactly one deployable artifac
 
 ## Complexity Tracking
 
-*No entries — Constitution Check above has no unjustified violations.*
+_No entries — Constitution Check above has no unjustified violations._
 
 ## Amendment: Round 2 (2026-10-05, via `/speckit-plan`)
 
@@ -133,7 +133,7 @@ regression report later diagnosed as a pre-existing data gap) are resolved in:
 - data-model.md's matching 2026-10-05 (round 2) amendments: `unconfirmedFields` promoted onto
   `Provenance`; `CreatureRecord.level` widened to `1 | 2 | 3 | 4` + the `(id, level)` lookup bug
   this surfaces in `simulate.ts`; `baseMulticast` added; new `SimulationResult.
-  perCreatureEffectiveStats`; Trainer corpus widened (data entry only); chart X-axis fix (no type
+perCreatureEffectiveStats`; Trainer corpus widened (data entry only); chart X-axis fix (no type
   change).
 - spec.md: FR-015/016/017 added, FR-001 amended, one new Edge Case, and a new Amendments section
   logging the SC-003 gap honestly and the regression-vs-data-gap diagnosis.
@@ -187,11 +187,12 @@ suspicion.
   all-status team read `0.00` in every row while dealing 136.6 damage/second (FR-072).
 - **Every creature on the user's board had an inert ability.** Miasmaw's Poison should be 336, not
   10; Cobrex should fire at **t=9**, not t=15. FR-073/FR-074 add the resolution layer.
-- **WI-008 answered**: the 15-second takeoff is Cobrex's *first* cast landing (15 s cooldown, Poison
+- **WI-008 answered**: the 15-second takeoff is Cobrex's _first_ cast landing (15 s cooldown, Poison
   300, and Poison never decays) — 84/s at t=15 becomes 400/s at t=16.
 
 **Validation caught three errors in this plan's own first draft**, all recorded in place rather than
 quietly fixed:
+
 1. The Cobrex timing was wrong twice — 11 applications instead of 9 (counting the two at t=15), then
    `15 − 11 = 4` instead of solving `t + charges(t) ≥ 15`, which gives **t=9**. T199 is test-first,
    so this would have written the error into the suite as the acceptance criterion.
@@ -226,13 +227,13 @@ appearance is decided by its container is not a primitive.
 "only one creature has a positional `AbilityTag`" claim was false (Onsetra carries one); T180's
 chart-redraw mechanism was not supported by the DOM; "use the shared token" for the picker sprite
 was inert, since that token was 48px and read by nothing; and the table-border requirement was
-phrased against *weight* when the defect was *colour*, so it was satisfiable by changing nothing.
+phrased against _weight_ when the defect was _colour_, so it was satisfiable by changing nothing.
 
 **FR-014 relocated a third time** — header → browser summary → footer — rather than being dropped
 when WI-014 removed the prose. A fourth removal should retire it outright with a rationale.
 
 **FR-069 ships with its blind spot in the UI.** The optimiser's search is exhaustive and correct;
-its *inputs* are nearly empty, because only one creature's positional ability is engine-readable and
+its _inputs_ are nearly empty, because only one creature's positional ability is engine-readable and
 six trinkets' slot effects are unmodelled. It reports that rather than presenting "no improvement"
 as a conclusion.
 
@@ -251,9 +252,9 @@ change how the project works going forward.
   and `preventDefault()`s it — the browser never synthesises the `click` the card's handler is
   waiting for. There is no built-in drag threshold; one must be configured
   (`activationConstraint: { distance: 8 }`). Round 6's test suite missed this because it only
-  asserts the *negative* (the clear button must **not** open the picker) and never the positive.
+  asserts the _negative_ (the clear button must **not** open the picker) and never the positive.
 - **The picker's "sliver" is a gradient antialiasing seam.** `linear-gradient(..., A 50%, B 50%,
-  ...)` lands mid-device-pixel at fractional widths; `background-clip: border-box` then paints the
+...)` lands mid-device-pixel at fractional widths; `background-clip: border-box` then paints the
   bleed under the transparent border. Fixed by rendering two explicit halves instead of a gradient.
 - **Shield's colour is wrong because batodex's palette disagrees with the game.** Round 6 extracted
   the published palette and cross-checked six of seven colours against an in-game card; `shield`
@@ -272,7 +273,7 @@ change how the project works going forward.
   `/speckit-plan` and `/speckit-implement` run already reads, not in a task note that round 8 would
   forget. Motivated by measured duplication (research.md I14): three card treatments, two
   disagreeing cooldown formatters, duplicated modal chrome, chip styling in three files, six
-  hard-coded sprite sizes — which surfaced as several *separate* user-reported bugs this round that
+  hard-coded sprite sizes — which surfaced as several _separate_ user-reported bugs this round that
   are really one cause.
 - **Second-order status metrics** (FR-055/056/057) turn the status table from one averaged number
   into damage/s, stacks applied/s, and damage/s² growth — plus attribution of DOT damage to the
@@ -296,8 +297,9 @@ Resolved in:
 components over the existing CSS-modules approach, not a component library.
 
 **Constitution Check**: re-evaluated against all seven principles, including the new one.
+
 - **Principle III (test-first, NON-NEGOTIABLE)** governs every FR-055/056/057 engine change, and
-  additionally the click-vs-drag fix gets a *positive* assertion, since the gap that let this bug
+  additionally the click-vs-drag fix gets a _positive_ assertion, since the gap that let this bug
   live was a test that only checked a negative.
 - **Principle VI (simplicity)** is why the primitives layer is capped at patterns with ≥2 existing
   call sites, and why no component library is introduced.
@@ -357,11 +359,11 @@ in-game screenshots supplied as the layout reference. The headline findings:
 - **The reported bug is real and is now root-caused.** Grid position was silently changing Shock
   damage for creatures with no positional ability, because `simulate()`'s tie-break for
   simultaneous casts (`stableSlotIndex`) was also deciding whether a Shock layer applied at time
-  *T* empowered another creature's hit at time *T*. Reproduced with the user's exact formations
+  _T_ empowered another creature's hit at time _T_. Reproduced with the user's exact formations
   (4.10 → 4.30) and isolated to a 2-creature control (2.20 → 2.40). Fixed by resolving every cast
   at a timestamp against a common pre-cast status snapshot, which makes output invariant to slot
   permutation while leaving the timeline's display ordering untouched — research.md H8,
-  data-model.md's matching amendment, FR-040, and a regression test that asserts the *invariant*
+  data-model.md's matching amendment, FR-040, and a regression test that asserts the _invariant_
   rather than either observed number.
 - **Everything the presentation items need is already available as data.** The same embedded
   batodex payload round 5 used carries all 149 creature sprites plus 93 trinket sprites (48×48
@@ -404,7 +406,7 @@ re-evaluated, still ✅, with two points worth stating rather than assuming:
 - **Principle III (test-first, NON-NEGOTIABLE)** applies squarely to the FR-040 fix: the
   permutation-invariance regression test is written and failing before `simulate()` changes.
 - **Principle IV (cited corpus)** is the one principle this round touches directly, via FR-030.
-  It survives intact because the citation *data* is untouched and gains an automated check; what
+  It survives intact because the citation _data_ is untouched and gains an automated check; what
   is removed is a rendering of it. Called out explicitly because "user asked to hide the
   citations" is exactly the kind of request that could erode a principle silently.
 - **Principle VI (simplicity)** drove reusing the existing `CreatureSearchModal` interaction for
@@ -415,8 +417,7 @@ re-evaluated, still ✅, with two points worth stating rather than assuming:
 
 ## Amendment: Round 5 (2026-10-06, via `/speckit-plan`)
 
-User request this round: full level 2-4 creature stats (previously logged as blocked in round
-4) and a Trinket selection feature. Investigating directly (not re-asserting the prior "blocked"
+User request this round: full level 2-4 creature stats (previously logged as blocked in round 4) and a Trinket selection feature. Investigating directly (not re-asserting the prior "blocked"
 finding) found both are fully achievable: batodex.com embeds its entire creature database
 (all 149 ids × 4 levels, by-level ability text, evolution chains) and its entire 93-entry
 Trinket database as structured JSON inside each listing page's server-rendered React payload —
@@ -511,7 +512,7 @@ forward-binding").
    `.statLines` is `display: flex; flex-direction: column`, and multi-column does not apply to a flex
    container, so a class carrying only `columns`/`column-gap` is inert — caught in validation pass 3.
    The mechanism is a column-flow grid instead: `display: grid; grid-auto-flow: column;
-   grid-template-rows: repeat(var(--stat-rows), auto)`, with `--stat-rows` set to `ceil(n / 2)` by
+grid-template-rows: repeat(var(--stat-rows), auto)`, with `--stat-rows` set to `ceil(n / 2)` by
    `StatLines`. This is better than multicol on three counts beyond merely working: it keeps the
    existing `gap` token (a multicol box would ignore the flex `gap` and need its own gutter), it fills
    the first column before the second **by construction** rather than by trusting the browser's
@@ -535,15 +536,15 @@ forward-binding").
 
 ### Constitution Check
 
-| Principle | Status |
-| --- | --- |
-| I. Static data / engine / UI separation | **Pass.** UI-only; no engine or data module is touched. |
-| II. TypeScript strict | **Pass.** No new `any`; the cap is a typed constant. |
-| III. Test-first for the engine | **N/A.** No mechanic changes. UI tripwires are added instead, per the project's established pattern for presentation items. |
-| IV. Cited, versioned corpus | **Pass, with a recorded gap.** No record changes. Smuggler's 9 is marked as this project's assumption rather than a citation (research.md Q1). |
-| V. Zero-backend | **Pass.** |
-| VI. Simplicity | **Pass.** WI-001/002 delete a bespoke list in favour of components that already exist; WI-003 adds one CSS rule and one threshold. |
-| VII. Shared design language & DRY UI | **This round's point.** WI-001 is the violation; the round removes the last hand-rolled picker list. |
+| Principle                               | Status                                                                                                                                         |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| I. Static data / engine / UI separation | **Pass.** UI-only; no engine or data module is touched.                                                                                        |
+| II. TypeScript strict                   | **Pass.** No new `any`; the cap is a typed constant.                                                                                           |
+| III. Test-first for the engine          | **N/A.** No mechanic changes. UI tripwires are added instead, per the project's established pattern for presentation items.                    |
+| IV. Cited, versioned corpus             | **Pass, with a recorded gap.** No record changes. Smuggler's 9 is marked as this project's assumption rather than a citation (research.md Q1). |
+| V. Zero-backend                         | **Pass.**                                                                                                                                      |
+| VI. Simplicity                          | **Pass.** WI-001/002 delete a bespoke list in favour of components that already exist; WI-003 adds one CSS rule and one threshold.             |
+| VII. Shared design language & DRY UI    | **This round's point.** WI-001 is the violation; the round removes the last hand-rolled picker list.                                           |
 
 ### Risks
 
@@ -567,7 +568,7 @@ one new tokeniser; no engine algorithm changes and no change to any stored corpu
 The round's framing matters more than any individual item. The ask reads as four "make it an enum"
 refactors plus two features, but **all four vocabularies are already closed string-literal unions**
 and Constitution Principle II already mandates that (research.md R1). Taken literally the first four
-items are no-ops. What the user is actually pointing at is the *consequences* of a literal union
+items are no-ops. What the user is actually pointing at is the _consequences_ of a literal union
 being erased at runtime — hand-written value arrays that drift, no label distinct from the stored
 key, and per-member data scattered across parallel `Record` maps. This repo has already shipped two
 user-visible defects from exactly that cause: three rarity arrays with inconsistent ordering (T172)
@@ -586,7 +587,7 @@ to fix the cause, and WI-006 and WI-002 fall out of it almost for free.
   only 10 match the three shapes that were hand-tagged first; and (c) **one further family chosen by
   census** (T297), so the table is proven extensible rather than asserted to be.
   `manualTrigger` is first because it sits **outside** `RESOLVED_TAG_KINDS`, so widening it cannot
-  inflate the engine-coverage claim. A second family that *is* inside it may legitimately move that
+  inflate the engine-coverage claim. A second family that _is_ inside it may legitimately move that
   figure — see decision 12.
 - **WI-004 — answer, then split the answer by cost.** `damageType` is both redundant on the record
   (596/596 correlated with `baseDamage`, measured) and one type serving two unrelated roles. The
@@ -638,7 +639,7 @@ to fix the cause, and WI-006 and WI-002 fall out of it almost for free.
    that is a real state, not a gap to fill (R7.2).
 6. **The derivation reads TEXT, with the trigger as corroboration.** 134 records have ability text and
    no `abilityTrigger` at all (R4), so keying on the trigger would miss a quarter of the corpus. The
-   trigger, when present, must *agree* with what the text implies; a disagreement is a test failure,
+   trigger, when present, must _agree_ with what the text implies; a disagreement is a test failure,
    not a silent preference for one field.
 7. **Hand-authored tags beat derived tags on the same creature.** Required escape hatch: Petrirex,
    Fumungus and the Link Cable class of ability will never be read correctly from prose, and round 6's
@@ -656,7 +657,7 @@ to fix the cause, and WI-006 and WI-002 fall out of it almost for free.
 10. **The keyword vocabulary exceeds `STAT_COLORS`, in two tiers.** 225 of 543 ability texts contain
     none of the seven stat keys. Of those, **only 52 contain Protect / HP / Trigger / Ongoing** — a
     figure validation pass 1 had to correct, because the first draft of this round asserted all 225 did
-    and scoped itself on that. The remaining 173 carry *mechanic* nouns instead: `level` (36),
+    and scoped itself on that. The remaining 173 carry _mechanic_ nouns instead: `level` (36),
     `Evolve`/`Evolves` (35/19), `Knockout` (32), `Trinket` (24), `Charge` (12), `day` (12). So tier 1 is
     the stat terms and tier 2 is mechanic nouns, coloured distinctly because "Evolves at level 3" names
     a mechanic rather than an output stat. An ask that says "all mon's ability text" is not met by
@@ -676,15 +677,15 @@ to fix the cause, and WI-006 and WI-002 fall out of it almost for free.
 
 ### Constitution Check
 
-| Principle | Status |
-| --- | --- |
-| I. Static data / engine / UI separation | **Pass.** The registry, the derivation and the tokeniser are all `src/data/**`. `recipientsOfPress` already established that selector resolution stays in `src/engine/**`; nothing moves the other way. |
-| II. TypeScript strict, closed unions | **This round's point.** The unions survive unchanged — they are now *derived* from the registry rather than hand-written beside their metadata. No `any`, no new suppression. |
-| III. Test-first for the engine | **Partially applicable, and honoured where it is.** No mechanic changes. WI-002 does change what the engine receives, so Ninflora's derived tag gets a failing test first; the `damageType` invariant (R3) is likewise a test written before the deferral it protects. |
-| IV. Cited, versioned corpus | **Pass, and improved.** No stored value changes, so every `sourceRefs`/`patch` stays accurate and the cited batodex fixture stays byte-identical. WI-006 *restores* the published "Super Rare" spelling this corpus had compressed (R5). |
-| V. Zero-backend | **Pass.** |
-| VI. Simplicity & incremental delivery | **The binding constraint, twice.** It is why WI-002 derives two families rather than all seventeen (deriving 424 records at once would be a generic rule engine built ahead of the evidence, which this principle names explicitly) and why WI-004(b) was *initially* deferred (it has since landed). The rule table itself clears the "at least two concrete cases" bar with five target shapes inside the first family alone (R4). Each deferral is recorded as outstanding with a measured figure rather than left implied. |
-| VII. Shared design language & DRY UI | **Pass.** WI-007's colours come from the existing `STAT_COLORS` layer rather than a second palette; the highlighter is one shared component, so the card, the panel and any future surface cannot disagree. |
+| Principle                               | Status                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| I. Static data / engine / UI separation | **Pass.** The registry, the derivation and the tokeniser are all `src/data/**`. `recipientsOfPress` already established that selector resolution stays in `src/engine/**`; nothing moves the other way.                                                                                                                                                                                                                                                                                                                        |
+| II. TypeScript strict, closed unions    | **This round's point.** The unions survive unchanged — they are now _derived_ from the registry rather than hand-written beside their metadata. No `any`, no new suppression.                                                                                                                                                                                                                                                                                                                                                  |
+| III. Test-first for the engine          | **Partially applicable, and honoured where it is.** No mechanic changes. WI-002 does change what the engine receives, so Ninflora's derived tag gets a failing test first; the `damageType` invariant (R3) is likewise a test written before the deferral it protects.                                                                                                                                                                                                                                                         |
+| IV. Cited, versioned corpus             | **Pass, and improved.** No stored value changes, so every `sourceRefs`/`patch` stays accurate and the cited batodex fixture stays byte-identical. WI-006 _restores_ the published "Super Rare" spelling this corpus had compressed (R5).                                                                                                                                                                                                                                                                                       |
+| V. Zero-backend                         | **Pass.**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| VI. Simplicity & incremental delivery   | **The binding constraint, twice.** It is why WI-002 derives two families rather than all seventeen (deriving 424 records at once would be a generic rule engine built ahead of the evidence, which this principle names explicitly) and why WI-004(b) was _initially_ deferred (it has since landed). The rule table itself clears the "at least two concrete cases" bar with five target shapes inside the first family alone (R4). Each deferral is recorded as outstanding with a measured figure rather than left implied. |
+| VII. Shared design language & DRY UI    | **Pass.** WI-007's colours come from the existing `STAT_COLORS` layer rather than a second palette; the highlighter is one shared component, so the card, the panel and any future surface cannot disagree.                                                                                                                                                                                                                                                                                                                    |
 
 ### Complexity Tracking
 

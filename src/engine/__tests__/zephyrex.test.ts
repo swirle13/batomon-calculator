@@ -22,7 +22,8 @@ function board(entries: [GridRow, GridCol, Species, CreatureLevel?][]): TeamConf
 /** How many times the monster at `row`/`col` actually hit — the only place Multicast shows up. */
 function hitCount(config: TeamConfiguration, row: GridRow, col: GridCol): number {
   return simulate(config, corpus).timeline.filter(
-    (e) => e.kind === TimelineEventKind.Attack && e.sourceSlot.row === row && e.sourceSlot.col === col,
+    (e) =>
+      e.kind === TimelineEventKind.Attack && e.sourceSlot.row === row && e.sourceSlot.col === col,
   ).length;
 }
 

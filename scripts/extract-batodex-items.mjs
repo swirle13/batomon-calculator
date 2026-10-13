@@ -30,12 +30,23 @@ async function rscPayload(url) {
 function extractObject(payload, marker) {
   const start = payload.indexOf(marker);
   if (start < 0) throw new Error(`marker not found: ${marker} — site structure changed`);
-  let depth = 0, inStr = false, esc = false;
+  let depth = 0,
+    inStr = false,
+    esc = false;
   for (let i = start; i < payload.length; i++) {
     const ch = payload[i];
-    if (esc) { esc = false; continue; }
-    if (ch === "\\") { esc = true; continue; }
-    if (ch === '"') { inStr = !inStr; continue; }
+    if (esc) {
+      esc = false;
+      continue;
+    }
+    if (ch === "\\") {
+      esc = true;
+      continue;
+    }
+    if (ch === '"') {
+      inStr = !inStr;
+      continue;
+    }
     if (inStr) continue;
     if (ch === "{") depth++;
     else if (ch === "}" && --depth === 0) return JSON.parse(payload.slice(start, i + 1));
@@ -96,14 +107,23 @@ await mkdir(path.join(ROOT, "public/sprites/item"), { recursive: true });
 let ok = 0;
 const missing = [];
 for (const item of items) {
-  if (!item.sprite) { missing.push(item.id); continue; }
+  if (!item.sprite) {
+    missing.push(item.id);
+    continue;
+  }
   // `pom berry` really does publish with a space in its id, its sprite path and nothing else in
   // the corpus — encode the path, keep the filename verbatim so `spriteFile` matches what is on
   // disk. Renaming it here would make the record disagree with its own source.
   const res = await fetch(ORIGIN + item.sprite.split("/").map(encodeURIComponent).join("/"));
-  if (!res.ok) { missing.push(item.id); continue; }
+  if (!res.ok) {
+    missing.push(item.id);
+    continue;
+  }
   const file = path.posix.basename(item.sprite);
-  await writeFile(path.join(ROOT, "public/sprites/item", file), Buffer.from(await res.arrayBuffer()));
+  await writeFile(
+    path.join(ROOT, "public/sprites/item", file),
+    Buffer.from(await res.arrayBuffer()),
+  );
   ok++;
 }
 

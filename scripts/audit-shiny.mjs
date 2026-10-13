@@ -19,13 +19,19 @@ for (const { id, line } of allShinyLines()) {
   if (!base) continue;
 
   const regressions = [];
-  const lower = (b, s, name) => { if (b != null && s != null && s < b) regressions.push(name); };
+  const lower = (b, s, name) => {
+    if (b != null && s != null && s < b) regressions.push(name);
+  };
   lower(base.publishedCast?.damage, line.baseDamage, "damage");
   lower(base.baseMulticast, line.baseMulticast, "multicast");
   lower(base.healAmount, line.healAmount, "heal");
   // Cooldown is inverted: HIGHER is worse.
-  if (base.baseCooldownSeconds != null && line.baseCooldownSeconds != null &&
-      line.baseCooldownSeconds > base.baseCooldownSeconds) regressions.push("cooldown");
+  if (
+    base.baseCooldownSeconds != null &&
+    line.baseCooldownSeconds != null &&
+    line.baseCooldownSeconds > base.baseCooldownSeconds
+  )
+    regressions.push("cooldown");
   // Status amounts — the axis the first count forgot, which is how 4 species went unnoticed.
   for (const s of base.appliesStatus ?? []) {
     const m = (line.appliesStatus ?? []).find((x) => x.type === s.type);
@@ -47,14 +53,19 @@ const thr = (c, l) => {
   const cd = pick(l?.baseCooldownSeconds, c.baseCooldownSeconds) ?? 1;
   const st = (pick(l?.appliesStatus, c.appliesStatus) ?? []).reduce((a, s) => a + s.amount, 0);
   const hl = pick(l?.healAmount, c.healAmount) ?? 0;
-  return cd > 0 ? (dmg + st + hl) * mc / cd : 0;
+  return cd > 0 ? ((dmg + st + hl) * mc) / cd : 0;
 };
-let better = 0, equal = 0, worseAgg = 0;
+let better = 0,
+  equal = 0,
+  worseAgg = 0;
 for (const { id, line } of allShinyLines()) {
   const base = getCreatureByIdAndLevel(id, line.level);
   if (!base) continue;
-  const n = thr(base, null), s = thr(base, line);
-  if (s > n + 1e-9) better++; else if (s < n - 1e-9) worseAgg++; else equal++;
+  const n = thr(base, null),
+    s = thr(base, line);
+  if (s > n + 1e-9) better++;
+  else if (s < n - 1e-9) worseAgg++;
+  else equal++;
 }
 
 console.log(`PER-STAT regressions: ${worseBy.size} species = ${worseRecords} level-records`);

@@ -61,7 +61,9 @@ const PROBE = `
     for (const id of ids) {
       const group = inter.filter((e) => e.id === id);
       const dur = Math.max(...group.map((e) => e.dur));
-      console.log(`    id ${id}: ${group.map((e) => e.name).join(",")}  maxDuration=${dur.toFixed(0)}ms`);
+      console.log(
+        `    id ${id}: ${group.map((e) => e.name).join(",")}  maxDuration=${dur.toFixed(0)}ms`,
+      );
     }
   }
 

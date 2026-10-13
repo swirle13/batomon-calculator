@@ -53,10 +53,14 @@ const PROBE = `
 
   const lcp = await page.evaluate("window.__lcp");
   const scrollY = await page.evaluate("window.scrollY");
-  console.log(`\n===== ${label} ${noCache ? "[cache disabled]" : "[cache on]"} ${scrolled ? "[scrolled to grid]" : "[at top]"} =====`);
+  console.log(
+    `\n===== ${label} ${noCache ? "[cache disabled]" : "[cache on]"} ${scrolled ? "[scrolled to grid]" : "[at top]"} =====`,
+  );
   console.log(`  requests on reload: ${requests}, scrollY after reload: ${scrollY}`);
   for (const c of lcp) {
-    console.log(`    ${c.t.toFixed(0).padStart(6)}ms  size=${String(c.size).padStart(7)}  <${c.tag} class="${c.cls}">  "${(c.text || "").replace(/\s+/g, " ")}"`);
+    console.log(
+      `    ${c.t.toFixed(0).padStart(6)}ms  size=${String(c.size).padStart(7)}  <${c.tag} class="${c.cls}">  "${(c.text || "").replace(/\s+/g, " ")}"`,
+    );
   }
   const last = lcp[lcp.length - 1];
   console.log(`  FINAL LCP: ${last ? last.t.toFixed(0) + "ms on <" + last.tag + ">" : "none"}`);

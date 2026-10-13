@@ -2,7 +2,7 @@
 
 **Feature**: [spec.md](./spec.md) | **Date**: 2026-10-13
 
-This document resolves *how* the suggestion engine should weigh a board before anything is built,
+This document resolves _how_ the suggestion engine should weigh a board before anything is built,
 because the answer turns out to change the design rather than just tune it. It is written against
 the request to ground the objective in "data modelling and prediction standards" rather than in
 argument.
@@ -32,7 +32,7 @@ about how long fights last. Naming that assumption tells us what to replace it w
 - **Decision**: model the fight as a race between two times — `T_you`, when your board kills the
   opponent, and `T_them`, when the opponent kills your board. You win iff `T_you < T_them`.
 - **Rationale**: `engine/survivability.ts` contains a long and correct argument that a defence term
-  *added* to a damage term needs an exchange rate — "how many DPS is one Shield per second worth?"
+  _added_ to a damage term needs an exchange rate — "how many DPS is one Shield per second worth?"
   — that nobody can defend, and that picking it high means six Runerocks win while picking it low
   means nothing changes. Its workaround was to make defence stretch the discount horizon instead,
   which was the right instinct.
@@ -42,6 +42,7 @@ about how long fights last. Naming that assumption tells us what to replace it w
   conversion factor, and the optimum between them falls out of the arithmetic rather than being
   tuned in. This is the same virtue the existing module claims for its own model, obtained without
   the assumption that makes that model fragile.
+
 - **Alternatives considered**: a weighted sum of damage and mitigation (needs the indefensible
   exchange rate); a Pareto front over the two (honest, but presents the user with a set of
   incomparable boards when they asked which one to field); lexicographic ordering, survive-then-
@@ -49,13 +50,13 @@ about how long fights last. Naming that assumption tells us what to replace it w
 
 ### A3. Why this subsumes "front-loaded damage matters more" rather than discarding it
 
-- **Finding**: the front-loading intuition is correct and is a *consequence* of A2, not an axiom
+- **Finding**: the front-loading intuition is correct and is a _consequence_ of A2, not an axiom
   beside it.
 - **Rationale**: damage that lands after `T_them` is worth exactly nothing — you are already dead.
   So the true weight on damage at time `t` is `1` before the fight ends and `0` after it, a step
   function. Under uncertainty about where that step falls, the expected weight becomes
   `P(fight still running at t)`, which is a decreasing function of `t`. Front-loading is what
-  uncertainty about fight length *looks like*; it was never a separate preference.
+  uncertainty about fight length _looks like_; it was never a separate preference.
 
 ---
 
@@ -75,10 +76,11 @@ about how long fights last. Naming that assumption tells us what to replace it w
   With `halfLife = 10`, `λ = 0.0693 s⁻¹`, and the implied mean fight length is `1/λ` = **14.4
   seconds**. So the app's objective currently asserts, for every board on every day, that fights end
   at a constant rate with a mean of 14.4 seconds.
-- **Why that is almost certainly wrong**: a constant hazard is the unique *memoryless* survival
+
+- **Why that is almost certainly wrong**: a constant hazard is the unique _memoryless_ survival
   function. It claims that however long a fight has already run, the expected time remaining is
   still 14.4 seconds. Fights in this game do not work that way — HP depletes monotonically, so a
-  fight becomes **more** likely to end the longer it has gone on. That is an *increasing* hazard,
+  fight becomes **more** likely to end the longer it has gone on. That is an _increasing_ hazard,
   and the exponential is the one shape that cannot represent it. The standard texts make the same
   point about the exponential model generally: "the main drawback … is that it is often implausible
   to assume a constant hazard over time"
@@ -86,7 +88,7 @@ about how long fights last. Naming that assumption tells us what to replace it w
 - **The internal inconsistency this exposes**: the default simulation window is 30 seconds, and
   `S(30) = 0.5³ = 12.5%`. The app weights the last two-thirds of its own simulation window at under
   an eighth, while simultaneously reporting "effective this battle" figures over that full 30
-  seconds *unweighted*. The two halves of the app already disagree about how long a fight lasts.
+  seconds _unweighted_. The two halves of the app already disagree about how long a fight lasts.
   This is the misalignment the feature request named, stated as arithmetic.
 
 ### B2. The weight should be the survival function of the fight-length distribution
@@ -94,27 +96,27 @@ about how long fights last. Naming that assumption tells us what to replace it w
 - **Decision**: weight damage at time `t` by `S(t) = P(T_them > t)` — the probability the fight is
   still running — rather than by a fixed exponential.
 - **Rationale**: this is A3 made operational, and it is the general form of which today's model is
-  one special case. The generic relation `S(t) = exp(−∫₀ᵗ h(τ)dτ)` means any belief about *when*
+  one special case. The generic relation `S(t) = exp(−∫₀ᵗ h(τ)dτ)` means any belief about _when_
   fights end induces its own weight curve, and substituting a better belief needs no change to the
   shape of the code — only to the function supplying `S`.
 - **What it gives for free**: the three readings below are the same formula with different inputs,
   which is what makes the staging in the spec a sequence of refinements rather than three rewrites.
 
-| Belief about fight length | Weight `S(t)` | Status |
-|---|---|---|
-| Constant hazard, mean 14.4s, same for all boards | `exp(−t·ln2/10)` | **Today** |
-| Known kill time `T` for this board and day | `exp(−t·ln2/T)`, or a step at `T` | **Shippable now** (C1) |
-| Distribution over `T`, fitted to recordings | Weibull/empirical `S(t)` | Needs captures (C2) |
-| The opponent's own simulated kill time | `P(T_them > t)` from the two-sided engine | Needs `[OPP]` (C3) |
+| Belief about fight length                        | Weight `S(t)`                             | Status                 |
+| ------------------------------------------------ | ----------------------------------------- | ---------------------- |
+| Constant hazard, mean 14.4s, same for all boards | `exp(−t·ln2/10)`                          | **Today**              |
+| Known kill time `T` for this board and day       | `exp(−t·ln2/T)`, or a step at `T`         | **Shippable now** (C1) |
+| Distribution over `T`, fitted to recordings      | Weibull/empirical `S(t)`                  | Needs captures (C2)    |
+| The opponent's own simulated kill time           | `P(T_them > t)` from the two-sided engine | Needs `[OPP]` (C3)     |
 
 ### B3. Uncertainty about the hazard flattens the curve — do not sharpen prematurely
 
-- **Finding**: a *known* constant hazard gives exponential decay, but an **unknown** one does not.
+- **Finding**: a _known_ constant hazard gives exponential decay, but an **unknown** one does not.
   With an exponential prior over the hazard rate the expected survival function is hyperbolic,
   `S(t) = 1/(1 + kt)` (Sozou 1998; both sources above derive it, with the Gamma-prior
   generalisation). Hyperbolic decays markedly **slower** than exponential in the tail.
 - **Consequence**: while fight length is poorly known — which is now, with one run's HP curve and no
-  calibration — the defensible weight is *flatter* than an exponential, not sharper. Replacing the
+  calibration — the defensible weight is _flatter_ than an exponential, not sharper. Replacing the
   constant with a confidently sharp step at a predicted `T` would be the opposite of what the
   uncertainty licenses.
 - **Decision**: keep the exponential form in the first slice and move only its anchor (C1).
@@ -157,7 +159,7 @@ about how long fights last. Naming that assumption tells us what to replace it w
   Weibull as the default family — and use its `S(t)` directly.
 - **Rationale**: Weibull admits a shape parameter, so it can represent the increasing hazard that
   B1 argues this game must have, and it reduces to the exponential at shape `k = 1`. That means the
-  fitted shape is itself a *test* of today's model: if `k` comes out near 1, the constant hazard was
+  fitted shape is itself a _test_ of today's model: if `k` comes out near 1, the constant hazard was
   defensible; if `k > 1` materially, it was not. A model whose fitting procedure can falsify its
   predecessor is worth more than one that merely replaces it.
 - **Covariate**: run day, at minimum. The user's observation is that fight length falls early, rises
@@ -172,7 +174,7 @@ about how long fights last. Naming that assumption tells us what to replace it w
 
 - **Decision**: with a two-sided engine, `S(t) = P(T_them > t)` is computed rather than fitted.
 - **Rationale**: this is the terminal form. It needs no fight-length model at all, because the
-  fight length *is* the simulation's output. It also eliminates the mirror assumption outright: the
+  fight length _is_ the simulation's output. It also eliminates the mirror assumption outright: the
   opponent's damage is simulated, so `assumedIncomingDps` stops being an assumption.
 
 ---
@@ -183,7 +185,7 @@ about how long fights last. Naming that assumption tells us what to replace it w
 
 - **Decision**: evaluate fight-length predictions with the **Continuous Ranked Probability Score**,
   `CRPS(F, y) = ∫(F(x) − 1{y ≤ x})² dx`, averaged over recordings.
-- **Rationale**: CRPS is the standard strictly-proper scoring rule for real-valued *probabilistic*
+- **Rationale**: CRPS is the standard strictly-proper scoring rule for real-valued _probabilistic_
   forecasts. It rewards being both accurate and appropriately sharp, which is precisely the
   trade-off B3 warns about — a model that reports a confident wrong fight length must score worse
   than one that reports an honest wide one. It is also the right shape for this project's staging:
@@ -210,7 +212,7 @@ about how long fights last. Naming that assumption tells us what to replace it w
 ### D3. The acceptance bar
 
 - **Decision**: a day-sensitive horizon has earned its place when its fight-length error is smaller
-  than the *difference between adjacent days' predictions*.
+  than the _difference between adjacent days' predictions_.
 - **Rationale**: this is the threshold at which varying the anchor by day carries more signal than
   noise. Below it, a per-day prediction is a more elaborate way of being wrong than a constant, and
   should be said to be.
@@ -274,21 +276,21 @@ improvement over C1 measurable, and it can only do that if C1 was measured too.
 
 ## Sources
 
-- Gneiting, T. & Raftery, A. E. (2007). *Strictly Proper Scoring Rules, Prediction, and Estimation.*
+- Gneiting, T. & Raftery, A. E. (2007). _Strictly Proper Scoring Rules, Prediction, and Estimation._
   JASA 102(477), 359–378. [PDF](https://sites.stat.washington.edu/people/raftery/Research/PDF/Gneiting2007jasa.pdf)
   — CRPS definition, propriety, relation to the Brier score.
-- *Proper Scoring Rules for Estimation and Forecast Evaluation* (2025 review).
+- _Proper Scoring Rules for Estimation and Forecast Evaluation_ (2025 review).
   [arXiv:2504.01781](https://arxiv.org/html/2504.01781v4) — CRPS properties, comparison with the
   log score.
-- Sozou, P. D. (1998). *On hyperbolic discounting and uncertain hazard rates.* Proc. R. Soc. B.
+- Sozou, P. D. (1998). _On hyperbolic discounting and uncertain hazard rates._ Proc. R. Soc. B.
   — known constant hazard ⇒ exponential discounting; uncertain hazard ⇒ hyperbolic.
-- *Reinforcement Learning with Non-Exponential Discounting* (NeurIPS 2022).
+- _Reinforcement Learning with Non-Exponential Discounting_ (NeurIPS 2022).
   [PDF](https://proceedings.neurips.cc/paper_files/paper/2022/file/178b306c7ee66a66db2171646e17da36-Paper-Conference.pdf)
   — survival/hazard/discount identities, §3.1–3.2.
-- Pitis, S. (2019). *Rethinking the Discount Factor in Reinforcement Learning.*
+- Pitis, S. (2019). _Rethinking the Discount Factor in Reinforcement Learning._
   [arXiv:1902.06865](http://arxiv.org/pdf/1902.06865v1) — discount factor as per-step continuation
   probability.
-- Columbia Mailman School, *Time-To-Event Data Analysis.*
+- Columbia Mailman School, _Time-To-Event Data Analysis._
   [Link](https://www.publichealth.columbia.edu/research/population-health-methods/time-event-data-analysis)
   — `S(t) = e^−H(t)`, parametric family selection, the implausibility of constant hazard.
 - This repository: `src/engine/optimize.ts` (`TIME_WEIGHT_HALF_LIFE_SECONDS`,

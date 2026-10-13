@@ -77,140 +77,2590 @@ export interface ShinyStatLine extends ShinyLevelStats {
 }
 
 export const SHINY_STATS: Partial<Record<Species, ShinySpecies>> = {
-  [Species.Aegistruct]: { spriteFile: "aegistruct_shiny.png", baseDamage: null, baseCooldownSeconds: 6, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Shield, amount: 150 }], abilityText: "Gain Shield for this battle equal to 1.2x the Shield of adjacent allies.\n(Except other Aegistruct)", levels: { 2: { abilityText: "Gain Shield for this battle equal to 2.4x the Shield of adjacent allies.\n(Except other Aegistruct)" }, 3: { abilityText: "Gain Shield for this battle equal to 3.6x the Shield of adjacent allies.\n(Except other Aegistruct)" }, 4: { baseCooldownSeconds: 3, abilityText: "Gain Shield for this battle equal to 14.4x the Shield of adjacent allies.\n(Except other Aegistruct)" } } },
-  [Species.Aerophim]: { spriteFile: "aerophim_shiny.png", baseDamage: 666, baseCooldownSeconds: 5, baseMulticast: 1, abilityText: "Give adjacent allies +1 Multicast permanently and transform them into random monsters of their rarity.", levels: { 2: { abilityText: "Give adjacent allies +2 Multicast permanently and transform them into random monsters of their rarity." }, 3: { abilityText: "Give adjacent allies +3 Multicast permanently and transform them into random monsters of their rarity." }, 4: { abilityText: "Give adjacent allies +60 Multicast permanently and transform them into random monsters of their rarity." } } },
-  [Species.Aristobat]: { spriteFile: "aristobat_shiny.png", baseDamage: null, baseCooldownSeconds: 4, baseMulticast: 3, appliesStatus: [{ type: StatusEffectType.Poison, amount: 3 }], levels: { 2: { baseMulticast: 4, appliesStatus: [{ type: StatusEffectType.Poison, amount: 5 }] }, 3: { baseMulticast: 5, appliesStatus: [{ type: StatusEffectType.Poison, amount: 7 }] }, 4: { baseMulticast: 10, appliesStatus: [{ type: StatusEffectType.Poison, amount: 14 }] } } },
-  [Species.Aster]: { spriteFile: "aster_shiny.png", baseDamage: null, baseCooldownSeconds: 3, baseMulticast: 1, healAmount: 40, abilityText: "This and adjacent Water allies gain +25 Heal permanently.", levels: { 2: { abilityText: "This and adjacent Water allies gain +50 Heal permanently." }, 3: { abilityText: "This and adjacent Water allies gain +75 Heal permanently." }, 4: { healAmount: 160, abilityText: "This and adjacent Water allies gain +225 Heal permanently." } } },
-  [Species.Aviarab]: { spriteFile: "aviarab_shiny.png", baseDamage: 15, baseCooldownSeconds: 3.5, baseMulticast: 2, abilityText: "Give Flying monsters in the shop +1 Multicast for the rest of the run.", levels: { 2: { baseDamage: 30, abilityText: "Give Flying monsters in the shop +2 Multicast for the rest of the run." }, 3: { baseDamage: 45, abilityText: "Give Flying monsters in the shop +3 Multicast for the rest of the run." }, 4: { baseDamage: 90, abilityText: "Give Flying monsters in the shop +6 Multicast for the rest of the run." } } },
-  [Species.Beetbud]: { spriteFile: "beetbud_shiny.png", baseDamage: 42, baseCooldownSeconds: 4.5, baseMulticast: 1, abilityText: "Evolves at level 3.", levels: { 2: { baseDamage: 84 }, 3: { baseDamage: 126 }, 4: { baseDamage: 126, baseMulticast: 2 } } },
-  [Species.Berroon]: { spriteFile: "berroon_shiny.png", baseDamage: 40, baseCooldownSeconds: 4, baseMulticast: 1, abilityText: "The next 1 items in your shop will be Berries.\nWhen you use an item, this gains +10 Damage.", levels: { 2: { abilityText: "The next 2 items in your shop will be Berries.\nWhen you use an item, this gains +20 Damage." }, 3: { abilityText: "The next 3 items in your shop will be Berries.\nWhen you use an item, this gains +30 Damage." }, 4: { baseDamage: 160, abilityText: "The next 6 items in your shop will be Berries.\nWhen you use an item, this gains +60 Damage." } } },
-  [Species.Blazewing]: { spriteFile: "blazewing_shiny.png", baseDamage: null, baseCooldownSeconds: 5, baseMulticast: 4, appliesStatus: [{ type: StatusEffectType.Burn, amount: 4 }], levels: { 2: { baseMulticast: 6 }, 3: { baseMulticast: 8 }, 4: { baseMulticast: 32, appliesStatus: [{ type: StatusEffectType.Burn, amount: 8 }] } } },
-  [Species.Blessom]: { spriteFile: "blessom_shiny.png", baseDamage: 50, baseCooldownSeconds: 4.5, baseMulticast: 1, abilityText: "At the start of each day, monsters in your shop gain +60 Damage.", levels: { 2: { baseDamage: 100, abilityText: "At the start of each day, monsters in your shop gain +120 Damage." }, 3: { baseDamage: 150, abilityText: "At the start of each day, monsters in your shop gain +180 Damage." }, 4: { baseDamage: 300, abilityText: "At the start of each day, monsters in your shop gain +360 Damage." } } },
-  [Species.Blixie]: { spriteFile: "blixie_shiny.png", baseDamage: null, baseCooldownSeconds: 6, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Burn, amount: 30 }], abilityText: "Give the Fire ally behind 1.2x this monster's Burn for this battle.", levels: { 2: { abilityText: "Give the Fire ally behind 2.4x this monster's Burn for this battle." }, 3: { abilityText: "Give the Fire ally behind 3.6x this monster's Burn for this battle." }, 4: { appliesStatus: [{ type: StatusEffectType.Burn, amount: 300 }], abilityText: "Give the Fire ally behind 36.0x this monster's Burn for this battle." } } },
-  [Species.Bonshell]: { spriteFile: "bonshell_shiny.png", baseDamage: null, baseCooldownSeconds: 7, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Shield, amount: 120 }], abilityText: "+96 Damage and +96 Shield for this battle.", levels: { 2: { appliesStatus: [{ type: StatusEffectType.Shield, amount: 240 }], abilityText: "+192 Damage and +192 Shield for this battle." }, 3: { appliesStatus: [{ type: StatusEffectType.Shield, amount: 360 }], abilityText: "+288 Damage and +288 Shield for this battle." }, 4: { appliesStatus: [{ type: StatusEffectType.Shield, amount: 720 }], abilityText: "+576 Damage and +576 Shield for this battle." } } },
-  [Species.Boomagon]: { spriteFile: "boomagon_shiny.png", baseDamage: 40, baseCooldownSeconds: 5.6, baseMulticast: 1, abilityText: "Give the ally behind +3% Cooldown Speed permanently.", levels: { 2: { abilityText: "Give the ally behind +6% Cooldown Speed permanently." }, 3: { abilityText: "Give the ally behind +9% Cooldown Speed permanently." }, 4: { abilityText: "Give the ally behind +18% Cooldown Speed permanently." } } },
-  [Species.Brawlmantis]: { spriteFile: "brawlmantis_shiny.png", baseDamage: 60, baseCooldownSeconds: 5.5, baseMulticast: 1, abilityText: "This and Common allies gain +12 Damage permanently.", levels: { 2: { baseDamage: 120, abilityText: "This and Common allies gain +24 Damage permanently." }, 3: { baseDamage: 180, abilityText: "This and Common allies gain +36 Damage permanently." }, 4: { baseDamage: 180, baseMulticast: 2, abilityText: "This and Common allies gain +72 Damage permanently." } } },
-  [Species.Brimtoad]: { spriteFile: "brimtoad_shiny.png", baseDamage: null, baseCooldownSeconds: 6, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Burn, amount: 1 }, { type: StatusEffectType.Poison, amount: 1 }], abilityText: "+5 Burn and +5 Poison permanently.", levels: { 2: { appliesStatus: [{ type: StatusEffectType.Burn, amount: 2 }, { type: StatusEffectType.Poison, amount: 2 }], abilityText: "+10 Burn and +10 Poison permanently." }, 3: { appliesStatus: [{ type: StatusEffectType.Burn, amount: 4 }, { type: StatusEffectType.Poison, amount: 4 }], abilityText: "+14 Burn and +14 Poison permanently." }, 4: { appliesStatus: [{ type: StatusEffectType.Burn, amount: 14 }, { type: StatusEffectType.Poison, amount: 14 }], abilityText: "+58 Burn and +58 Poison permanently." } } },
-  [Species.Bumblebolt]: { spriteFile: "bumblebolt_shiny.png", baseDamage: 3, baseCooldownSeconds: 2.5, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Shock, amount: 1 }], abilityText: "+1 Shock for this battle.", abilityTags: [{ kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statusGrant: { type: StatusEffectType.Shock, amount: 1 } } }], levels: { 2: { baseDamage: 6, appliesStatus: [{ type: StatusEffectType.Shock, amount: 2 }], abilityText: "+2 Shock for this battle.", abilityTags: [{ kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statusGrant: { type: StatusEffectType.Shock, amount: 2 } } }] }, 3: { baseDamage: 9, appliesStatus: [{ type: StatusEffectType.Shock, amount: 3 }], abilityText: "+3 Shock for this battle.", abilityTags: [{ kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statusGrant: { type: StatusEffectType.Shock, amount: 3 } } }] }, 4: { baseDamage: 9, baseMulticast: 2, appliesStatus: [{ type: StatusEffectType.Shock, amount: 3 }], abilityText: "+3 Shock for this battle.", abilityTags: [{ kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statusGrant: { type: StatusEffectType.Shock, amount: 3 } } }] } } },
-  [Species.Bunchop]: { spriteFile: "bunchop_shiny.png", baseDamage: 50, baseCooldownSeconds: 4, baseMulticast: 1, abilityText: "Your team has +60 HP.\nOn Victory\nIncrease this ability's HP bonus by +60.", levels: { 2: { baseDamage: 100, abilityText: "Your team has +60 HP.\nOn Victory\nIncrease this ability's HP bonus by +120." }, 3: { baseDamage: 150, abilityText: "Your team has +60 HP.\nOn Victory\nIncrease this ability's HP bonus by +180." }, 4: { baseDamage: 300, abilityText: "Your team has +60 HP.\nOn Victory\nIncrease this ability's HP bonus by +360." } } },
-  [Species.Cairnage]: { spriteFile: "cairnage_shiny.png", baseDamage: null, baseCooldownSeconds: 5.5, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Shield, amount: 500 }], abilityText: "Allies gain Damage for this battle equal to 1x their Shield.", levels: { 2: { appliesStatus: [{ type: StatusEffectType.Shield, amount: 1000 }], abilityText: "Allies gain Damage for this battle equal to 1.9x their Shield." }, 3: { appliesStatus: [{ type: StatusEffectType.Shield, amount: 1500 }], abilityText: "Allies gain Damage for this battle equal to 2.9x their Shield." }, 4: { appliesStatus: [{ type: StatusEffectType.Shield, amount: 12000 }], abilityText: "Allies gain Damage for this battle equal to 23x their Shield." } } },
-  [Species.Cawnushi]: { spriteFile: "cawnushi_shiny.png", baseDamage: 50, baseCooldownSeconds: 5.5, baseMulticast: 2, abilityText: "On Knockout of any monster, this gains +72 Damage permanently.", levels: { 2: { baseDamage: 100, abilityText: "On Knockout of any monster, this gains +144 Damage permanently." }, 3: { baseDamage: 150, abilityText: "On Knockout of any monster, this gains +216 Damage permanently." }, 4: { baseDamage: 1200, abilityText: "On Knockout of any monster, this gains +1728 Damage permanently." } } },
-  [Species.Celestia]: { spriteFile: "celestia_shiny.png", baseDamage: 130, baseCooldownSeconds: 6.5, baseMulticast: 1, abilityText: "Disable abilities of enemy Ongoing monsters in this row.", levels: { 2: { baseDamage: 260 }, 3: { baseDamage: 390 }, 4: { baseDamage: 3120 } } },
-  [Species.Cherubble]: { spriteFile: "cherubble_shiny.png", baseDamage: null, baseCooldownSeconds: 4, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Shield, amount: 100 }], abilityText: "Give adjacent allies +10 Damage permanently and Protect 1.", levels: { 2: { baseCooldownSeconds: 2 }, 3: { baseCooldownSeconds: 1.3 }, 4: { baseCooldownSeconds: 1.3, baseMulticast: 4, abilityText: "Give adjacent allies +40 Damage permanently and Protect 1." } } },
-  [Species.Cicadence]: { spriteFile: "cicadence_shiny.png", baseDamage: 100, baseCooldownSeconds: 6, baseMulticast: 1, abilityText: "Trigger the Bug ally above and give it +10 Damage permanently.", levels: { 2: { baseCooldownSeconds: 3 }, 3: { baseCooldownSeconds: 2 }, 4: { baseDamage: 200, baseCooldownSeconds: 2, baseMulticast: 2 } } },
-  [Species.Cinderfly]: { spriteFile: "cinderfly_shiny.png", baseDamage: null, baseCooldownSeconds: 5, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Burn, amount: 7 }], abilityText: "After you buy a Bug monster, this gains +12% Cooldown Speed.", levels: { 2: { abilityText: "After you buy a Bug monster, this gains +24% Cooldown Speed." }, 3: { abilityText: "After you buy a Bug monster, this gains +36% Cooldown Speed." }, 4: { baseMulticast: 2, appliesStatus: [{ type: StatusEffectType.Burn, amount: 14 }], abilityText: "After you buy a Bug monster, this gains +72% Cooldown Speed." } } },
-  [Species.Cinnabark]: { spriteFile: "cinnabark_shiny.png", baseDamage: null, baseCooldownSeconds: 4, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Poison, amount: 5 }], abilityText: "Has additional Shield equal to 120% of the Poison stacks on the enemy.", levels: { 2: { appliesStatus: [{ type: StatusEffectType.Poison, amount: 10 }], abilityText: "Has additional Shield equal to 240% of the Poison stacks on the enemy." }, 3: { appliesStatus: [{ type: StatusEffectType.Poison, amount: 15 }], abilityText: "Has additional Shield equal to 360% of the Poison stacks on the enemy." }, 4: { appliesStatus: [{ type: StatusEffectType.Poison, amount: 30 }], abilityText: "Has additional Shield equal to 720% of the Poison stacks on the enemy." } } },
-  [Species.Clawnetic]: { spriteFile: "clawnetic_shiny.png", baseDamage: 60, baseCooldownSeconds: 2, baseMulticast: 1, abilityText: "Whenever an ally inflicts Shock, Charge this by 1 second(s).", levels: { 2: { baseMulticast: 2 }, 3: { baseMulticast: 3 }, 4: { baseDamage: 600, baseMulticast: 24 } } },
-  [Species.Coalem]: { spriteFile: "coalem_shiny.png", baseDamage: null, baseCooldownSeconds: 15, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Burn, amount: 20 }, { type: StatusEffectType.Shield, amount: 550 }], abilityText: "Trigger this and gain +30 Shield permanently.", levels: { 2: { appliesStatus: [{ type: StatusEffectType.Burn, amount: 40 }, { type: StatusEffectType.Shield, amount: 1100 }], abilityText: "Trigger this and gain +60 Shield permanently." }, 3: { appliesStatus: [{ type: StatusEffectType.Burn, amount: 60 }, { type: StatusEffectType.Shield, amount: 1650 }], abilityText: "Trigger this and gain +90 Shield permanently." }, 4: { baseCooldownSeconds: 5, appliesStatus: [{ type: StatusEffectType.Burn, amount: 240 }, { type: StatusEffectType.Shield, amount: 6600 }], abilityText: "Trigger this and gain +540 Shield permanently." } } },
-  [Species.Cobrex]: { spriteFile: "cobrex_shiny.png", baseDamage: null, baseCooldownSeconds: 15, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Poison, amount: 360 }], abilityText: "Whenever an ally inflicts Poison, Charge this by 1 second(s).", levels: { 2: { appliesStatus: [{ type: StatusEffectType.Poison, amount: 720 }] }, 3: { appliesStatus: [{ type: StatusEffectType.Poison, amount: 1080 }] }, 4: { baseCooldownSeconds: 2, appliesStatus: [{ type: StatusEffectType.Poison, amount: 1080 }] } } },
-  [Species.Cordycant]: { spriteFile: "cordycant_shiny.png", baseDamage: null, baseCooldownSeconds: 4, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Poison, amount: 8 }], abilityText: "Give the next monster you buy Toxic typing and +10 Poison. Lost if sold.", levels: { 2: { appliesStatus: [{ type: StatusEffectType.Poison, amount: 16 }], abilityText: "Give the next monster you buy Toxic typing and +19 Poison. Lost if sold." }, 3: { appliesStatus: [{ type: StatusEffectType.Poison, amount: 24 }], abilityText: "Give the next monster you buy Toxic typing and +29 Poison. Lost if sold." }, 4: { appliesStatus: [{ type: StatusEffectType.Poison, amount: 96 }], abilityText: "Give the next monster you buy Toxic typing and +115 Poison. Lost if sold." } } },
-  [Species.Cosmivore]: { spriteFile: "cosmivore_shiny.png", baseDamage: 1, baseCooldownSeconds: 7, baseMulticast: 1, abilityText: "When rerolling the shop, gain 24% of the total stats of the monsters remaining in the shop (excluding Multicast and Cooldown).", levels: { 2: { abilityText: "When rerolling the shop, gain 48% of the total stats of the monsters remaining in the shop (excluding Multicast and Cooldown)." }, 3: { abilityText: "When rerolling the shop, gain 72% of the total stats of the monsters remaining in the shop (excluding Multicast and Cooldown)." }, 4: { abilityText: "When rerolling the shop, gain 720% of the total stats of the monsters remaining in the shop (excluding Multicast and Cooldown)." } } },
-  [Species.Craghorn]: { spriteFile: "craghorn_shiny.png", baseDamage: 24, baseCooldownSeconds: 6, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Shield, amount: 24 }], abilityText: "When you use an item, this gains +24 Damage and Shield.", levels: { 2: { abilityText: "When you use an item, this gains +48 Damage and Shield." }, 3: { abilityText: "When you use an item, this gains +72 Damage and Shield." }, 4: { baseDamage: 96, appliesStatus: [{ type: StatusEffectType.Shield, amount: 96 }], abilityText: "When you use an item, this gains +144 Damage and Shield." } } },
-  [Species.Danuki]: { spriteFile: "danuki_shiny.png", baseDamage: 40, baseCooldownSeconds: 6, baseMulticast: 1, abilityText: "On ally knockout, this gains 84% of their Damage for this battle.\n(Except other Danuki)", levels: { 2: { baseCooldownSeconds: 3 }, 3: { baseCooldownSeconds: 2 }, 4: { baseCooldownSeconds: 2, baseMulticast: 4 } } },
-  [Species.Dirgefin]: { spriteFile: "dirgefin_shiny.png", baseDamage: 50, baseCooldownSeconds: 9, baseMulticast: 1, healAmount: 100, abilityText: "Knockout all Common allies and enemies and gain +10 Damage permanently for each Knockout.", levels: { 2: { baseCooldownSeconds: 4.5 }, 3: { baseCooldownSeconds: 3 }, 4: { baseDamage: 100, baseCooldownSeconds: 3, baseMulticast: 2, healAmount: 200 } } },
-  [Species.Dollhime]: { spriteFile: "dollhime_shiny.png", baseDamage: null, baseCooldownSeconds: 6, baseMulticast: 1, abilityText: "+60 Damage permanently.", levels: { 2: { abilityText: "+120 Damage permanently." }, 3: { abilityText: "+180 Damage permanently." }, 4: { abilityText: "+720 Damage permanently." } } },
-  [Species.Dracana]: { spriteFile: "dracana_shiny.png", baseDamage: 5, baseCooldownSeconds: 3, baseMulticast: 1, abilityText: "Charge the ally behind by 1 second(s) and give this +5% Cooldown Speed for this battle.\n(Dracana can't receive charge)", levels: { 2: { baseDamage: 10, abilityText: "Charge the ally behind by 2 second(s) and give this +5% Cooldown Speed for this battle.\n(Dracana can't receive charge)" }, 3: { baseDamage: 15, abilityText: "Charge the ally behind by 3 second(s) and give this +5% Cooldown Speed for this battle.\n(Dracana can't receive charge)" }, 4: { baseDamage: 45, abilityText: "Charge the ally behind by 18 second(s) and give this +5% Cooldown Speed for this battle.\n(Dracana can't receive charge)" } } },
-  [Species.Draconarch]: { spriteFile: "draconarch_shiny.png", baseDamage: 100, baseCooldownSeconds: 4, baseMulticast: 1, abilityText: "Activate the On Battle Start abilities of adjacent allies and increase this monster's Cooldown by 5 for this battle.", levels: { 2: { baseMulticast: 2, abilityText: "Activate the On Battle Start abilities of adjacent allies and increase this monster's Cooldown by 2 for this battle." }, 3: { baseMulticast: 3, abilityText: "Activate the On Battle Start abilities of adjacent allies and increase this monster's Cooldown by 1 for this battle." }, 4: { baseMulticast: 24, abilityText: "Activate the On Battle Start abilities of adjacent allies and increase this monster's Cooldown by 1 for this battle." } } },
-  [Species.Dribblet]: { spriteFile: "dribblet_shiny.png", baseDamage: null, baseCooldownSeconds: 3, baseMulticast: 1, healAmount: 18, abilityText: "Evolves at level 3.", levels: { 2: { healAmount: 36 }, 3: { healAmount: 54 }, 4: { healAmount: 54 } } },
-  [Species.Drumire]: { spriteFile: "drumire_shiny.png", baseDamage: null, baseCooldownSeconds: 8, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Poison, amount: 20 }], abilityText: "When a Toxic ally casts, give it +6% Cooldown Speed for this battle.", levels: { 2: { appliesStatus: [{ type: StatusEffectType.Poison, amount: 40 }], abilityText: "When a Toxic ally casts, give it +12% Cooldown Speed for this battle." }, 3: { appliesStatus: [{ type: StatusEffectType.Poison, amount: 60 }], abilityText: "When a Toxic ally casts, give it +18% Cooldown Speed for this battle." }, 4: { appliesStatus: [{ type: StatusEffectType.Poison, amount: 480 }], abilityText: "When a Toxic ally casts, give it +144% Cooldown Speed for this battle." } } },
-  [Species.Dryadell]: { spriteFile: "dryadell_shiny.png", baseDamage: 70, baseCooldownSeconds: 5, baseMulticast: 1, abilityText: "Trigger the Grass ally above.", levels: { 2: { baseMulticast: 2 }, 3: { baseMulticast: 3 }, 4: { baseDamage: 140, baseMulticast: 12 } } },
-  [Species.Electranade]: { spriteFile: "electranade_shiny.png", baseDamage: null, baseCooldownSeconds: 4.5, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Shock, amount: 30 }], abilityText: "Knockout self.", levels: { 2: { appliesStatus: [{ type: StatusEffectType.Shock, amount: 60 }] }, 3: { appliesStatus: [{ type: StatusEffectType.Shock, amount: 90 }] }, 4: { appliesStatus: [{ type: StatusEffectType.Shock, amount: 360 }] } } },
-  [Species.Emberpaw]: { spriteFile: "emberpaw_shiny.png", baseDamage: 50, baseCooldownSeconds: 6, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Burn, amount: 5 }], abilityText: "Evolve when your team inflicts Burn 25 times." },
-  [Species.Emburn]: { spriteFile: "emburn_shiny.png", baseDamage: null, baseCooldownSeconds: 5, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Burn, amount: 6 }], abilityText: "On Knockout of this or an ally, this gains +3 Burn permanently.", levels: { 2: { appliesStatus: [{ type: StatusEffectType.Burn, amount: 12 }], abilityText: "On Knockout of this or an ally, this gains +6 Burn permanently." }, 3: { appliesStatus: [{ type: StatusEffectType.Burn, amount: 18 }], abilityText: "On Knockout of this or an ally, this gains +9 Burn permanently." }, 4: { appliesStatus: [{ type: StatusEffectType.Burn, amount: 72 }], abilityText: "On Knockout of this or an ally, this gains +18 Burn permanently." } } },
-  [Species.Faebloom]: { spriteFile: "faebloom_shiny.png", baseDamage: 777, baseCooldownSeconds: 7, baseMulticast: 1, abilityText: "Mythical Item may appear in your shop.\nOngoing\nAdjacent allies have +12% Damage per Mythical Item used. (currently +X% Damage)", levels: { 2: { abilityText: "Mythical Item may appear in your shop.\nOngoing\nAdjacent allies have +24% Damage per Mythical Item used. (currently +X% Damage)" }, 3: { abilityText: "Mythical Item may appear in your shop.\nOngoing\nAdjacent allies have +36% Damage per Mythical Item used. (currently +X% Damage)" }, 4: { abilityText: "Mythical Item may appear in your shop.\nOngoing\nAdjacent allies have +360% Damage per Mythical Item used. (currently +X% Damage)" } } },
-  [Species.Fernfowl]: { spriteFile: "fernfowl_shiny.png", baseDamage: 120, baseCooldownSeconds: 7, baseMulticast: 2, abilityText: "Evolve after your team deals 15000 non-status Damage.", levels: { 2: { baseDamage: 240 }, 3: { baseDamage: 360 }, 4: { baseDamage: 3600 } } },
-  [Species.Formiqueen]: { spriteFile: "formiqueen_shiny.png", baseDamage: 60, baseCooldownSeconds: 4, baseMulticast: 1, abilityText: "Adjacent Common allies have +32% Cooldown Speed.", levels: { 2: { baseDamage: 120, abilityText: "Adjacent Common allies have +62% Cooldown Speed." }, 3: { baseDamage: 180, abilityText: "Adjacent Common allies have +92% Cooldown Speed." }, 4: { baseDamage: 720, abilityText: "Adjacent Common allies have +675% Cooldown Speed." } } },
-  [Species.Frillet]: { spriteFile: "frillet_shiny.png", baseDamage: 12, baseCooldownSeconds: 4, baseMulticast: 1, healAmount: 12, abilityText: "Evolves at level 3.", levels: { 2: { baseDamage: 24, healAmount: 24 }, 3: { baseDamage: 36, healAmount: 36 }, 4: { baseDamage: 36, baseMulticast: 2, healAmount: 36 } } },
-  [Species.Frizzly]: { spriteFile: "frizzly_shiny.png", baseDamage: 1, baseCooldownSeconds: 7, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Shock, amount: 8 }], abilityText: "Trigger this and gain +1 Shock permanently.", levels: { 2: { appliesStatus: [{ type: StatusEffectType.Shock, amount: 16 }], abilityText: "Trigger this and gain +2 Shock permanently." }, 3: { appliesStatus: [{ type: StatusEffectType.Shock, amount: 24 }], abilityText: "Trigger this and gain +3 Shock permanently." }, 4: { baseMulticast: 2, appliesStatus: [{ type: StatusEffectType.Shock, amount: 48 }], abilityText: "Trigger this and gain +4 Shock permanently." } } },
-  [Species.Fumungus]: { spriteFile: "fumungus_shiny.png", baseDamage: null, baseCooldownSeconds: 3, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Poison, amount: 6 }], abilityText: "Has additional Damage equal to 120% of the Poison stacks on the enemy.", abilityTags: [{ kind: AbilityTagKind.StatFromTargetStatus, status: StatusEffectType.Poison, multiplier: 1.2 }], levels: { 2: { abilityText: "Has additional Damage equal to 240% of the Poison stacks on the enemy.", abilityTags: [{ kind: AbilityTagKind.StatFromTargetStatus, status: StatusEffectType.Poison, multiplier: 2.4 }] }, 3: { abilityText: "Has additional Damage equal to 360% of the Poison stacks on the enemy.", abilityTags: [{ kind: AbilityTagKind.StatFromTargetStatus, status: StatusEffectType.Poison, multiplier: 3.6 }] }, 4: { baseCooldownSeconds: 1.5, appliesStatus: [{ type: StatusEffectType.Poison, amount: 12 }], abilityText: "Has additional Damage equal to 1440% of the Poison stacks on the enemy.", abilityTags: [{ kind: AbilityTagKind.StatFromTargetStatus, status: StatusEffectType.Poison, multiplier: 14.4 }] } } },
-  [Species.Furnadon]: { spriteFile: "furnadon_shiny.png", baseDamage: null, baseCooldownSeconds: 4, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Burn, amount: 4 }], abilityText: "Has an additional +1 Burn for each Trinket that you own.", levels: { 2: { appliesStatus: [{ type: StatusEffectType.Burn, amount: 8 }], abilityText: "Has an additional +2 Burn for each Trinket that you own." }, 3: { appliesStatus: [{ type: StatusEffectType.Burn, amount: 12 }], abilityText: "Has an additional +3 Burn for each Trinket that you own." }, 4: { appliesStatus: [{ type: StatusEffectType.Burn, amount: 24 }], abilityText: "Has an additional +6 Burn for each Trinket that you own." } } },
-  [Species.Gachapod]: { spriteFile: "gachapod_shiny.png", baseDamage: 120, baseCooldownSeconds: 6, baseMulticast: 1, abilityText: "When this triggers, gain a random non-unique Common Trinket, then improve this ability for this battle.", levels: { 2: { baseDamage: 240, abilityText: "When this triggers, gain 2 random non-unique Common Trinkets, then improve this ability for this battle." }, 3: { baseDamage: 360, abilityText: "When this triggers, gain 3 random non-unique Common Trinkets, then improve this ability for this battle." }, 4: { baseDamage: 2880, abilityText: "When this triggers, gain 24 random non-unique Common Trinkets, then improve this ability for this battle." } } },
-  [Species.Gaiadrasil]: { spriteFile: "gaiadrasil_shiny.png", baseDamage: null, baseCooldownSeconds: 9, baseMulticast: 1, abilityText: "Has additional Damage equal to 120% of the total Damage of adjacent allies.\n(Except other Gaiadrasil)", levels: { 2: { baseCooldownSeconds: 4.5 }, 3: { baseCooldownSeconds: 3 }, 4: { baseCooldownSeconds: 3, abilityText: "Has additional Damage equal to 1200% of the total Damage of adjacent allies.\n(Except other Gaiadrasil)" } } },
-  [Species.Galvanine]: { spriteFile: "galvanine_shiny.png", baseDamage: 10, baseCooldownSeconds: 7, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Shock, amount: 6 }], abilityText: "+60% Cooldown Speed and +2 Shock for this battle.", levels: { 2: { baseDamage: 20, appliesStatus: [{ type: StatusEffectType.Shock, amount: 12 }], abilityText: "+60% Cooldown Speed and +4 Shock for this battle." }, 3: { baseDamage: 30, appliesStatus: [{ type: StatusEffectType.Shock, amount: 18 }], abilityText: "+60% Cooldown Speed and +6 Shock for this battle." }, 4: { baseDamage: 30, appliesStatus: [{ type: StatusEffectType.Shock, amount: 144 }], abilityText: "+60% Cooldown Speed and +48 Shock for this battle." } } },
-  [Species.Geminiss]: { spriteFile: "geminiss_shiny.png", baseDamage: null, baseCooldownSeconds: 10, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Shield, amount: 100 }], abilityText: "Give adjacent allies +60% Shield for this battle.", levels: { 2: { abilityText: "Give adjacent allies +120% Shield for this battle." }, 3: { abilityText: "Give adjacent allies +180% Shield for this battle." }, 4: { appliesStatus: [{ type: StatusEffectType.Shield, amount: 1000 }], abilityText: "Give adjacent allies +1800% Shield for this battle." } } },
-  [Species.Gemwing]: { spriteFile: "gemwing_shiny.png", baseDamage: 150, baseCooldownSeconds: 5, baseMulticast: 1, abilityText: "Activate the On Bought ability of the ally above 1 time(s).", levels: { 2: { baseDamage: 300, abilityText: "Activate the On Bought ability of the ally above 2 time(s)." }, 3: { baseDamage: 450, abilityText: "Activate the On Bought ability of the ally above 3 time(s)." }, 4: { baseDamage: 3600, abilityText: "Activate the On Bought ability of the ally above 12 time(s)." } } },
-  [Species.Gildshell]: { spriteFile: "gildshell_shiny.png", baseDamage: 1, baseCooldownSeconds: 2, baseMulticast: 1, abilityText: "+20 Sell Value permanently.\nOngoing\nHas additional Damage equal to 0.5 times this monster's Sell Value.", levels: { 2: { abilityText: "+40 Sell Value permanently.\nOngoing\nHas additional Damage equal to 0.5 times this monster's Sell Value." }, 3: { abilityText: "+60 Sell Value permanently.\nOngoing\nHas additional Damage equal to 0.5 times this monster's Sell Value." }, 4: { baseDamage: 100, abilityText: "+240 Sell Value permanently.\nOngoing\nHas additional Damage equal to 0.5 times this monster's Sell Value." } } },
-  [Species.Ginsage]: { spriteFile: "ginsage_shiny.png", baseDamage: 150, baseCooldownSeconds: 7, baseMulticast: 1, abilityText: "Adjacent Grass allies gain +8% Cooldown Speed permanently.", levels: { 2: { baseDamage: 300, abilityText: "Adjacent Grass allies gain +17% Cooldown Speed permanently." }, 3: { baseDamage: 450, abilityText: "Adjacent Grass allies gain +25% Cooldown Speed permanently." }, 4: { baseDamage: 3600, abilityText: "Adjacent Grass allies gain +202% Cooldown Speed permanently." } } },
-  [Species.Goldora]: { spriteFile: "goldora_shiny.png", baseDamage: 333, baseCooldownSeconds: 5, baseMulticast: 1, abilityText: "On the first cast, gain 1 random non-unique Legendary Trinket(s) for each Legendary ally.", levels: { 2: { abilityText: "On the first cast, gain 2 random non-unique Legendary Trinket(s) for each Legendary ally." }, 3: { abilityText: "On the first cast, gain 3 random non-unique Legendary Trinket(s) for each Legendary ally." }, 4: { abilityText: "On the first cast, gain 30 random non-unique Legendary Trinket(s) for each Legendary ally." } } },
-  [Species.Guardiant]: { spriteFile: "guardiant_shiny.png", baseDamage: 18, baseCooldownSeconds: 4, baseMulticast: 1, abilityText: "After you buy a Bug monster, this gains +10 Damage.", levels: { 2: { abilityText: "After you buy a Bug monster, this gains +20 Damage." }, 3: { abilityText: "After you buy a Bug monster, this gains +30 Damage." }, 4: { baseDamage: 36, abilityText: "After you buy a Bug monster, this gains +60 Damage." } } },
-  [Species.Humbolt]: { spriteFile: "humbolt_shiny.png", baseDamage: 36, baseCooldownSeconds: 4, baseMulticast: 3, appliesStatus: [{ type: StatusEffectType.Shock, amount: 3 }], levels: { 2: { baseDamage: 48, baseMulticast: 4, appliesStatus: [{ type: StatusEffectType.Shock, amount: 4 }] }, 3: { baseDamage: 54, baseMulticast: 5, appliesStatus: [{ type: StatusEffectType.Shock, amount: 5 }] }, 4: { baseDamage: 54, baseMulticast: 10, appliesStatus: [{ type: StatusEffectType.Shock, amount: 5 }] } } },
-  [Species.Ignit]: { spriteFile: "ignit_shiny.png", baseDamage: null, baseCooldownSeconds: 8, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Burn, amount: 2 }], abilityText: "Evolve.", levels: { 2: { appliesStatus: [{ type: StatusEffectType.Burn, amount: 3 }] }, 3: { appliesStatus: [{ type: StatusEffectType.Burn, amount: 4 }] }, 4: { baseCooldownSeconds: 1, appliesStatus: [{ type: StatusEffectType.Burn, amount: 4 }] } } },
-  [Species.Ironcore]: { spriteFile: "ironcore_shiny.png", baseDamage: 30, baseCooldownSeconds: 2, baseMulticast: 1, abilityText: "Charge adjacent Electric allies by 1.2 second(s).\n(Ironcore can't receive charge)", levels: { 2: { abilityText: "Charge adjacent Electric allies by 2.4 second(s).\n(Ironcore can't receive charge)" }, 3: { abilityText: "Charge adjacent Electric allies by 3.6 second(s).\n(Ironcore can't receive charge)" }, 4: { abilityText: "Charge adjacent Electric allies by 7.2 second(s).\n(Ironcore can't receive charge)" } } },
-  [Species.Joltail]: { spriteFile: "joltail_shiny.png", baseDamage: 1, baseCooldownSeconds: 4.5, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Shock, amount: 4 }], abilityText: "+1 Shock permanently.", levels: { 2: { baseDamage: 2, appliesStatus: [{ type: StatusEffectType.Shock, amount: 8 }], abilityText: "+2 Shock permanently." }, 3: { baseDamage: 3, appliesStatus: [{ type: StatusEffectType.Shock, amount: 12 }], abilityText: "+3 Shock permanently." }, 4: { baseDamage: 3, baseMulticast: 2, appliesStatus: [{ type: StatusEffectType.Shock, amount: 12 }], abilityText: "+4 Shock permanently." } } },
-  [Species.Kappow]: { spriteFile: "kappow_shiny.png", baseDamage: 60, baseCooldownSeconds: 5.5, baseMulticast: 1, abilityText: "Level up. This can level up indefinitely.", levels: { 2: { baseDamage: 120 }, 3: { baseDamage: 180 }, 4: { baseDamage: 360 } } },
-  [Species.Kickrane]: { spriteFile: "kickrane_shiny.png", baseDamage: 30, baseCooldownSeconds: 4.5, baseMulticast: 2, abilityText: "This and all your allies gain +24 Damage permanently.", levels: { 2: { baseDamage: 60, abilityText: "This and all your allies gain +48 Damage permanently." }, 3: { baseDamage: 90, abilityText: "This and all your allies gain +72 Damage permanently." }, 4: { baseDamage: 360, abilityText: "This and all your allies gain +288 Damage permanently." } } },
-  [Species.Kindlepot]: { spriteFile: "kindlepot_shiny.png", baseDamage: null, baseCooldownSeconds: 4, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Burn, amount: 4 }], abilityText: "Evolve after collecting 5 more Trinkets.(5 left!)", levels: { 2: { appliesStatus: [{ type: StatusEffectType.Burn, amount: 8 }] }, 3: { appliesStatus: [{ type: StatusEffectType.Burn, amount: 12 }] }, 4: { appliesStatus: [{ type: StatusEffectType.Burn, amount: 24 }] } } },
-  [Species.Lamplet]: { spriteFile: "lamplet_shiny.png", baseDamage: null, baseCooldownSeconds: 2.5, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Burn, amount: 1 }], abilityText: "+1 Burn permanently.", levels: { 2: { appliesStatus: [{ type: StatusEffectType.Burn, amount: 2 }], abilityText: "+2 Burn permanently." }, 3: { appliesStatus: [{ type: StatusEffectType.Burn, amount: 3 }], abilityText: "+3 Burn permanently." }, 4: { baseMulticast: 2, appliesStatus: [{ type: StatusEffectType.Burn, amount: 3 }], abilityText: "+3 Burn permanently." } } },
-  [Species.Leafleap]: { spriteFile: "leafleap_shiny.png", baseDamage: 40, baseCooldownSeconds: 4, baseMulticast: 1, abilityText: "Give all monsters in the shop, on your team, and on your bench +5 Damage for the rest of the run.", levels: { 2: { baseDamage: 80, abilityText: "Give all monsters in the shop, on your team, and on your bench +10 Damage for the rest of the run." }, 3: { baseDamage: 120, abilityText: "Give all monsters in the shop, on your team, and on your bench +15 Damage for the rest of the run." }, 4: { baseDamage: 240, abilityText: "Give all monsters in the shop, on your team, and on your bench +30 Damage for the rest of the run." } } },
-  [Species.Lignite]: { spriteFile: "lignite_shiny.png", baseDamage: null, baseCooldownSeconds: 5, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Burn, amount: 3 }], abilityText: "Has additional Damage equal to 24 times this monster's Burn.", levels: { 2: { abilityText: "Has additional Damage equal to 48 times this monster's Burn." }, 3: { abilityText: "Has additional Damage equal to 72 times this monster's Burn." }, 4: { abilityText: "Has additional Damage equal to 144 times this monster's Burn." } } },
-  [Species.Lumijel]: { spriteFile: "lumijel_shiny.png", baseDamage: 20, baseCooldownSeconds: 5, baseMulticast: 1, healAmount: 30, abilityText: "Allies of level 3 or above gain +18 Damage and +18 Heal permanently.", levels: { 2: { baseDamage: 40, healAmount: 60, abilityText: "Allies of level 3 or above gain +36 Damage and +36 Heal permanently." }, 3: { baseDamage: 60, healAmount: 90, abilityText: "Allies of level 3 or above gain +54 Damage and +54 Heal permanently." }, 4: { baseDamage: 240, healAmount: 360, abilityText: "Allies of level 3 or above gain +216 Damage and +216 Heal permanently." } } },
-  [Species.Magmalith]: { spriteFile: "magmalith_shiny.png", baseDamage: null, baseCooldownSeconds: 9, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Burn, amount: 5 }], abilityText: "Adjacent Fire allies gain +2 Burn permanently.", levels: { 2: { appliesStatus: [{ type: StatusEffectType.Burn, amount: 10 }], abilityText: "Adjacent Fire allies gain +4 Burn permanently." }, 3: { appliesStatus: [{ type: StatusEffectType.Burn, amount: 15 }], abilityText: "Adjacent Fire allies gain +6 Burn permanently." }, 4: { appliesStatus: [{ type: StatusEffectType.Burn, amount: 30 }], abilityText: "Adjacent Fire allies gain +24 Burn permanently." } } },
-  [Species.Magmite]: { spriteFile: "magmite_shiny.png", baseDamage: null, baseCooldownSeconds: 4.5, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Burn, amount: 4 }, { type: StatusEffectType.Shield, amount: 40 }], abilityText: "+10 Shield and +1 Burn permanently.", levels: { 2: { appliesStatus: [{ type: StatusEffectType.Burn, amount: 8 }, { type: StatusEffectType.Shield, amount: 80 }], abilityText: "+20 Shield and +2 Burn permanently." }, 3: { appliesStatus: [{ type: StatusEffectType.Burn, amount: 12 }, { type: StatusEffectType.Shield, amount: 120 }], abilityText: "+30 Shield and +3 Burn permanently." }, 4: { appliesStatus: [{ type: StatusEffectType.Burn, amount: 12 }, { type: StatusEffectType.Shield, amount: 480 }], abilityText: "+60 Shield and +6 Burn permanently." } } },
-  [Species.Mallogre]: { spriteFile: "mallogre_shiny.png", baseDamage: 120, baseCooldownSeconds: 8, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Shield, amount: 100 }], abilityText: "+5 Damage and +5 Shield permanently for each Trinket that you own.", levels: { 2: { abilityText: "+10 Damage and +10 Shield permanently for each Trinket that you own." }, 3: { abilityText: "+14 Damage and +14 Shield permanently for each Trinket that you own." }, 4: { abilityText: "+115 Damage and +115 Shield permanently for each Trinket that you own." } } },
-  [Species.Miasmaw]: { spriteFile: "miasmaw_shiny.png", baseDamage: null, baseCooldownSeconds: 3, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Poison, amount: 10 }], abilityText: "Gain Poison for this battle equal to 1.2x the total Poison of your allies.\n(Except other Miasmaw)", abilityTags: [{ kind: AbilityTagKind.BattleStartStatusFromAllies, status: StatusEffectType.Poison, multiplier: 1.2 }], levels: { 2: { abilityText: "Gain Poison for this battle equal to 2.4x the total Poison of your allies.\n(Except other Miasmaw)", abilityTags: [{ kind: AbilityTagKind.BattleStartStatusFromAllies, status: StatusEffectType.Poison, multiplier: 2.4 }] }, 3: { abilityText: "Gain Poison for this battle equal to 3.6x the total Poison of your allies.\n(Except other Miasmaw)", abilityTags: [{ kind: AbilityTagKind.BattleStartStatusFromAllies, status: StatusEffectType.Poison, multiplier: 3.6 }] }, 4: { abilityText: "Gain Poison for this battle equal to 28.8x the total Poison of your allies.\n(Except other Miasmaw)", abilityTags: [{ kind: AbilityTagKind.BattleStartStatusFromAllies, status: StatusEffectType.Poison, multiplier: 28.8 }] } } },
-  [Species.Missingn]: { spriteFile: "missingn_shiny.png", baseDamage: 1, baseCooldownSeconds: 30, baseMulticast: 1, abilityText: "Gain +10 Damage permanently. For this battle, transform into a random monster 1 rarity above your shop's highest available rarity.", levels: { 2: { abilityText: "Gain +20 Damage permanently. For this battle, transform into a random monster 1 rarity above your shop's highest available rarity." }, 3: { abilityText: "Gain +30 Damage permanently. For this battle, transform into a random monster 1 rarity above your shop's highest available rarity." }, 4: { abilityText: "Gain +60 Damage permanently. For this battle, transform into a random monster 1 rarity above your shop's highest available rarity." } } },
-  [Species.Mosslug]: { spriteFile: "mosslug_shiny.png", baseDamage: null, baseCooldownSeconds: 6, baseMulticast: 1, healAmount: 36, abilityText: "+24 Damage for this battle.", abilityTags: [{ kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statChange: { stat: StatChangeStat.Damage, amount: 24 } } }], levels: { 2: { healAmount: 72, abilityText: "+48 Damage for this battle.", abilityTags: [{ kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statChange: { stat: StatChangeStat.Damage, amount: 48 } } }] }, 3: { healAmount: 108, abilityText: "+72 Damage for this battle.", abilityTags: [{ kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statChange: { stat: StatChangeStat.Damage, amount: 72 } } }] }, 4: { healAmount: 108, abilityText: "+144 Damage for this battle.", abilityTags: [{ kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statChange: { stat: StatChangeStat.Damage, amount: 144 } } }] } } },
-  [Species.Nekoffin]: { spriteFile: "nekoffin_shiny.png", baseDamage: 200, baseCooldownSeconds: 13, baseMulticast: 1, abilityText: "Gain a random non-unique Uncommon Trinket.", levels: { 2: { baseDamage: 400, abilityText: "Gain 2 random non-unique Uncommon Trinkets." }, 3: { baseDamage: 600, abilityText: "Gain 3 random non-unique Uncommon Trinkets." }, 4: { baseDamage: 2300, abilityText: "Gain 12 random non-unique Uncommon Trinkets." } } },
-  [Species.Ninflora]: { spriteFile: "ninflora_shiny.png", baseDamage: 50, baseCooldownSeconds: 4, baseMulticast: 1, abilityText: "This and your Grass allies gain +12% Cooldown Speed permanently.", levels: { 2: { baseDamage: 100, abilityText: "This and your Grass allies gain +24% Cooldown Speed permanently." }, 3: { baseDamage: 150, abilityText: "This and your Grass allies gain +36% Cooldown Speed permanently." }, 4: { baseDamage: 1200, abilityText: "This and your Grass allies gain +288% Cooldown Speed permanently." } } },
-  [Species.Noxalith]: { spriteFile: "noxalith_shiny.png", baseDamage: null, baseCooldownSeconds: 7, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Poison, amount: 5 }], abilityText: "Adjacent Toxic allies gain +3 Poison permanently.", levels: { 2: { appliesStatus: [{ type: StatusEffectType.Poison, amount: 10 }], abilityText: "Adjacent Toxic allies gain +6 Poison permanently." }, 3: { appliesStatus: [{ type: StatusEffectType.Poison, amount: 15 }], abilityText: "Adjacent Toxic allies gain +9 Poison permanently." }, 4: { appliesStatus: [{ type: StatusEffectType.Poison, amount: 30 }], abilityText: "Adjacent Toxic allies gain +36 Poison permanently." } } },
-  [Species.Noxnimbus]: { spriteFile: "noxnimbus_shiny.png", baseDamage: null, baseCooldownSeconds: 3, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Poison, amount: 1 }], abilityText: "This and adjacent Toxic allies gain +3 Poison for this battle.", levels: { 2: { abilityText: "This and adjacent Toxic allies gain +6 Poison for this battle." }, 3: { abilityText: "This and adjacent Toxic allies gain +9 Poison for this battle." }, 4: { baseMulticast: 2, abilityText: "This and adjacent Toxic allies gain +18 Poison for this battle." } } },
-  [Species.Omnichrome]: { spriteFile: "omnichrome_shiny.png", baseDamage: 1, baseCooldownSeconds: 5, baseMulticast: 1, abilityText: "Gain 96% of the stats of the enemy monster with the highest stats permanently (excluding Multicast and Cooldown).", levels: { 2: { abilityText: "Gain 192% of the stats of the enemy monster with the highest stats permanently (excluding Multicast and Cooldown)." }, 3: { abilityText: "Gain 288% of the stats of the enemy monster with the highest stats permanently (excluding Multicast and Cooldown)." }, 4: { abilityText: "Gain 2880% of the stats of the enemy monster with the highest stats permanently (excluding Multicast and Cooldown)." } } },
-  [Species.Onsetra]: { spriteFile: "onsetra_shiny.png", baseDamage: 100, baseCooldownSeconds: 4, baseMulticast: 1, abilityText: "Adjacent allies apply their Ongoing abilities 1 additional time(s).", levels: { 2: { baseDamage: 200, abilityText: "Adjacent allies apply their Ongoing abilities 2 additional time(s)." }, 3: { baseDamage: 300, abilityText: "Adjacent allies apply their Ongoing abilities 3 additional time(s)." }, 4: { baseDamage: 3000, abilityText: "Adjacent allies apply their Ongoing abilities 24 additional time(s)." } } },
-  [Species.Opalion]: { spriteFile: "opalion_shiny.png", baseDamage: null, baseCooldownSeconds: 5, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Shield, amount: 90 }], levels: { 2: { baseMulticast: 2 }, 3: { baseMulticast: 3 }, 4: { baseMulticast: 12, appliesStatus: [{ type: StatusEffectType.Shield, amount: 180 }] } } },
-  [Species.Orcana]: { spriteFile: "orcana_shiny.png", baseDamage: null, baseCooldownSeconds: 8, baseMulticast: 1, healAmount: 200, abilityText: "Has an additional +192 Damage and +192 Heal for each ally of level 3 or above.", levels: { 2: { abilityText: "Has an additional +384 Damage and +384 Heal for each ally of level 3 or above." }, 3: { abilityText: "Has an additional +576 Damage and +576 Heal for each ally of level 3 or above." }, 4: { abilityText: "Has an additional +2304 Damage and +2304 Heal for each ally of level 3 or above." } } },
-  [Species.Ouroblaze]: { spriteFile: "ouroblaze_shiny.png", baseDamage: 400, baseCooldownSeconds: 8, baseMulticast: 1, abilityText: "Has additional Burn equal to 60% of the Burn stacks on the enemy.", levels: { 2: { abilityText: "Has additional Burn equal to 120% of the Burn stacks on the enemy." }, 3: { abilityText: "Has additional Burn equal to 180% of the Burn stacks on the enemy." }, 4: { abilityText: "Has additional Burn equal to 1800% of the Burn stacks on the enemy." } } },
-  [Species.Panbud]: { spriteFile: "panbud_shiny.png", baseDamage: 30, baseCooldownSeconds: 5, baseMulticast: 1, abilityText: "Evolves at level 3.", levels: { 2: { baseDamage: 60 }, 3: { baseDamage: 90 }, 4: { baseDamage: 90 } } },
-  [Species.Pawsperity]: { spriteFile: "pawsperity_shiny.png", baseDamage: 100, baseCooldownSeconds: 6.5, baseMulticast: 1, abilityText: "Gain a random non-unique Uncommon Trinket.", levels: { 2: { baseDamage: 200, abilityText: "Gain 2 random non-unique Uncommon Trinkets." }, 3: { baseDamage: 300, abilityText: "Gain 3 random non-unique Uncommon Trinkets." }, 4: { baseDamage: 600, abilityText: "Gain 6 random non-unique Uncommon Trinkets." } } },
-  [Species.Pebbler]: { spriteFile: "pebbler_shiny.png", baseDamage: null, baseCooldownSeconds: 5, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Shield, amount: 24 }], abilityText: "+18 Shield for this battle.", abilityTags: [{ kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statusGrant: { type: StatusEffectType.Shield, amount: 18 } } }], levels: { 2: { appliesStatus: [{ type: StatusEffectType.Shield, amount: 48 }], abilityText: "+36 Shield for this battle.", abilityTags: [{ kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statusGrant: { type: StatusEffectType.Shield, amount: 36 } } }] }, 3: { appliesStatus: [{ type: StatusEffectType.Shield, amount: 72 }], abilityText: "+54 Shield for this battle.", abilityTags: [{ kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statusGrant: { type: StatusEffectType.Shield, amount: 54 } } }] }, 4: { appliesStatus: [{ type: StatusEffectType.Shield, amount: 144 }], abilityText: "+108 Shield for this battle.", abilityTags: [{ kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statusGrant: { type: StatusEffectType.Shield, amount: 108 } } }] } } },
-  [Species.Petrirex]: { spriteFile: "petrirex_shiny.png", baseDamage: 50, baseCooldownSeconds: 5.5, baseMulticast: 1, abilityText: "Knockout adjacent allies and gain +24 Shield permanently for each ally Knockout.", levels: { 2: { baseDamage: 100, abilityText: "Knockout adjacent allies and gain +48 Shield permanently for each ally Knockout." }, 3: { baseDamage: 150, abilityText: "Knockout adjacent allies and gain +72 Shield permanently for each ally Knockout." }, 4: { baseDamage: 600, abilityText: "Knockout adjacent allies and gain +288 Shield permanently for each ally Knockout." } } },
-  [Species.Pipskull]: { spriteFile: "pipskull_shiny.png", baseDamage: 20, baseCooldownSeconds: 4, baseMulticast: 1, abilityText: "Evolve after this monster experiences Knockout 3 times.", levels: { 2: { baseDamage: 40 }, 3: { baseDamage: 60 }, 4: { baseDamage: 120 } } },
-  [Species.Plunderbird]: { spriteFile: "plunderbird_shiny.png", baseDamage: 1, baseCooldownSeconds: 5, baseMulticast: 3, healAmount: 18, abilityText: "Gain $1.", levels: { 2: { baseMulticast: 4, healAmount: 28 }, 3: { baseMulticast: 5, healAmount: 44 }, 4: { baseMulticast: 10, healAmount: 44, abilityText: "Gain $2." } } },
-  [Species.Pompummel]: { spriteFile: "pompummel_shiny.png", baseDamage: 300, baseCooldownSeconds: 6, baseMulticast: 1, abilityText: "Activate the On Victory ability of adjacent allies.", levels: { 2: { baseCooldownSeconds: 3 }, 3: { baseCooldownSeconds: 2 }, 4: { baseCooldownSeconds: 2, baseMulticast: 10 } } },
-  [Species.Prismagon]: { spriteFile: "prismagon_shiny.png", baseDamage: 100, baseCooldownSeconds: 4.5, baseMulticast: 1, abilityText: "+12 Damage permanently for each unique type on your team.", levels: { 2: { abilityText: "+24 Damage permanently for each unique type on your team." }, 3: { abilityText: "+36 Damage permanently for each unique type on your team." }, 4: { abilityText: "+288 Damage permanently for each unique type on your team." } } },
-  [Species.Puffloon]: { spriteFile: "puffloon_shiny.png", baseDamage: null, baseCooldownSeconds: 10, baseMulticast: 1, healAmount: 14, appliesStatus: [{ type: StatusEffectType.Poison, amount: 1 }], abilityText: "Trigger this when adjacent Toxic allies trigger.\n(Except other Puffloon)", levels: { 2: { baseMulticast: 2 }, 3: { baseMulticast: 3 }, 4: { baseMulticast: 12 } } },
-  [Species.Pylong]: { spriteFile: "pylong_shiny.png", baseDamage: 1, baseCooldownSeconds: 7, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Shock, amount: 15 }], abilityText: "Adjacent allies have +100% Shock.", levels: { 2: { abilityText: "Adjacent allies have +200% Shock." }, 3: { abilityText: "Adjacent allies have +300% Shock." }, 4: { abilityText: "Adjacent allies have +2400% Shock." } } },
-  [Species.Pyrokami]: { spriteFile: "pyrokami_shiny.png", baseDamage: null, baseCooldownSeconds: 4, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Burn, amount: 5 }], abilityText: "+12 Burn for this battle.", abilityTags: [{ kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statusGrant: { type: StatusEffectType.Burn, amount: 12 } } }], levels: { 2: { appliesStatus: [{ type: StatusEffectType.Burn, amount: 10 }], abilityText: "+24 Burn for this battle.", abilityTags: [{ kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statusGrant: { type: StatusEffectType.Burn, amount: 24 } } }] }, 3: { appliesStatus: [{ type: StatusEffectType.Burn, amount: 15 }], abilityText: "+36 Burn for this battle.", abilityTags: [{ kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statusGrant: { type: StatusEffectType.Burn, amount: 36 } } }] }, 4: { appliesStatus: [{ type: StatusEffectType.Burn, amount: 30 }], abilityText: "+72 Burn for this battle.", abilityTags: [{ kind: AbilityTagKind.BuffOnCast, target: { kind: TargetKind.Self }, effect: { statusGrant: { type: StatusEffectType.Burn, amount: 72 } } }] } } },
-  [Species.Pyronade]: { spriteFile: "pyronade_shiny.png", baseDamage: null, baseCooldownSeconds: 4.5, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Burn, amount: 24 }], abilityText: "Knockout self.", levels: { 2: { appliesStatus: [{ type: StatusEffectType.Burn, amount: 48 }] }, 3: { appliesStatus: [{ type: StatusEffectType.Burn, amount: 72 }] }, 4: { appliesStatus: [{ type: StatusEffectType.Burn, amount: 288 }] } } },
-  [Species.Rattleghast]: { spriteFile: "rattleghast_shiny.png", baseDamage: null, baseCooldownSeconds: 2.8, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Poison, amount: 1 }], abilityText: "Knockout adjacent allies and gain +4 Poison this battle for each ally Knockout.", levels: { 2: { abilityText: "Knockout adjacent allies and gain +8 Poison this battle for each ally Knockout." }, 3: { abilityText: "Knockout adjacent allies and gain +12 Poison this battle for each ally Knockout." }, 4: { abilityText: "Knockout adjacent allies and gain +24 Poison this battle for each ally Knockout." } } },
-  [Species.Reapra]: { spriteFile: "reapra_shiny.png", baseDamage: 120, baseCooldownSeconds: 6.5, baseMulticast: 1, abilityText: "Knockout the enemy opposite of this.", levels: { 2: { baseCooldownSeconds: 3 }, 3: { baseCooldownSeconds: 2 }, 4: { baseDamage: 960, baseCooldownSeconds: 2, abilityText: "Knockout a random enemy." } } },
-  [Species.Rhizuka]: { spriteFile: "rhizuka_shiny.png", baseDamage: 240, baseCooldownSeconds: 15, baseMulticast: 1, abilityText: "Trigger this when an ally applies Shield.\n(Except other Rhizuka)", levels: { 2: { baseMulticast: 2 }, 3: { baseMulticast: 3 }, 4: { baseMulticast: 12 } } },
-  [Species.Rigalord]: { spriteFile: "rigalord_shiny.png", baseDamage: 1, baseCooldownSeconds: 1.6, baseMulticast: 1, abilityText: "Spawn exact copies of the Batomon this devoured in empty slots the bottom row. They ONLY trigger when this casts.", levels: { 2: { baseMulticast: 3 }, 3: { baseMulticast: 3 }, 4: { baseMulticast: 30 } } },
-  [Species.Riglet]: { spriteFile: "riglet_shiny.png", baseDamage: 1, baseCooldownSeconds: 1.6, baseMulticast: 1, abilityText: "At the start of the next day, devour the ally in front and evolve into Rigalord.", levels: { 2: { baseMulticast: 2 }, 3: { baseMulticast: 3 }, 4: { baseMulticast: 10 } } },
-  [Species.Rubbin]: { spriteFile: "rubbin_shiny.png", baseDamage: 40, baseCooldownSeconds: 6.5, baseMulticast: 1, abilityText: "Gain a random non-unique Common Trinket.", levels: { 2: { baseDamage: 80, abilityText: "Gain 2 random non-unique Common Trinkets." }, 3: { baseDamage: 120, abilityText: "Gain 3 random non-unique Common Trinkets." }, 4: { baseDamage: 240, abilityText: "Gain 6 random non-unique Common Trinkets." } } },
-  [Species.Runerock]: { spriteFile: "runerock_shiny.png", baseDamage: null, baseCooldownSeconds: 6.5, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Shield, amount: 140 }], abilityText: "Remove 15 stacks of every debuff on your team.", levels: { 2: { appliesStatus: [{ type: StatusEffectType.Shield, amount: 280 }], abilityText: "Remove 30 stacks of every debuff on your team." }, 3: { appliesStatus: [{ type: StatusEffectType.Shield, amount: 420 }], abilityText: "Remove 45 stacks of every debuff on your team." }, 4: { appliesStatus: [{ type: StatusEffectType.Shield, amount: 840 }], abilityText: "Remove 90 stacks of every debuff on your team." } } },
-  [Species.Saberhorn]: { spriteFile: "saberhorn_shiny.png", baseDamage: 100, baseCooldownSeconds: 6, baseMulticast: 1, abilityText: "Give the ally in front +1 Multicast and increase this monster's Cooldown by 6 seconds for this battle.", levels: { 2: { abilityText: "Give the ally in front +2 Multicast and increase this monster's Cooldown by 6 seconds for this battle." }, 3: { abilityText: "Give the ally in front +3 Multicast and increase this monster's Cooldown by 6 seconds for this battle." }, 4: { abilityText: "Give the ally in front +24 Multicast and increase this monster's Cooldown by 6 seconds for this battle." } } },
-  [Species.Sarudo]: { spriteFile: "sarudo_shiny.png", baseDamage: 100, baseCooldownSeconds: 6, baseMulticast: 1, abilityText: "Activate the On Victory abilities of all allies 1 time(s).", levels: { 2: { baseDamage: 200, abilityText: "Activate the On Victory abilities of all allies 2 time(s)." }, 3: { baseDamage: 300, abilityText: "Activate the On Victory abilities of all allies 3 time(s)." }, 4: { baseDamage: 1200, abilityText: "Activate the On Victory abilities of all allies 12 time(s)." } } },
-  [Species.Scorchimp]: { spriteFile: "scorchimp_shiny.png", baseDamage: 6, baseCooldownSeconds: 5.5, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Burn, amount: 6 }], abilityText: "Evolves at level 3.", levels: { 2: { baseDamage: 12, appliesStatus: [{ type: StatusEffectType.Burn, amount: 12 }] }, 3: { baseDamage: 18, appliesStatus: [{ type: StatusEffectType.Burn, amount: 18 }] }, 4: { baseDamage: 18, appliesStatus: [{ type: StatusEffectType.Burn, amount: 18 }] } } },
-  [Species.Scorubble]: { spriteFile: "scorubble_shiny.png", baseDamage: null, baseCooldownSeconds: 5, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Poison, amount: 2 }, { type: StatusEffectType.Shield, amount: 30 }], abilityText: "+10% Cooldown Speed permanently.", levels: { 2: { appliesStatus: [{ type: StatusEffectType.Poison, amount: 4 }, { type: StatusEffectType.Shield, amount: 60 }], abilityText: "+20% Cooldown Speed permanently." }, 3: { appliesStatus: [{ type: StatusEffectType.Poison, amount: 6 }, { type: StatusEffectType.Shield, amount: 90 }], abilityText: "+30% Cooldown Speed permanently." }, 4: { appliesStatus: [{ type: StatusEffectType.Poison, amount: 12 }, { type: StatusEffectType.Shield, amount: 180 }], abilityText: "+60% Cooldown Speed permanently." } } },
-  [Species.Shelldra]: { spriteFile: "shelldra_shiny.png", baseDamage: 15, baseCooldownSeconds: 4.5, baseMulticast: 4, healAmount: 15, abilityText: "Every 4 seconds, +1 Multicast for this battle.", levels: { 2: { abilityText: "Every 4 seconds, +2 Multicast for this battle." }, 3: { abilityText: "Every 4 seconds, +3 Multicast for this battle." }, 4: { baseDamage: 30, baseMulticast: 8, healAmount: 30, abilityText: "Every 4 seconds, +12 Multicast for this battle." } } },
-  [Species.Shellter]: { spriteFile: "shellter_shiny.png", baseDamage: null, baseCooldownSeconds: 6.5, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Shield, amount: 120 }], abilityText: "-20 Shield and +10 Damage for this battle.", levels: { 2: { appliesStatus: [{ type: StatusEffectType.Shield, amount: 240 }], abilityText: "-40 Shield and +20 Damage for this battle." }, 3: { appliesStatus: [{ type: StatusEffectType.Shield, amount: 360 }], abilityText: "-60 Shield and +30 Damage for this battle." }, 4: { appliesStatus: [{ type: StatusEffectType.Shield, amount: 720 }], abilityText: "-60 Shield and +60 Damage for this battle." } } },
-  [Species.Shikitsune]: { spriteFile: "shikitsune_shiny.png", baseDamage: 50, baseCooldownSeconds: 3, baseMulticast: 1, abilityText: "Knocked-out allies are revived and gain +18% Cooldown Speed for this battle.", levels: { 2: { baseDamage: 100, abilityText: "Knocked-out allies are revived and gain +36% Cooldown Speed for this battle." }, 3: { baseDamage: 150, abilityText: "Knocked-out allies are revived and gain +54% Cooldown Speed for this battle." }, 4: { baseDamage: 1500, abilityText: "Knocked-out allies are revived and gain +216% Cooldown Speed for this battle." } } },
-  [Species.Shogapede]: { spriteFile: "shogapede_shiny.png", baseDamage: null, baseCooldownSeconds: 5, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Poison, amount: 6 }], abilityText: "After you buy a Bug monster, this gains +18% Cooldown Speed.", levels: { 2: { abilityText: "After you buy a Bug monster, this gains +36% Cooldown Speed." }, 3: { abilityText: "After you buy a Bug monster, this gains +54% Cooldown Speed." }, 4: { baseMulticast: 2, appliesStatus: [{ type: StatusEffectType.Poison, amount: 12 }], abilityText: "After you buy a Bug monster, this gains +108% Cooldown Speed." } } },
-  [Species.Shrinell]: { spriteFile: "shrinell_shiny.png", baseDamage: 160, baseCooldownSeconds: 8, baseMulticast: 1, abilityText: "Adjacent allies have +% Cooldown Speed for each Trinket that you own.", levels: { 2: { baseDamage: 320 }, 3: { baseDamage: 480 }, 4: { baseDamage: 3840 } } },
-  [Species.Sirenade]: { spriteFile: "sirenade_shiny.png", baseDamage: null, baseCooldownSeconds: 3, baseMulticast: 1, healAmount: 100, abilityText: "Remove 20% of debuffs on your team.", levels: { 2: { healAmount: 200, abilityText: "Remove 35% of debuffs on your team." }, 3: { healAmount: 300, abilityText: "Remove 50% of debuffs on your team." }, 4: { healAmount: 1200, abilityText: "Remove 80% of debuffs on your team." } } },
-  [Species.Snapscald]: { spriteFile: "snapscald_shiny.png", baseDamage: null, baseCooldownSeconds: 9, baseMulticast: 1, healAmount: 48, appliesStatus: [{ type: StatusEffectType.Burn, amount: 10 }], abilityText: "Trigger this when an ally of level 3 or above casts.\n(Except other Snapscald)", levels: { 2: { healAmount: 96, appliesStatus: [{ type: StatusEffectType.Burn, amount: 19 }] }, 3: { healAmount: 144, appliesStatus: [{ type: StatusEffectType.Burn, amount: 29 }] }, 4: { healAmount: 115, appliesStatus: [{ type: StatusEffectType.Burn, amount: 230 }] } } },
-  [Species.Spinarai]: { spriteFile: "spinarai_shiny.png", baseDamage: 3, baseCooldownSeconds: 2.5, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Poison, amount: 1 }], abilityText: "+1 Poison for this battle.", levels: { 2: { baseDamage: 6, appliesStatus: [{ type: StatusEffectType.Poison, amount: 2 }], abilityText: "+2 Poison for this battle." }, 3: { baseDamage: 9, appliesStatus: [{ type: StatusEffectType.Poison, amount: 3 }], abilityText: "+3 Poison for this battle." }, 4: { baseDamage: 9, baseMulticast: 2, appliesStatus: [{ type: StatusEffectType.Poison, amount: 3 }], abilityText: "+3 Poison for this battle." } } },
-  [Species.Sproach]: { spriteFile: "sproach_shiny.png", baseDamage: null, baseCooldownSeconds: 5.5, baseMulticast: 1, abilityText: "+36 Damage permanently for each life lost this run.", levels: { 2: { abilityText: "+72 Damage permanently for each life lost this run." }, 3: { abilityText: "+108 Damage permanently for each life lost this run." }, 4: { abilityText: "+432 Damage permanently for each life lost this run." } } },
-  [Species.Sproutquill]: { spriteFile: "sproutquill_shiny.png", baseDamage: 60, baseCooldownSeconds: 7, baseMulticast: 2, abilityText: "Evolve after your team deals 10000 non-status Damage.", levels: { 2: { baseDamage: 120 }, 3: { baseDamage: 180 }, 4: { baseDamage: 1800 } } },
-  [Species.Stalagrove]: { spriteFile: "stalagrove_shiny.png", baseDamage: null, baseCooldownSeconds: 4.5, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Shield, amount: 60 }], abilityText: "When you receive shield, this gains Damage for this battle equal to 18% of the amount shielded.", levels: { 2: { abilityText: "When you receive shield, this gains Damage for this battle equal to 36% of the amount shielded." }, 3: { abilityText: "When you receive shield, this gains Damage for this battle equal to 54% of the amount shielded." }, 4: { abilityText: "When you receive shield, this gains Damage for this battle equal to 216% of the amount shielded." } } },
-  [Species.Steamscuttle]: { spriteFile: "steamscuttle_shiny.png", baseDamage: null, baseCooldownSeconds: 3.5, baseMulticast: 1, healAmount: 30, appliesStatus: [{ type: StatusEffectType.Burn, amount: 5 }], abilityText: "Charge adjacent Fire and Water allies by 1.2 second(s).\n(Steamscuttle can't receive charge)", levels: { 2: { healAmount: 60, appliesStatus: [{ type: StatusEffectType.Burn, amount: 10 }], abilityText: "Charge adjacent Fire and Water allies by 2.4 second(s).\n(Steamscuttle can't receive charge)" }, 3: { healAmount: 90, appliesStatus: [{ type: StatusEffectType.Burn, amount: 15 }], abilityText: "Charge adjacent Fire and Water allies by 3.6 second(s).\n(Steamscuttle can't receive charge)" }, 4: { healAmount: 360, appliesStatus: [{ type: StatusEffectType.Burn, amount: 60 }], abilityText: "Charge adjacent Fire and Water allies by 14.4 second(s).\n(Steamscuttle can't receive charge)" } } },
-  [Species.Stellagon]: { spriteFile: "stellagon_shiny.png", baseDamage: 150, baseCooldownSeconds: 6, baseMulticast: 1, abilityText: "Adjacent allies with no abilities gain +1 Multicast permanently.", levels: { 2: { baseDamage: 300, abilityText: "Adjacent allies with no abilities gain +2 Multicast permanently." }, 3: { baseDamage: 450, abilityText: "Adjacent allies with no abilities gain +3 Multicast permanently." }, 4: { baseDamage: 4500, abilityText: "Adjacent allies with no abilities gain +30 Multicast permanently." } } },
-  [Species.Stingarde]: { spriteFile: "stingarde_shiny.png", baseDamage: 150, baseCooldownSeconds: 6, baseMulticast: 1, levels: { 2: { baseDamage: 300 }, 3: { baseDamage: 450 }, 4: { baseDamage: 1350 } } },
-  [Species.Sukoi]: { spriteFile: "sukoi_shiny.png", baseDamage: null, baseCooldownSeconds: 9, baseMulticast: 1, healAmount: 80, levels: { 2: { baseCooldownSeconds: 4.5 }, 3: { baseCooldownSeconds: 3 }, 4: { baseCooldownSeconds: 3 } } },
-  [Species.Swoonet]: { spriteFile: "swoonet_shiny.png", baseDamage: 36, baseCooldownSeconds: 6.5, baseMulticast: 1, healAmount: 36, abilityText: "This only needs 2 copies to level up. This can level up indefinitely.", levels: { 2: { baseMulticast: 2 }, 3: { baseMulticast: 3 }, 4: { baseMulticast: 6 } } },
-  [Species.Talonite]: { spriteFile: "talonite_shiny.png", baseDamage: 36, baseCooldownSeconds: 12, baseMulticast: 2, abilityText: "+20 Shield permanently for each Rock ally and +1 Multicast permanently for each Flying ally.", levels: { 2: { baseDamage: 72, abilityText: "+40 Shield permanently for each Rock ally and +2 Multicast permanently for each Flying ally." }, 3: { baseDamage: 108, abilityText: "+60 Shield permanently for each Rock ally and +3 Multicast permanently for each Flying ally." }, 4: { baseDamage: 216, abilityText: "+120 Shield permanently for each Rock ally and +6 Multicast permanently for each Flying ally." } } },
-  [Species.Tengusto]: { spriteFile: "tengusto_shiny.png", baseDamage: 50, baseCooldownSeconds: 4.5, baseMulticast: 2, abilityText: "Has an additional +72 Damage for each Badge that you have.", levels: { 2: { abilityText: "Has an additional +144 Damage for each Badge that you have." }, 3: { abilityText: "Has an additional +216 Damage for each Badge that you have." }, 4: { abilityText: "Has an additional +864 Damage for each Badge that you have." } } },
-  [Species.Thorntail]: { spriteFile: "thorntail_shiny.png", baseDamage: 50, baseCooldownSeconds: 6, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Poison, amount: 1 }], abilityText: "When allies inflict Poison, this gains +9 Damage permanently.", abilityTags: [{ kind: AbilityTagKind.GainOnAllyStatus, status: StatusEffectType.Poison, stat: StatChangeStat.Damage, amount: 9 }], levels: { 2: { abilityText: "When allies inflict Poison, this gains +18 Damage permanently.", abilityTags: [{ kind: AbilityTagKind.GainOnAllyStatus, status: StatusEffectType.Poison, stat: StatChangeStat.Damage, amount: 18 }] }, 3: { abilityText: "When allies inflict Poison, this gains +27 Damage permanently.", abilityTags: [{ kind: AbilityTagKind.GainOnAllyStatus, status: StatusEffectType.Poison, stat: StatChangeStat.Damage, amount: 27 }] }, 4: { baseDamage: 150, abilityText: "When allies inflict Poison, this gains +108 Damage permanently.", abilityTags: [{ kind: AbilityTagKind.GainOnAllyStatus, status: StatusEffectType.Poison, stat: StatChangeStat.Damage, amount: 108 }] } } },
-  [Species.Torrantler]: { spriteFile: "torrantler_shiny.png", baseDamage: null, baseCooldownSeconds: 5.5, baseMulticast: 1, healAmount: 200, abilityText: "Trigger adjacent Water allies.\n(Except other Torrantler)", levels: { 2: { baseMulticast: 2 }, 3: { baseMulticast: 3 }, 4: { baseMulticast: 30 } } },
-  [Species.Toximoth]: { spriteFile: "toximoth_shiny.png", baseDamage: 2, baseCooldownSeconds: 3.5, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Poison, amount: 2 }], abilityText: "Give Toxic monsters in the shop and on your team +1 Poison for the rest of the run.", levels: { 2: { baseDamage: 4, appliesStatus: [{ type: StatusEffectType.Poison, amount: 4 }], abilityText: "Give Toxic monsters in the shop and on your team +2 Poison for the rest of the run." }, 3: { baseDamage: 6, appliesStatus: [{ type: StatusEffectType.Poison, amount: 6 }], abilityText: "Give Toxic monsters in the shop and on your team +3 Poison for the rest of the run." }, 4: { baseDamage: 12, appliesStatus: [{ type: StatusEffectType.Poison, amount: 12 }], abilityText: "Give Toxic monsters in the shop and on your team +6 Poison for the rest of the run." } } },
-  [Species.Tsunamere]: { spriteFile: "tsunamere_shiny.png", baseDamage: null, baseCooldownSeconds: 6, baseMulticast: 1, healAmount: 400, abilityText: "Level up all adjacent allies for this battle (max level 3).", levels: { 2: { baseCooldownSeconds: 3 }, 3: { baseCooldownSeconds: 2 }, 4: { baseCooldownSeconds: 2, baseMulticast: 10 } } },
-  [Species.Velocect]: { spriteFile: "velocect_shiny.png", baseDamage: 8, baseCooldownSeconds: 3.5, baseMulticast: 4, levels: { 2: { baseDamage: 10, baseMulticast: 6 }, 3: { baseDamage: 13, baseMulticast: 8 }, 4: { baseDamage: 13, baseMulticast: 16 } } },
-  [Species.Vengrieve]: { spriteFile: "vengrieve_shiny.png", baseDamage: null, baseCooldownSeconds: 6, baseMulticast: 1, abilityText: "Knockout the monster opposite of this and gain their stats for this battle (except Cooldown).", levels: { 2: { baseCooldownSeconds: 3 }, 3: { baseCooldownSeconds: 2 }, 4: { baseCooldownSeconds: 2, abilityText: "Knockout a random enemy and gain their stats for this battle (except Cooldown)." } } },
-  [Species.Venopuff]: { spriteFile: "venopuff_shiny.png", baseDamage: null, baseCooldownSeconds: 3.5, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Poison, amount: 4 }], abilityText: "+1 Poison permanently.", levels: { 2: { appliesStatus: [{ type: StatusEffectType.Poison, amount: 8 }], abilityText: "+2 Poison permanently." }, 3: { appliesStatus: [{ type: StatusEffectType.Poison, amount: 12 }], abilityText: "+3 Poison permanently." }, 4: { baseMulticast: 2, appliesStatus: [{ type: StatusEffectType.Poison, amount: 12 }], abilityText: "+4 Poison permanently." } } },
-  [Species.Vipair]: { spriteFile: "vipair_shiny.png", baseDamage: null, baseCooldownSeconds: 5.2, baseMulticast: 2, appliesStatus: [{ type: StatusEffectType.Poison, amount: 5 }], abilityText: "+4 Poison permanently.", levels: { 2: { appliesStatus: [{ type: StatusEffectType.Poison, amount: 10 }], abilityText: "+8 Poison permanently." }, 3: { appliesStatus: [{ type: StatusEffectType.Poison, amount: 15 }], abilityText: "+12 Poison permanently." }, 4: { appliesStatus: [{ type: StatusEffectType.Poison, amount: 30 }], abilityText: "+48 Poison permanently." } } },
-  [Species.Voltalith]: { spriteFile: "voltalith_shiny.png", baseDamage: null, baseCooldownSeconds: 8, baseMulticast: 1, appliesStatus: [{ type: StatusEffectType.Shock, amount: 5 }], abilityText: "Adjacent Electric allies gain +2 Shock permanently.", levels: { 2: { appliesStatus: [{ type: StatusEffectType.Shock, amount: 10 }], abilityText: "Adjacent Electric allies gain +4 Shock permanently." }, 3: { appliesStatus: [{ type: StatusEffectType.Shock, amount: 15 }], abilityText: "Adjacent Electric allies gain +6 Shock permanently." }, 4: { appliesStatus: [{ type: StatusEffectType.Shock, amount: 30 }], abilityText: "Adjacent Electric allies gain +24 Shock permanently." } } },
-  [Species.Wishwash]: { spriteFile: "wishwash_shiny.png", baseDamage: null, baseCooldownSeconds: 3.5, baseMulticast: 1, healAmount: 150, abilityText: "Gain a random non-unique Super Rare Trinket.", levels: { 2: { healAmount: 300, abilityText: "Gain a random non-unique Legendary Trinket." }, 3: { healAmount: 450, abilityText: "Gain a random non-unique Mythical Trinket." }, 4: { healAmount: 3600, abilityText: "Gain 4 random non-unique Mythical Trinkets." } } },
-  [Species.Zephyrex]: { spriteFile: "zephyrex_shiny.png", baseDamage: 100, baseCooldownSeconds: 10, baseMulticast: 1, abilityText: "Adjacent Flying allies gain +1 Multicast permanently.\n(Zephyrex can't have Multicast)", levels: { 2: { abilityText: "Adjacent Flying allies gain +2 Multicast permanently.\n(Zephyrex can't have Multicast)" }, 3: { abilityText: "Adjacent Flying allies gain +3 Multicast permanently.\n(Zephyrex can't have Multicast)" }, 4: { baseDamage: 800, abilityText: "Adjacent Flying allies gain +12 Multicast permanently.\n(Zephyrex can't have Multicast)" } } },
+  [Species.Aegistruct]: {
+    spriteFile: "aegistruct_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 6,
+    baseMulticast: 1,
+    appliesStatus: [{ type: StatusEffectType.Shield, amount: 150 }],
+    abilityText:
+      "Gain Shield for this battle equal to 1.2x the Shield of adjacent allies.\n(Except other Aegistruct)",
+    levels: {
+      2: {
+        abilityText:
+          "Gain Shield for this battle equal to 2.4x the Shield of adjacent allies.\n(Except other Aegistruct)",
+      },
+      3: {
+        abilityText:
+          "Gain Shield for this battle equal to 3.6x the Shield of adjacent allies.\n(Except other Aegistruct)",
+      },
+      4: {
+        baseCooldownSeconds: 3,
+        abilityText:
+          "Gain Shield for this battle equal to 14.4x the Shield of adjacent allies.\n(Except other Aegistruct)",
+      },
+    },
+  },
+  [Species.Aerophim]: {
+    spriteFile: "aerophim_shiny.png",
+    baseDamage: 666,
+    baseCooldownSeconds: 5,
+    baseMulticast: 1,
+    abilityText:
+      "Give adjacent allies +1 Multicast permanently and transform them into random monsters of their rarity.",
+    levels: {
+      2: {
+        abilityText:
+          "Give adjacent allies +2 Multicast permanently and transform them into random monsters of their rarity.",
+      },
+      3: {
+        abilityText:
+          "Give adjacent allies +3 Multicast permanently and transform them into random monsters of their rarity.",
+      },
+      4: {
+        abilityText:
+          "Give adjacent allies +60 Multicast permanently and transform them into random monsters of their rarity.",
+      },
+    },
+  },
+  [Species.Aristobat]: {
+    spriteFile: "aristobat_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 4,
+    baseMulticast: 3,
+    appliesStatus: [{ type: StatusEffectType.Poison, amount: 3 }],
+    levels: {
+      2: { baseMulticast: 4, appliesStatus: [{ type: StatusEffectType.Poison, amount: 5 }] },
+      3: { baseMulticast: 5, appliesStatus: [{ type: StatusEffectType.Poison, amount: 7 }] },
+      4: { baseMulticast: 10, appliesStatus: [{ type: StatusEffectType.Poison, amount: 14 }] },
+    },
+  },
+  [Species.Aster]: {
+    spriteFile: "aster_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 3,
+    baseMulticast: 1,
+    healAmount: 40,
+    abilityText: "This and adjacent Water allies gain +25 Heal permanently.",
+    levels: {
+      2: { abilityText: "This and adjacent Water allies gain +50 Heal permanently." },
+      3: { abilityText: "This and adjacent Water allies gain +75 Heal permanently." },
+      4: {
+        healAmount: 160,
+        abilityText: "This and adjacent Water allies gain +225 Heal permanently.",
+      },
+    },
+  },
+  [Species.Aviarab]: {
+    spriteFile: "aviarab_shiny.png",
+    baseDamage: 15,
+    baseCooldownSeconds: 3.5,
+    baseMulticast: 2,
+    abilityText: "Give Flying monsters in the shop +1 Multicast for the rest of the run.",
+    levels: {
+      2: {
+        baseDamage: 30,
+        abilityText: "Give Flying monsters in the shop +2 Multicast for the rest of the run.",
+      },
+      3: {
+        baseDamage: 45,
+        abilityText: "Give Flying monsters in the shop +3 Multicast for the rest of the run.",
+      },
+      4: {
+        baseDamage: 90,
+        abilityText: "Give Flying monsters in the shop +6 Multicast for the rest of the run.",
+      },
+    },
+  },
+  [Species.Beetbud]: {
+    spriteFile: "beetbud_shiny.png",
+    baseDamage: 42,
+    baseCooldownSeconds: 4.5,
+    baseMulticast: 1,
+    abilityText: "Evolves at level 3.",
+    levels: {
+      2: { baseDamage: 84 },
+      3: { baseDamage: 126 },
+      4: { baseDamage: 126, baseMulticast: 2 },
+    },
+  },
+  [Species.Berroon]: {
+    spriteFile: "berroon_shiny.png",
+    baseDamage: 40,
+    baseCooldownSeconds: 4,
+    baseMulticast: 1,
+    abilityText:
+      "The next 1 items in your shop will be Berries.\nWhen you use an item, this gains +10 Damage.",
+    levels: {
+      2: {
+        abilityText:
+          "The next 2 items in your shop will be Berries.\nWhen you use an item, this gains +20 Damage.",
+      },
+      3: {
+        abilityText:
+          "The next 3 items in your shop will be Berries.\nWhen you use an item, this gains +30 Damage.",
+      },
+      4: {
+        baseDamage: 160,
+        abilityText:
+          "The next 6 items in your shop will be Berries.\nWhen you use an item, this gains +60 Damage.",
+      },
+    },
+  },
+  [Species.Blazewing]: {
+    spriteFile: "blazewing_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 5,
+    baseMulticast: 4,
+    appliesStatus: [{ type: StatusEffectType.Burn, amount: 4 }],
+    levels: {
+      2: { baseMulticast: 6 },
+      3: { baseMulticast: 8 },
+      4: { baseMulticast: 32, appliesStatus: [{ type: StatusEffectType.Burn, amount: 8 }] },
+    },
+  },
+  [Species.Blessom]: {
+    spriteFile: "blessom_shiny.png",
+    baseDamage: 50,
+    baseCooldownSeconds: 4.5,
+    baseMulticast: 1,
+    abilityText: "At the start of each day, monsters in your shop gain +60 Damage.",
+    levels: {
+      2: {
+        baseDamage: 100,
+        abilityText: "At the start of each day, monsters in your shop gain +120 Damage.",
+      },
+      3: {
+        baseDamage: 150,
+        abilityText: "At the start of each day, monsters in your shop gain +180 Damage.",
+      },
+      4: {
+        baseDamage: 300,
+        abilityText: "At the start of each day, monsters in your shop gain +360 Damage.",
+      },
+    },
+  },
+  [Species.Blixie]: {
+    spriteFile: "blixie_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 6,
+    baseMulticast: 1,
+    appliesStatus: [{ type: StatusEffectType.Burn, amount: 30 }],
+    abilityText: "Give the Fire ally behind 1.2x this monster's Burn for this battle.",
+    levels: {
+      2: { abilityText: "Give the Fire ally behind 2.4x this monster's Burn for this battle." },
+      3: { abilityText: "Give the Fire ally behind 3.6x this monster's Burn for this battle." },
+      4: {
+        appliesStatus: [{ type: StatusEffectType.Burn, amount: 300 }],
+        abilityText: "Give the Fire ally behind 36.0x this monster's Burn for this battle.",
+      },
+    },
+  },
+  [Species.Bonshell]: {
+    spriteFile: "bonshell_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 7,
+    baseMulticast: 1,
+    appliesStatus: [{ type: StatusEffectType.Shield, amount: 120 }],
+    abilityText: "+96 Damage and +96 Shield for this battle.",
+    levels: {
+      2: {
+        appliesStatus: [{ type: StatusEffectType.Shield, amount: 240 }],
+        abilityText: "+192 Damage and +192 Shield for this battle.",
+      },
+      3: {
+        appliesStatus: [{ type: StatusEffectType.Shield, amount: 360 }],
+        abilityText: "+288 Damage and +288 Shield for this battle.",
+      },
+      4: {
+        appliesStatus: [{ type: StatusEffectType.Shield, amount: 720 }],
+        abilityText: "+576 Damage and +576 Shield for this battle.",
+      },
+    },
+  },
+  [Species.Boomagon]: {
+    spriteFile: "boomagon_shiny.png",
+    baseDamage: 40,
+    baseCooldownSeconds: 5.6,
+    baseMulticast: 1,
+    abilityText: "Give the ally behind +3% Cooldown Speed permanently.",
+    levels: {
+      2: { abilityText: "Give the ally behind +6% Cooldown Speed permanently." },
+      3: { abilityText: "Give the ally behind +9% Cooldown Speed permanently." },
+      4: { abilityText: "Give the ally behind +18% Cooldown Speed permanently." },
+    },
+  },
+  [Species.Brawlmantis]: {
+    spriteFile: "brawlmantis_shiny.png",
+    baseDamage: 60,
+    baseCooldownSeconds: 5.5,
+    baseMulticast: 1,
+    abilityText: "This and Common allies gain +12 Damage permanently.",
+    levels: {
+      2: { baseDamage: 120, abilityText: "This and Common allies gain +24 Damage permanently." },
+      3: { baseDamage: 180, abilityText: "This and Common allies gain +36 Damage permanently." },
+      4: {
+        baseDamage: 180,
+        baseMulticast: 2,
+        abilityText: "This and Common allies gain +72 Damage permanently.",
+      },
+    },
+  },
+  [Species.Brimtoad]: {
+    spriteFile: "brimtoad_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 6,
+    baseMulticast: 1,
+    appliesStatus: [
+      { type: StatusEffectType.Burn, amount: 1 },
+      { type: StatusEffectType.Poison, amount: 1 },
+    ],
+    abilityText: "+5 Burn and +5 Poison permanently.",
+    levels: {
+      2: {
+        appliesStatus: [
+          { type: StatusEffectType.Burn, amount: 2 },
+          { type: StatusEffectType.Poison, amount: 2 },
+        ],
+        abilityText: "+10 Burn and +10 Poison permanently.",
+      },
+      3: {
+        appliesStatus: [
+          { type: StatusEffectType.Burn, amount: 4 },
+          { type: StatusEffectType.Poison, amount: 4 },
+        ],
+        abilityText: "+14 Burn and +14 Poison permanently.",
+      },
+      4: {
+        appliesStatus: [
+          { type: StatusEffectType.Burn, amount: 14 },
+          { type: StatusEffectType.Poison, amount: 14 },
+        ],
+        abilityText: "+58 Burn and +58 Poison permanently.",
+      },
+    },
+  },
+  [Species.Bumblebolt]: {
+    spriteFile: "bumblebolt_shiny.png",
+    baseDamage: 3,
+    baseCooldownSeconds: 2.5,
+    baseMulticast: 1,
+    appliesStatus: [{ type: StatusEffectType.Shock, amount: 1 }],
+    abilityText: "+1 Shock for this battle.",
+    abilityTags: [
+      {
+        kind: AbilityTagKind.BuffOnCast,
+        target: { kind: TargetKind.Self },
+        effect: { statusGrant: { type: StatusEffectType.Shock, amount: 1 } },
+      },
+    ],
+    levels: {
+      2: {
+        baseDamage: 6,
+        appliesStatus: [{ type: StatusEffectType.Shock, amount: 2 }],
+        abilityText: "+2 Shock for this battle.",
+        abilityTags: [
+          {
+            kind: AbilityTagKind.BuffOnCast,
+            target: { kind: TargetKind.Self },
+            effect: { statusGrant: { type: StatusEffectType.Shock, amount: 2 } },
+          },
+        ],
+      },
+      3: {
+        baseDamage: 9,
+        appliesStatus: [{ type: StatusEffectType.Shock, amount: 3 }],
+        abilityText: "+3 Shock for this battle.",
+        abilityTags: [
+          {
+            kind: AbilityTagKind.BuffOnCast,
+            target: { kind: TargetKind.Self },
+            effect: { statusGrant: { type: StatusEffectType.Shock, amount: 3 } },
+          },
+        ],
+      },
+      4: {
+        baseDamage: 9,
+        baseMulticast: 2,
+        appliesStatus: [{ type: StatusEffectType.Shock, amount: 3 }],
+        abilityText: "+3 Shock for this battle.",
+        abilityTags: [
+          {
+            kind: AbilityTagKind.BuffOnCast,
+            target: { kind: TargetKind.Self },
+            effect: { statusGrant: { type: StatusEffectType.Shock, amount: 3 } },
+          },
+        ],
+      },
+    },
+  },
+  [Species.Bunchop]: {
+    spriteFile: "bunchop_shiny.png",
+    baseDamage: 50,
+    baseCooldownSeconds: 4,
+    baseMulticast: 1,
+    abilityText: "Your team has +60 HP.\nOn Victory\nIncrease this ability's HP bonus by +60.",
+    levels: {
+      2: {
+        baseDamage: 100,
+        abilityText: "Your team has +60 HP.\nOn Victory\nIncrease this ability's HP bonus by +120.",
+      },
+      3: {
+        baseDamage: 150,
+        abilityText: "Your team has +60 HP.\nOn Victory\nIncrease this ability's HP bonus by +180.",
+      },
+      4: {
+        baseDamage: 300,
+        abilityText: "Your team has +60 HP.\nOn Victory\nIncrease this ability's HP bonus by +360.",
+      },
+    },
+  },
+  [Species.Cairnage]: {
+    spriteFile: "cairnage_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 5.5,
+    baseMulticast: 1,
+    appliesStatus: [{ type: StatusEffectType.Shield, amount: 500 }],
+    abilityText: "Allies gain Damage for this battle equal to 1x their Shield.",
+    levels: {
+      2: {
+        appliesStatus: [{ type: StatusEffectType.Shield, amount: 1000 }],
+        abilityText: "Allies gain Damage for this battle equal to 1.9x their Shield.",
+      },
+      3: {
+        appliesStatus: [{ type: StatusEffectType.Shield, amount: 1500 }],
+        abilityText: "Allies gain Damage for this battle equal to 2.9x their Shield.",
+      },
+      4: {
+        appliesStatus: [{ type: StatusEffectType.Shield, amount: 12000 }],
+        abilityText: "Allies gain Damage for this battle equal to 23x their Shield.",
+      },
+    },
+  },
+  [Species.Cawnushi]: {
+    spriteFile: "cawnushi_shiny.png",
+    baseDamage: 50,
+    baseCooldownSeconds: 5.5,
+    baseMulticast: 2,
+    abilityText: "On Knockout of any monster, this gains +72 Damage permanently.",
+    levels: {
+      2: {
+        baseDamage: 100,
+        abilityText: "On Knockout of any monster, this gains +144 Damage permanently.",
+      },
+      3: {
+        baseDamage: 150,
+        abilityText: "On Knockout of any monster, this gains +216 Damage permanently.",
+      },
+      4: {
+        baseDamage: 1200,
+        abilityText: "On Knockout of any monster, this gains +1728 Damage permanently.",
+      },
+    },
+  },
+  [Species.Celestia]: {
+    spriteFile: "celestia_shiny.png",
+    baseDamage: 130,
+    baseCooldownSeconds: 6.5,
+    baseMulticast: 1,
+    abilityText: "Disable abilities of enemy Ongoing monsters in this row.",
+    levels: { 2: { baseDamage: 260 }, 3: { baseDamage: 390 }, 4: { baseDamage: 3120 } },
+  },
+  [Species.Cherubble]: {
+    spriteFile: "cherubble_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 4,
+    baseMulticast: 1,
+    appliesStatus: [{ type: StatusEffectType.Shield, amount: 100 }],
+    abilityText: "Give adjacent allies +10 Damage permanently and Protect 1.",
+    levels: {
+      2: { baseCooldownSeconds: 2 },
+      3: { baseCooldownSeconds: 1.3 },
+      4: {
+        baseCooldownSeconds: 1.3,
+        baseMulticast: 4,
+        abilityText: "Give adjacent allies +40 Damage permanently and Protect 1.",
+      },
+    },
+  },
+  [Species.Cicadence]: {
+    spriteFile: "cicadence_shiny.png",
+    baseDamage: 100,
+    baseCooldownSeconds: 6,
+    baseMulticast: 1,
+    abilityText: "Trigger the Bug ally above and give it +10 Damage permanently.",
+    levels: {
+      2: { baseCooldownSeconds: 3 },
+      3: { baseCooldownSeconds: 2 },
+      4: { baseDamage: 200, baseCooldownSeconds: 2, baseMulticast: 2 },
+    },
+  },
+  [Species.Cinderfly]: {
+    spriteFile: "cinderfly_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 5,
+    baseMulticast: 1,
+    appliesStatus: [{ type: StatusEffectType.Burn, amount: 7 }],
+    abilityText: "After you buy a Bug monster, this gains +12% Cooldown Speed.",
+    levels: {
+      2: { abilityText: "After you buy a Bug monster, this gains +24% Cooldown Speed." },
+      3: { abilityText: "After you buy a Bug monster, this gains +36% Cooldown Speed." },
+      4: {
+        baseMulticast: 2,
+        appliesStatus: [{ type: StatusEffectType.Burn, amount: 14 }],
+        abilityText: "After you buy a Bug monster, this gains +72% Cooldown Speed.",
+      },
+    },
+  },
+  [Species.Cinnabark]: {
+    spriteFile: "cinnabark_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 4,
+    baseMulticast: 1,
+    appliesStatus: [{ type: StatusEffectType.Poison, amount: 5 }],
+    abilityText: "Has additional Shield equal to 120% of the Poison stacks on the enemy.",
+    levels: {
+      2: {
+        appliesStatus: [{ type: StatusEffectType.Poison, amount: 10 }],
+        abilityText: "Has additional Shield equal to 240% of the Poison stacks on the enemy.",
+      },
+      3: {
+        appliesStatus: [{ type: StatusEffectType.Poison, amount: 15 }],
+        abilityText: "Has additional Shield equal to 360% of the Poison stacks on the enemy.",
+      },
+      4: {
+        appliesStatus: [{ type: StatusEffectType.Poison, amount: 30 }],
+        abilityText: "Has additional Shield equal to 720% of the Poison stacks on the enemy.",
+      },
+    },
+  },
+  [Species.Clawnetic]: {
+    spriteFile: "clawnetic_shiny.png",
+    baseDamage: 60,
+    baseCooldownSeconds: 2,
+    baseMulticast: 1,
+    abilityText: "Whenever an ally inflicts Shock, Charge this by 1 second(s).",
+    levels: {
+      2: { baseMulticast: 2 },
+      3: { baseMulticast: 3 },
+      4: { baseDamage: 600, baseMulticast: 24 },
+    },
+  },
+  [Species.Coalem]: {
+    spriteFile: "coalem_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 15,
+    baseMulticast: 1,
+    appliesStatus: [
+      { type: StatusEffectType.Burn, amount: 20 },
+      { type: StatusEffectType.Shield, amount: 550 },
+    ],
+    abilityText: "Trigger this and gain +30 Shield permanently.",
+    levels: {
+      2: {
+        appliesStatus: [
+          { type: StatusEffectType.Burn, amount: 40 },
+          { type: StatusEffectType.Shield, amount: 1100 },
+        ],
+        abilityText: "Trigger this and gain +60 Shield permanently.",
+      },
+      3: {
+        appliesStatus: [
+          { type: StatusEffectType.Burn, amount: 60 },
+          { type: StatusEffectType.Shield, amount: 1650 },
+        ],
+        abilityText: "Trigger this and gain +90 Shield permanently.",
+      },
+      4: {
+        baseCooldownSeconds: 5,
+        appliesStatus: [
+          { type: StatusEffectType.Burn, amount: 240 },
+          { type: StatusEffectType.Shield, amount: 6600 },
+        ],
+        abilityText: "Trigger this and gain +540 Shield permanently.",
+      },
+    },
+  },
+  [Species.Cobrex]: {
+    spriteFile: "cobrex_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 15,
+    baseMulticast: 1,
+    appliesStatus: [{ type: StatusEffectType.Poison, amount: 360 }],
+    abilityText: "Whenever an ally inflicts Poison, Charge this by 1 second(s).",
+    levels: {
+      2: { appliesStatus: [{ type: StatusEffectType.Poison, amount: 720 }] },
+      3: { appliesStatus: [{ type: StatusEffectType.Poison, amount: 1080 }] },
+      4: {
+        baseCooldownSeconds: 2,
+        appliesStatus: [{ type: StatusEffectType.Poison, amount: 1080 }],
+      },
+    },
+  },
+  [Species.Cordycant]: {
+    spriteFile: "cordycant_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 4,
+    baseMulticast: 1,
+    appliesStatus: [{ type: StatusEffectType.Poison, amount: 8 }],
+    abilityText: "Give the next monster you buy Toxic typing and +10 Poison. Lost if sold.",
+    levels: {
+      2: {
+        appliesStatus: [{ type: StatusEffectType.Poison, amount: 16 }],
+        abilityText: "Give the next monster you buy Toxic typing and +19 Poison. Lost if sold.",
+      },
+      3: {
+        appliesStatus: [{ type: StatusEffectType.Poison, amount: 24 }],
+        abilityText: "Give the next monster you buy Toxic typing and +29 Poison. Lost if sold.",
+      },
+      4: {
+        appliesStatus: [{ type: StatusEffectType.Poison, amount: 96 }],
+        abilityText: "Give the next monster you buy Toxic typing and +115 Poison. Lost if sold.",
+      },
+    },
+  },
+  [Species.Cosmivore]: {
+    spriteFile: "cosmivore_shiny.png",
+    baseDamage: 1,
+    baseCooldownSeconds: 7,
+    baseMulticast: 1,
+    abilityText:
+      "When rerolling the shop, gain 24% of the total stats of the monsters remaining in the shop (excluding Multicast and Cooldown).",
+    levels: {
+      2: {
+        abilityText:
+          "When rerolling the shop, gain 48% of the total stats of the monsters remaining in the shop (excluding Multicast and Cooldown).",
+      },
+      3: {
+        abilityText:
+          "When rerolling the shop, gain 72% of the total stats of the monsters remaining in the shop (excluding Multicast and Cooldown).",
+      },
+      4: {
+        abilityText:
+          "When rerolling the shop, gain 720% of the total stats of the monsters remaining in the shop (excluding Multicast and Cooldown).",
+      },
+    },
+  },
+  [Species.Craghorn]: {
+    spriteFile: "craghorn_shiny.png",
+    baseDamage: 24,
+    baseCooldownSeconds: 6,
+    baseMulticast: 1,
+    appliesStatus: [{ type: StatusEffectType.Shield, amount: 24 }],
+    abilityText: "When you use an item, this gains +24 Damage and Shield.",
+    levels: {
+      2: { abilityText: "When you use an item, this gains +48 Damage and Shield." },
+      3: { abilityText: "When you use an item, this gains +72 Damage and Shield." },
+      4: {
+        baseDamage: 96,
+        appliesStatus: [{ type: StatusEffectType.Shield, amount: 96 }],
+        abilityText: "When you use an item, this gains +144 Damage and Shield.",
+      },
+    },
+  },
+  [Species.Danuki]: {
+    spriteFile: "danuki_shiny.png",
+    baseDamage: 40,
+    baseCooldownSeconds: 6,
+    baseMulticast: 1,
+    abilityText:
+      "On ally knockout, this gains 84% of their Damage for this battle.\n(Except other Danuki)",
+    levels: {
+      2: { baseCooldownSeconds: 3 },
+      3: { baseCooldownSeconds: 2 },
+      4: { baseCooldownSeconds: 2, baseMulticast: 4 },
+    },
+  },
+  [Species.Dirgefin]: {
+    spriteFile: "dirgefin_shiny.png",
+    baseDamage: 50,
+    baseCooldownSeconds: 9,
+    baseMulticast: 1,
+    healAmount: 100,
+    abilityText:
+      "Knockout all Common allies and enemies and gain +10 Damage permanently for each Knockout.",
+    levels: {
+      2: { baseCooldownSeconds: 4.5 },
+      3: { baseCooldownSeconds: 3 },
+      4: { baseDamage: 100, baseCooldownSeconds: 3, baseMulticast: 2, healAmount: 200 },
+    },
+  },
+  [Species.Dollhime]: {
+    spriteFile: "dollhime_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 6,
+    baseMulticast: 1,
+    abilityText: "+60 Damage permanently.",
+    levels: {
+      2: { abilityText: "+120 Damage permanently." },
+      3: { abilityText: "+180 Damage permanently." },
+      4: { abilityText: "+720 Damage permanently." },
+    },
+  },
+  [Species.Dracana]: {
+    spriteFile: "dracana_shiny.png",
+    baseDamage: 5,
+    baseCooldownSeconds: 3,
+    baseMulticast: 1,
+    abilityText:
+      "Charge the ally behind by 1 second(s) and give this +5% Cooldown Speed for this battle.\n(Dracana can't receive charge)",
+    levels: {
+      2: {
+        baseDamage: 10,
+        abilityText:
+          "Charge the ally behind by 2 second(s) and give this +5% Cooldown Speed for this battle.\n(Dracana can't receive charge)",
+      },
+      3: {
+        baseDamage: 15,
+        abilityText:
+          "Charge the ally behind by 3 second(s) and give this +5% Cooldown Speed for this battle.\n(Dracana can't receive charge)",
+      },
+      4: {
+        baseDamage: 45,
+        abilityText:
+          "Charge the ally behind by 18 second(s) and give this +5% Cooldown Speed for this battle.\n(Dracana can't receive charge)",
+      },
+    },
+  },
+  [Species.Draconarch]: {
+    spriteFile: "draconarch_shiny.png",
+    baseDamage: 100,
+    baseCooldownSeconds: 4,
+    baseMulticast: 1,
+    abilityText:
+      "Activate the On Battle Start abilities of adjacent allies and increase this monster's Cooldown by 5 for this battle.",
+    levels: {
+      2: {
+        baseMulticast: 2,
+        abilityText:
+          "Activate the On Battle Start abilities of adjacent allies and increase this monster's Cooldown by 2 for this battle.",
+      },
+      3: {
+        baseMulticast: 3,
+        abilityText:
+          "Activate the On Battle Start abilities of adjacent allies and increase this monster's Cooldown by 1 for this battle.",
+      },
+      4: {
+        baseMulticast: 24,
+        abilityText:
+          "Activate the On Battle Start abilities of adjacent allies and increase this monster's Cooldown by 1 for this battle.",
+      },
+    },
+  },
+  [Species.Dribblet]: {
+    spriteFile: "dribblet_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 3,
+    baseMulticast: 1,
+    healAmount: 18,
+    abilityText: "Evolves at level 3.",
+    levels: { 2: { healAmount: 36 }, 3: { healAmount: 54 }, 4: { healAmount: 54 } },
+  },
+  [Species.Drumire]: {
+    spriteFile: "drumire_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 8,
+    baseMulticast: 1,
+    appliesStatus: [{ type: StatusEffectType.Poison, amount: 20 }],
+    abilityText: "When a Toxic ally casts, give it +6% Cooldown Speed for this battle.",
+    levels: {
+      2: {
+        appliesStatus: [{ type: StatusEffectType.Poison, amount: 40 }],
+        abilityText: "When a Toxic ally casts, give it +12% Cooldown Speed for this battle.",
+      },
+      3: {
+        appliesStatus: [{ type: StatusEffectType.Poison, amount: 60 }],
+        abilityText: "When a Toxic ally casts, give it +18% Cooldown Speed for this battle.",
+      },
+      4: {
+        appliesStatus: [{ type: StatusEffectType.Poison, amount: 480 }],
+        abilityText: "When a Toxic ally casts, give it +144% Cooldown Speed for this battle.",
+      },
+    },
+  },
+  [Species.Dryadell]: {
+    spriteFile: "dryadell_shiny.png",
+    baseDamage: 70,
+    baseCooldownSeconds: 5,
+    baseMulticast: 1,
+    abilityText: "Trigger the Grass ally above.",
+    levels: {
+      2: { baseMulticast: 2 },
+      3: { baseMulticast: 3 },
+      4: { baseDamage: 140, baseMulticast: 12 },
+    },
+  },
+  [Species.Electranade]: {
+    spriteFile: "electranade_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 4.5,
+    baseMulticast: 1,
+    appliesStatus: [{ type: StatusEffectType.Shock, amount: 30 }],
+    abilityText: "Knockout self.",
+    levels: {
+      2: { appliesStatus: [{ type: StatusEffectType.Shock, amount: 60 }] },
+      3: { appliesStatus: [{ type: StatusEffectType.Shock, amount: 90 }] },
+      4: { appliesStatus: [{ type: StatusEffectType.Shock, amount: 360 }] },
+    },
+  },
+  [Species.Emberpaw]: {
+    spriteFile: "emberpaw_shiny.png",
+    baseDamage: 50,
+    baseCooldownSeconds: 6,
+    baseMulticast: 1,
+    appliesStatus: [{ type: StatusEffectType.Burn, amount: 5 }],
+    abilityText: "Evolve when your team inflicts Burn 25 times.",
+  },
+  [Species.Emburn]: {
+    spriteFile: "emburn_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 5,
+    baseMulticast: 1,
+    appliesStatus: [{ type: StatusEffectType.Burn, amount: 6 }],
+    abilityText: "On Knockout of this or an ally, this gains +3 Burn permanently.",
+    levels: {
+      2: {
+        appliesStatus: [{ type: StatusEffectType.Burn, amount: 12 }],
+        abilityText: "On Knockout of this or an ally, this gains +6 Burn permanently.",
+      },
+      3: {
+        appliesStatus: [{ type: StatusEffectType.Burn, amount: 18 }],
+        abilityText: "On Knockout of this or an ally, this gains +9 Burn permanently.",
+      },
+      4: {
+        appliesStatus: [{ type: StatusEffectType.Burn, amount: 72 }],
+        abilityText: "On Knockout of this or an ally, this gains +18 Burn permanently.",
+      },
+    },
+  },
+  [Species.Faebloom]: {
+    spriteFile: "faebloom_shiny.png",
+    baseDamage: 777,
+    baseCooldownSeconds: 7,
+    baseMulticast: 1,
+    abilityText:
+      "Mythical Item may appear in your shop.\nOngoing\nAdjacent allies have +12% Damage per Mythical Item used. (currently +X% Damage)",
+    levels: {
+      2: {
+        abilityText:
+          "Mythical Item may appear in your shop.\nOngoing\nAdjacent allies have +24% Damage per Mythical Item used. (currently +X% Damage)",
+      },
+      3: {
+        abilityText:
+          "Mythical Item may appear in your shop.\nOngoing\nAdjacent allies have +36% Damage per Mythical Item used. (currently +X% Damage)",
+      },
+      4: {
+        abilityText:
+          "Mythical Item may appear in your shop.\nOngoing\nAdjacent allies have +360% Damage per Mythical Item used. (currently +X% Damage)",
+      },
+    },
+  },
+  [Species.Fernfowl]: {
+    spriteFile: "fernfowl_shiny.png",
+    baseDamage: 120,
+    baseCooldownSeconds: 7,
+    baseMulticast: 2,
+    abilityText: "Evolve after your team deals 15000 non-status Damage.",
+    levels: { 2: { baseDamage: 240 }, 3: { baseDamage: 360 }, 4: { baseDamage: 3600 } },
+  },
+  [Species.Formiqueen]: {
+    spriteFile: "formiqueen_shiny.png",
+    baseDamage: 60,
+    baseCooldownSeconds: 4,
+    baseMulticast: 1,
+    abilityText: "Adjacent Common allies have +32% Cooldown Speed.",
+    levels: {
+      2: { baseDamage: 120, abilityText: "Adjacent Common allies have +62% Cooldown Speed." },
+      3: { baseDamage: 180, abilityText: "Adjacent Common allies have +92% Cooldown Speed." },
+      4: { baseDamage: 720, abilityText: "Adjacent Common allies have +675% Cooldown Speed." },
+    },
+  },
+  [Species.Frillet]: {
+    spriteFile: "frillet_shiny.png",
+    baseDamage: 12,
+    baseCooldownSeconds: 4,
+    baseMulticast: 1,
+    healAmount: 12,
+    abilityText: "Evolves at level 3.",
+    levels: {
+      2: { baseDamage: 24, healAmount: 24 },
+      3: { baseDamage: 36, healAmount: 36 },
+      4: { baseDamage: 36, baseMulticast: 2, healAmount: 36 },
+    },
+  },
+  [Species.Frizzly]: {
+    spriteFile: "frizzly_shiny.png",
+    baseDamage: 1,
+    baseCooldownSeconds: 7,
+    baseMulticast: 1,
+    appliesStatus: [{ type: StatusEffectType.Shock, amount: 8 }],
+    abilityText: "Trigger this and gain +1 Shock permanently.",
+    levels: {
+      2: {
+        appliesStatus: [{ type: StatusEffectType.Shock, amount: 16 }],
+        abilityText: "Trigger this and gain +2 Shock permanently.",
+      },
+      3: {
+        appliesStatus: [{ type: StatusEffectType.Shock, amount: 24 }],
+        abilityText: "Trigger this and gain +3 Shock permanently.",
+      },
+      4: {
+        baseMulticast: 2,
+        appliesStatus: [{ type: StatusEffectType.Shock, amount: 48 }],
+        abilityText: "Trigger this and gain +4 Shock permanently.",
+      },
+    },
+  },
+  [Species.Fumungus]: {
+    spriteFile: "fumungus_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 3,
+    baseMulticast: 1,
+    appliesStatus: [{ type: StatusEffectType.Poison, amount: 6 }],
+    abilityText: "Has additional Damage equal to 120% of the Poison stacks on the enemy.",
+    abilityTags: [
+      {
+        kind: AbilityTagKind.StatFromTargetStatus,
+        status: StatusEffectType.Poison,
+        multiplier: 1.2,
+      },
+    ],
+    levels: {
+      2: {
+        abilityText: "Has additional Damage equal to 240% of the Poison stacks on the enemy.",
+        abilityTags: [
+          {
+            kind: AbilityTagKind.StatFromTargetStatus,
+            status: StatusEffectType.Poison,
+            multiplier: 2.4,
+          },
+        ],
+      },
+      3: {
+        abilityText: "Has additional Damage equal to 360% of the Poison stacks on the enemy.",
+        abilityTags: [
+          {
+            kind: AbilityTagKind.StatFromTargetStatus,
+            status: StatusEffectType.Poison,
+            multiplier: 3.6,
+          },
+        ],
+      },
+      4: {
+        baseCooldownSeconds: 1.5,
+        appliesStatus: [{ type: StatusEffectType.Poison, amount: 12 }],
+        abilityText: "Has additional Damage equal to 1440% of the Poison stacks on the enemy.",
+        abilityTags: [
+          {
+            kind: AbilityTagKind.StatFromTargetStatus,
+            status: StatusEffectType.Poison,
+            multiplier: 14.4,
+          },
+        ],
+      },
+    },
+  },
+  [Species.Furnadon]: {
+    spriteFile: "furnadon_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 4,
+    baseMulticast: 1,
+    appliesStatus: [{ type: StatusEffectType.Burn, amount: 4 }],
+    abilityText: "Has an additional +1 Burn for each Trinket that you own.",
+    levels: {
+      2: {
+        appliesStatus: [{ type: StatusEffectType.Burn, amount: 8 }],
+        abilityText: "Has an additional +2 Burn for each Trinket that you own.",
+      },
+      3: {
+        appliesStatus: [{ type: StatusEffectType.Burn, amount: 12 }],
+        abilityText: "Has an additional +3 Burn for each Trinket that you own.",
+      },
+      4: {
+        appliesStatus: [{ type: StatusEffectType.Burn, amount: 24 }],
+        abilityText: "Has an additional +6 Burn for each Trinket that you own.",
+      },
+    },
+  },
+  [Species.Gachapod]: {
+    spriteFile: "gachapod_shiny.png",
+    baseDamage: 120,
+    baseCooldownSeconds: 6,
+    baseMulticast: 1,
+    abilityText:
+      "When this triggers, gain a random non-unique Common Trinket, then improve this ability for this battle.",
+    levels: {
+      2: {
+        baseDamage: 240,
+        abilityText:
+          "When this triggers, gain 2 random non-unique Common Trinkets, then improve this ability for this battle.",
+      },
+      3: {
+        baseDamage: 360,
+        abilityText:
+          "When this triggers, gain 3 random non-unique Common Trinkets, then improve this ability for this battle.",
+      },
+      4: {
+        baseDamage: 2880,
+        abilityText:
+          "When this triggers, gain 24 random non-unique Common Trinkets, then improve this ability for this battle.",
+      },
+    },
+  },
+  [Species.Gaiadrasil]: {
+    spriteFile: "gaiadrasil_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 9,
+    baseMulticast: 1,
+    abilityText:
+      "Has additional Damage equal to 120% of the total Damage of adjacent allies.\n(Except other Gaiadrasil)",
+    levels: {
+      2: { baseCooldownSeconds: 4.5 },
+      3: { baseCooldownSeconds: 3 },
+      4: {
+        baseCooldownSeconds: 3,
+        abilityText:
+          "Has additional Damage equal to 1200% of the total Damage of adjacent allies.\n(Except other Gaiadrasil)",
+      },
+    },
+  },
+  [Species.Galvanine]: {
+    spriteFile: "galvanine_shiny.png",
+    baseDamage: 10,
+    baseCooldownSeconds: 7,
+    baseMulticast: 1,
+    appliesStatus: [{ type: StatusEffectType.Shock, amount: 6 }],
+    abilityText: "+60% Cooldown Speed and +2 Shock for this battle.",
+    levels: {
+      2: {
+        baseDamage: 20,
+        appliesStatus: [{ type: StatusEffectType.Shock, amount: 12 }],
+        abilityText: "+60% Cooldown Speed and +4 Shock for this battle.",
+      },
+      3: {
+        baseDamage: 30,
+        appliesStatus: [{ type: StatusEffectType.Shock, amount: 18 }],
+        abilityText: "+60% Cooldown Speed and +6 Shock for this battle.",
+      },
+      4: {
+        baseDamage: 30,
+        appliesStatus: [{ type: StatusEffectType.Shock, amount: 144 }],
+        abilityText: "+60% Cooldown Speed and +48 Shock for this battle.",
+      },
+    },
+  },
+  [Species.Geminiss]: {
+    spriteFile: "geminiss_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 10,
+    baseMulticast: 1,
+    appliesStatus: [{ type: StatusEffectType.Shield, amount: 100 }],
+    abilityText: "Give adjacent allies +60% Shield for this battle.",
+    levels: {
+      2: { abilityText: "Give adjacent allies +120% Shield for this battle." },
+      3: { abilityText: "Give adjacent allies +180% Shield for this battle." },
+      4: {
+        appliesStatus: [{ type: StatusEffectType.Shield, amount: 1000 }],
+        abilityText: "Give adjacent allies +1800% Shield for this battle.",
+      },
+    },
+  },
+  [Species.Gemwing]: {
+    spriteFile: "gemwing_shiny.png",
+    baseDamage: 150,
+    baseCooldownSeconds: 5,
+    baseMulticast: 1,
+    abilityText: "Activate the On Bought ability of the ally above 1 time(s).",
+    levels: {
+      2: {
+        baseDamage: 300,
+        abilityText: "Activate the On Bought ability of the ally above 2 time(s).",
+      },
+      3: {
+        baseDamage: 450,
+        abilityText: "Activate the On Bought ability of the ally above 3 time(s).",
+      },
+      4: {
+        baseDamage: 3600,
+        abilityText: "Activate the On Bought ability of the ally above 12 time(s).",
+      },
+    },
+  },
+  [Species.Gildshell]: {
+    spriteFile: "gildshell_shiny.png",
+    baseDamage: 1,
+    baseCooldownSeconds: 2,
+    baseMulticast: 1,
+    abilityText:
+      "+20 Sell Value permanently.\nOngoing\nHas additional Damage equal to 0.5 times this monster's Sell Value.",
+    levels: {
+      2: {
+        abilityText:
+          "+40 Sell Value permanently.\nOngoing\nHas additional Damage equal to 0.5 times this monster's Sell Value.",
+      },
+      3: {
+        abilityText:
+          "+60 Sell Value permanently.\nOngoing\nHas additional Damage equal to 0.5 times this monster's Sell Value.",
+      },
+      4: {
+        baseDamage: 100,
+        abilityText:
+          "+240 Sell Value permanently.\nOngoing\nHas additional Damage equal to 0.5 times this monster's Sell Value.",
+      },
+    },
+  },
+  [Species.Ginsage]: {
+    spriteFile: "ginsage_shiny.png",
+    baseDamage: 150,
+    baseCooldownSeconds: 7,
+    baseMulticast: 1,
+    abilityText: "Adjacent Grass allies gain +8% Cooldown Speed permanently.",
+    levels: {
+      2: {
+        baseDamage: 300,
+        abilityText: "Adjacent Grass allies gain +17% Cooldown Speed permanently.",
+      },
+      3: {
+        baseDamage: 450,
+        abilityText: "Adjacent Grass allies gain +25% Cooldown Speed permanently.",
+      },
+      4: {
+        baseDamage: 3600,
+        abilityText: "Adjacent Grass allies gain +202% Cooldown Speed permanently.",
+      },
+    },
+  },
+  [Species.Goldora]: {
+    spriteFile: "goldora_shiny.png",
+    baseDamage: 333,
+    baseCooldownSeconds: 5,
+    baseMulticast: 1,
+    abilityText:
+      "On the first cast, gain 1 random non-unique Legendary Trinket(s) for each Legendary ally.",
+    levels: {
+      2: {
+        abilityText:
+          "On the first cast, gain 2 random non-unique Legendary Trinket(s) for each Legendary ally.",
+      },
+      3: {
+        abilityText:
+          "On the first cast, gain 3 random non-unique Legendary Trinket(s) for each Legendary ally.",
+      },
+      4: {
+        abilityText:
+          "On the first cast, gain 30 random non-unique Legendary Trinket(s) for each Legendary ally.",
+      },
+    },
+  },
+  [Species.Guardiant]: {
+    spriteFile: "guardiant_shiny.png",
+    baseDamage: 18,
+    baseCooldownSeconds: 4,
+    baseMulticast: 1,
+    abilityText: "After you buy a Bug monster, this gains +10 Damage.",
+    levels: {
+      2: { abilityText: "After you buy a Bug monster, this gains +20 Damage." },
+      3: { abilityText: "After you buy a Bug monster, this gains +30 Damage." },
+      4: { baseDamage: 36, abilityText: "After you buy a Bug monster, this gains +60 Damage." },
+    },
+  },
+  [Species.Humbolt]: {
+    spriteFile: "humbolt_shiny.png",
+    baseDamage: 36,
+    baseCooldownSeconds: 4,
+    baseMulticast: 3,
+    appliesStatus: [{ type: StatusEffectType.Shock, amount: 3 }],
+    levels: {
+      2: {
+        baseDamage: 48,
+        baseMulticast: 4,
+        appliesStatus: [{ type: StatusEffectType.Shock, amount: 4 }],
+      },
+      3: {
+        baseDamage: 54,
+        baseMulticast: 5,
+        appliesStatus: [{ type: StatusEffectType.Shock, amount: 5 }],
+      },
+      4: {
+        baseDamage: 54,
+        baseMulticast: 10,
+        appliesStatus: [{ type: StatusEffectType.Shock, amount: 5 }],
+      },
+    },
+  },
+  [Species.Ignit]: {
+    spriteFile: "ignit_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 8,
+    baseMulticast: 1,
+    appliesStatus: [{ type: StatusEffectType.Burn, amount: 2 }],
+    abilityText: "Evolve.",
+    levels: {
+      2: { appliesStatus: [{ type: StatusEffectType.Burn, amount: 3 }] },
+      3: { appliesStatus: [{ type: StatusEffectType.Burn, amount: 4 }] },
+      4: { baseCooldownSeconds: 1, appliesStatus: [{ type: StatusEffectType.Burn, amount: 4 }] },
+    },
+  },
+  [Species.Ironcore]: {
+    spriteFile: "ironcore_shiny.png",
+    baseDamage: 30,
+    baseCooldownSeconds: 2,
+    baseMulticast: 1,
+    abilityText:
+      "Charge adjacent Electric allies by 1.2 second(s).\n(Ironcore can't receive charge)",
+    levels: {
+      2: {
+        abilityText:
+          "Charge adjacent Electric allies by 2.4 second(s).\n(Ironcore can't receive charge)",
+      },
+      3: {
+        abilityText:
+          "Charge adjacent Electric allies by 3.6 second(s).\n(Ironcore can't receive charge)",
+      },
+      4: {
+        abilityText:
+          "Charge adjacent Electric allies by 7.2 second(s).\n(Ironcore can't receive charge)",
+      },
+    },
+  },
+  [Species.Joltail]: {
+    spriteFile: "joltail_shiny.png",
+    baseDamage: 1,
+    baseCooldownSeconds: 4.5,
+    baseMulticast: 1,
+    appliesStatus: [{ type: StatusEffectType.Shock, amount: 4 }],
+    abilityText: "+1 Shock permanently.",
+    levels: {
+      2: {
+        baseDamage: 2,
+        appliesStatus: [{ type: StatusEffectType.Shock, amount: 8 }],
+        abilityText: "+2 Shock permanently.",
+      },
+      3: {
+        baseDamage: 3,
+        appliesStatus: [{ type: StatusEffectType.Shock, amount: 12 }],
+        abilityText: "+3 Shock permanently.",
+      },
+      4: {
+        baseDamage: 3,
+        baseMulticast: 2,
+        appliesStatus: [{ type: StatusEffectType.Shock, amount: 12 }],
+        abilityText: "+4 Shock permanently.",
+      },
+    },
+  },
+  [Species.Kappow]: {
+    spriteFile: "kappow_shiny.png",
+    baseDamage: 60,
+    baseCooldownSeconds: 5.5,
+    baseMulticast: 1,
+    abilityText: "Level up. This can level up indefinitely.",
+    levels: { 2: { baseDamage: 120 }, 3: { baseDamage: 180 }, 4: { baseDamage: 360 } },
+  },
+  [Species.Kickrane]: {
+    spriteFile: "kickrane_shiny.png",
+    baseDamage: 30,
+    baseCooldownSeconds: 4.5,
+    baseMulticast: 2,
+    abilityText: "This and all your allies gain +24 Damage permanently.",
+    levels: {
+      2: { baseDamage: 60, abilityText: "This and all your allies gain +48 Damage permanently." },
+      3: { baseDamage: 90, abilityText: "This and all your allies gain +72 Damage permanently." },
+      4: { baseDamage: 360, abilityText: "This and all your allies gain +288 Damage permanently." },
+    },
+  },
+  [Species.Kindlepot]: {
+    spriteFile: "kindlepot_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 4,
+    baseMulticast: 1,
+    appliesStatus: [{ type: StatusEffectType.Burn, amount: 4 }],
+    abilityText: "Evolve after collecting 5 more Trinkets.(5 left!)",
+    levels: {
+      2: { appliesStatus: [{ type: StatusEffectType.Burn, amount: 8 }] },
+      3: { appliesStatus: [{ type: StatusEffectType.Burn, amount: 12 }] },
+      4: { appliesStatus: [{ type: StatusEffectType.Burn, amount: 24 }] },
+    },
+  },
+  [Species.Lamplet]: {
+    spriteFile: "lamplet_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 2.5,
+    baseMulticast: 1,
+    appliesStatus: [{ type: StatusEffectType.Burn, amount: 1 }],
+    abilityText: "+1 Burn permanently.",
+    levels: {
+      2: {
+        appliesStatus: [{ type: StatusEffectType.Burn, amount: 2 }],
+        abilityText: "+2 Burn permanently.",
+      },
+      3: {
+        appliesStatus: [{ type: StatusEffectType.Burn, amount: 3 }],
+        abilityText: "+3 Burn permanently.",
+      },
+      4: {
+        baseMulticast: 2,
+        appliesStatus: [{ type: StatusEffectType.Burn, amount: 3 }],
+        abilityText: "+3 Burn permanently.",
+      },
+    },
+  },
+  [Species.Leafleap]: {
+    spriteFile: "leafleap_shiny.png",
+    baseDamage: 40,
+    baseCooldownSeconds: 4,
+    baseMulticast: 1,
+    abilityText:
+      "Give all monsters in the shop, on your team, and on your bench +5 Damage for the rest of the run.",
+    levels: {
+      2: {
+        baseDamage: 80,
+        abilityText:
+          "Give all monsters in the shop, on your team, and on your bench +10 Damage for the rest of the run.",
+      },
+      3: {
+        baseDamage: 120,
+        abilityText:
+          "Give all monsters in the shop, on your team, and on your bench +15 Damage for the rest of the run.",
+      },
+      4: {
+        baseDamage: 240,
+        abilityText:
+          "Give all monsters in the shop, on your team, and on your bench +30 Damage for the rest of the run.",
+      },
+    },
+  },
+  [Species.Lignite]: {
+    spriteFile: "lignite_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 5,
+    baseMulticast: 1,
+    appliesStatus: [{ type: StatusEffectType.Burn, amount: 3 }],
+    abilityText: "Has additional Damage equal to 24 times this monster's Burn.",
+    levels: {
+      2: { abilityText: "Has additional Damage equal to 48 times this monster's Burn." },
+      3: { abilityText: "Has additional Damage equal to 72 times this monster's Burn." },
+      4: { abilityText: "Has additional Damage equal to 144 times this monster's Burn." },
+    },
+  },
+  [Species.Lumijel]: {
+    spriteFile: "lumijel_shiny.png",
+    baseDamage: 20,
+    baseCooldownSeconds: 5,
+    baseMulticast: 1,
+    healAmount: 30,
+    abilityText: "Allies of level 3 or above gain +18 Damage and +18 Heal permanently.",
+    levels: {
+      2: {
+        baseDamage: 40,
+        healAmount: 60,
+        abilityText: "Allies of level 3 or above gain +36 Damage and +36 Heal permanently.",
+      },
+      3: {
+        baseDamage: 60,
+        healAmount: 90,
+        abilityText: "Allies of level 3 or above gain +54 Damage and +54 Heal permanently.",
+      },
+      4: {
+        baseDamage: 240,
+        healAmount: 360,
+        abilityText: "Allies of level 3 or above gain +216 Damage and +216 Heal permanently.",
+      },
+    },
+  },
+  [Species.Magmalith]: {
+    spriteFile: "magmalith_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 9,
+    baseMulticast: 1,
+    appliesStatus: [{ type: StatusEffectType.Burn, amount: 5 }],
+    abilityText: "Adjacent Fire allies gain +2 Burn permanently.",
+    levels: {
+      2: {
+        appliesStatus: [{ type: StatusEffectType.Burn, amount: 10 }],
+        abilityText: "Adjacent Fire allies gain +4 Burn permanently.",
+      },
+      3: {
+        appliesStatus: [{ type: StatusEffectType.Burn, amount: 15 }],
+        abilityText: "Adjacent Fire allies gain +6 Burn permanently.",
+      },
+      4: {
+        appliesStatus: [{ type: StatusEffectType.Burn, amount: 30 }],
+        abilityText: "Adjacent Fire allies gain +24 Burn permanently.",
+      },
+    },
+  },
+  [Species.Magmite]: {
+    spriteFile: "magmite_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 4.5,
+    baseMulticast: 1,
+    appliesStatus: [
+      { type: StatusEffectType.Burn, amount: 4 },
+      { type: StatusEffectType.Shield, amount: 40 },
+    ],
+    abilityText: "+10 Shield and +1 Burn permanently.",
+    levels: {
+      2: {
+        appliesStatus: [
+          { type: StatusEffectType.Burn, amount: 8 },
+          { type: StatusEffectType.Shield, amount: 80 },
+        ],
+        abilityText: "+20 Shield and +2 Burn permanently.",
+      },
+      3: {
+        appliesStatus: [
+          { type: StatusEffectType.Burn, amount: 12 },
+          { type: StatusEffectType.Shield, amount: 120 },
+        ],
+        abilityText: "+30 Shield and +3 Burn permanently.",
+      },
+      4: {
+        appliesStatus: [
+          { type: StatusEffectType.Burn, amount: 12 },
+          { type: StatusEffectType.Shield, amount: 480 },
+        ],
+        abilityText: "+60 Shield and +6 Burn permanently.",
+      },
+    },
+  },
+  [Species.Mallogre]: {
+    spriteFile: "mallogre_shiny.png",
+    baseDamage: 120,
+    baseCooldownSeconds: 8,
+    baseMulticast: 1,
+    appliesStatus: [{ type: StatusEffectType.Shield, amount: 100 }],
+    abilityText: "+5 Damage and +5 Shield permanently for each Trinket that you own.",
+    levels: {
+      2: { abilityText: "+10 Damage and +10 Shield permanently for each Trinket that you own." },
+      3: { abilityText: "+14 Damage and +14 Shield permanently for each Trinket that you own." },
+      4: { abilityText: "+115 Damage and +115 Shield permanently for each Trinket that you own." },
+    },
+  },
+  [Species.Miasmaw]: {
+    spriteFile: "miasmaw_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 3,
+    baseMulticast: 1,
+    appliesStatus: [{ type: StatusEffectType.Poison, amount: 10 }],
+    abilityText:
+      "Gain Poison for this battle equal to 1.2x the total Poison of your allies.\n(Except other Miasmaw)",
+    abilityTags: [
+      {
+        kind: AbilityTagKind.BattleStartStatusFromAllies,
+        status: StatusEffectType.Poison,
+        multiplier: 1.2,
+      },
+    ],
+    levels: {
+      2: {
+        abilityText:
+          "Gain Poison for this battle equal to 2.4x the total Poison of your allies.\n(Except other Miasmaw)",
+        abilityTags: [
+          {
+            kind: AbilityTagKind.BattleStartStatusFromAllies,
+            status: StatusEffectType.Poison,
+            multiplier: 2.4,
+          },
+        ],
+      },
+      3: {
+        abilityText:
+          "Gain Poison for this battle equal to 3.6x the total Poison of your allies.\n(Except other Miasmaw)",
+        abilityTags: [
+          {
+            kind: AbilityTagKind.BattleStartStatusFromAllies,
+            status: StatusEffectType.Poison,
+            multiplier: 3.6,
+          },
+        ],
+      },
+      4: {
+        abilityText:
+          "Gain Poison for this battle equal to 28.8x the total Poison of your allies.\n(Except other Miasmaw)",
+        abilityTags: [
+          {
+            kind: AbilityTagKind.BattleStartStatusFromAllies,
+            status: StatusEffectType.Poison,
+            multiplier: 28.8,
+          },
+        ],
+      },
+    },
+  },
+  [Species.Missingn]: {
+    spriteFile: "missingn_shiny.png",
+    baseDamage: 1,
+    baseCooldownSeconds: 30,
+    baseMulticast: 1,
+    abilityText:
+      "Gain +10 Damage permanently. For this battle, transform into a random monster 1 rarity above your shop's highest available rarity.",
+    levels: {
+      2: {
+        abilityText:
+          "Gain +20 Damage permanently. For this battle, transform into a random monster 1 rarity above your shop's highest available rarity.",
+      },
+      3: {
+        abilityText:
+          "Gain +30 Damage permanently. For this battle, transform into a random monster 1 rarity above your shop's highest available rarity.",
+      },
+      4: {
+        abilityText:
+          "Gain +60 Damage permanently. For this battle, transform into a random monster 1 rarity above your shop's highest available rarity.",
+      },
+    },
+  },
+  [Species.Mosslug]: {
+    spriteFile: "mosslug_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 6,
+    baseMulticast: 1,
+    healAmount: 36,
+    abilityText: "+24 Damage for this battle.",
+    abilityTags: [
+      {
+        kind: AbilityTagKind.BuffOnCast,
+        target: { kind: TargetKind.Self },
+        effect: { statChange: { stat: StatChangeStat.Damage, amount: 24 } },
+      },
+    ],
+    levels: {
+      2: {
+        healAmount: 72,
+        abilityText: "+48 Damage for this battle.",
+        abilityTags: [
+          {
+            kind: AbilityTagKind.BuffOnCast,
+            target: { kind: TargetKind.Self },
+            effect: { statChange: { stat: StatChangeStat.Damage, amount: 48 } },
+          },
+        ],
+      },
+      3: {
+        healAmount: 108,
+        abilityText: "+72 Damage for this battle.",
+        abilityTags: [
+          {
+            kind: AbilityTagKind.BuffOnCast,
+            target: { kind: TargetKind.Self },
+            effect: { statChange: { stat: StatChangeStat.Damage, amount: 72 } },
+          },
+        ],
+      },
+      4: {
+        healAmount: 108,
+        abilityText: "+144 Damage for this battle.",
+        abilityTags: [
+          {
+            kind: AbilityTagKind.BuffOnCast,
+            target: { kind: TargetKind.Self },
+            effect: { statChange: { stat: StatChangeStat.Damage, amount: 144 } },
+          },
+        ],
+      },
+    },
+  },
+  [Species.Nekoffin]: {
+    spriteFile: "nekoffin_shiny.png",
+    baseDamage: 200,
+    baseCooldownSeconds: 13,
+    baseMulticast: 1,
+    abilityText: "Gain a random non-unique Uncommon Trinket.",
+    levels: {
+      2: { baseDamage: 400, abilityText: "Gain 2 random non-unique Uncommon Trinkets." },
+      3: { baseDamage: 600, abilityText: "Gain 3 random non-unique Uncommon Trinkets." },
+      4: { baseDamage: 2300, abilityText: "Gain 12 random non-unique Uncommon Trinkets." },
+    },
+  },
+  [Species.Ninflora]: {
+    spriteFile: "ninflora_shiny.png",
+    baseDamage: 50,
+    baseCooldownSeconds: 4,
+    baseMulticast: 1,
+    abilityText: "This and your Grass allies gain +12% Cooldown Speed permanently.",
+    levels: {
+      2: {
+        baseDamage: 100,
+        abilityText: "This and your Grass allies gain +24% Cooldown Speed permanently.",
+      },
+      3: {
+        baseDamage: 150,
+        abilityText: "This and your Grass allies gain +36% Cooldown Speed permanently.",
+      },
+      4: {
+        baseDamage: 1200,
+        abilityText: "This and your Grass allies gain +288% Cooldown Speed permanently.",
+      },
+    },
+  },
+  [Species.Noxalith]: {
+    spriteFile: "noxalith_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 7,
+    baseMulticast: 1,
+    appliesStatus: [{ type: StatusEffectType.Poison, amount: 5 }],
+    abilityText: "Adjacent Toxic allies gain +3 Poison permanently.",
+    levels: {
+      2: {
+        appliesStatus: [{ type: StatusEffectType.Poison, amount: 10 }],
+        abilityText: "Adjacent Toxic allies gain +6 Poison permanently.",
+      },
+      3: {
+        appliesStatus: [{ type: StatusEffectType.Poison, amount: 15 }],
+        abilityText: "Adjacent Toxic allies gain +9 Poison permanently.",
+      },
+      4: {
+        appliesStatus: [{ type: StatusEffectType.Poison, amount: 30 }],
+        abilityText: "Adjacent Toxic allies gain +36 Poison permanently.",
+      },
+    },
+  },
+  [Species.Noxnimbus]: {
+    spriteFile: "noxnimbus_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 3,
+    baseMulticast: 1,
+    appliesStatus: [{ type: StatusEffectType.Poison, amount: 1 }],
+    abilityText: "This and adjacent Toxic allies gain +3 Poison for this battle.",
+    levels: {
+      2: { abilityText: "This and adjacent Toxic allies gain +6 Poison for this battle." },
+      3: { abilityText: "This and adjacent Toxic allies gain +9 Poison for this battle." },
+      4: {
+        baseMulticast: 2,
+        abilityText: "This and adjacent Toxic allies gain +18 Poison for this battle.",
+      },
+    },
+  },
+  [Species.Omnichrome]: {
+    spriteFile: "omnichrome_shiny.png",
+    baseDamage: 1,
+    baseCooldownSeconds: 5,
+    baseMulticast: 1,
+    abilityText:
+      "Gain 96% of the stats of the enemy monster with the highest stats permanently (excluding Multicast and Cooldown).",
+    levels: {
+      2: {
+        abilityText:
+          "Gain 192% of the stats of the enemy monster with the highest stats permanently (excluding Multicast and Cooldown).",
+      },
+      3: {
+        abilityText:
+          "Gain 288% of the stats of the enemy monster with the highest stats permanently (excluding Multicast and Cooldown).",
+      },
+      4: {
+        abilityText:
+          "Gain 2880% of the stats of the enemy monster with the highest stats permanently (excluding Multicast and Cooldown).",
+      },
+    },
+  },
+  [Species.Onsetra]: {
+    spriteFile: "onsetra_shiny.png",
+    baseDamage: 100,
+    baseCooldownSeconds: 4,
+    baseMulticast: 1,
+    abilityText: "Adjacent allies apply their Ongoing abilities 1 additional time(s).",
+    levels: {
+      2: {
+        baseDamage: 200,
+        abilityText: "Adjacent allies apply their Ongoing abilities 2 additional time(s).",
+      },
+      3: {
+        baseDamage: 300,
+        abilityText: "Adjacent allies apply their Ongoing abilities 3 additional time(s).",
+      },
+      4: {
+        baseDamage: 3000,
+        abilityText: "Adjacent allies apply their Ongoing abilities 24 additional time(s).",
+      },
+    },
+  },
+  [Species.Opalion]: {
+    spriteFile: "opalion_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 5,
+    baseMulticast: 1,
+    appliesStatus: [{ type: StatusEffectType.Shield, amount: 90 }],
+    levels: {
+      2: { baseMulticast: 2 },
+      3: { baseMulticast: 3 },
+      4: { baseMulticast: 12, appliesStatus: [{ type: StatusEffectType.Shield, amount: 180 }] },
+    },
+  },
+  [Species.Orcana]: {
+    spriteFile: "orcana_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 8,
+    baseMulticast: 1,
+    healAmount: 200,
+    abilityText: "Has an additional +192 Damage and +192 Heal for each ally of level 3 or above.",
+    levels: {
+      2: {
+        abilityText:
+          "Has an additional +384 Damage and +384 Heal for each ally of level 3 or above.",
+      },
+      3: {
+        abilityText:
+          "Has an additional +576 Damage and +576 Heal for each ally of level 3 or above.",
+      },
+      4: {
+        abilityText:
+          "Has an additional +2304 Damage and +2304 Heal for each ally of level 3 or above.",
+      },
+    },
+  },
+  [Species.Ouroblaze]: {
+    spriteFile: "ouroblaze_shiny.png",
+    baseDamage: 400,
+    baseCooldownSeconds: 8,
+    baseMulticast: 1,
+    abilityText: "Has additional Burn equal to 60% of the Burn stacks on the enemy.",
+    levels: {
+      2: { abilityText: "Has additional Burn equal to 120% of the Burn stacks on the enemy." },
+      3: { abilityText: "Has additional Burn equal to 180% of the Burn stacks on the enemy." },
+      4: { abilityText: "Has additional Burn equal to 1800% of the Burn stacks on the enemy." },
+    },
+  },
+  [Species.Panbud]: {
+    spriteFile: "panbud_shiny.png",
+    baseDamage: 30,
+    baseCooldownSeconds: 5,
+    baseMulticast: 1,
+    abilityText: "Evolves at level 3.",
+    levels: { 2: { baseDamage: 60 }, 3: { baseDamage: 90 }, 4: { baseDamage: 90 } },
+  },
+  [Species.Pawsperity]: {
+    spriteFile: "pawsperity_shiny.png",
+    baseDamage: 100,
+    baseCooldownSeconds: 6.5,
+    baseMulticast: 1,
+    abilityText: "Gain a random non-unique Uncommon Trinket.",
+    levels: {
+      2: { baseDamage: 200, abilityText: "Gain 2 random non-unique Uncommon Trinkets." },
+      3: { baseDamage: 300, abilityText: "Gain 3 random non-unique Uncommon Trinkets." },
+      4: { baseDamage: 600, abilityText: "Gain 6 random non-unique Uncommon Trinkets." },
+    },
+  },
+  [Species.Pebbler]: {
+    spriteFile: "pebbler_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 5,
+    baseMulticast: 1,
+    appliesStatus: [{ type: StatusEffectType.Shield, amount: 24 }],
+    abilityText: "+18 Shield for this battle.",
+    abilityTags: [
+      {
+        kind: AbilityTagKind.BuffOnCast,
+        target: { kind: TargetKind.Self },
+        effect: { statusGrant: { type: StatusEffectType.Shield, amount: 18 } },
+      },
+    ],
+    levels: {
+      2: {
+        appliesStatus: [{ type: StatusEffectType.Shield, amount: 48 }],
+        abilityText: "+36 Shield for this battle.",
+        abilityTags: [
+          {
+            kind: AbilityTagKind.BuffOnCast,
+            target: { kind: TargetKind.Self },
+            effect: { statusGrant: { type: StatusEffectType.Shield, amount: 36 } },
+          },
+        ],
+      },
+      3: {
+        appliesStatus: [{ type: StatusEffectType.Shield, amount: 72 }],
+        abilityText: "+54 Shield for this battle.",
+        abilityTags: [
+          {
+            kind: AbilityTagKind.BuffOnCast,
+            target: { kind: TargetKind.Self },
+            effect: { statusGrant: { type: StatusEffectType.Shield, amount: 54 } },
+          },
+        ],
+      },
+      4: {
+        appliesStatus: [{ type: StatusEffectType.Shield, amount: 144 }],
+        abilityText: "+108 Shield for this battle.",
+        abilityTags: [
+          {
+            kind: AbilityTagKind.BuffOnCast,
+            target: { kind: TargetKind.Self },
+            effect: { statusGrant: { type: StatusEffectType.Shield, amount: 108 } },
+          },
+        ],
+      },
+    },
+  },
+  [Species.Petrirex]: {
+    spriteFile: "petrirex_shiny.png",
+    baseDamage: 50,
+    baseCooldownSeconds: 5.5,
+    baseMulticast: 1,
+    abilityText: "Knockout adjacent allies and gain +24 Shield permanently for each ally Knockout.",
+    levels: {
+      2: {
+        baseDamage: 100,
+        abilityText:
+          "Knockout adjacent allies and gain +48 Shield permanently for each ally Knockout.",
+      },
+      3: {
+        baseDamage: 150,
+        abilityText:
+          "Knockout adjacent allies and gain +72 Shield permanently for each ally Knockout.",
+      },
+      4: {
+        baseDamage: 600,
+        abilityText:
+          "Knockout adjacent allies and gain +288 Shield permanently for each ally Knockout.",
+      },
+    },
+  },
+  [Species.Pipskull]: {
+    spriteFile: "pipskull_shiny.png",
+    baseDamage: 20,
+    baseCooldownSeconds: 4,
+    baseMulticast: 1,
+    abilityText: "Evolve after this monster experiences Knockout 3 times.",
+    levels: { 2: { baseDamage: 40 }, 3: { baseDamage: 60 }, 4: { baseDamage: 120 } },
+  },
+  [Species.Plunderbird]: {
+    spriteFile: "plunderbird_shiny.png",
+    baseDamage: 1,
+    baseCooldownSeconds: 5,
+    baseMulticast: 3,
+    healAmount: 18,
+    abilityText: "Gain $1.",
+    levels: {
+      2: { baseMulticast: 4, healAmount: 28 },
+      3: { baseMulticast: 5, healAmount: 44 },
+      4: { baseMulticast: 10, healAmount: 44, abilityText: "Gain $2." },
+    },
+  },
+  [Species.Pompummel]: {
+    spriteFile: "pompummel_shiny.png",
+    baseDamage: 300,
+    baseCooldownSeconds: 6,
+    baseMulticast: 1,
+    abilityText: "Activate the On Victory ability of adjacent allies.",
+    levels: {
+      2: { baseCooldownSeconds: 3 },
+      3: { baseCooldownSeconds: 2 },
+      4: { baseCooldownSeconds: 2, baseMulticast: 10 },
+    },
+  },
+  [Species.Prismagon]: {
+    spriteFile: "prismagon_shiny.png",
+    baseDamage: 100,
+    baseCooldownSeconds: 4.5,
+    baseMulticast: 1,
+    abilityText: "+12 Damage permanently for each unique type on your team.",
+    levels: {
+      2: { abilityText: "+24 Damage permanently for each unique type on your team." },
+      3: { abilityText: "+36 Damage permanently for each unique type on your team." },
+      4: { abilityText: "+288 Damage permanently for each unique type on your team." },
+    },
+  },
+  [Species.Puffloon]: {
+    spriteFile: "puffloon_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 10,
+    baseMulticast: 1,
+    healAmount: 14,
+    appliesStatus: [{ type: StatusEffectType.Poison, amount: 1 }],
+    abilityText: "Trigger this when adjacent Toxic allies trigger.\n(Except other Puffloon)",
+    levels: { 2: { baseMulticast: 2 }, 3: { baseMulticast: 3 }, 4: { baseMulticast: 12 } },
+  },
+  [Species.Pylong]: {
+    spriteFile: "pylong_shiny.png",
+    baseDamage: 1,
+    baseCooldownSeconds: 7,
+    baseMulticast: 1,
+    appliesStatus: [{ type: StatusEffectType.Shock, amount: 15 }],
+    abilityText: "Adjacent allies have +100% Shock.",
+    levels: {
+      2: { abilityText: "Adjacent allies have +200% Shock." },
+      3: { abilityText: "Adjacent allies have +300% Shock." },
+      4: { abilityText: "Adjacent allies have +2400% Shock." },
+    },
+  },
+  [Species.Pyrokami]: {
+    spriteFile: "pyrokami_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 4,
+    baseMulticast: 1,
+    appliesStatus: [{ type: StatusEffectType.Burn, amount: 5 }],
+    abilityText: "+12 Burn for this battle.",
+    abilityTags: [
+      {
+        kind: AbilityTagKind.BuffOnCast,
+        target: { kind: TargetKind.Self },
+        effect: { statusGrant: { type: StatusEffectType.Burn, amount: 12 } },
+      },
+    ],
+    levels: {
+      2: {
+        appliesStatus: [{ type: StatusEffectType.Burn, amount: 10 }],
+        abilityText: "+24 Burn for this battle.",
+        abilityTags: [
+          {
+            kind: AbilityTagKind.BuffOnCast,
+            target: { kind: TargetKind.Self },
+            effect: { statusGrant: { type: StatusEffectType.Burn, amount: 24 } },
+          },
+        ],
+      },
+      3: {
+        appliesStatus: [{ type: StatusEffectType.Burn, amount: 15 }],
+        abilityText: "+36 Burn for this battle.",
+        abilityTags: [
+          {
+            kind: AbilityTagKind.BuffOnCast,
+            target: { kind: TargetKind.Self },
+            effect: { statusGrant: { type: StatusEffectType.Burn, amount: 36 } },
+          },
+        ],
+      },
+      4: {
+        appliesStatus: [{ type: StatusEffectType.Burn, amount: 30 }],
+        abilityText: "+72 Burn for this battle.",
+        abilityTags: [
+          {
+            kind: AbilityTagKind.BuffOnCast,
+            target: { kind: TargetKind.Self },
+            effect: { statusGrant: { type: StatusEffectType.Burn, amount: 72 } },
+          },
+        ],
+      },
+    },
+  },
+  [Species.Pyronade]: {
+    spriteFile: "pyronade_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 4.5,
+    baseMulticast: 1,
+    appliesStatus: [{ type: StatusEffectType.Burn, amount: 24 }],
+    abilityText: "Knockout self.",
+    levels: {
+      2: { appliesStatus: [{ type: StatusEffectType.Burn, amount: 48 }] },
+      3: { appliesStatus: [{ type: StatusEffectType.Burn, amount: 72 }] },
+      4: { appliesStatus: [{ type: StatusEffectType.Burn, amount: 288 }] },
+    },
+  },
+  [Species.Rattleghast]: {
+    spriteFile: "rattleghast_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 2.8,
+    baseMulticast: 1,
+    appliesStatus: [{ type: StatusEffectType.Poison, amount: 1 }],
+    abilityText: "Knockout adjacent allies and gain +4 Poison this battle for each ally Knockout.",
+    levels: {
+      2: {
+        abilityText:
+          "Knockout adjacent allies and gain +8 Poison this battle for each ally Knockout.",
+      },
+      3: {
+        abilityText:
+          "Knockout adjacent allies and gain +12 Poison this battle for each ally Knockout.",
+      },
+      4: {
+        abilityText:
+          "Knockout adjacent allies and gain +24 Poison this battle for each ally Knockout.",
+      },
+    },
+  },
+  [Species.Reapra]: {
+    spriteFile: "reapra_shiny.png",
+    baseDamage: 120,
+    baseCooldownSeconds: 6.5,
+    baseMulticast: 1,
+    abilityText: "Knockout the enemy opposite of this.",
+    levels: {
+      2: { baseCooldownSeconds: 3 },
+      3: { baseCooldownSeconds: 2 },
+      4: { baseDamage: 960, baseCooldownSeconds: 2, abilityText: "Knockout a random enemy." },
+    },
+  },
+  [Species.Rhizuka]: {
+    spriteFile: "rhizuka_shiny.png",
+    baseDamage: 240,
+    baseCooldownSeconds: 15,
+    baseMulticast: 1,
+    abilityText: "Trigger this when an ally applies Shield.\n(Except other Rhizuka)",
+    levels: { 2: { baseMulticast: 2 }, 3: { baseMulticast: 3 }, 4: { baseMulticast: 12 } },
+  },
+  [Species.Rigalord]: {
+    spriteFile: "rigalord_shiny.png",
+    baseDamage: 1,
+    baseCooldownSeconds: 1.6,
+    baseMulticast: 1,
+    abilityText:
+      "Spawn exact copies of the Batomon this devoured in empty slots the bottom row. They ONLY trigger when this casts.",
+    levels: { 2: { baseMulticast: 3 }, 3: { baseMulticast: 3 }, 4: { baseMulticast: 30 } },
+  },
+  [Species.Riglet]: {
+    spriteFile: "riglet_shiny.png",
+    baseDamage: 1,
+    baseCooldownSeconds: 1.6,
+    baseMulticast: 1,
+    abilityText: "At the start of the next day, devour the ally in front and evolve into Rigalord.",
+    levels: { 2: { baseMulticast: 2 }, 3: { baseMulticast: 3 }, 4: { baseMulticast: 10 } },
+  },
+  [Species.Rubbin]: {
+    spriteFile: "rubbin_shiny.png",
+    baseDamage: 40,
+    baseCooldownSeconds: 6.5,
+    baseMulticast: 1,
+    abilityText: "Gain a random non-unique Common Trinket.",
+    levels: {
+      2: { baseDamage: 80, abilityText: "Gain 2 random non-unique Common Trinkets." },
+      3: { baseDamage: 120, abilityText: "Gain 3 random non-unique Common Trinkets." },
+      4: { baseDamage: 240, abilityText: "Gain 6 random non-unique Common Trinkets." },
+    },
+  },
+  [Species.Runerock]: {
+    spriteFile: "runerock_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 6.5,
+    baseMulticast: 1,
+    appliesStatus: [{ type: StatusEffectType.Shield, amount: 140 }],
+    abilityText: "Remove 15 stacks of every debuff on your team.",
+    levels: {
+      2: {
+        appliesStatus: [{ type: StatusEffectType.Shield, amount: 280 }],
+        abilityText: "Remove 30 stacks of every debuff on your team.",
+      },
+      3: {
+        appliesStatus: [{ type: StatusEffectType.Shield, amount: 420 }],
+        abilityText: "Remove 45 stacks of every debuff on your team.",
+      },
+      4: {
+        appliesStatus: [{ type: StatusEffectType.Shield, amount: 840 }],
+        abilityText: "Remove 90 stacks of every debuff on your team.",
+      },
+    },
+  },
+  [Species.Saberhorn]: {
+    spriteFile: "saberhorn_shiny.png",
+    baseDamage: 100,
+    baseCooldownSeconds: 6,
+    baseMulticast: 1,
+    abilityText:
+      "Give the ally in front +1 Multicast and increase this monster's Cooldown by 6 seconds for this battle.",
+    levels: {
+      2: {
+        abilityText:
+          "Give the ally in front +2 Multicast and increase this monster's Cooldown by 6 seconds for this battle.",
+      },
+      3: {
+        abilityText:
+          "Give the ally in front +3 Multicast and increase this monster's Cooldown by 6 seconds for this battle.",
+      },
+      4: {
+        abilityText:
+          "Give the ally in front +24 Multicast and increase this monster's Cooldown by 6 seconds for this battle.",
+      },
+    },
+  },
+  [Species.Sarudo]: {
+    spriteFile: "sarudo_shiny.png",
+    baseDamage: 100,
+    baseCooldownSeconds: 6,
+    baseMulticast: 1,
+    abilityText: "Activate the On Victory abilities of all allies 1 time(s).",
+    levels: {
+      2: {
+        baseDamage: 200,
+        abilityText: "Activate the On Victory abilities of all allies 2 time(s).",
+      },
+      3: {
+        baseDamage: 300,
+        abilityText: "Activate the On Victory abilities of all allies 3 time(s).",
+      },
+      4: {
+        baseDamage: 1200,
+        abilityText: "Activate the On Victory abilities of all allies 12 time(s).",
+      },
+    },
+  },
+  [Species.Scorchimp]: {
+    spriteFile: "scorchimp_shiny.png",
+    baseDamage: 6,
+    baseCooldownSeconds: 5.5,
+    baseMulticast: 1,
+    appliesStatus: [{ type: StatusEffectType.Burn, amount: 6 }],
+    abilityText: "Evolves at level 3.",
+    levels: {
+      2: { baseDamage: 12, appliesStatus: [{ type: StatusEffectType.Burn, amount: 12 }] },
+      3: { baseDamage: 18, appliesStatus: [{ type: StatusEffectType.Burn, amount: 18 }] },
+      4: { baseDamage: 18, appliesStatus: [{ type: StatusEffectType.Burn, amount: 18 }] },
+    },
+  },
+  [Species.Scorubble]: {
+    spriteFile: "scorubble_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 5,
+    baseMulticast: 1,
+    appliesStatus: [
+      { type: StatusEffectType.Poison, amount: 2 },
+      { type: StatusEffectType.Shield, amount: 30 },
+    ],
+    abilityText: "+10% Cooldown Speed permanently.",
+    levels: {
+      2: {
+        appliesStatus: [
+          { type: StatusEffectType.Poison, amount: 4 },
+          { type: StatusEffectType.Shield, amount: 60 },
+        ],
+        abilityText: "+20% Cooldown Speed permanently.",
+      },
+      3: {
+        appliesStatus: [
+          { type: StatusEffectType.Poison, amount: 6 },
+          { type: StatusEffectType.Shield, amount: 90 },
+        ],
+        abilityText: "+30% Cooldown Speed permanently.",
+      },
+      4: {
+        appliesStatus: [
+          { type: StatusEffectType.Poison, amount: 12 },
+          { type: StatusEffectType.Shield, amount: 180 },
+        ],
+        abilityText: "+60% Cooldown Speed permanently.",
+      },
+    },
+  },
+  [Species.Shelldra]: {
+    spriteFile: "shelldra_shiny.png",
+    baseDamage: 15,
+    baseCooldownSeconds: 4.5,
+    baseMulticast: 4,
+    healAmount: 15,
+    abilityText: "Every 4 seconds, +1 Multicast for this battle.",
+    levels: {
+      2: { abilityText: "Every 4 seconds, +2 Multicast for this battle." },
+      3: { abilityText: "Every 4 seconds, +3 Multicast for this battle." },
+      4: {
+        baseDamage: 30,
+        baseMulticast: 8,
+        healAmount: 30,
+        abilityText: "Every 4 seconds, +12 Multicast for this battle.",
+      },
+    },
+  },
+  [Species.Shellter]: {
+    spriteFile: "shellter_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 6.5,
+    baseMulticast: 1,
+    appliesStatus: [{ type: StatusEffectType.Shield, amount: 120 }],
+    abilityText: "-20 Shield and +10 Damage for this battle.",
+    levels: {
+      2: {
+        appliesStatus: [{ type: StatusEffectType.Shield, amount: 240 }],
+        abilityText: "-40 Shield and +20 Damage for this battle.",
+      },
+      3: {
+        appliesStatus: [{ type: StatusEffectType.Shield, amount: 360 }],
+        abilityText: "-60 Shield and +30 Damage for this battle.",
+      },
+      4: {
+        appliesStatus: [{ type: StatusEffectType.Shield, amount: 720 }],
+        abilityText: "-60 Shield and +60 Damage for this battle.",
+      },
+    },
+  },
+  [Species.Shikitsune]: {
+    spriteFile: "shikitsune_shiny.png",
+    baseDamage: 50,
+    baseCooldownSeconds: 3,
+    baseMulticast: 1,
+    abilityText: "Knocked-out allies are revived and gain +18% Cooldown Speed for this battle.",
+    levels: {
+      2: {
+        baseDamage: 100,
+        abilityText: "Knocked-out allies are revived and gain +36% Cooldown Speed for this battle.",
+      },
+      3: {
+        baseDamage: 150,
+        abilityText: "Knocked-out allies are revived and gain +54% Cooldown Speed for this battle.",
+      },
+      4: {
+        baseDamage: 1500,
+        abilityText:
+          "Knocked-out allies are revived and gain +216% Cooldown Speed for this battle.",
+      },
+    },
+  },
+  [Species.Shogapede]: {
+    spriteFile: "shogapede_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 5,
+    baseMulticast: 1,
+    appliesStatus: [{ type: StatusEffectType.Poison, amount: 6 }],
+    abilityText: "After you buy a Bug monster, this gains +18% Cooldown Speed.",
+    levels: {
+      2: { abilityText: "After you buy a Bug monster, this gains +36% Cooldown Speed." },
+      3: { abilityText: "After you buy a Bug monster, this gains +54% Cooldown Speed." },
+      4: {
+        baseMulticast: 2,
+        appliesStatus: [{ type: StatusEffectType.Poison, amount: 12 }],
+        abilityText: "After you buy a Bug monster, this gains +108% Cooldown Speed.",
+      },
+    },
+  },
+  [Species.Shrinell]: {
+    spriteFile: "shrinell_shiny.png",
+    baseDamage: 160,
+    baseCooldownSeconds: 8,
+    baseMulticast: 1,
+    abilityText: "Adjacent allies have +% Cooldown Speed for each Trinket that you own.",
+    levels: { 2: { baseDamage: 320 }, 3: { baseDamage: 480 }, 4: { baseDamage: 3840 } },
+  },
+  [Species.Sirenade]: {
+    spriteFile: "sirenade_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 3,
+    baseMulticast: 1,
+    healAmount: 100,
+    abilityText: "Remove 20% of debuffs on your team.",
+    levels: {
+      2: { healAmount: 200, abilityText: "Remove 35% of debuffs on your team." },
+      3: { healAmount: 300, abilityText: "Remove 50% of debuffs on your team." },
+      4: { healAmount: 1200, abilityText: "Remove 80% of debuffs on your team." },
+    },
+  },
+  [Species.Snapscald]: {
+    spriteFile: "snapscald_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 9,
+    baseMulticast: 1,
+    healAmount: 48,
+    appliesStatus: [{ type: StatusEffectType.Burn, amount: 10 }],
+    abilityText: "Trigger this when an ally of level 3 or above casts.\n(Except other Snapscald)",
+    levels: {
+      2: { healAmount: 96, appliesStatus: [{ type: StatusEffectType.Burn, amount: 19 }] },
+      3: { healAmount: 144, appliesStatus: [{ type: StatusEffectType.Burn, amount: 29 }] },
+      4: { healAmount: 115, appliesStatus: [{ type: StatusEffectType.Burn, amount: 230 }] },
+    },
+  },
+  [Species.Spinarai]: {
+    spriteFile: "spinarai_shiny.png",
+    baseDamage: 3,
+    baseCooldownSeconds: 2.5,
+    baseMulticast: 1,
+    appliesStatus: [{ type: StatusEffectType.Poison, amount: 1 }],
+    abilityText: "+1 Poison for this battle.",
+    levels: {
+      2: {
+        baseDamage: 6,
+        appliesStatus: [{ type: StatusEffectType.Poison, amount: 2 }],
+        abilityText: "+2 Poison for this battle.",
+      },
+      3: {
+        baseDamage: 9,
+        appliesStatus: [{ type: StatusEffectType.Poison, amount: 3 }],
+        abilityText: "+3 Poison for this battle.",
+      },
+      4: {
+        baseDamage: 9,
+        baseMulticast: 2,
+        appliesStatus: [{ type: StatusEffectType.Poison, amount: 3 }],
+        abilityText: "+3 Poison for this battle.",
+      },
+    },
+  },
+  [Species.Sproach]: {
+    spriteFile: "sproach_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 5.5,
+    baseMulticast: 1,
+    abilityText: "+36 Damage permanently for each life lost this run.",
+    levels: {
+      2: { abilityText: "+72 Damage permanently for each life lost this run." },
+      3: { abilityText: "+108 Damage permanently for each life lost this run." },
+      4: { abilityText: "+432 Damage permanently for each life lost this run." },
+    },
+  },
+  [Species.Sproutquill]: {
+    spriteFile: "sproutquill_shiny.png",
+    baseDamage: 60,
+    baseCooldownSeconds: 7,
+    baseMulticast: 2,
+    abilityText: "Evolve after your team deals 10000 non-status Damage.",
+    levels: { 2: { baseDamage: 120 }, 3: { baseDamage: 180 }, 4: { baseDamage: 1800 } },
+  },
+  [Species.Stalagrove]: {
+    spriteFile: "stalagrove_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 4.5,
+    baseMulticast: 1,
+    appliesStatus: [{ type: StatusEffectType.Shield, amount: 60 }],
+    abilityText:
+      "When you receive shield, this gains Damage for this battle equal to 18% of the amount shielded.",
+    levels: {
+      2: {
+        abilityText:
+          "When you receive shield, this gains Damage for this battle equal to 36% of the amount shielded.",
+      },
+      3: {
+        abilityText:
+          "When you receive shield, this gains Damage for this battle equal to 54% of the amount shielded.",
+      },
+      4: {
+        abilityText:
+          "When you receive shield, this gains Damage for this battle equal to 216% of the amount shielded.",
+      },
+    },
+  },
+  [Species.Steamscuttle]: {
+    spriteFile: "steamscuttle_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 3.5,
+    baseMulticast: 1,
+    healAmount: 30,
+    appliesStatus: [{ type: StatusEffectType.Burn, amount: 5 }],
+    abilityText:
+      "Charge adjacent Fire and Water allies by 1.2 second(s).\n(Steamscuttle can't receive charge)",
+    levels: {
+      2: {
+        healAmount: 60,
+        appliesStatus: [{ type: StatusEffectType.Burn, amount: 10 }],
+        abilityText:
+          "Charge adjacent Fire and Water allies by 2.4 second(s).\n(Steamscuttle can't receive charge)",
+      },
+      3: {
+        healAmount: 90,
+        appliesStatus: [{ type: StatusEffectType.Burn, amount: 15 }],
+        abilityText:
+          "Charge adjacent Fire and Water allies by 3.6 second(s).\n(Steamscuttle can't receive charge)",
+      },
+      4: {
+        healAmount: 360,
+        appliesStatus: [{ type: StatusEffectType.Burn, amount: 60 }],
+        abilityText:
+          "Charge adjacent Fire and Water allies by 14.4 second(s).\n(Steamscuttle can't receive charge)",
+      },
+    },
+  },
+  [Species.Stellagon]: {
+    spriteFile: "stellagon_shiny.png",
+    baseDamage: 150,
+    baseCooldownSeconds: 6,
+    baseMulticast: 1,
+    abilityText: "Adjacent allies with no abilities gain +1 Multicast permanently.",
+    levels: {
+      2: {
+        baseDamage: 300,
+        abilityText: "Adjacent allies with no abilities gain +2 Multicast permanently.",
+      },
+      3: {
+        baseDamage: 450,
+        abilityText: "Adjacent allies with no abilities gain +3 Multicast permanently.",
+      },
+      4: {
+        baseDamage: 4500,
+        abilityText: "Adjacent allies with no abilities gain +30 Multicast permanently.",
+      },
+    },
+  },
+  [Species.Stingarde]: {
+    spriteFile: "stingarde_shiny.png",
+    baseDamage: 150,
+    baseCooldownSeconds: 6,
+    baseMulticast: 1,
+    levels: { 2: { baseDamage: 300 }, 3: { baseDamage: 450 }, 4: { baseDamage: 1350 } },
+  },
+  [Species.Sukoi]: {
+    spriteFile: "sukoi_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 9,
+    baseMulticast: 1,
+    healAmount: 80,
+    levels: {
+      2: { baseCooldownSeconds: 4.5 },
+      3: { baseCooldownSeconds: 3 },
+      4: { baseCooldownSeconds: 3 },
+    },
+  },
+  [Species.Swoonet]: {
+    spriteFile: "swoonet_shiny.png",
+    baseDamage: 36,
+    baseCooldownSeconds: 6.5,
+    baseMulticast: 1,
+    healAmount: 36,
+    abilityText: "This only needs 2 copies to level up. This can level up indefinitely.",
+    levels: { 2: { baseMulticast: 2 }, 3: { baseMulticast: 3 }, 4: { baseMulticast: 6 } },
+  },
+  [Species.Talonite]: {
+    spriteFile: "talonite_shiny.png",
+    baseDamage: 36,
+    baseCooldownSeconds: 12,
+    baseMulticast: 2,
+    abilityText:
+      "+20 Shield permanently for each Rock ally and +1 Multicast permanently for each Flying ally.",
+    levels: {
+      2: {
+        baseDamage: 72,
+        abilityText:
+          "+40 Shield permanently for each Rock ally and +2 Multicast permanently for each Flying ally.",
+      },
+      3: {
+        baseDamage: 108,
+        abilityText:
+          "+60 Shield permanently for each Rock ally and +3 Multicast permanently for each Flying ally.",
+      },
+      4: {
+        baseDamage: 216,
+        abilityText:
+          "+120 Shield permanently for each Rock ally and +6 Multicast permanently for each Flying ally.",
+      },
+    },
+  },
+  [Species.Tengusto]: {
+    spriteFile: "tengusto_shiny.png",
+    baseDamage: 50,
+    baseCooldownSeconds: 4.5,
+    baseMulticast: 2,
+    abilityText: "Has an additional +72 Damage for each Badge that you have.",
+    levels: {
+      2: { abilityText: "Has an additional +144 Damage for each Badge that you have." },
+      3: { abilityText: "Has an additional +216 Damage for each Badge that you have." },
+      4: { abilityText: "Has an additional +864 Damage for each Badge that you have." },
+    },
+  },
+  [Species.Thorntail]: {
+    spriteFile: "thorntail_shiny.png",
+    baseDamage: 50,
+    baseCooldownSeconds: 6,
+    baseMulticast: 1,
+    appliesStatus: [{ type: StatusEffectType.Poison, amount: 1 }],
+    abilityText: "When allies inflict Poison, this gains +9 Damage permanently.",
+    abilityTags: [
+      {
+        kind: AbilityTagKind.GainOnAllyStatus,
+        status: StatusEffectType.Poison,
+        stat: StatChangeStat.Damage,
+        amount: 9,
+      },
+    ],
+    levels: {
+      2: {
+        abilityText: "When allies inflict Poison, this gains +18 Damage permanently.",
+        abilityTags: [
+          {
+            kind: AbilityTagKind.GainOnAllyStatus,
+            status: StatusEffectType.Poison,
+            stat: StatChangeStat.Damage,
+            amount: 18,
+          },
+        ],
+      },
+      3: {
+        abilityText: "When allies inflict Poison, this gains +27 Damage permanently.",
+        abilityTags: [
+          {
+            kind: AbilityTagKind.GainOnAllyStatus,
+            status: StatusEffectType.Poison,
+            stat: StatChangeStat.Damage,
+            amount: 27,
+          },
+        ],
+      },
+      4: {
+        baseDamage: 150,
+        abilityText: "When allies inflict Poison, this gains +108 Damage permanently.",
+        abilityTags: [
+          {
+            kind: AbilityTagKind.GainOnAllyStatus,
+            status: StatusEffectType.Poison,
+            stat: StatChangeStat.Damage,
+            amount: 108,
+          },
+        ],
+      },
+    },
+  },
+  [Species.Torrantler]: {
+    spriteFile: "torrantler_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 5.5,
+    baseMulticast: 1,
+    healAmount: 200,
+    abilityText: "Trigger adjacent Water allies.\n(Except other Torrantler)",
+    levels: { 2: { baseMulticast: 2 }, 3: { baseMulticast: 3 }, 4: { baseMulticast: 30 } },
+  },
+  [Species.Toximoth]: {
+    spriteFile: "toximoth_shiny.png",
+    baseDamage: 2,
+    baseCooldownSeconds: 3.5,
+    baseMulticast: 1,
+    appliesStatus: [{ type: StatusEffectType.Poison, amount: 2 }],
+    abilityText:
+      "Give Toxic monsters in the shop and on your team +1 Poison for the rest of the run.",
+    levels: {
+      2: {
+        baseDamage: 4,
+        appliesStatus: [{ type: StatusEffectType.Poison, amount: 4 }],
+        abilityText:
+          "Give Toxic monsters in the shop and on your team +2 Poison for the rest of the run.",
+      },
+      3: {
+        baseDamage: 6,
+        appliesStatus: [{ type: StatusEffectType.Poison, amount: 6 }],
+        abilityText:
+          "Give Toxic monsters in the shop and on your team +3 Poison for the rest of the run.",
+      },
+      4: {
+        baseDamage: 12,
+        appliesStatus: [{ type: StatusEffectType.Poison, amount: 12 }],
+        abilityText:
+          "Give Toxic monsters in the shop and on your team +6 Poison for the rest of the run.",
+      },
+    },
+  },
+  [Species.Tsunamere]: {
+    spriteFile: "tsunamere_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 6,
+    baseMulticast: 1,
+    healAmount: 400,
+    abilityText: "Level up all adjacent allies for this battle (max level 3).",
+    levels: {
+      2: { baseCooldownSeconds: 3 },
+      3: { baseCooldownSeconds: 2 },
+      4: { baseCooldownSeconds: 2, baseMulticast: 10 },
+    },
+  },
+  [Species.Velocect]: {
+    spriteFile: "velocect_shiny.png",
+    baseDamage: 8,
+    baseCooldownSeconds: 3.5,
+    baseMulticast: 4,
+    levels: {
+      2: { baseDamage: 10, baseMulticast: 6 },
+      3: { baseDamage: 13, baseMulticast: 8 },
+      4: { baseDamage: 13, baseMulticast: 16 },
+    },
+  },
+  [Species.Vengrieve]: {
+    spriteFile: "vengrieve_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 6,
+    baseMulticast: 1,
+    abilityText:
+      "Knockout the monster opposite of this and gain their stats for this battle (except Cooldown).",
+    levels: {
+      2: { baseCooldownSeconds: 3 },
+      3: { baseCooldownSeconds: 2 },
+      4: {
+        baseCooldownSeconds: 2,
+        abilityText:
+          "Knockout a random enemy and gain their stats for this battle (except Cooldown).",
+      },
+    },
+  },
+  [Species.Venopuff]: {
+    spriteFile: "venopuff_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 3.5,
+    baseMulticast: 1,
+    appliesStatus: [{ type: StatusEffectType.Poison, amount: 4 }],
+    abilityText: "+1 Poison permanently.",
+    levels: {
+      2: {
+        appliesStatus: [{ type: StatusEffectType.Poison, amount: 8 }],
+        abilityText: "+2 Poison permanently.",
+      },
+      3: {
+        appliesStatus: [{ type: StatusEffectType.Poison, amount: 12 }],
+        abilityText: "+3 Poison permanently.",
+      },
+      4: {
+        baseMulticast: 2,
+        appliesStatus: [{ type: StatusEffectType.Poison, amount: 12 }],
+        abilityText: "+4 Poison permanently.",
+      },
+    },
+  },
+  [Species.Vipair]: {
+    spriteFile: "vipair_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 5.2,
+    baseMulticast: 2,
+    appliesStatus: [{ type: StatusEffectType.Poison, amount: 5 }],
+    abilityText: "+4 Poison permanently.",
+    levels: {
+      2: {
+        appliesStatus: [{ type: StatusEffectType.Poison, amount: 10 }],
+        abilityText: "+8 Poison permanently.",
+      },
+      3: {
+        appliesStatus: [{ type: StatusEffectType.Poison, amount: 15 }],
+        abilityText: "+12 Poison permanently.",
+      },
+      4: {
+        appliesStatus: [{ type: StatusEffectType.Poison, amount: 30 }],
+        abilityText: "+48 Poison permanently.",
+      },
+    },
+  },
+  [Species.Voltalith]: {
+    spriteFile: "voltalith_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 8,
+    baseMulticast: 1,
+    appliesStatus: [{ type: StatusEffectType.Shock, amount: 5 }],
+    abilityText: "Adjacent Electric allies gain +2 Shock permanently.",
+    levels: {
+      2: {
+        appliesStatus: [{ type: StatusEffectType.Shock, amount: 10 }],
+        abilityText: "Adjacent Electric allies gain +4 Shock permanently.",
+      },
+      3: {
+        appliesStatus: [{ type: StatusEffectType.Shock, amount: 15 }],
+        abilityText: "Adjacent Electric allies gain +6 Shock permanently.",
+      },
+      4: {
+        appliesStatus: [{ type: StatusEffectType.Shock, amount: 30 }],
+        abilityText: "Adjacent Electric allies gain +24 Shock permanently.",
+      },
+    },
+  },
+  [Species.Wishwash]: {
+    spriteFile: "wishwash_shiny.png",
+    baseDamage: null,
+    baseCooldownSeconds: 3.5,
+    baseMulticast: 1,
+    healAmount: 150,
+    abilityText: "Gain a random non-unique Super Rare Trinket.",
+    levels: {
+      2: { healAmount: 300, abilityText: "Gain a random non-unique Legendary Trinket." },
+      3: { healAmount: 450, abilityText: "Gain a random non-unique Mythical Trinket." },
+      4: { healAmount: 3600, abilityText: "Gain 4 random non-unique Mythical Trinkets." },
+    },
+  },
+  [Species.Zephyrex]: {
+    spriteFile: "zephyrex_shiny.png",
+    baseDamage: 100,
+    baseCooldownSeconds: 10,
+    baseMulticast: 1,
+    abilityText:
+      "Adjacent Flying allies gain +1 Multicast permanently.\n(Zephyrex can't have Multicast)",
+    levels: {
+      2: {
+        abilityText:
+          "Adjacent Flying allies gain +2 Multicast permanently.\n(Zephyrex can't have Multicast)",
+      },
+      3: {
+        abilityText:
+          "Adjacent Flying allies gain +3 Multicast permanently.\n(Zephyrex can't have Multicast)",
+      },
+      4: {
+        baseDamage: 800,
+        abilityText:
+          "Adjacent Flying allies gain +12 Multicast permanently.\n(Zephyrex can't have Multicast)",
+      },
+    },
+  },
 };
 
 /**
@@ -224,9 +2674,7 @@ export function getShinyLine(id: Species, level: number): ShinyStatLine | null {
   const species = SHINY_STATS[id];
   if (!species || level < 1 || level > 4) return null;
   const { levels, ...base } = species;
-  return level === 1
-    ? { ...base, level }
-    : { ...base, ...levels?.[level as 2 | 3 | 4], level };
+  return level === 1 ? { ...base, level } : { ...base, ...levels?.[level as 2 | 3 | 4], level };
 }
 
 /** Every stored shiny species, as `[id, resolved level line]` pairs — for corpus-wide audits. */

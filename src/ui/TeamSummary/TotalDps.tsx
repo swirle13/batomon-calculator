@@ -4,11 +4,7 @@ import { windowAverageDps } from "../../engine/simulate";
 import { MAX_TTK_SECONDS, timeToKillSeconds } from "../../engine/timeToKill";
 import { corpus } from "../../data/corpus";
 import { formatDuration, formatRate } from "../../data/format";
-import {
-  MAX_PROJECTED_DAY,
-  MAX_RECORDED_DAY,
-  enemyHpEntryForDay,
-} from "../../data/enemyHealth";
+import { MAX_PROJECTED_DAY, MAX_RECORDED_DAY, enemyHpEntryForDay } from "../../data/enemyHealth";
 import { Range, Select } from "../primitives";
 import styles from "./TotalDps.module.css";
 
@@ -184,7 +180,6 @@ export const TotalDps = memo(function TotalDps({
           </label>
         </div>
       )}
-
     </section>
   );
 });

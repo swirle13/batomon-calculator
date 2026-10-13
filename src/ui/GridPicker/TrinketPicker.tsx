@@ -140,7 +140,11 @@ export function TrinketPicker() {
 
   const needle = query.trim().toLowerCase();
   const results = corpus.trinkets.filter((t) => {
-    if (needle !== "" && !t.name.toLowerCase().includes(needle) && !t.effectText.toLowerCase().includes(needle)) {
+    if (
+      needle !== "" &&
+      !t.name.toLowerCase().includes(needle) &&
+      !t.effectText.toLowerCase().includes(needle)
+    ) {
       return false;
     }
     if (rarityFilter !== "" && t.rarity !== rarityFilter) return false;
@@ -157,7 +161,10 @@ export function TrinketPicker() {
    * somewhere rather than silently drop out of a rarity-sectioned list.
    */
   const sections = [
-    ...RARITIES_ASC.map((rarity) => ({ rarity: rarity as Rarity | null, trinkets: results.filter((t) => t.rarity === rarity) })),
+    ...RARITIES_ASC.map((rarity) => ({
+      rarity: rarity as Rarity | null,
+      trinkets: results.filter((t) => t.rarity === rarity),
+    })),
     { rarity: null, trinkets: results.filter((t) => t.rarity === undefined) },
   ]
     .map((section) => ({ ...section, trinkets: [...section.trinkets].sort(byName) }))
@@ -171,7 +178,9 @@ export function TrinketPicker() {
           structurally now rather than by collapsing a list: nothing here grows. */}
       <EditorPanel
         title="Trinkets"
-        hint={config.trinketIds.length === 0 ? "none selected" : `${config.trinketIds.length} selected`}
+        hint={
+          config.trinketIds.length === 0 ? "none selected" : `${config.trinketIds.length} selected`
+        }
         action="Choose trinkets…"
         onOpen={() => setIsOpen(true)}
       />
@@ -229,7 +238,11 @@ export function TrinketPicker() {
           a click means — remove one copy here, add one there — and the mark that says so.
         */}
         {selected.length > 0 && (
-          <PickerSection heading="Selected" count={config.trinketIds.length} columns={OVERLAY_COLUMNS}>
+          <PickerSection
+            heading="Selected"
+            count={config.trinketIds.length}
+            columns={OVERLAY_COLUMNS}
+          >
             {selected.map(({ trinket, count }) => (
               <TrinketCard
                 key={trinket.id}
@@ -334,6 +347,7 @@ function byName(a: TrinketRecord, b: TrinketRecord): number {
 }
 
 function byRarityThenName(a: TrinketRecord, b: TrinketRecord): number {
-  const rank = (t: TrinketRecord) => (t.rarity ? RARITIES_ASC.indexOf(t.rarity) : RARITIES_ASC.length);
+  const rank = (t: TrinketRecord) =>
+    t.rarity ? RARITIES_ASC.indexOf(t.rarity) : RARITIES_ASC.length;
   return rank(a) - rank(b) || byName(a, b);
 }

@@ -17,7 +17,9 @@ const RULES = [
   {
     id: "thorntail",
     re: /^When allies inflict (\w+), this gains \+(\d+) Damage permanently\.$/,
-    build: (m) => [`{ kind: "gainOnAllyStatus", status: "${m[1]}", stat: "damage", amount: ${m[2]} }`],
+    build: (m) => [
+      `{ kind: "gainOnAllyStatus", status: "${m[1]}", stat: "damage", amount: ${m[2]} }`,
+    ],
   },
   {
     // "(Except other Puffloon)" — same-species exclusion is already how `selectTargets` behaves for
@@ -25,12 +27,16 @@ const RULES = [
     // selector plus the Toxic type filter covers the rest.
     id: "puffloon",
     re: /^Trigger this when adjacent Toxic allies trigger\./,
-    build: () => [`{ kind: "triggerOnAllyTrigger", target: { kind: "adjacent", typeFilter: "Toxic" } }`],
+    build: () => [
+      `{ kind: "triggerOnAllyTrigger", target: { kind: "adjacent", typeFilter: "Toxic" } }`,
+    ],
   },
   {
     id: "fumungus",
     re: /^Has additional Damage equal to (\d+)% of the (\w+) stacks on the enemy\.$/,
-    build: (m) => [`{ kind: "statFromTargetStatus", status: "${m[2]}", multiplier: ${Number(m[1]) / 100} }`],
+    build: (m) => [
+      `{ kind: "statFromTargetStatus", status: "${m[2]}", multiplier: ${Number(m[1]) / 100} }`,
+    ],
   },
 ];
 
@@ -49,7 +55,10 @@ for (const rule of RULES) {
     if (!m) return whole;
     tagged++;
     const inner = existing === "[]" ? "" : existing.slice(1, -1).replace(/\s+$/, "") + ",\n";
-    return `${head}${key}[\n${inner}${rule.build(m).map((x) => `      ${x},`).join("\n")}\n    ]`;
+    return `${head}${key}[\n${inner}${rule
+      .build(m)
+      .map((x) => `      ${x},`)
+      .join("\n")}\n    ]`;
   });
 }
 writeFileSync(FILE, src);

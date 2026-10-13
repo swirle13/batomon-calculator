@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { allCreatureRecords, applyShinyOverlay, getCreatureByIdAndLevel, rawCreatureRecords } from "../corpus";
+import {
+  allCreatureRecords,
+  applyShinyOverlay,
+  getCreatureByIdAndLevel,
+  rawCreatureRecords,
+} from "../corpus";
 import { allShinyLines } from "../shiny";
 import { DamageChannel } from "../enums";
 
@@ -42,7 +47,11 @@ describe("WI-004: the illegal state is gone, not guarded", () => {
     // The user's "just null or Direct" was right about the RECORD and wrong about the type: Burn,
     // Poison and Shock are alive at runtime on `TimelineEvent` and in `shield.ts`'s status-vs-shield
     // branch. One type was doing two jobs, which is why it looked half-empty.
-    const channels = new Set(rawCreatureRecords().map((c) => c.publishedCast?.channel).filter(Boolean));
+    const channels = new Set(
+      rawCreatureRecords()
+        .map((c) => c.publishedCast?.channel)
+        .filter(Boolean),
+    );
     expect([...channels]).toEqual([DamageChannel.Direct]);
   });
 

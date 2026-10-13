@@ -15,7 +15,10 @@ import { Species } from "../../data/ids";
  * second-count from this footage is usable". A test pinning seconds would encode the fast-forward
  * factor as if it were a game rule.
  */
-const team = (ps: { id: Species; slot: GridSlot; level?: 1 | 2 | 3 | 4 }[], w = 20): TeamConfiguration => ({
+const team = (
+  ps: { id: Species; slot: GridSlot; level?: 1 | 2 | 3 | 4 }[],
+  w = 20,
+): TeamConfiguration => ({
   placements: ps.map((p) => ({ slot: p.slot, creatureId: p.id, level: p.level ?? 1 })),
   trainerId: null,
   trinketIds: [],
@@ -72,7 +75,10 @@ describe("Finding 3 — reactive gains are never scaled (T241)", () => {
 describe("Finding 5 — damage from the TARGET's status (T244)", () => {
   it("Fumungus deals damage proportional to accumulated enemy Poison, from a null base", () => {
     const fumungus = getCreatureByIdAndLevel(Species.Fumungus, 2)!;
-    expect(fumungus.publishedCast?.damage ?? null, "base damage is null; all of it comes from the target").toBeNull();
+    expect(
+      fumungus.publishedCast?.damage ?? null,
+      "base damage is null; all of it comes from the target",
+    ).toBeNull();
 
     // Paired with a Poison applier so stacks accumulate.
     const r = simulate(
@@ -82,7 +88,9 @@ describe("Finding 5 — damage from the TARGET's status (T244)", () => {
       ]),
       corpus,
     );
-    const hits = r.timeline.filter((e) => e.kind === TimelineEventKind.Attack && e.damage !== undefined);
+    const hits = r.timeline.filter(
+      (e) => e.kind === TimelineEventKind.Attack && e.damage !== undefined,
+    );
     expect(hits.length).toBeGreaterThan(1);
     // It GROWS, because Poison stacks only ever accumulate — the finding's central claim.
     expect(hits[hits.length - 1]!.damage!).toBeGreaterThan(hits[0]!.damage!);
@@ -95,14 +103,20 @@ describe("Finding 7b — a reaction must not consume the reactor's cooldown (T24
     // and it later cast off its own 10s cycle. Before this round the engine rescheduled the
     // reactor, so a reaction consumed the cast it should have been additional to.
     const r = simulate(
-      team([
-        { id: Species.Puffloon, slot: { row: GridRow.Top, col: 1 }, level: 2 },
-        { id: Species.Miasmaw, slot: { row: GridRow.Top, col: 2 } },
-      ], 30),
+      team(
+        [
+          { id: Species.Puffloon, slot: { row: GridRow.Top, col: 1 }, level: 2 },
+          { id: Species.Miasmaw, slot: { row: GridRow.Top, col: 2 } },
+        ],
+        30,
+      ),
       corpus,
     );
     const puffloonCasts = r.timeline.filter(
-      (e) => e.kind === TimelineEventKind.Attack && e.sourceSlot.row === GridRow.Top && e.sourceSlot.col === 1,
+      (e) =>
+        e.kind === TimelineEventKind.Attack &&
+        e.sourceSlot.row === GridRow.Top &&
+        e.sourceSlot.col === 1,
     );
     const base = getCreatureByIdAndLevel(Species.Puffloon, 2)!.baseCooldownSeconds!;
     // More casts than its own cooldown alone could produce in the window — the reactions are extra.

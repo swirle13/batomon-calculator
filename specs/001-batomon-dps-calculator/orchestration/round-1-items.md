@@ -7,11 +7,13 @@ Branch: 001-batomon-dps-calculator
 > The `Ask` field preserves the user's exact wording; it is immutable once written.
 
 ## WI-001
+
 - **Ask** (verbatim): "choose a batomon" screen has the mons still not at 64x64
 - **Type**: bug fix
 - **Done means**: creature sprites in the picker render at 64×64, as they already do in the team grid.
 
 ## WI-002
+
 - **Ask** (verbatim): and the naming alignment is now messed up. see SS 1.
 - **Type**: bug fix
 - **Done means**: the name band sits where the design intends (bottom of the card) with the sprite
@@ -19,12 +21,14 @@ Branch: 001-batomon-dps-calculator
   as SS1 shows.
 
 ## WI-003
+
 - **Ask** (verbatim): Do these use the same reusable UI components as they should?
 - **Type**: question to answer
 - **Done means**: a concrete, evidenced yes/no recorded in a design artifact — naming the components
   the picker card actually uses today and whether they are the shared ones, not a task to look into it.
 
 ## WI-004
+
 - **Ask** (verbatim): The "3.0 sec" part of base and "effective" are formatted differently. These
   should not be acting like this. This is you having created things NOT using our DRY principles.
   These two should be the same reusable component with a diferent value provided to it.
@@ -33,17 +37,20 @@ Branch: 001-batomon-dps-calculator
   no second definition of that block exists.
 
 ## WI-005
+
 - **Ask** (verbatim): The top one is too tall and the bottom one is too short.
 - **Type**: bug fix
 - **Done means**: the two cooldown blocks are visually identical in size.
 
 ## WI-006
+
 - **Ask** (verbatim): The cost and unconfirmed shopCost fields at the bottom are also strange. These
   are known and the "unconfirmed" should be removed. This isn't important or necessary at all. See SS2.
 - **Type**: behavior change
 - **Done means**: the "Unconfirmed: shopCost" marker no longer renders on the stats card.
 
 ## WI-007
+
 - **Ask** (verbatim): selected batomon tile still adjusts width, this should not happen. It then
   causes the chart below to redraw every time the column readjusts its width
 - **Type**: bug fix
@@ -51,38 +58,45 @@ Branch: 001-batomon-dps-calculator
   chart below does not re-layout.
 
 ## WI-008
+
 - **Ask** (verbatim): the dps tables have the bottom outline as a faint line instead of bold, while
   top/left/right sides are all bold/thicker lined, so the table looks unfinished. see SS3
 - **Type**: bug fix
 - **Done means**: the tables' bottom edge matches the weight of their other edges.
 
 ## WI-009
+
 - **Ask** (verbatim): Let's remove "Batomon Stats" from above the batomon stats section; it's
   self-explanatory. It causes a weird spacing shifting it down and doesn't align with the 6 mon grid.
 - **Type**: behavior change
 - **Done means**: the heading is gone and the stats card's top aligns with the top of the 6-mon grid.
 
 ## WI-010
+
 - **Ask** (verbatim): let's remove the "or choose from dropdown" from below each mon slot
 - **Type**: behavior change
 - **Done means**: the per-slot `<details>` fallback dropdown no longer renders.
 
 ## WI-011
+
 - **Ask** (verbatim): lets move Modifiers section above "team summary" to just below the mons
 - **Type**: behavior change
 - **Done means**: render order is team grid → Modifiers → Team Summary.
 
 ## WI-012
+
 - **Ask** (verbatim): and drop the AI "[em dash] optional carry-over bonuses", this is redudant
 - **Type**: behavior change
 - **Done means**: the em-dash hint text on the Modifiers disclosure summary is gone.
 
 ## WI-013
+
 - **Ask** (verbatim): the mon cards in Corpus Browser are not fixed height and they should be. see ss4
 - **Type**: bug fix
 - **Done means**: every card in the browser grid shares one height; no ragged rows.
 
 ## WI-014
+
 - **Ask** (verbatim): please remove "Corpus snapshot" prose from the top of the Corpus Browser.
 - **Type**: behavior change
 - **Done means**: that prose no longer renders. **Note for planning**: FR-014 requires the active
@@ -91,11 +105,13 @@ Branch: 001-batomon-dps-calculator
   explicitly in the spec, not silently dropped.
 
 ## WI-015
+
 - **Ask** (verbatim): As well, rename it to "Batomon Browser". See SS4
 - **Type**: behavior change
 - **Done means**: the view and its nav control read "Batomon Browser" everywhere.
 
 ## WI-016
+
 - **Ask** (verbatim): Batomon Browser is not organized in types or in an alphabetical manner. It
   appears the lists anywhere in this site is relying on the underlying data to be in alphabetical
   order. You need to ensure the data that is displaying the content inherently sorts and organizes
@@ -107,6 +123,7 @@ Branch: 001-batomon-dps-calculator
   site, not only the browser.
 
 ## WI-017
+
 - **Ask** (verbatim): I'd like to add another graph that shows DPS over time. That way, I can
   visualize how much DPS increases, especially as the fight goes on, and especially with mons that
   have their damage increased or more shock is applied. An ebb and flow of how much DPS occurs can
@@ -117,6 +134,7 @@ Branch: 001-batomon-dps-calculator
   existing cumulative chart, and shows the rise the user describes.
 
 ## WI-018
+
 - **Ask** (verbatim): This might be a bit too far out, but maybe an optimal damage suggestion where
   shuffling existing mons would result in more total DPS (weighted so DPS that is closer to t=0 is
   better because prioritizing lots of poison that accumulates more is good, but you might be dead

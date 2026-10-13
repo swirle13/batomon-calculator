@@ -20,30 +20,61 @@ const effectFor = (stat, amount) =>
 
 const RULES = [
   // T231 — cascading self-grants. "+80 Damage and +80 Shield" yields TWO effect clauses.
-  { id: "pebbler", re: /^\+(\d+) (\w+) for this battle\.$/, build: (m) =>
-      [`{ kind: "buffOnCast", target: { kind: "self" }, effect: { ${effectFor(m[2], m[1])} } }`] },
-  { id: "pyrokami", re: /^\+(\d+) (\w+) for this battle\.$/, build: (m) =>
-      [`{ kind: "buffOnCast", target: { kind: "self" }, effect: { ${effectFor(m[2], m[1])} } }`] },
-  { id: "bonshell", re: /^\+(\d+) (\w+) and \+(\d+) (\w+) for this battle\.$/, build: (m) => [
+  {
+    id: "pebbler",
+    re: /^\+(\d+) (\w+) for this battle\.$/,
+    build: (m) => [
+      `{ kind: "buffOnCast", target: { kind: "self" }, effect: { ${effectFor(m[2], m[1])} } }`,
+    ],
+  },
+  {
+    id: "pyrokami",
+    re: /^\+(\d+) (\w+) for this battle\.$/,
+    build: (m) => [
+      `{ kind: "buffOnCast", target: { kind: "self" }, effect: { ${effectFor(m[2], m[1])} } }`,
+    ],
+  },
+  {
+    id: "bonshell",
+    re: /^\+(\d+) (\w+) and \+(\d+) (\w+) for this battle\.$/,
+    build: (m) => [
       `{ kind: "buffOnCast", target: { kind: "self" }, effect: { ${effectFor(m[2], m[1])} } }`,
       `{ kind: "buffOnCast", target: { kind: "self" }, effect: { ${effectFor(m[4], m[3])} } }`,
-    ] },
+    ],
+  },
   // T227a — Saberhorn: the grant AND its cost. Tagging only the upside would overstate it.
-  { id: "saberhorn", re: /^Give the ally in front \+(\d+) Multicast and increase this monster's Cooldown by (\d+) seconds for this battle\.$/, build: (m) => [
+  {
+    id: "saberhorn",
+    re: /^Give the ally in front \+(\d+) Multicast and increase this monster's Cooldown by (\d+) seconds for this battle\.$/,
+    build: (m) => [
       `{ kind: "buffOnCast", target: { kind: "inFront" }, effect: { statChange: { stat: "multicast", amount: ${m[1]} } } }`,
       `{ kind: "buffOnCast", target: { kind: "self" }, effect: { statChange: { stat: "cooldownFlatSeconds", amount: ${m[2]} } } }`,
-    ] },
+    ],
+  },
   // T220 — Prismagon: unique TYPES, not matching allies.
-  { id: "prismagon", re: /^\+(\d+) (\w+) permanently for each unique type on your team\.$/, build: (m) =>
-      [`{ kind: "statFromUniqueTypes", target: { kind: "self" }, effect: { ${effectFor(m[2], m[1])} } }`] },
+  {
+    id: "prismagon",
+    re: /^\+(\d+) (\w+) permanently for each unique type on your team\.$/,
+    build: (m) => [
+      `{ kind: "statFromUniqueTypes", target: { kind: "self" }, effect: { ${effectFor(m[2], m[1])} } }`,
+    ],
+  },
   // T220 — Petrirex: self-inflicted, position-chosen knockout, decidable before the battle starts.
-  { id: "petrirex", re: /^Knockout adjacent allies and gain \+(\d+) (\w+) permanently for each ally Knockout\.$/, build: (m) =>
-      [`{ kind: "knockoutAlliesOnBattleStart", target: { kind: "adjacent" }, effectPerKnockout: { ${effectFor(m[2], m[1])} } }`] },
+  {
+    id: "petrirex",
+    re: /^Knockout adjacent allies and gain \+(\d+) (\w+) permanently for each ally Knockout\.$/,
+    build: (m) => [
+      `{ kind: "knockoutAlliesOnBattleStart", target: { kind: "adjacent" }, effectPerKnockout: { ${effectFor(m[2], m[1])} } }`,
+    ],
+  },
 ];
 
 let tagged = 0;
 for (const rule of RULES) {
-  const blockRe = new RegExp(`(\\n    id: "${rule.id}",[\\s\\S]*?)(\\n    abilityTags: )(\\[\\]|\\[[\\s\\S]*?\\n    \\])`, "g");
+  const blockRe = new RegExp(
+    `(\\n    id: "${rule.id}",[\\s\\S]*?)(\\n    abilityTags: )(\\[\\]|\\[[\\s\\S]*?\\n    \\])`,
+    "g",
+  );
   src = src.replace(blockRe, (whole, head, key, existing) => {
     const t = /abilityText:\s*\n?\s*"((?:[^"\\]|\\.)*)"/.exec(head);
     if (!t) return whole;

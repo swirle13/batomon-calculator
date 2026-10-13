@@ -64,7 +64,8 @@ export function itemRecipients(
         .filter((m) => {
           // `creatureHasType` rather than `types.includes`: it is the one predicate that knows a
           // painted species and a native "All" both match every type (FR-086).
-          if (target.typeFilter && !creatureHasType(m.creature, target.typeFilter, config)) return false;
+          if (target.typeFilter && !creatureHasType(m.creature, target.typeFilter, config))
+            return false;
           if (target.abilitylessOnly && m.creature.abilityText.trim() !== "") return false;
           return true;
         })

@@ -41,7 +41,7 @@ function readChunks(buf, file) {
   if (!buf.subarray(0, 8).equals(PNG_MAGIC)) throw new Error(`${file}: not a PNG`);
   const idat = [];
   let header;
-  for (let at = 8; at < buf.length; ) {
+  for (let at = 8; at < buf.length;) {
     const length = buf.readUInt32BE(at);
     const type = buf.toString("ascii", at + 4, at + 8);
     const body = buf.subarray(at + 8, at + 8 + length);

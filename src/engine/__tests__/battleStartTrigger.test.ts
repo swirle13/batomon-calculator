@@ -5,7 +5,11 @@ import { DamageChannel, GridRow, StatusEffectType, TimelineEventKind } from "../
 import { Species } from "../../data/ids";
 import type { CreatureLevel, GridCol, TeamConfiguration } from "../../data/types";
 
-function board(creatureIds: Species[], level: CreatureLevel = 1, windowSeconds = 30): TeamConfiguration {
+function board(
+  creatureIds: Species[],
+  level: CreatureLevel = 1,
+  windowSeconds = 30,
+): TeamConfiguration {
   return {
     placements: creatureIds.map((creatureId, i) => ({
       slot: { row: GridRow.Top, col: i as GridCol },

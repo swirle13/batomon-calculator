@@ -19,7 +19,14 @@ await page.goto(url, { waitUntil: "networkidle" });
 
 const data = await page.evaluate(() => {
   const px = (el, prop) => (el ? getComputedStyle(el).getPropertyValue(prop).trim() : "—");
-  const box = (el) => (el ? { left: Math.round(el.getBoundingClientRect().left), right: Math.round(el.getBoundingClientRect().right), width: Math.round(el.getBoundingClientRect().width) } : null);
+  const box = (el) =>
+    el
+      ? {
+          left: Math.round(el.getBoundingClientRect().left),
+          right: Math.round(el.getBoundingClientRect().right),
+          width: Math.round(el.getBoundingClientRect().width),
+        }
+      : null;
 
   const root = document.getElementById("root");
   const main = document.querySelector("main");
@@ -51,7 +58,12 @@ const data = await page.evaluate(() => {
     gridTemplate: px(grid, "grid-template-columns"),
     card: box(card),
     panel: box(panel),
-    sprite: sprite ? { w: Math.round(sprite.getBoundingClientRect().width), h: Math.round(sprite.getBoundingClientRect().height) } : null,
+    sprite: sprite
+      ? {
+          w: Math.round(sprite.getBoundingClientRect().width),
+          h: Math.round(sprite.getBoundingClientRect().height),
+        }
+      : null,
   };
 });
 

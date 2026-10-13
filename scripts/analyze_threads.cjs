@@ -21,7 +21,8 @@ const ev = (() => {
 // Thread names come from metadata events.
 const threadName = new Map();
 for (const e of ev) {
-  if (e.name === "thread_name" && e.args && e.args.name) threadName.set(`${e.pid}:${e.tid}`, e.args.name);
+  if (e.name === "thread_name" && e.args && e.args.name)
+    threadName.set(`${e.pid}:${e.tid}`, e.args.name);
 }
 
 // Per-thread CPU self time.
@@ -63,13 +64,23 @@ for (const [key, slot] of [...perThread.entries()].sort((a, b) => b[1].total - a
     const cf = n && n.callFrame;
     if (!cf) continue;
     const f = (cf.url || "").split("/").pop() || "(native)";
-    agg.set(`${cf.functionName || "(anonymous)"} [${f.slice(0, 34)}]`, (agg.get(`${cf.functionName || "(anonymous)"} [${f.slice(0, 34)}]`) || 0) + ms);
+    agg.set(
+      `${cf.functionName || "(anonymous)"} [${f.slice(0, 34)}]`,
+      (agg.get(`${cf.functionName || "(anonymous)"} [${f.slice(0, 34)}]`) || 0) + ms,
+    );
   }
-  const idle = [...agg.entries()].filter(([k]) => k.startsWith("(idle)")).reduce((s, [, v]) => s + v, 0);
+  const idle = [...agg.entries()]
+    .filter(([k]) => k.startsWith("(idle)"))
+    .reduce((s, [, v]) => s + v, 0);
   const busy = slot.total - idle;
   const name = threadName.get(key) || "(unnamed)";
-  console.log(`\nthread ${key}  "${name}"   sampled ${slot.total.toFixed(0)}ms, busy ${busy.toFixed(0)}ms`);
-  for (const [k, ms] of [...agg.entries()].filter(([k]) => !k.startsWith("(idle)")).sort((a, b) => b[1] - a[1]).slice(0, 10)) {
+  console.log(
+    `\nthread ${key}  "${name}"   sampled ${slot.total.toFixed(0)}ms, busy ${busy.toFixed(0)}ms`,
+  );
+  for (const [k, ms] of [...agg.entries()]
+    .filter(([k]) => !k.startsWith("(idle)"))
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)) {
     console.log(`     ${ms.toFixed(1).padStart(8)}ms  ${k}`);
   }
 }
@@ -85,5 +96,10 @@ for (const e of ev) {
 }
 for (const [key, arr] of [...tasksByThread.entries()].sort((a, b) => b[1].length - a[1].length)) {
   arr.sort((a, b) => b - a);
-  console.log(`  ${key} "${threadName.get(key) || "(unnamed)"}": ${arr.length} tasks, longest ${arr.slice(0, 5).map((v) => v.toFixed(0) + "ms").join(", ")}`);
+  console.log(
+    `  ${key} "${threadName.get(key) || "(unnamed)"}": ${arr.length} tasks, longest ${arr
+      .slice(0, 5)
+      .map((v) => v.toFixed(0) + "ms")
+      .join(", ")}`,
+  );
 }

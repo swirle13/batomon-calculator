@@ -45,7 +45,10 @@ const PROBE = `
     await page.mouse.move(a.x + a.width / 2, a.y + a.height / 2);
     await page.mouse.down();
     for (let s = 1; s <= 12; s++) {
-      await page.mouse.move(a.x + a.width / 2 + ((b.x - a.x) * s) / 12, a.y + a.height / 2 + ((b.y - a.y) * s) / 12);
+      await page.mouse.move(
+        a.x + a.width / 2 + ((b.x - a.x) * s) / 12,
+        a.y + a.height / 2 + ((b.y - a.y) * s) / 12,
+      );
       await page.waitForTimeout(16);
     }
     await page.mouse.up();
@@ -54,7 +57,8 @@ const PROBE = `
     console.log(`\ndrag ${i + 1}: ${shifts.length} layout shift(s)`);
     for (const s of shifts) {
       console.log(`  value=${s.value.toFixed(4)}`);
-      for (const src of s.sources) console.log(`    ${src.node}  ${JSON.stringify(src.from)} -> ${JSON.stringify(src.to)}`);
+      for (const src of s.sources)
+        console.log(`    ${src.node}  ${JSON.stringify(src.from)} -> ${JSON.stringify(src.to)}`);
     }
   }
 

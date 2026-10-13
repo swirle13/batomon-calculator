@@ -41,7 +41,9 @@ describe("effect resolution (FR-073)", () => {
     // The resolver must not perturb teams it has nothing to say about.
     const plain: TeamConfiguration = {
       ...USER_TEAM,
-      placements: [{ slot: { row: GridRow.Top, col: 0 }, creatureId: Species.Bumblebolt, level: 1 }],
+      placements: [
+        { slot: { row: GridRow.Top, col: 0 }, creatureId: Species.Bumblebolt, level: 1 },
+      ],
     };
     const resolved = resolveEffects(plain, corpus);
     expect(resolved[0]!.appliesStatus).toEqual([{ type: StatusEffectType.Shock, amount: 1 }]);
@@ -53,7 +55,9 @@ describe("effect resolution (FR-073)", () => {
     // Decided in writing in T200: "ally" excludes self, matching simulate()'s existing self-skip.
     const soloMiasmaw: TeamConfiguration = {
       ...USER_TEAM,
-      placements: [{ slot: { row: GridRow.Bottom, col: 1 }, creatureId: Species.Miasmaw, level: 1 }],
+      placements: [
+        { slot: { row: GridRow.Bottom, col: 1 }, creatureId: Species.Miasmaw, level: 1 },
+      ],
     };
     const resolved = resolveEffects(soloMiasmaw, corpus);
     // No allies -> gains nothing -> stays at its base 10.
@@ -70,7 +74,10 @@ describe("charge mechanic (FR-073 / WI-009)", () => {
     // Matched by SLOT, not by amount: Miasmaw now applies 336 once resolved, so an
     // amount-based finder would match Miasmaw's cast instead of Cobrex's.
     const firstCobrexCast = result.timeline.find(
-      (e) => e.statusDelta?.type === "Poison" && e.sourceSlot.row === GridRow.Bottom && e.sourceSlot.col === 2,
+      (e) =>
+        e.statusDelta?.type === "Poison" &&
+        e.sourceSlot.row === GridRow.Bottom &&
+        e.sourceSlot.col === 2,
     );
     expect(firstCobrexCast).toBeDefined();
     expect(firstCobrexCast!.tSeconds).toBeLessThan(15);

@@ -6,7 +6,10 @@ import { GridRow, StatusEffectType, TimelineEventKind } from "../../data/enums";
 import { Species } from "../../data/ids";
 import type { CreatureLevel, GridCol, TeamConfiguration } from "../../data/types";
 
-function board(entries: [GridRow, GridCol, Species, CreatureLevel?][], windowSeconds = 30): TeamConfiguration {
+function board(
+  entries: [GridRow, GridCol, Species, CreatureLevel?][],
+  windowSeconds = 30,
+): TeamConfiguration {
   return {
     placements: entries.map(([row, col, creatureId, level]) => ({
       slot: { row, col },
@@ -26,7 +29,8 @@ const resolvedAt = (config: TeamConfiguration, id: Species) =>
 const castTimes = (config: TeamConfiguration, row: GridRow, col: GridCol) =>
   simulate(config, corpus)
     .timeline.filter(
-      (e) => e.kind === TimelineEventKind.Attack && e.sourceSlot.row === row && e.sourceSlot.col === col,
+      (e) =>
+        e.kind === TimelineEventKind.Attack && e.sourceSlot.row === row && e.sourceSlot.col === col,
     )
     .map((e) => e.tSeconds);
 
@@ -46,16 +50,23 @@ describe("mechanisms built for the backlog", () => {
       // statFromStat is the receiver's view of the same idea rather than the giver's.
       const alone = resolvedAt(board([[GridRow.Top, 0, Species.Lignite]]), Species.Lignite);
       const behind = resolvedAt(
-        board([[GridRow.Top, 1, Species.Blixie], [GridRow.Top, 0, Species.Lignite]]),
+        board([
+          [GridRow.Top, 1, Species.Blixie],
+          [GridRow.Top, 0, Species.Lignite],
+        ]),
         Species.Lignite,
       );
-      const burn = (r: typeof alone) => r?.appliesStatus.find((s) => s.type === StatusEffectType.Burn)?.amount ?? 0;
+      const burn = (r: typeof alone) =>
+        r?.appliesStatus.find((s) => s.type === StatusEffectType.Burn)?.amount ?? 0;
       expect(burn(behind)).toBe(burn(alone) + 30);
     });
 
     it("does not reach a non-Fire ally behind", () => {
       const rock = resolvedAt(
-        board([[GridRow.Top, 1, Species.Blixie], [GridRow.Top, 0, Species.Pebbler]]),
+        board([
+          [GridRow.Top, 1, Species.Blixie],
+          [GridRow.Top, 0, Species.Pebbler],
+        ]),
         Species.Pebbler,
       );
       expect(rock?.appliesStatus.find((s) => s.type === StatusEffectType.Burn)).toBeUndefined();
@@ -63,13 +74,17 @@ describe("mechanisms built for the backlog", () => {
   });
 
   describe("Stellagon — the 'allies with no abilities' filter", () => {
-    const multicastOf = (config: TeamConfiguration, id: Species) => resolvedAt(config, id)?.multicast;
+    const multicastOf = (config: TeamConfiguration, id: Species) =>
+      resolvedAt(config, id)?.multicast;
 
     it("buffs a neighbour that publishes no ability", () => {
       // Humbolt's abilityText is empty, which is what the filter selects on.
       const alone = multicastOf(board([[GridRow.Top, 1, Species.Humbolt]]), Species.Humbolt);
       const beside = multicastOf(
-        board([[GridRow.Top, 0, Species.Stellagon], [GridRow.Top, 1, Species.Humbolt]]),
+        board([
+          [GridRow.Top, 0, Species.Stellagon],
+          [GridRow.Top, 1, Species.Humbolt],
+        ]),
         Species.Humbolt,
       );
       expect(beside).toBe(alone! + 2);
@@ -79,7 +94,10 @@ describe("mechanisms built for the backlog", () => {
       // Pebbler publishes "+15 Shield for this battle", so the filter reads straight past it.
       const alone = multicastOf(board([[GridRow.Top, 1, Species.Pebbler]]), Species.Pebbler);
       const beside = multicastOf(
-        board([[GridRow.Top, 0, Species.Stellagon], [GridRow.Top, 1, Species.Pebbler]]),
+        board([
+          [GridRow.Top, 0, Species.Stellagon],
+          [GridRow.Top, 1, Species.Pebbler],
+        ]),
         Species.Pebbler,
       );
       expect(beside).toBe(alone);
@@ -95,7 +113,10 @@ describe("mechanisms built for the backlog", () => {
        */
       const alone = castTimes(board([[GridRow.Top, 0, Species.Pebbler]]), GridRow.Top, 0);
       const charged = castTimes(
-        board([[GridRow.Top, 1, Species.Dracana], [GridRow.Top, 0, Species.Pebbler]]),
+        board([
+          [GridRow.Top, 1, Species.Dracana],
+          [GridRow.Top, 0, Species.Pebbler],
+        ]),
         GridRow.Top,
         0,
       );
@@ -105,15 +126,23 @@ describe("mechanisms built for the backlog", () => {
     it("honours '(Dracana can't receive charge)' between a pair of them", () => {
       // Both are the givers AND the refusers, so a pair standing together is exactly the case the
       // parenthetical exists for. Each keeps its own 3s cadence, untouched.
-      const pair = board([[GridRow.Top, 1, Species.Dracana], [GridRow.Top, 0, Species.Dracana]]);
-      expect(castTimes(pair, GridRow.Top, 0)).toEqual(castTimes(board([[GridRow.Top, 0, Species.Dracana]]), GridRow.Top, 0));
+      const pair = board([
+        [GridRow.Top, 1, Species.Dracana],
+        [GridRow.Top, 0, Species.Dracana],
+      ]);
+      expect(castTimes(pair, GridRow.Top, 0)).toEqual(
+        castTimes(board([[GridRow.Top, 0, Species.Dracana]]), GridRow.Top, 0),
+      );
     });
 
     it("applies Ironcore's type filter", () => {
       // "Charge adjacent ELECTRIC allies". Pebbler is Rock and gets nothing.
       const alone = castTimes(board([[GridRow.Top, 1, Species.Pebbler]]), GridRow.Top, 1);
       const beside = castTimes(
-        board([[GridRow.Top, 0, Species.Ironcore], [GridRow.Top, 1, Species.Pebbler]]),
+        board([
+          [GridRow.Top, 0, Species.Ironcore],
+          [GridRow.Top, 1, Species.Pebbler],
+        ]),
         GridRow.Top,
         1,
       );
@@ -130,7 +159,10 @@ describe("mechanisms built for the backlog", () => {
        */
       const alone = castTimes(board([[GridRow.Top, 0, Species.Rhizuka]]), GridRow.Top, 0);
       const withShielder = castTimes(
-        board([[GridRow.Top, 0, Species.Rhizuka], [GridRow.Top, 1, Species.Pebbler]]),
+        board([
+          [GridRow.Top, 0, Species.Rhizuka],
+          [GridRow.Top, 1, Species.Pebbler],
+        ]),
         GridRow.Top,
         0,
       );
@@ -142,7 +174,10 @@ describe("mechanisms built for the backlog", () => {
     it("does not fire on its own Shield, nor on another Rhizuka's", () => {
       // Rhizuka applies no Shield itself, so the self-exclusion is exercised through a pair:
       // "(Except other Rhizuka)" means a second copy is not a trigger source.
-      const pair = board([[GridRow.Top, 0, Species.Rhizuka], [GridRow.Top, 1, Species.Rhizuka]]);
+      const pair = board([
+        [GridRow.Top, 0, Species.Rhizuka],
+        [GridRow.Top, 1, Species.Rhizuka],
+      ]);
       const alone = castTimes(board([[GridRow.Top, 0, Species.Rhizuka]]), GridRow.Top, 0);
       expect(castTimes(pair, GridRow.Top, 0)).toEqual(alone);
     });
@@ -152,9 +187,17 @@ describe("mechanisms built for the backlog", () => {
     it("fires for a level 3 ally and not for a level 1 one", () => {
       // No new hook needed: `triggerOnAllyCast` resolves a selector, and the selector learned
       // `minLevelFilter` long ago. The ability was simply never tagged.
-      const high = board([[GridRow.Top, 0, Species.Snapscald], [GridRow.Top, 1, Species.Pebbler, 3]]);
-      const low = board([[GridRow.Top, 0, Species.Snapscald], [GridRow.Top, 1, Species.Pebbler, 1]]);
-      expect(castTimes(high, GridRow.Top, 0).length).toBeGreaterThan(castTimes(low, GridRow.Top, 0).length);
+      const high = board([
+        [GridRow.Top, 0, Species.Snapscald],
+        [GridRow.Top, 1, Species.Pebbler, 3],
+      ]);
+      const low = board([
+        [GridRow.Top, 0, Species.Snapscald],
+        [GridRow.Top, 1, Species.Pebbler, 1],
+      ]);
+      expect(castTimes(high, GridRow.Top, 0).length).toBeGreaterThan(
+        castTimes(low, GridRow.Top, 0).length,
+      );
     });
   });
 
@@ -182,9 +225,14 @@ describe("mechanisms built for the backlog", () => {
     it("gains nothing on a board where nobody is knocked out", () => {
       // Which is most boards, and is an UNDERSTATEMENT rather than a guess: there is no HP model
       // here for an ally to die to mid-fight.
-      const quiet = board([[GridRow.Top, 0, Species.Danuki], [GridRow.Top, 1, Species.Beetbud]]);
+      const quiet = board([
+        [GridRow.Top, 0, Species.Danuki],
+        [GridRow.Top, 1, Species.Beetbud],
+      ]);
       const solo = board([[GridRow.Top, 0, Species.Danuki]]);
-      expect(resolvedAt(quiet, Species.Danuki)?.baseDamage).toBe(resolvedAt(solo, Species.Danuki)?.baseDamage);
+      expect(resolvedAt(quiet, Species.Danuki)?.baseDamage).toBe(
+        resolvedAt(solo, Species.Danuki)?.baseDamage,
+      );
     });
   });
 });

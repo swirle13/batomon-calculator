@@ -37,7 +37,9 @@
   margin-top: var(--space-2xs);
 }
 
-.note { color: var(--text-warn); }
+.note {
+  color: var(--text-warn);
+}
 
 .scrubRow {
   display: flex;
@@ -57,7 +59,10 @@
 
 /* The scrubber is the one control on this row, so it gets real width — a default-width range in a
    centred row reads as an afterthought. */
-.scrubLabel input { width: 24rem; max-width: 60vw; }
+.scrubLabel input {
+  width: 24rem;
+  max-width: 60vw;
+}
 
 /* The coverage caveats that used to live here moved to `PlacementAdvisor.module.css` on
    2026-10-08 — see the note at the top of that file. */

@@ -55,7 +55,10 @@ function stripRestatedClaims(sentence: string, creature: AbilityTextSubject): st
       rest = rest.slice(0, match.index) + rest.slice(match.index + match[0].length);
     }
   };
-  consume(/deals? (\d+) (?:direct )?damage/i, (m) => creature.publishedCast?.damage === Number(m[1]));
+  consume(
+    /deals? (\d+) (?:direct )?damage/i,
+    (m) => creature.publishedCast?.damage === Number(m[1]),
+  );
   consume(/applies (\d+) (\w+)/i, (m) =>
     (creature.appliesStatus ?? []).some(
       (s) => s.type.toLowerCase() === m[2]!.toLowerCase() && s.amount === Number(m[1]),

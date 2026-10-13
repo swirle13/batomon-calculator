@@ -129,7 +129,8 @@ describe("knocked-out allies, and Shikitsune's revive", () => {
   it("makes the revived ally faster than an untouched one, by the published amount", () => {
     // The point of the ability, measured where the user reads it: Bumblebolt's effective cooldown.
     const cooldownOf = (config: TeamConfiguration) =>
-      simulate(config, corpus).perCreatureEffectiveStats[placementKey(Species.Bumblebolt, BACK1)]!.cooldownSeconds!;
+      simulate(config, corpus).perCreatureEffectiveStats[placementKey(Species.Bumblebolt, BACK1)]!
+        .cooldownSeconds!;
 
     const normal = cooldownOf(
       team([
@@ -161,14 +162,19 @@ describe("knocked-out allies, and Shikitsune's revive", () => {
     ]);
     const result = simulate(board, corpus);
 
-    expect(result.knockedOutAtBattleStart.map((c) => c.name).sort()).toEqual(["Pebbler", "Shikitsune"]);
+    expect(result.knockedOutAtBattleStart.map((c) => c.name).sort()).toEqual([
+      "Pebbler",
+      "Shikitsune",
+    ]);
     for (const casualty of result.knockedOutAtBattleStart) {
       expect(casualty.knockedOutBy).toBe("Rattleghast");
     }
     // A corpse casts nothing, so it has no entry anywhere — the state the old `!` assumed could
     // not happen. Rattleghast is still fighting.
     expect(result.perCreatureEffectiveStats[placementKey(Species.Pebbler, BACK2)]).toBeUndefined();
-    expect(result.perCreatureEffectiveStats[placementKey(Species.Rattleghast, BACK1)]).toBeDefined();
+    expect(
+      result.perCreatureEffectiveStats[placementKey(Species.Rattleghast, BACK1)],
+    ).toBeDefined();
   });
 
   it("reports no casualties when the reviver brings everyone back", () => {

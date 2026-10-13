@@ -95,7 +95,9 @@ describe("applyModifiers — null still means nothing is there", () => {
   });
 
   it("does not invent a status entry for a modifier of zero", () => {
-    expect(applyModifiers(pebbler, NONE).appliesStatus).toEqual([{ type: StatusEffectType.Shield, amount: 20 }]);
+    expect(applyModifiers(pebbler, NONE).appliesStatus).toEqual([
+      { type: StatusEffectType.Shield, amount: 20 },
+    ]);
   });
 
   it("never drops multicast below 1, so a negative modifier cannot silence a creature", () => {
@@ -108,9 +110,13 @@ describe("applyModifiers — null still means nothing is there", () => {
  * simulation so a regression in `simulate` cannot hide behind a passing unit test.
  */
 describe("simulate — modifiers reach a creature that had nothing to scale", () => {
-  function pebblerTeam(modifiers: TeamConfiguration["placements"][number]["modifiers"]): TeamConfiguration {
+  function pebblerTeam(
+    modifiers: TeamConfiguration["placements"][number]["modifiers"],
+  ): TeamConfiguration {
     return {
-      placements: [{ slot: { row: GridRow.Bottom, col: 0 }, creatureId: Species.Pebbler, level: 1, modifiers }],
+      placements: [
+        { slot: { row: GridRow.Bottom, col: 0 }, creatureId: Species.Pebbler, level: 1, modifiers },
+      ],
       trainerId: null,
       trinketIds: [],
       itemIds: [],
@@ -123,7 +129,14 @@ describe("simulate — modifiers reach a creature that had nothing to scale", ()
       r.cumulativeSeries[r.cumulativeSeries.length - 1]?.totalDamage ?? 0;
     const before = simulate(pebblerTeam([]), corpus);
     const after = simulate(
-      pebblerTeam([{ id: syntheticSpecies("m1"), stat: ModifierStat.DamageFlatAdd, amount: 40, label: "trinket" }]),
+      pebblerTeam([
+        {
+          id: syntheticSpecies("m1"),
+          stat: ModifierStat.DamageFlatAdd,
+          amount: 40,
+          label: "trinket",
+        },
+      ]),
       corpus,
     );
     expect(total(before)).toBe(0);
@@ -142,7 +155,14 @@ describe("simulate — modifiers reach a creature that had nothing to scale", ()
           slot: { row: GridRow.Bottom, col: 0 },
           creatureId: passive.id,
           level: passive.level,
-          modifiers: [{ id: syntheticSpecies("m1"), stat: ModifierStat.DamageFlatAdd, amount: 25, label: "trinket" }],
+          modifiers: [
+            {
+              id: syntheticSpecies("m1"),
+              stat: ModifierStat.DamageFlatAdd,
+              amount: 25,
+              label: "trinket",
+            },
+          ],
         },
       ],
       trainerId: null,

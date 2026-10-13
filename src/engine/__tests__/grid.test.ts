@@ -44,7 +44,9 @@ describe("isAdjacent", () => {
     };
 
     for (const a of ALL) {
-      const actual = ALL.filter((b) => isAdjacent(a, b)).map(label).sort();
+      const actual = ALL.filter((b) => isAdjacent(a, b))
+        .map(label)
+        .sort();
       expect(actual, `neighbours of ${label(a)}`).toEqual(expected[label(a)]!.sort());
     }
   });

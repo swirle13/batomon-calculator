@@ -12,7 +12,10 @@
   font-size: var(--font-2xl);
   font-weight: 700;
 }
-.actions { display: flex; gap: var(--space-xs); }
+.actions {
+  display: flex;
+  gap: var(--space-xs);
+}
 
 /*
  * `.field`, `.label` and most of `.code` are gone: the label/control pair is `Field` and the
@@ -24,4 +27,8 @@
   resize: none;
   overflow: auto;
 }
-.error { margin: 0; font-size: var(--font-sm); color: var(--text-warn); }
+.error {
+  margin: 0;
+  font-size: var(--font-sm);
+  color: var(--text-warn);
+}

@@ -38,7 +38,13 @@ const RULES = [
     id: "craghorn",
     // "+20 Damage and Shield" — ONE amount covering both stats, not "+20 Damage and +20 Shield".
     re: /^When you use an item, this gains \+(\d+) Damage and Shield\.$/i,
-    build: (m) => ({ trigger: "On Item Used", effects: [["damage", +m[1]], ["shield", +m[1]]] }),
+    build: (m) => ({
+      trigger: "On Item Used",
+      effects: [
+        ["damage", +m[1]],
+        ["shield", +m[1]],
+      ],
+    }),
   },
   {
     id: "cawnushi",
@@ -102,8 +108,7 @@ for (const rule of RULES) {
       if (!stat) throw new Error(`${rule.id}: no ModifierStat for "${word}"`);
       return `{ stat: "${stat}", amount: ${amount} }`;
     });
-    const tag =
-      `{ kind: "manualTrigger", trigger: "${trigger}", effects: [${mapped.join(", ")}] }`;
+    const tag = `{ kind: "manualTrigger", trigger: "${trigger}", effects: [${mapped.join(", ")}] }`;
 
     tagged++;
     touched.add(rule.id);

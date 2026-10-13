@@ -1,6 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTeamConfig } from "../../context/teamConfig";
-import { InvalidBuildCodeError, buildUrl, exportBuild, importBuild, readBuildFromUrl } from "../../data/share";
+import {
+  InvalidBuildCodeError,
+  buildUrl,
+  exportBuild,
+  importBuild,
+  readBuildFromUrl,
+} from "../../data/share";
 import { Button, Field, Surface, TextArea } from "../primitives";
 import styles from "./ShareBuild.module.css";
 

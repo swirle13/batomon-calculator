@@ -135,7 +135,9 @@ function afterMerge(
    */
   const bench: BenchedCreature[] = benchOf(config)
     .filter((b) => !spentIndexes.includes(b.index))
-    .map((b) => (!isGrid(survivor) && b.index === survivor.index ? { ...merged, index: b.index } : b));
+    .map((b) =>
+      !isGrid(survivor) && b.index === survivor.index ? { ...merged, index: b.index } : b,
+    );
 
   return { ...config, placements, bench };
 }

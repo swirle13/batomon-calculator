@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { allCreatureRecords, corpus, getCreatureByIdAndLevel, hasShinyVariant, resolveCreatureVariant } from "../corpus";
+import {
+  allCreatureRecords,
+  corpus,
+  getCreatureByIdAndLevel,
+  hasShinyVariant,
+  resolveCreatureVariant,
+} from "../corpus";
 import { simulate } from "../../engine/simulate";
 import type { TeamConfiguration } from "../types";
 import { allShinyLines } from "../shiny";
@@ -83,8 +89,12 @@ describe("shiny reaches the ENGINE, not just the card (2026-10-06)", () => {
     // so the band rendered a difference that did not exist. The engine looked up the raw corpus
     // record and ignored `placement.shiny`, so `member.resolved` was shiny while every direct
     // `creature.*` read was not.
-    const normal = Object.values(simulate(place(Species.Dribblet, false), corpus).perCreatureEffectiveStats)[0]!;
-    const shiny = Object.values(simulate(place(Species.Dribblet, true), corpus).perCreatureEffectiveStats)[0]!;
+    const normal = Object.values(
+      simulate(place(Species.Dribblet, false), corpus).perCreatureEffectiveStats,
+    )[0]!;
+    const shiny = Object.values(
+      simulate(place(Species.Dribblet, true), corpus).perCreatureEffectiveStats,
+    )[0]!;
     expect(normal.output.heal).toBe(15);
     expect(shiny.output.heal).toBe(18);
   });
@@ -95,7 +105,8 @@ describe("shiny reaches the ENGINE, not just the card (2026-10-06)", () => {
     // makes shiny Velocect worth taking was invisible.
     const normal = simulate(place(Species.Velocect, false), corpus);
     const shiny = simulate(place(Species.Velocect, true), corpus);
-    const casts = (r: typeof normal) => r.timeline.filter((e) => e.kind === TimelineEventKind.Attack).length;
+    const casts = (r: typeof normal) =>
+      r.timeline.filter((e) => e.kind === TimelineEventKind.Attack).length;
     expect(casts(shiny)).toBe(casts(normal) * 2);
     expect(Object.values(shiny.perCreatureEffectiveStats)[0]!.output.damage).toBe(8);
   });
@@ -103,14 +114,17 @@ describe("shiny reaches the ENGINE, not just the card (2026-10-06)", () => {
   it("a shiny cooldown changes cast timing", () => {
     // Furnadon's shiny line is a full second faster (5s -> 4s). A 20s window is needed to show it:
     // at 15s both fit exactly 3 casts (5/10/15 against 4/8/12), so the difference is invisible.
-    const longWindow = (id: Species, shiny: boolean) => ({ ...place(id, shiny), simulationWindowSeconds: 20 });
+    const longWindow = (id: Species, shiny: boolean) => ({
+      ...place(id, shiny),
+      simulationWindowSeconds: 20,
+    });
     const normal = simulate(longWindow(Species.Furnadon, false), corpus);
     const shiny = simulate(longWindow(Species.Furnadon, true), corpus);
     expect(Object.values(normal.perCreatureEffectiveStats)[0]!.cooldownSeconds).toBe(5);
     expect(Object.values(shiny.perCreatureEffectiveStats)[0]!.cooldownSeconds).toBe(4);
-    expect(shiny.timeline.filter((e) => e.kind === TimelineEventKind.Attack).length).toBeGreaterThan(
-      normal.timeline.filter((e) => e.kind === TimelineEventKind.Attack).length,
-    );
+    expect(
+      shiny.timeline.filter((e) => e.kind === TimelineEventKind.Attack).length,
+    ).toBeGreaterThan(normal.timeline.filter((e) => e.kind === TimelineEventKind.Attack).length);
   });
 
   it("GUARD: the effective band matches the card for every shiny species, so it stays hidden", () => {
@@ -118,7 +132,9 @@ describe("shiny reaches the ENGINE, not just the card (2026-10-06)", () => {
     // therefore produce identical values on both, or every shiny placement shows a phantom
     // difference — which is exactly what was reported.
     for (const id of [Species.Dribblet, Species.Velocect, Species.Furnadon, Species.Kappow]) {
-      const effective = Object.values(simulate(place(id, true), corpus).perCreatureEffectiveStats)[0]!;
+      const effective = Object.values(
+        simulate(place(id, true), corpus).perCreatureEffectiveStats,
+      )[0]!;
       const card = resolveCreatureVariant(id, 1, true)!;
       expect(effective.output.heal ?? null, `${id} heal`).toBe(card.healAmount ?? null);
       expect(effective.output.multicast, `${id} multicast`).toBe(card.baseMulticast);

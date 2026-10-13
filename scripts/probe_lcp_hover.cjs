@@ -37,11 +37,15 @@ const PROBE = `
   const report = async (when) => {
     const lcp = await page.evaluate("window.__lcp");
     const last = lcp[lcp.length - 1];
-    console.log(`  ${when.padEnd(34)} LCP=${last ? last.t.toFixed(0) + "ms" : "-"}  <${last ? last.tag : "-"} class="${last ? last.cls : ""}"> size=${last ? last.size : "-"}`);
+    console.log(
+      `  ${when.padEnd(34)} LCP=${last ? last.t.toFixed(0) + "ms" : "-"}  <${last ? last.tag : "-"} class="${last ? last.cls : ""}"> size=${last ? last.size : "-"}`,
+    );
     return lcp;
   };
 
-  console.log(`\n=== ${mode === "hover" ? "LOAD, WAIT, THEN HOVER CARDS" : "LOAD AND SIT STILL"} ===`);
+  console.log(
+    `\n=== ${mode === "hover" ? "LOAD, WAIT, THEN HOVER CARDS" : "LOAD AND SIT STILL"} ===`,
+  );
   await report("after load (2s)");
 
   if (mode === "hover") {
@@ -62,7 +66,9 @@ const PROBE = `
   const all = await page.evaluate("window.__lcp");
   console.log("\n  every LCP candidate, in order:");
   for (const c of all) {
-    console.log(`    ${c.t.toFixed(0).padStart(6)}ms  size=${String(c.size).padStart(7)}  <${c.tag} class="${c.cls}">  "${(c.text || "").replace(/\s+/g, " ")}"`);
+    console.log(
+      `    ${c.t.toFixed(0).padStart(6)}ms  size=${String(c.size).padStart(7)}  <${c.tag} class="${c.cls}">  "${(c.text || "").replace(/\s+/g, " ")}"`,
+    );
   }
 
   await browser.close();

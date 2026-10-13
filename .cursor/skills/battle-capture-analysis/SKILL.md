@@ -28,12 +28,12 @@ blow is the results screen.
 
 Produces, in `<out-dir>`:
 
-| File | What it holds |
-|---|---|
-| `frames.csv` | One row per frame. Every mon's cooldown bar fill and typed stat badges, both teams. **The dataset.** |
-| `events.csv` | Derived events: casts, charge grants, stat changes, health drops. Machine-queryable. |
-| `timeline.md` | Readable narrative, per-slot cooldown cadence, and the near-simultaneous cast clusters. |
-| `layout-check.png` | The frame with every measurement box drawn on it. Check this before trusting numbers. |
+| File               | What it holds                                                                                        |
+| ------------------ | ---------------------------------------------------------------------------------------------------- |
+| `frames.csv`       | One row per frame. Every mon's cooldown bar fill and typed stat badges, both teams. **The dataset.** |
+| `events.csv`       | Derived events: casts, charge grants, stat changes, health drops. Machine-queryable.                 |
+| `timeline.md`      | Readable narrative, per-slot cooldown cadence, and the near-simultaneous cast clusters.              |
+| `layout-check.png` | The frame with every measurement box drawn on it. Check this before trusting numbers.                |
 
 Re-deriving events never re-reads the video, so changing a flag or threshold costs a second:
 
@@ -68,10 +68,10 @@ because one transition frame with content in the bar region widens it permanentl
 Two consequences worth knowing:
 
 - **A different frame size with the same 16:9 canvas needs nothing.** Desktop recordings work.
-- **A different canvas *size* needs the glyph set re-learned**, because templates are pixel masks
+- **A different canvas _size_ needs the glyph set re-learned**, because templates are pixel masks
   at a specific scale. The geometry scales fine and `analyze.sh` will reuse a same-aspect layout
   and tell you, but `learn` + `autolabel` has to run once for the new scale. That is two commands.
-- A different canvas *aspect* means the game laid the board out differently, and needs its own
+- A different canvas _aspect_ means the game laid the board out differently, and needs its own
   layout calibrated.
 
 ## What the dataset contains
@@ -121,13 +121,13 @@ These limits are not incidental; they decide which conclusions the footage can s
   to record the same board at 1x and at each fast-forward level once**, then pass `--speed=N`
   forever. Do not average disagreeing estimates — one of the assumptions is false.
 - **One quantity is fast-forward independent and worth more than the rest**: a charge ability
-  grants a known number of *game* seconds and shows up as a known number of bar pixels, so
+  grants a known number of _game_ seconds and shows up as a known number of bar pixels, so
   `--charge-slot` yields that mon's effective cooldown in real game seconds with no calibration at
   all. The tool cannot tell which mon charges, so name it explicitly — the bars are 4px wide and
   spell effects crossing one look like grants.
 - **A cluster is not a tie.** `timeline.md` lists casts that land close together, but if the gap
   is more than a frame or two the later mon may simply have become ready later. Check the gap
-  column. Proving a tie-break rule needs a recording where two mons become ready on the *same*
+  column. Proving a tie-break rule needs a recording where two mons become ready on the _same_
   frame.
 - **Analysis stops at battle end.** The scan stops at the frame a side's health hits zero, and
   `bcevents` discards anything past it, because the post-battle screen puts unrelated artwork
@@ -146,15 +146,15 @@ These limits are not incidental; they decide which conclusions the footage can s
 
 Check `layout-check.png` first — a shifted box explains most bad data. Then:
 
-| Symptom | Cause | Fix |
-|---|---|---|
+| Symptom                                                   | Cause                                                                            | Fix                                                                                                                             |
+| --------------------------------------------------------- | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
 | A mon appears to cast twice, a fraction of a second apart | A spell effect crossed its bar — a bright one reads as full, a dark one as empty | Already rejected: a cast needs a ramp before it and a bar that stays spent after it. If one survives, read `<slot>_cd` directly |
-| A slot you know was occupied reads blank | Occupancy probe missed it | Its bar must reach 2px or its badges must be readable within the first 3s; check `layout-check.png` sits on the right mon |
-| All badges blank | Glyph set unlabelled or wrong frame size | `bcscan glyphdump`, then `autolabel` (see reference.md) |
-| Badges blank for one mon | Band misplaced | `bcscan findtext` to re-measure, edit the layout |
-| `cd` stuck at 0 | Bar column off by a pixel or two | `bcscan findbars` to re-measure |
-| Digits misread | Advance mis-measured | Re-run `learn`; check the reported advance is non-integer and near the ink width + 3 |
-| No layout for this frame size | New capture resolution | Calibrate a new layout — reference.md |
+| A slot you know was occupied reads blank                  | Occupancy probe missed it                                                        | Its bar must reach 2px or its badges must be readable within the first 3s; check `layout-check.png` sits on the right mon       |
+| All badges blank                                          | Glyph set unlabelled or wrong frame size                                         | `bcscan glyphdump`, then `autolabel` (see reference.md)                                                                         |
+| Badges blank for one mon                                  | Band misplaced                                                                   | `bcscan findtext` to re-measure, edit the layout                                                                                |
+| `cd` stuck at 0                                           | Bar column off by a pixel or two                                                 | `bcscan findbars` to re-measure                                                                                                 |
+| Digits misread                                            | Advance mis-measured                                                             | Re-run `learn`; check the reported advance is non-integer and near the ink width + 3                                            |
+| No layout for this frame size                             | New capture resolution                                                           | Calibrate a new layout — reference.md                                                                                           |
 
 ## Reference
 

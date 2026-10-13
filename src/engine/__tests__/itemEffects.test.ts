@@ -59,7 +59,9 @@ describe("itemRecipients — team scope", () => {
     // `creatureHasType` enforces for every other type comparison in the app.
     const board = [member(BACK_0, { id: Species.Pebbler, types: [CreatureType.Rock] })];
     const batteryPack = getItemById(ItemId.BatteryPack)!;
-    expect(itemRecipients(batteryPack.effect!, board, [], { paintedCreatureIds: [Species.Pebbler] })).toHaveLength(1);
+    expect(
+      itemRecipients(batteryPack.effect!, board, [], { paintedCreatureIds: [Species.Pebbler] }),
+    ).toHaveLength(1);
   });
 
   it("restricts Focus Pill to monsters with no ability text", () => {
@@ -74,7 +76,10 @@ describe("itemRecipients — team scope", () => {
 
 describe("itemRecipients — fixed slot", () => {
   it("lands on the bottom right monster only (Pom Berry)", () => {
-    const board = [member(BACK_0, { id: Species.Bumblebolt }), member(FRONT_2, { id: Species.Pebbler })];
+    const board = [
+      member(BACK_0, { id: Species.Bumblebolt }),
+      member(FRONT_2, { id: Species.Pebbler }),
+    ];
     const pomBerry = getItemById(ItemId.PomBerry)!;
     expect(keys(itemRecipients(pomBerry.effect!, board, []))).toEqual([slotKey(FRONT_2)]);
   });
@@ -95,12 +100,16 @@ describe("itemRecipients — chosen", () => {
       member(BACK_1, { id: Species.Pebbler }),
       member(FRONT_2, { id: Species.Scorchimp }),
     ];
-    expect(keys(itemRecipients(cake().effect!, board, [BACK_0, FRONT_2]))).toEqual(keys([BACK_0, FRONT_2]));
+    expect(keys(itemRecipients(cake().effect!, board, [BACK_0, FRONT_2]))).toEqual(
+      keys([BACK_0, FRONT_2]),
+    );
   });
 
   it("ignores a chosen slot that holds no monster", () => {
     const board = [member(BACK_0, { id: Species.Bumblebolt })];
-    expect(keys(itemRecipients(cake().effect!, board, [BACK_0, BACK_1]))).toEqual([slotKey(BACK_0)]);
+    expect(keys(itemRecipients(cake().effect!, board, [BACK_0, BACK_1]))).toEqual([
+      slotKey(BACK_0),
+    ]);
   });
 
   it("never grants to more monsters than the item names, even if more are chosen", () => {
@@ -162,7 +171,14 @@ describe("the item corpus", () => {
   it("covers every rarity tier", () => {
     const tiers = new Set(corpus.items.map((i) => i.rarity));
     expect(tiers).toEqual(
-      new Set([Rarity.Common, Rarity.Uncommon, Rarity.Rare, Rarity.SuperRare, Rarity.Legendary, Rarity.Mythical]),
+      new Set([
+        Rarity.Common,
+        Rarity.Uncommon,
+        Rarity.Rare,
+        Rarity.SuperRare,
+        Rarity.Legendary,
+        Rarity.Mythical,
+      ]),
     );
   });
 

@@ -8,7 +8,7 @@
 [research.md](./research.md); see **B1** for what the current constant actually asserts and **F**
 for the recommended first slice.
 
-**Input**: User description: *"the suggestion engine specifically orients its weight about front-loaded
+**Input**: User description: _"the suggestion engine specifically orients its weight about front-loaded
 damage being more important and uses 10 seconds as that anchor point. I'm wanting to overhaul that
 through more detailed research in data modelling and prediction standards to find the best way to
 make sure suggestions will have the most real-world impact, not just theoretical. I know this
@@ -19,7 +19,7 @@ help you and I work on actually representing the battles to refine the suggestio
 subsequently, ensure the mon detail pane "effective" is really representative of real world values,
 as longer games ramp and trigger more, but in the late game, days 9+, fights tend to last fewer and
 fewer seconds, which I want to be sensitive to representing the data accurately and making accurate
-suggestions"*
+suggestions"_
 
 ---
 
@@ -31,20 +31,20 @@ which is taken, so it is settled first.
 
 ### Is the objective calibrated against a MEASURED fight, or against a SIMULATED opponent?
 
-| | Measured horizon | Simulated opponent |
-|---|---|---|
-| What replaces the 10s anchor | The fight length the engine already predicts for the day | The length of a resolved two-sided battle |
-| What replaces "the enemy deals what you deal" | A damage-per-second figure read off captured recordings | The opponent board's own simulated output |
-| Engine change | The discount horizon becomes a function of the board and the day | A second team, incoming damage, HP pools, deaths, targeting, win/loss |
-| New data needed | Fight durations and enemy DPS, extracted from recordings | All of that, **plus** an authored opponent team per day |
-| Answers *"will this board beat day 12?"* | Approximately — as a time-to-kill against a passive HP pool | Yes, as a win or a loss |
-| Answers *"why did I lose that fight?"* | No | Yes |
-| Can ship against data that exists today | **Yes** | No |
+|                                               | Measured horizon                                                 | Simulated opponent                                                    |
+| --------------------------------------------- | ---------------------------------------------------------------- | --------------------------------------------------------------------- |
+| What replaces the 10s anchor                  | The fight length the engine already predicts for the day         | The length of a resolved two-sided battle                             |
+| What replaces "the enemy deals what you deal" | A damage-per-second figure read off captured recordings          | The opponent board's own simulated output                             |
+| Engine change                                 | The discount horizon becomes a function of the board and the day | A second team, incoming damage, HP pools, deaths, targeting, win/loss |
+| New data needed                               | Fight durations and enemy DPS, extracted from recordings         | All of that, **plus** an authored opponent team per day               |
+| Answers _"will this board beat day 12?"_      | Approximately — as a time-to-kill against a passive HP pool      | Yes, as a win or a loss                                               |
+| Answers _"why did I lose that fight?"_        | No                                                               | Yes                                                                   |
+| Can ship against data that exists today       | **Yes**                                                          | No                                                                    |
 
 **Recommendation: both, in that order, as two independently valuable slices.**
 
 The measured horizon is the half that fixes the reported problem, and it can ship now. The engine
-*already* predicts how long a fight lasts — `timeToKillSeconds` simulates arbitrarily far out
+_already_ predicts how long a fight lasts — `timeToKillSeconds` simulates arbitrarily far out
 against a day-indexed enemy HP curve read from real play — so the discount horizon does not need a
 constant at all. It needs to be pointed at a figure the engine can compute.
 
@@ -65,10 +65,10 @@ real fight:
    survivability assumption wearing a discount's clothes, and [research.md](./research.md) **B1**
    shows it is literally one: the weight is the survival function of a constant hazard rate, so the
    constant asserts that every fight on every day ends at a constant rate with a mean of 14.4
-   seconds. A constant hazard is the unique *memoryless* one, which is the single shape that cannot
+   seconds. A constant hazard is the unique _memoryless_ one, which is the single shape that cannot
    represent a fight becoming likelier to end as HP depletes.
 2. **The mirror assumption** — `survivability.ts` prices shields, heals and cleanses against an
-   assumed incoming DPS equal to *your own*. It is scale-free, which is why it was chosen, and it
+   assumed incoming DPS equal to _your own_. It is scale-free, which is why it was chosen, and it
    is still a guess about an opponent the engine does not simulate.
 3. **The 30-second default window** — every "Effective this battle" figure, every DPS average and
    every suggestion is computed over a fixed 30 seconds, regardless of which day's fight the board
@@ -87,13 +87,13 @@ roughly day 9 the user reports fights getting shorter again as player scaling co
 curve. A single constant cannot describe a curve that goes down, up, then down.
 
 The engine already holds both halves of that curve: `ENEMY_HP_BY_DAY` (days 1–19 observed, 20–25
-projected) and a simulator that can be run to any horizon. The predicted fight length for *this
-board on this day* is therefore computable today, and it is a strictly better anchor than 10
+projected) and a simulator that can be run to any horizon. The predicted fight length for _this
+board on this day_ is therefore computable today, and it is a strictly better anchor than 10
 seconds because it varies in exactly the way the thing it is modelling varies.
 
 ---
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 — Suggestions aimed at the fight I am actually having (Priority: P1)
 
@@ -246,7 +246,7 @@ totals — with the divergences named.
 
 ---
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### Functional Requirements
 
@@ -331,7 +331,7 @@ totals — with the divergences named.
 
 ---
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 

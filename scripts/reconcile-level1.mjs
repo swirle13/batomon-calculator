@@ -21,7 +21,14 @@ const ROOT = path.resolve(import.meta.dirname, "..");
 const MONSTERS_JSON = process.env.MONSTERS_JSON ?? "/tmp/monsters_extracted.json";
 
 /** Records whose disagreement is a plausible source difference, not the row shift. */
-const GENUINE_DISCREPANCIES = new Set(["pebbler", "dribblet", "magmalith", "nekoffin", "noxalith", "opalion"]);
+const GENUINE_DISCREPANCIES = new Set([
+  "pebbler",
+  "dribblet",
+  "magmalith",
+  "nekoffin",
+  "noxalith",
+  "opalion",
+]);
 
 const STATUS_KEYS = { burn: "Burn", poison: "Poison", shock: "Shock", shield: "Shield" };
 
@@ -47,7 +54,10 @@ function authFields(entry) {
 function setField(segment, key, literal) {
   const re = new RegExp(`^(\\s+)${key}: [^\\n]*?,$`, "m");
   if (re.test(segment)) return segment.replace(re, (_m, indent) => `${indent}${key}: ${literal},`);
-  return segment.replace(/^(\s+)sourceRefs: /m, (_m, indent) => `${indent}${key}: ${literal},\n${indent}sourceRefs: `);
+  return segment.replace(
+    /^(\s+)sourceRefs: /m,
+    (_m, indent) => `${indent}${key}: ${literal},\n${indent}sourceRefs: `,
+  );
 }
 
 function removeField(segment, key) {
@@ -87,11 +97,18 @@ async function main() {
     // -- Burn 5/Poison 5 recorded vs Burn 1/Poison 1 published, which the user's own in-game
     // screenshot adjudicates in the source's favour). The first version of this script compared
     // only cooldown+damage and silently skipped 6 such records.
-    const ourStatuses = [...(((segment.match(/appliesStatus: \[([^\]]*)\]/) ?? [])[1] ?? "").matchAll(/type: "(\w+)", amount: ([\d.]+)/g))]
+    const ourStatuses = [
+      ...((segment.match(/appliesStatus: \[([^\]]*)\]/) ?? [])[1] ?? "").matchAll(
+        /type: "(\w+)", amount: ([\d.]+)/g,
+      ),
+    ]
       .map((m) => `${m[1]}:${m[2]}`)
       .sort()
       .join(",");
-    const authStatuses = auth.statuses.map((s) => `${s.type}:${s.amount}`).sort().join(",");
+    const authStatuses = auth.statuses
+      .map((s) => `${s.type}:${s.amount}`)
+      .sort()
+      .join(",");
     const ourHeal = (segment.match(/healAmount: ([^,]+),/) ?? [])[1] ?? "none";
     const authHeal = auth.heal === null ? "none" : String(auth.heal);
     const matches =
@@ -120,7 +137,16 @@ async function main() {
     segment = segment.replace(/^\s+unconfirmedFields: \[[^\]]*\],\n/m, (whole) => {
       const kept = [...whole.matchAll(/"([^"]+)"/g)]
         .map((m) => m[1])
-        .filter((f) => !["baseCooldownSeconds", "baseDamage", "damageType", "appliesStatus", "healAmount"].includes(f));
+        .filter(
+          (f) =>
+            ![
+              "baseCooldownSeconds",
+              "baseDamage",
+              "damageType",
+              "appliesStatus",
+              "healAmount",
+            ].includes(f),
+        );
       if (kept.length === 0) return "";
       return whole.replace(/\[[^\]]*\]/, `[${kept.map((f) => `"${f}"`).join(", ")}]`);
     });
@@ -143,7 +169,10 @@ async function main() {
         `      },\n` +
         `    ],\n`;
       if (!/^\s+conflicts: \[/m.test(segment)) {
-        segment = segment.replace(/^( {4}patch: [^\n]*\n)/m, (_m, patchLine) => `${patchLine}${conflictEntry}`);
+        segment = segment.replace(
+          /^( {4}patch: [^\n]*\n)/m,
+          (_m, patchLine) => `${patchLine}${conflictEntry}`,
+        );
       }
       conflicted.push(id);
     } else {
@@ -156,7 +185,9 @@ async function main() {
   await writeFile(file, parts.join(""));
   console.log(`corrected (off-by-one shift, wrong creature's data): ${corrected.length}`);
   console.log(`  ${corrected.join(", ")}`);
-  console.log(`reconciled with recorded conflict (genuine source disagreement): ${conflicted.length}`);
+  console.log(
+    `reconciled with recorded conflict (genuine source disagreement): ${conflicted.length}`,
+  );
   console.log(`  ${conflicted.join(", ")}`);
 }
 

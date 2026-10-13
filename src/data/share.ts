@@ -52,30 +52,39 @@ const PREFIX = "bat1:";
  * grants into bonuses with no control attached to them.
  */
 function canonicalModifiers(modifiers: StatModifier[] | undefined) {
-  return (modifiers ?? [])
-    .map((m) => ({
-      stat: m.stat,
-      amount: m.amount,
-      ...(scopeOf(m) === ModifierScope.Creature ? {} : { scope: scopeOf(m) }),
-      ...(m.label === undefined ? {} : { label: m.label }),
-    }))
-    // Two modifiers added in a different order are the same build.
-    .sort((a, b) => a.stat.localeCompare(b.stat) || a.amount - b.amount || (a.label ?? "").localeCompare(b.label ?? ""));
+  return (
+    (modifiers ?? [])
+      .map((m) => ({
+        stat: m.stat,
+        amount: m.amount,
+        ...(scopeOf(m) === ModifierScope.Creature ? {} : { scope: scopeOf(m) }),
+        ...(m.label === undefined ? {} : { label: m.label }),
+      }))
+      // Two modifiers added in a different order are the same build.
+      .sort(
+        (a, b) =>
+          a.stat.localeCompare(b.stat) ||
+          a.amount - b.amount ||
+          (a.label ?? "").localeCompare(b.label ?? ""),
+      )
+  );
 }
 
 function canonicalPlacements(placements: TeamPlacement[]) {
-  return placements
-    .map((p) => ({
-      row: p.slot.row,
-      col: p.slot.col,
-      creatureId: p.creatureId,
-      level: p.level,
-      // `undefined` and `false` are the same build; normalize so they hash alike.
-      shiny: p.shiny === true,
-      modifiers: canonicalModifiers(p.modifiers),
-    }))
-    // Sorted by SLOT, not by array position: dragging A onto B's slot and back is the same team.
-    .sort((a, b) => a.row.localeCompare(b.row) || a.col - b.col);
+  return (
+    placements
+      .map((p) => ({
+        row: p.slot.row,
+        col: p.slot.col,
+        creatureId: p.creatureId,
+        level: p.level,
+        // `undefined` and `false` are the same build; normalize so they hash alike.
+        shiny: p.shiny === true,
+        modifiers: canonicalModifiers(p.modifiers),
+      }))
+      // Sorted by SLOT, not by array position: dragging A onto B's slot and back is the same team.
+      .sort((a, b) => a.row.localeCompare(b.row) || a.col - b.col)
+  );
 }
 
 /**
@@ -324,7 +333,9 @@ export function importBuild(code: string): TeamConfiguration {
       ...(p.shiny ? { shiny: true } : {}),
       // Absent in every code written before locks existed, which reads as "nothing was pinned" —
       // the same correct default an older reader applies when it ignores the field entirely.
-      ...((parsed.locked ?? []).some((l) => l.row === p.row && l.col === p.col) ? { locked: true } : {}),
+      ...((parsed.locked ?? []).some((l) => l.row === p.row && l.col === p.col)
+        ? { locked: true }
+        : {}),
       // Modifier ids are regenerated: they are session identity, not build content.
       modifiers: p.modifiers.map((m, i) => ({ ...m, id: `imported-${p.row}${p.col}-${i}` })),
     })),

@@ -28,7 +28,9 @@ const solo = (creatureId: Species, windowSeconds: number): TeamConfiguration => 
 
 const grantsOf = (creatureId: Species, windowSeconds: number, type: string) =>
   simulate(solo(creatureId, windowSeconds), corpus)
-    .timeline.filter((e) => e.kind === TimelineEventKind.OngoingChange && e.statusDelta?.type === type)
+    .timeline.filter(
+      (e) => e.kind === TimelineEventKind.OngoingChange && e.statusDelta?.type === type,
+    )
     .map((e) => e.statusDelta!.layerDelta);
 
 const damageOf = (creatureId: Species, windowSeconds: number) =>

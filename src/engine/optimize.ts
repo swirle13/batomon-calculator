@@ -1,4 +1,10 @@
-import type { Corpus, GridSlot, SimulationResult, TeamConfiguration, TeamPlacement } from "../data/types";
+import type {
+  Corpus,
+  GridSlot,
+  SimulationResult,
+  TeamConfiguration,
+  TeamPlacement,
+} from "../data/types";
 import { simulate, windowAverageDps } from "./simulate";
 import { estimateSurvivability, type SurvivabilityEstimate } from "./survivability";
 import { STABLE_SLOT_ORDER, slotKey } from "./grid";
@@ -181,7 +187,10 @@ export function scoreConfiguration(config: TeamConfiguration, corpus: Corpus): n
  * Reports what the optimiser can and cannot reason about for this team, so an empty result can be
  * presented as a limitation rather than a conclusion (FR-069).
  */
-export function analyzePositionalCoverage(config: TeamConfiguration, corpus: Corpus): PositionalCoverage {
+export function analyzePositionalCoverage(
+  config: TeamConfiguration,
+  corpus: Corpus,
+): PositionalCoverage {
   const withPositionalTag: string[] = [];
   const actionable: string[] = [];
   /** Placed creatures with an ability the engine ought to be computing — the honest denominator. */
@@ -277,7 +286,11 @@ export function permutations<T>(items: T[]): T[][] {
 export function suggestPlacement(config: TeamConfiguration, corpus: Corpus): PlacementSuggestion {
   const occupied: GridSlot[] = config.placements
     .map((p) => p.slot)
-    .sort((a, b) => STABLE_SLOT_ORDER.findIndex((s) => slotKey(s) === slotKey(a)) - STABLE_SLOT_ORDER.findIndex((s) => slotKey(s) === slotKey(b)));
+    .sort(
+      (a, b) =>
+        STABLE_SLOT_ORDER.findIndex((s) => slotKey(s) === slotKey(a)) -
+        STABLE_SLOT_ORDER.findIndex((s) => slotKey(s) === slotKey(b)),
+    );
 
   const currentScore = scoreConfiguration(config, corpus);
   if (config.placements.length < 2) {

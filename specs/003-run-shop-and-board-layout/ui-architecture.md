@@ -84,7 +84,9 @@ that insist on their own size. See §3.2.
 ### 2.4 `#root` has a hard minimum width
 
 ```css
-#root { width: max(1126px, calc(var(--builder-row-width) + 2 * 1rem + var(--space-xl))); }
+#root {
+  width: max(1126px, calc(var(--builder-row-width) + 2 * 1rem + var(--space-xl)));
+}
 ```
 
 `max-width: 100%` saves it from overflowing today, but the whole derivation chain
@@ -106,8 +108,12 @@ src/ui/RunLayout/
 
 ```tsx
 interface RunLayoutProps {
-  status: ReactNode; trainer: ReactNode; bench: ReactNode;
-  board: ReactNode;  detail: ReactNode;  shop: ReactNode;
+  status: ReactNode;
+  trainer: ReactNode;
+  bench: ReactNode;
+  board: ReactNode;
+  detail: ReactNode;
+  shop: ReactNode;
 }
 ```
 
@@ -157,24 +163,24 @@ breakpoints chosen where the layout actually changes rather than at device prese
 Two breakpoints are declared — `640px` in seven blocks across six files, `1024px` in three — and
 the count is fine. The problem is that 640px carries **twelve unrelated decisions**:
 
-| | Decision | Really a question about |
-|---|---|---|
-| 1 | `.panelRow` → one column | the page |
-| 2 | `.builderRow` → stacked | the page |
-| 3 | `--page-pad` shrinks | the page |
-| 4 | `--grid-gap` shrinks | the page |
-| 5 | `--sprite-grid` becomes fluid | the board's width |
-| 6 | `--grid-slot-size` becomes portrait | the card |
-| 7 | `--grid-card-chrome` → 3.75rem | the card |
-| 8 | `--grid-card-header` appears | the card |
-| 9 | `--stat-chips-per-row` → 3 | the card |
-| 10 | `--picker-card-min-width` → 7.5rem | the modal |
-| 11 | `TeamLibrary` → sheet | the page |
-| 12 | `.clear` repositions | the card |
+|     | Decision                            | Really a question about |
+| --- | ----------------------------------- | ----------------------- |
+| 1   | `.panelRow` → one column            | the page                |
+| 2   | `.builderRow` → stacked             | the page                |
+| 3   | `--page-pad` shrinks                | the page                |
+| 4   | `--grid-gap` shrinks                | the page                |
+| 5   | `--sprite-grid` becomes fluid       | the board's width       |
+| 6   | `--grid-slot-size` becomes portrait | the card                |
+| 7   | `--grid-card-chrome` → 3.75rem      | the card                |
+| 8   | `--grid-card-header` appears        | the card                |
+| 9   | `--stat-chips-per-row` → 3          | the card                |
+| 10  | `--picker-card-min-width` → 7.5rem  | the modal               |
+| 11  | `TeamLibrary` → sheet               | the page                |
+| 12  | `.clear` repositions                | the card                |
 
 Seven of the twelve are component questions being answered with a viewport number. That is why the
 board cards look wrong inside the picker modal, and why `BatomonCard`'s two-column stat band
-triggers on a *count* (`TWO_COLUMN_FROM = 4`) rather than on available width — it wraps identically
+triggers on a _count_ (`TWO_COLUMN_FROM = 4`) rather than on available width — it wraps identically
 in the 22rem detail panel and in a 10rem shop card, because there was no way to ask.
 
 #### The shell: three layout states, two breakpoints, both derived
@@ -182,11 +188,11 @@ in the 22rem detail panel and in a 10rem shop card, because there was no way to 
 The states are the arrangements that actually exist, and the breakpoints are where the content
 stops fitting — computed from the token chain, not picked off a device list.
 
-| State | Range | Arrangement |
-|---|---|---|
-| **stacked** | `< 64rem` | One column, DOM order. Shop and detail become sheets; status bar sticky |
-| **split** | `64rem – 80rem` | Two columns: trainer + bench + board on the left, detail on the right. Shop a full-width row beneath |
-| **stage** | `≥ 80rem` | The six-region game layout of §1 |
+| State       | Range           | Arrangement                                                                                          |
+| ----------- | --------------- | ---------------------------------------------------------------------------------------------------- |
+| **stacked** | `< 64rem`       | One column, DOM order. Shop and detail become sheets; status bar sticky                              |
+| **split**   | `64rem – 80rem` | Two columns: trainer + bench + board on the left, detail on the right. Shop a full-width row beneath |
+| **stage**   | `≥ 80rem`       | The six-region game layout of §1                                                                     |
 
 The arithmetic, at the desktop 18px root:
 
@@ -212,28 +218,31 @@ the one with the most slack.
 Two precision notes that will otherwise cost an afternoon:
 
 - **Media-query `rem` is always 16px.** Length units in a media query resolve against the
-  *initial* font size, not `:root`'s. This project sets `:root { font-size: 18px }` above 1024px,
+  _initial_ font size, not `:root`'s. This project sets `:root { font-size: 18px }` above 1024px,
   so `80rem` in a media query is 1280px while `80rem` in a rule is 1440px. Use `rem` in the queries
   deliberately and comment it, or the two will be assumed equal.
 - **640px does not simply become 1024px.** Today the 640–1024px band gets the two-column
   `.builderRow`, which already wraps there because 592 + 396 exceeds the viewport — so it is
-  *effectively* stacked and the new scheme only makes that explicit. Worth verifying on a real
+  _effectively_ stacked and the new scheme only makes that explicit. Worth verifying on a real
   tablet rather than assumed.
 
 #### The regions: container queries
 
 ```css
-.region { container-type: inline-size; container-name: region; }
+.region {
+  container-type: inline-size;
+  container-name: region;
+}
 ```
 
 Three thresholds at most per component, per the same sources. The migration from the table above:
 
-| Component | Thresholds | Replaces |
-|---|---|---|
+| Component     | Thresholds                                                             | Replaces                           |
+| ------------- | ---------------------------------------------------------------------- | ---------------------------------- |
 | `BatomonCard` | `< 16rem` compact / `≥ 16rem` regular / `≥ 26rem` two-column stat band | rows 6–9, 12 and `TWO_COLUMN_FROM` |
-| `ShopRegion` | 5 across / 3+2 / horizontal scroll with an edge fade | new |
-| `BenchRegion` | 4 across / 2×2 | new |
-| Picker grid | `OVERLAY_COLUMNS` becomes container-driven | row 10 |
+| `ShopRegion`  | 5 across / 3+2 / horizontal scroll with an edge fade                   | new                                |
+| `BenchRegion` | 4 across / 2×2                                                         | new                                |
+| Picker grid   | `OVERLAY_COLUMNS` becomes container-driven                             | row 10                             |
 
 `BoardRegion` gets **no** container query: the 2×3 never changes shape, and `--grid-slot-size`
 becoming a `clamp()` handles the rest fluidly. Rows 1–4 and 11 stay in media queries, because they
@@ -241,7 +250,7 @@ are page questions.
 
 **The gotcha that will bite:** a `@container` rule cannot style its own query container. If
 `.card { container-type: inline-size }`, then `@container (min-width: 26rem) { .card { … } }`
-matches nothing, because the container must be an *ancestor* of the styled element. Every
+matches nothing, because the container must be an _ancestor_ of the styled element. Every
 card-internal token (`--stat-chips-per-row`, `--grid-card-chrome`) therefore has to be set on an
 inner wrapper, and the card needs one extra element it does not have today. Second-order:
 `container-type: inline-size` applies inline-axis size containment, so the element can no longer be
@@ -307,7 +316,7 @@ phone the detail region is a sheet and a sheet cannot be opened by hovering.
 ```ts
 /** Lifted in the stage, exactly where `highlighted` lives today. */
 const [selected, setSelected] = useState<DragRef | null>(null);
-const [previewed, setPreviewed] = useState<RosterRef | null>(null);  // pointer devices only
+const [previewed, setPreviewed] = useState<RosterRef | null>(null); // pointer devices only
 const subject = previewed ?? selected ?? firstPlacement;
 ```
 
@@ -349,7 +358,7 @@ out before it ships rather than after.
 `grid-template-areas` places children visually with no effect on DOM order, so tab order and
 screen-reader order follow the source. With regions spanning rows there is **no DOM order that is
 geometrically correct at all three breakpoints**, so the requirement has to be read as WCAG reads it
-— a *meaningful* sequence, not a geometric one:
+— a _meaningful_ sequence, not a geometric one:
 
 > `status → trainer → bench → board → detail → shop`
 
@@ -382,8 +391,8 @@ given a width, and the board takes what the trainer and detail columns leave.
 
 ```css
 /* NEW — the stage's three columns */
---region-trainer-width: 14rem;      /* trainer art is 120x80 + ability text */
---region-detail-width: var(--detail-panel-width);   /* 22rem, unchanged */
+--region-trainer-width: 14rem; /* trainer art is 120x80 + ability text */
+--region-detail-width: var(--detail-panel-width); /* 22rem, unchanged */
 --region-gap: var(--space-md);
 --stage-max-width: 86rem;
 
@@ -395,7 +404,7 @@ given a width, and the board takes what the trainer and detail columns leave.
 `--builder-row-width` is retired with `.builderRow`. **`#root`'s `text-align: center` has to go at
 the same time** — it is inherited by every region and the regions are left-aligned content.
 
-Keep `--grid-slot-size` derived from `--sprite-grid` as a *preferred* value rather than replacing
+Keep `--grid-slot-size` derived from `--sprite-grid` as a _preferred_ value rather than replacing
 the derivation. The reasoning recorded in `tokens.css` — that only 48/96/144 stay crisp under
 `image-rendering: pixelated` — still holds, and the clamp's preferred term is where it lives.
 
@@ -404,14 +413,14 @@ the derivation. The reasoning recorded in `tokens.css` — that only 48/96/144 s
 The game's screen does not scroll. Whether ours does is a decision, and it is decidable with
 arithmetic:
 
-| Region | Height |
-|---|---|
-| status | ~48 px |
-| bench (1 row of cards) | ~140 px |
-| board (2 rows) | ~280 px |
-| shop (odds strip + card row) | ~170 px |
-| gaps + page padding | ~56 px |
-| **total** | **~694 px** |
+| Region                       | Height      |
+| ---------------------------- | ----------- |
+| status                       | ~48 px      |
+| bench (1 row of cards)       | ~140 px     |
+| board (2 rows)               | ~280 px     |
+| shop (odds strip + card row) | ~170 px     |
+| gaps + page padding          | ~56 px      |
+| **total**                    | **~694 px** |
 
 So the stage fits without scrolling at **≥ 1280 × 800** and should be allowed to scroll below that.
 Expressing that needs a height-aware clamp on the sprite — `min()` against `100svh`-derived space —
@@ -428,7 +437,7 @@ which is a new kind of token for this project and worth prototyping before commi
 
 ## 8. Phone
 
-The honest answer to *"I'm not sure how I'll make it usable on a mobile device"* is that the game's
+The honest answer to _"I'm not sure how I'll make it usable on a mobile device"_ is that the game's
 landscape layout cannot be mimicked in portrait, and should not be. What transfers is **which things
 exist and what they are called**, not where they sit. Familiarity survives that; a scaled-down
 landscape stage does not — `transform: scale()` on a stage breaks text sizing, hit targets and
@@ -470,36 +479,36 @@ This should land **before** the layout change, as its own small piece of work wi
 
 ### New
 
-| Component | Responsibility |
-|---|---|
-| `RunLayout` | The six slots and the three area maps. Places; renders nothing of its own |
-| `RunStatusBar` | Day, lives, gold, backpack button + badge, view nav, and the three KPIs (§10) |
-| `VitalSigns` | The DPS / mitigation / time-to-kill triple. Its own component because it is the one thing rendered in every layout state and on every surface |
-| `AdviceHeadline` | The advisor's one-line recommendation and its cost, expandable in place |
-| `AnalysisSheet` | `TeamSummary`, the per-creature tables and the three lazy charts, in a `Sheet` |
-| `TrainerRegion` | Wraps the existing `TrainerPicker`/`TrainerCard`; adds the team HP readout |
-| `BenchRegion` | The four positions, lifted out of `GridPicker` |
-| `BoardRegion` | The 2×3, what remains of `GridPicker` |
-| `DetailRegion` | Chooses between a roster card and a shop-offer card; is a `Sheet` on phone |
-| `ShopRegion` | Odds strip, gold, reroll, lock, five `ShopOfferCard`s |
-| `ShopOfferCard` | A `BatomonCard` variant plus price and a buy affordance |
-| `BackpackOverlay` | Hosts the existing trinket/item/modifier panels |
-| `RosterDndProvider` | The lifted `DndContext` + overlay |
-| `Sheet` *(primitive)* | Edge-anchored overlay. Four consumers from day one |
-| `PriceTag` *(primitive)* | `$45`, `—` for unknown, struck through when unaffordable |
+| Component                | Responsibility                                                                                                                                |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `RunLayout`              | The six slots and the three area maps. Places; renders nothing of its own                                                                     |
+| `RunStatusBar`           | Day, lives, gold, backpack button + badge, view nav, and the three KPIs (§10)                                                                 |
+| `VitalSigns`             | The DPS / mitigation / time-to-kill triple. Its own component because it is the one thing rendered in every layout state and on every surface |
+| `AdviceHeadline`         | The advisor's one-line recommendation and its cost, expandable in place                                                                       |
+| `AnalysisSheet`          | `TeamSummary`, the per-creature tables and the three lazy charts, in a `Sheet`                                                                |
+| `TrainerRegion`          | Wraps the existing `TrainerPicker`/`TrainerCard`; adds the team HP readout                                                                    |
+| `BenchRegion`            | The four positions, lifted out of `GridPicker`                                                                                                |
+| `BoardRegion`            | The 2×3, what remains of `GridPicker`                                                                                                         |
+| `DetailRegion`           | Chooses between a roster card and a shop-offer card; is a `Sheet` on phone                                                                    |
+| `ShopRegion`             | Odds strip, gold, reroll, lock, five `ShopOfferCard`s                                                                                         |
+| `ShopOfferCard`          | A `BatomonCard` variant plus price and a buy affordance                                                                                       |
+| `BackpackOverlay`        | Hosts the existing trinket/item/modifier panels                                                                                               |
+| `RosterDndProvider`      | The lifted `DndContext` + overlay                                                                                                             |
+| `Sheet` _(primitive)_    | Edge-anchored overlay. Four consumers from day one                                                                                            |
+| `PriceTag` _(primitive)_ | `$45`, `—` for unknown, struck through when unaffordable                                                                                      |
 
 ### Modified
 
-| Component | Change |
-|---|---|
-| `BatomonCard` | Gains a `variant` covering panel / browser / **shop**; price in the header band beside rarity (FR-C01) |
-| `GridPicker` | Splits into `BoardRegion` + `BenchRegion`; loses its `DndContext` |
-| `App.tsx` | `CalculatorView` becomes the composition in §6 |
-| `App.module.css` | `.builderRow`, `.teamColumn`, `.detailColumn`, `.panelRow` all deleted |
-| `TeamLibrary` | Re-based on `Sheet` |
-| `tokens.css` | §7 |
-| `index.css` | `#root` width and `text-align` (§7.1) |
-| `PlacedCreatureDetails` | Takes a `subject` rather than reading `highlighted` |
+| Component               | Change                                                                                                 |
+| ----------------------- | ------------------------------------------------------------------------------------------------------ |
+| `BatomonCard`           | Gains a `variant` covering panel / browser / **shop**; price in the header band beside rarity (FR-C01) |
+| `GridPicker`            | Splits into `BoardRegion` + `BenchRegion`; loses its `DndContext`                                      |
+| `App.tsx`               | `CalculatorView` becomes the composition in §6                                                         |
+| `App.module.css`        | `.builderRow`, `.teamColumn`, `.detailColumn`, `.panelRow` all deleted                                 |
+| `TeamLibrary`           | Re-based on `Sheet`                                                                                    |
+| `tokens.css`            | §7                                                                                                     |
+| `index.css`             | `#root` width and `text-align` (§7.1)                                                                  |
+| `PlacedCreatureDetails` | Takes a `subject` rather than reading `highlighted`                                                    |
 
 ### Retired
 
@@ -524,25 +533,25 @@ Surveying current guidance on dense analytical UI across viewports, four finding
    ([SaaS Dashboard Design 2026](https://www.sanjaydey.com/saas-dashboard-design-users-love/))
 2. **Do not put content behind tabs when the user needs to compare across them.** Tabs tax short-
    term memory precisely when two things must be read together.
-   ([NN/g, *Tabs, Used Right*](https://www.nngroup.com/articles/tabs-used-right/))
+   ([NN/g, _Tabs, Used Right_](https://www.nngroup.com/articles/tabs-used-right/))
 3. **Mobile is a different product, not a squeeze.** Two or three metrics, stacked cards,
    tap-to-reveal instead of hover, 44×44 px targets.
-   ([NN/g, *Defer Secondary Content*](https://www.nngroup.com/articles/defer-secondary-content-for-mobile/);
+   ([NN/g, _Defer Secondary Content_](https://www.nngroup.com/articles/defer-secondary-content-for-mobile/);
    [Responsive Dashboard Design](https://www.sumboard.io/blog/responsive-dashboard-design))
 4. **A drawer beats a route change for detail.** The list stays mounted behind it; filter state,
    scroll position and keyboard navigation survive; `Esc` and backdrop dismiss. 50% width on
    desktop, 100% on mobile.
    ([Designing Data-Dense Dashboards](https://pixel-show.com/blog/designing-data-dense-dashboards))
 
-Finding 2 is the decisive one here, because of what this screen is *for*. The primary task is
+Finding 2 is the decisive one here, because of what this screen is _for_. The primary task is
 **"what should I do before I press Battle"** — buy, place, level. The DPS figure and the advisor's
-recommendation are not reports *about* that decision, they are *inputs to it*, read while the board
+recommendation are not reports _about_ that decision, they are _inputs to it_, read while the board
 is being edited. So they cannot go in a tab, and they cannot go behind a disclosure that closes.
 The per-creature tables and the charts are investigation, and they can.
 
 ### Three options
 
-#### Option A — Cockpit *(recommended)*
+#### Option A — Cockpit _(recommended)_
 
 Vital signs always visible, investigation in a sheet.
 
@@ -619,7 +628,7 @@ takes the stage-one selection count from `C(10,6) = 210` to `C(15,6) = 5,005` �
 seconds, not milliseconds.
 
 The structure that avoids it is in [`data-model.md`](./data-model.md) §6: enumerate the ≤32
-affordable *baskets* first, and run the existing search once per basket on a roster of at most 10+2.
+affordable _baskets_ first, and run the existing search once per basket on a roster of at most 10+2.
 That is ~32 × 210 selections in the worst case and far fewer in practice, because the budget
 discards most baskets before any simulation. Pricing in stage one, as `isLocked` already does, is
 what makes the constraint cheapen the search instead of widening it.
@@ -648,15 +657,15 @@ The worker boundary already exists and must be kept. SC-001's 500 ms is the budg
 Steps 1–3 are independently valuable and ship without any layout change. Step 6 is the only
 irreversible one.
 
-| # | Step | Ships on its own? |
-|---|---|---|
-| 1 | Extract `Sheet`; migrate `TeamLibrary` onto it | Yes — no visible change, one fewer bespoke drawer |
-| 2 | Explicit selection model (§5), keeping the current layout | Yes — tapping a card on a phone finally opens its details |
-| 3 | Lift `DndContext` into `RosterDndProvider`; split `GridPicker` into board + bench regions, still stacked | Yes — no visible change |
-| 4 | Budget-aware advice + cost on every advice row (`data-model.md` §6) | Yes — fixes unaffordable recommendations |
-| 4b | Move `BatomonCard`'s internal breakpoints onto container queries (§3.3) | Yes — fixes the card rendering identically at 10rem and 22rem |
-| 5 | `ShopRegion` below the bench, in the current layout | Yes — the shop works before it moves |
-| 6 | `RunLayout`, the region migration, token re-rooting, the Cockpit split (§10) | The big one |
+| #   | Step                                                                                                     | Ships on its own?                                             |
+| --- | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| 1   | Extract `Sheet`; migrate `TeamLibrary` onto it                                                           | Yes — no visible change, one fewer bespoke drawer             |
+| 2   | Explicit selection model (§5), keeping the current layout                                                | Yes — tapping a card on a phone finally opens its details     |
+| 3   | Lift `DndContext` into `RosterDndProvider`; split `GridPicker` into board + bench regions, still stacked | Yes — no visible change                                       |
+| 4   | Budget-aware advice + cost on every advice row (`data-model.md` §6)                                      | Yes — fixes unaffordable recommendations                      |
+| 4b  | Move `BatomonCard`'s internal breakpoints onto container queries (§3.3)                                  | Yes — fixes the card rendering identically at 10rem and 22rem |
+| 5   | `ShopRegion` below the bench, in the current layout                                                      | Yes — the shop works before it moves                          |
+| 6   | `RunLayout`, the region migration, token re-rooting, the Cockpit split (§10)                             | The big one                                                   |
 
 Each of 1, 2, 3 removes one of §2's blockers. By the time step 6 starts, it is a stylesheet and a
 composition change rather than a refactor — which is the point of doing them first.

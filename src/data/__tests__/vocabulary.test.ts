@@ -88,7 +88,12 @@ describe("vocabulary registries — one declaration each", () => {
 
   it("orders members by `order`, which is what every derived list reads", () => {
     expect(RARITIES_ASC).toEqual([
-      Rarity.Common, Rarity.Uncommon, Rarity.Rare, Rarity.SuperRare, Rarity.Legendary, Rarity.Mythical,
+      Rarity.Common,
+      Rarity.Uncommon,
+      Rarity.Rare,
+      Rarity.SuperRare,
+      Rarity.Legendary,
+      Rarity.Mythical,
     ]);
   });
 
@@ -120,7 +125,9 @@ describe("derived lists are key-complete against their registry", () => {
     // added to the union and omitted from itself — the exact drift its own guard existed to catch.
     expect([...ABILITY_TRIGGERS].sort()).toEqual(Object.values(AbilityTrigger).sort());
     for (const t of ABILITY_TRIGGERS) {
-      expect(TRIGGER_DEFINITIONS[t].actionLabel.length, `no actionLabel for ${t}`).toBeGreaterThan(0);
+      expect(TRIGGER_DEFINITIONS[t].actionLabel.length, `no actionLabel for ${t}`).toBeGreaterThan(
+        0,
+      );
     }
   });
 
@@ -136,11 +143,12 @@ describe("derived lists are key-complete against their registry", () => {
 });
 
 describe("GUARD: nothing restates a vocabulary", () => {
-
   it("no source file hand-writes a rarity ordering array", () => {
     // `RARITIES = ["Mythical", "Legendary", ...]` was declared in three files with inconsistent
     // ordering between them. One declaration, so a fourth cannot appear.
-    const offenders = files().filter((f) => /const RARITIES\w*[^=]*=\s*\[\s*["']/.test(readFileSync(f, "utf8")));
+    const offenders = files().filter((f) =>
+      /const RARITIES\w*[^=]*=\s*\[\s*["']/.test(readFileSync(f, "utf8")),
+    );
     expect(offenders).toEqual([]);
   });
 
@@ -228,7 +236,12 @@ describe("GUARD: the corpus stores enum members, never bare strings", () => {
    * one tier coexist, and what made every boundary a cast. These assertions are on the SOURCE TEXT
    * rather than the parsed values, because a parsed value cannot tell you how it was written.
    */
-  const DATA_FILES = ["src/data/creatures.ts", "src/data/trinkets.ts", "src/data/trainers.ts", "src/data/items.ts"];
+  const DATA_FILES = [
+    "src/data/creatures.ts",
+    "src/data/trinkets.ts",
+    "src/data/trainers.ts",
+    "src/data/items.ts",
+  ];
 
   it.each(DATA_FILES)("%s writes no bare vocabulary literal", (file) => {
     const source = readFileSync(file, "utf8");

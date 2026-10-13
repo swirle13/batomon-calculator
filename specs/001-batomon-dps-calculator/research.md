@@ -9,6 +9,7 @@ must reproduce, each grounded in a cited source rather than assumed.
 ## A. Technology choices
 
 ### A1. Test runner for an engine with no DOM dependency
+
 - **Decision**: Vitest.
 - **Rationale**: Native to the Vite toolchain already chosen (shares config/transform pipeline,
   no separate babel/webpack test config), runs engine unit tests headlessly with zero DOM, and has
@@ -17,6 +18,7 @@ must reproduce, each grounded in a cited source rather than assumed.
   Vite project — redundant tooling for no real benefit here).
 
 ### A2. Charting library for cumulative time-series
+
 - **Decision**: Recharts.
 - **Rationale**: React-native composable chart components, good TypeScript types, supports
   multiple overlaid series (one per status-effect type + total damage) on a shared time axis with
@@ -28,6 +30,7 @@ must reproduce, each grounded in a cited source rather than assumed.
   but reimplements axis/legend/tooltip work Recharts already provides).
 
 ### A3. React state management
+
 - **Decision**: Local component state + React Context for the single shared "team configuration"
   object; no external state library.
 - **Rationale**: One editable object (team config) feeding two consumers (summary panel, chart) is
@@ -35,6 +38,7 @@ must reproduce, each grounded in a cited source rather than assumed.
   ahead of actual need).
 
 ### A4. UI primitives / styling
+
 - **Decision**: Plain CSS modules (co-located `*.module.css`), no component library dependency.
 - **Rationale**: The UI surface (grid picker, summary table, chart, corpus browser) is small and
   bespoke (a 2x3 grid picker is not something a generic component library provides anyway); avoids
@@ -43,6 +47,7 @@ must reproduce, each grounded in a cited source rather than assumed.
 ## B. Game mechanics (grounded in cited sources)
 
 ### B1. Cooldown Speed (attack-timing) formula
+
 > `effective cooldown = base cooldown / (1 + cooldownSpeed) + positiveFlatAddedCooldown`, then
 > clamp the result to a minimum of 0.1s. Cooldown Speed is entered as a decimal (20% = 0.20).
 > Flat additions are applied **after** the speed division, not before.
@@ -57,15 +62,16 @@ must reproduce, each grounded in a cited source rather than assumed.
   engine code depends on it (Constitution Principle III).
 
 ### B2. Status effect timing/decay — Burn, Poison, Shock
+
 > - **Burn**: ticks every 0.5s; tick damage = current Burn layer count; loses 1 layer immediately
 >   after each tick (self-decaying).
 > - **Poison**: ticks every 1s; tick damage = current Poison layer count; layers do **not**
 >   decrease from the act of ticking (persists until removed by another effect).
 > - **Shock**: does not tick on a timer at all. Instead, whenever a **direct damage hit** lands on
->   a Shocked target, a *separate* Shock hit resolves **first**, equal to the current Shock layer
+>   a Shocked target, a _separate_ Shock hit resolves **first**, equal to the current Shock layer
 >   count, before the direct hit itself. Shock does not naturally decay. Status-damage ticks
 >   (Burn/Poison) and Sudden Death damage do **not** re-trigger a Shock hit — only direct damage
->   does. A cast that *applies* new Shock does not boost that same cast's own direct-damage hit
+>   does. A cast that _applies_ new Shock does not boost that same cast's own direct-damage hit
 >   (status application happens after damage resolution).
 
 > **Ticking statuses are ONE POOL on the target, not one instance per application
@@ -77,7 +83,7 @@ must reproduce, each grounded in a cited source rather than assumed.
 > 7.5 deals 8: cumulative **20**, where the per-instance model gave 16 and then wrongly ticked again
 > at 8.0.
 >
-> This is what B2 above already said — tick damage is the *"current Poison layer count"*, singular,
+> This is what B2 above already said — tick damage is the _"current Poison layer count"_, singular,
 > meaning the target's stack rather than any one application's. The engine simply did not implement
 > it that way. A later application **adds to the stack without resetting the cadence**; the cadence
 > starts when the pool goes from empty to non-empty and stops when it empties.
@@ -88,9 +94,9 @@ must reproduce, each grounded in a cited source rather than assumed.
 
 > **Burn's per-tick damage was queried and is CONFIRMED (2026-10-06).** An alternative model was
 > proposed from a control test — one tick deals 1 damage and consumes 1 stack, so N burn deals N
-> total — and then withdrawn after watching the damage numbers in-game: *"the tick does the damage
+> total — and then withdrawn after watching the damage numbers in-game: _"the tick does the damage
 > of the present value of the burn stack (4), it ticks down by one the next 0.5s and then does 3
-> damage, then 2, then 1."*
+> damage, then 2, then 1."_
 >
 > Recorded because the two models differ by N(N+1)/2 against N — for a 170-stack burn, 14,535 damage
 > versus 170 — so this is worth not re-litigating. The sequence is now pinned end-to-end in
@@ -104,7 +110,7 @@ must reproduce, each grounded in a cited source rather than assumed.
 
 **Evidence**: Venopuff + Magmite + shiny Dribblet against a 300 HP enemy, hand-recorded as 28
 consecutive events with the enemy's health after each. Because the health column is cumulative, it
-constrains every tick's *amount* and every tick's *time* at once — a model wrong about any one of
+constrains every tick's _amount_ and every tick's _time_ at once — a model wrong about any one of
 them diverges and never recovers. The engine now reproduces all 28 rows and the 8-point overkill;
 pinned in `statusStacks.test.ts`.
 
@@ -113,10 +119,10 @@ pinned in `statusStacks.test.ts`.
 Poison ticks on whole seconds, Burn on half-seconds, whenever anything is on the target. The clock
 is **not** anchored to when a status was applied.
 
-| | Venopuff casts Poison at | first tick |
-|---|---|---|
-| observed | 3.5 | **4.0** |
-| application-anchored (wrong) | 3.5 | 4.5 |
+|                              | Venopuff casts Poison at | first tick |
+| ---------------------------- | ------------------------ | ---------- |
+| observed                     | 3.5                      | **4.0**    |
+| application-anchored (wrong) | 3.5                      | 4.5        |
 
 A status applied exactly on a grid line waits for the next one: Magmite applies Burn at 4.5 and the
 first burn tick is 5.0, not 4.5.
@@ -134,13 +140,13 @@ Venopuff's casts at 7.0, 14.0 and 21.0 each land on a tick instant, and those ti
 
 #### 3. Order within one instant
 
-| # | | evidence |
-|---|---|---|
-| 1 | ticks due at this instant resolve, reading the stack as it stands | observed (2) |
-| 2 | casts resolve: direct damage, then status application | B2; a cast's Shock does not boost its own hit |
-| 3 | reactive effects (charges, ally-cast hooks, on-cast buffs) | FR-040 |
+| #   |                                                                   | evidence                                      |
+| --- | ----------------------------------------------------------------- | --------------------------------------------- |
+| 1   | ticks due at this instant resolve, reading the stack as it stands | observed (2)                                  |
+| 2   | casts resolve: direct damage, then status application             | B2; a cast's Shock does not boost its own hit |
+| 3   | reactive effects (charges, ally-cast hooks, on-cast buffs)        | FR-040                                        |
 
-**Still unsettled**: ordering between two *different* appliers within one instant. Every case
+**Still unsettled**: ordering between two _different_ appliers within one instant. Every case
 observed so far has a single applier per status.
 
 - **Sources**:
@@ -158,19 +164,20 @@ observed so far has a single applier per status.
     matches the engine's existing `applyShockProc` (proc damage = current layer count) rather
     than contradicting it; recorded here because the user separately encountered the shorter
     official-ish flavor text "Shock - Takes additional damage when attacked", which states the
-    *existence* of bonus damage but not its magnitude — this second source fills that gap.
+    _existence_ of bonus damage but not its magnitude — this second source fills that gap.
 - **Engine implication**: this is **not** one shared "DOT" shape. Each status type needs its own
   tick/trigger rule:
   - Burn and Poison are modeled as a generic "periodic self-decaying-or-not stack" primitive with
     two parameters (`tickInterval`, `decayPerTick: 0 | 1 layer`).
-  - Shock is modeled as a *reactive* modifier on the direct-damage event pipeline, not a timer —
+  - Shock is modeled as a _reactive_ modifier on the direct-damage event pipeline, not a timer —
     it needs its own code path, not a reuse of the Burn/Poison timer primitive.
   - This directly justifies Constitution Principle I's engine/data separation: the status-effect
-    *type definitions* are data, but each status *behavior* (periodic-decay vs. periodic-no-decay
+    _type definitions_ are data, but each status _behavior_ (periodic-decay vs. periodic-no-decay
     vs. hit-reactive) is one of a small closed set of engine strategies the data selects between —
     never an open-ended per-creature script.
 
 ### B3. Shield interaction with status damage
+
 > Shield absorbs incoming damage first. Status damage (Burn/Poison ticks, and Shock's triggered
 > hit) hitting a Shield is reduced by **25%** before being absorbed, per the current (Hotfix 0.6.1)
 > patch value — this was 30% in Patch 0.6.0 and has changed before. Poison no longer bypasses
@@ -186,12 +193,13 @@ observed so far has a single applier per status.
   Principle IV applies to engine constants too, not just creature records).
 
 ### B4. Trigger vs. Ongoing vs. On Cast/On Battle Start/On Victory (event model)
+
 > - **Ongoing**: a continuing contribution/aura active for as long as its source is alive and its
 >   ability isn't disabled. Not a repeated cast — it's a standing modifier.
-> - **Trigger**: requests an *extra full cast sequence*, using the unit's current Multicast count
+> - **Trigger**: requests an _extra full cast sequence_, using the unit's current Multicast count
 >   at that moment; critically, the extra sequence **preserves progress on the ordinary cooldown
 >   timer rather than resetting it**.
-> - **On Cast / On Battle Start / On Victory**: these are event *labels* (when something happens),
+> - **On Cast / On Battle Start / On Victory**: these are event _labels_ (when something happens),
 >   not effect types themselves — the ability text after the label is what actually happens
 >   (which may itself be a Trigger, a stat change, an Ongoing grant, etc.).
 > - **Multicast**: causes a cast to resolve as multiple direct-damage hits; relevant to Shock math
@@ -215,6 +223,7 @@ observed so far has a single applier per status.
   confirmed game rule.
 
 ### B5. Board layout and targeting
+
 > The battle board is six slots: two rows of three (top row **A1–A3**, bottom row **B1–B3**), plus
 > a separate four-slot bench that does not fight and does not count for any adjacency/above/behind
 > relationship until dragged onto A/B. "Adjacent" means sharing a side (same row, neighboring
@@ -231,7 +240,7 @@ observed so far has a single applier per status.
 > the corpus — Formiqueen's cooldown aura, Petrirex's and Rattleghast's knockouts, Noxnimbus's
 > Poison grant, and every `adjacent` `TargetSelector`. It survived 460 tests because none of them
 > paired two slots in different rows; `engine/__tests__/grid.test.ts` now asserts the full 6×6
-> matrix so a missing *direction* cannot hide again.
+> matrix so a missing _direction_ cannot hide again.
 >
 > The quoted block is left intact rather than edited, because it is a transcription and the
 > correction is to our reading of it, not to the source.
@@ -245,25 +254,27 @@ observed so far has a single applier per status.
   <https://batomonshowdowngame.wiki/guides/combat/>; "Batomon Showdown Controls Guide" —
   <https://batomonshowdowngame.wiki/guides/controls/>. All retrieved 2026-10-05.
 - **Engine implication**: confirms the spec's 2x3 grid (FR-005) maps directly to `{row: 'back' |
-  'front', col: 0 | 1 | 2}`, matches the constitution's "two rows by three columns" framing, and
+'front', col: 0 | 1 | 2}`, matches the constitution's "two rows by three columns" framing, and
   confirms per-spec Assumption ("idealized target" rather than full two-board resolution) is a
   reasonable simplification — a full implementation of the shared-HP-pool, two-sided battle
   resolver is explicitly out of scope per the spec's Assumptions section, not a gap introduced
   during planning.
 
 ### B6. Merge/evolution (out of scope for v1 engine, recorded for later)
+
 > Three matching level-1 copies merge into one level-2; two matching level-2 copies merge into one
 > level-3. A merge can also grant a trinket.
 
 - **Source**: "Batomon Showdown Abilities Guide: Triggers, Cooldowns & Combat Timing Explained" —
   <https://www.batomon-showdown.wiki/items/batomon-showdown-abilities-guide>. Retrieved 2026-10-05.
 - **Engine implication**: the corpus data model should record each creature's **level** as an
-  explicit field (a creature's stats differ by level), but the shop/merge *economy* itself is
+  explicit field (a creature's stats differ by level), but the shop/merge _economy_ itself is
   outside this feature's scope (the spec's User Stories are about an assembled team's output, not
   about simulating the drafting phase). Each creature record is per-level, not a single
   merge-computed record.
 
 ### B7. Elemental/creature types observed across sources
+
 Fire, Water, Electric, Toxic, Flying, Rock, Grass, Bug, Steel (patch-notes label for "Ironcore"),
 Dragon, Ghost, and the special "All" typing (seen on Omnichrome). "Fighting" appears in ability text
 in creator footage per one source but is explicitly flagged there as unconfirmed by official
@@ -277,6 +288,7 @@ than silently omitting or silently asserting it).
 ## D. Round 2 follow-ups (2026-10-05 — user-reported items, planned via `/speckit-plan`)
 
 ### D1. Trainer roster completeness
+
 > The full documented 1.2.0 roster is 23 Trainers: Black Belt, Bug Catcher, Burglar, Chef, Chemist,
 > Egg Breeder, Gamer, Gentleman, Lucky Girl, Mad Scientist, Masked Man, Monster Ranger, Musician,
 > Painter, Redhead, Rich Lady, Scavenger, Shopkeeper, Smuggler, Swim Coach, Treasure Hunter, Twins,
@@ -302,6 +314,7 @@ than silently omitting or silently asserting it).
   too).
 
 ### D2. Level-scaling (1–4) specifics
+
 > Standard merge path: 3 identical Level-1 copies → 1 Level-2; 2 identical Level-2 copies → 1
 > Level-3. Level 3 is the standard ceiling — Level 4 is **not** reachable via ordinary shop/merge
 > play; it only comes from rare in-run events (e.g. a "Monster Professor"-style event) or
@@ -326,6 +339,7 @@ than silently omitting or silently asserting it).
   (not every species defaults to a theoretical max of 4).
 
 ### D3. Multicast counts toward output; Trigger does not reset cooldown — both currently unimplemented
+
 > "Battle stats count triggers, not multicast copies" (1.2.0 patch notes) plus "On Cast resolves
 > when that creature performs a cast, including each repeated cast in a Multicast sequence" (same
 > mechanics guide) together establish: every individual Multicast-sequence hit is its own
@@ -347,9 +361,10 @@ than silently omitting or silently asserting it).
   an extra cast) that nothing in this round's request depends on; tracked, not silently dropped.
 
 ### D4. Chart X-axis consistency (engineering decision — no external research needed)
+
 - **Root cause 1**: `CumulativeChart`'s `<XAxis dataKey="t">` has no explicit `type`, so Recharts
   defaults to a **category** axis — every distinct `cumulativeSeries[].tSeconds` value becomes its
-  own evenly-*pixel*-spaced tick, regardless of numeric magnitude, which is why consecutive labels
+  own evenly-_pixel_-spaced tick, regardless of numeric magnitude, which is why consecutive labels
   (e.g. `4, 4.9, 5.9, 6, 6.9, 8, 8.8, …`) look inconsistent: they ARE inconsistently spaced in
   value, evenly spaced in pixels.
 - **Root cause 2**: cast times in `simulate.ts` Phase A are generated by repeated float addition
@@ -357,12 +372,13 @@ than silently omitting or silently asserting it).
   drift for non-power-of-two cooldowns — surfacing as labels like `14.7000000000000001`.
 - **Decision**: `XAxis` becomes `type="number"` with an explicit `domain={[0, windowSeconds]}`, so
   Recharts' own linear-scale "nice tick" generator picks clean, evenly-spaced values (e.g. `0, 5,
-  10, 15, 20`) independent of the underlying data points. Separately, fix the float-drift root
+10, 15, 20`) independent of the underlying data points. Separately, fix the float-drift root
   cause by generating cast times via index multiplication (`t = startAt + n * cooldown`, not
   repeated `+=`), and round every `TimelineEvent.tSeconds` to a fixed precision (1e-6s) at the
   point of creation, so no float artifact can leak into a tooltip label either.
 
 ### D5. Corpus completeness — measured baseline (user-reported "regression" diagnosed as a data gap)
+
 > As of this round, 144 of 149 creature records (~96.6%) have `baseDamage: null` /
 > `baseCooldownSeconds: null` ("unconfirmed", shown as "unknown" in the UI) — only `bumblebolt`,
 > `formiqueen`, `scorchimp`, `beetbud`, and `riglet` currently carry confirmed combat stats. This
@@ -385,6 +401,7 @@ than silently omitting or silently asserting it).
 ## E. Round 3 follow-ups (2026-10-05 — reference-site UI inspiration, planned via `/speckit-plan`)
 
 ### E1. Trust/provenance investigation: is batomon.com official?
+
 > **No.** `batomon.com` is an independent community-built companion site, not affiliated with
 > the game's developer/publisher. Confirmed via four independent angles:
 
@@ -401,10 +418,10 @@ than silently omitting or silently asserting it).
   `cf-ray`) — a standard indie-dev stack (Cloudflare Pages/Workers + Next.js), not a
   publisher-grade CDN contract that would itself imply anything about affiliation.
 - **The site's own self-disclosure** (strongest signal): the page header reads "COMMUNITY META
-  COMPANION" directly under the logo, and its own FAQ states outright: *"Batomon.com is not the
+  COMPANION" directly under the logo, and its own FAQ states outright: _"Batomon.com is not the
   game developer. Batomon.com is an independent community site... Only the game developer
   announces official ports and release dates. Follow the official Steam page and official
-  Discord announcements."* — <https://batomon.com/faq>, retrieved 2026-10-05.
+  Discord announcements."_ — <https://batomon.com/faq>, retrieved 2026-10-05.
 - **Developer of record**: Batomon Showdown's actual developer and publisher, per its Steam
   store page, is **berrymint** — <https://store.steampowered.com/app/4557380/Batomon_Showdown/>,
   retrieved 2026-10-05. No evidence connects berrymint to batomon.com's registration or operation.
@@ -412,7 +429,7 @@ than silently omitting or silently asserting it).
 **Conclusion**: batomon.com is in the same category as this project — a fan-built companion tool
 over the same community-sourced data (it even cites the identical "Balance 24 / Steam build
 25600878" patch label we already use) — not an authority to defer to uncritically, but a
-legitimate *additional* citable source for corpus research (it has its own per-creature wiki
+legitimate _additional_ citable source for corpus research (it has its own per-creature wiki
 pages, e.g. `batomon.com/batomon/<slug>`), on the same footing as batodex.com/batomon.net/the
 various `batomonshowdow(n)*.wiki` sites already cited elsewhere in this document. The "AI
 generated" feel is very plausibly accurate (Next.js + generic Cloudflare hosting + a brand-new
@@ -420,14 +437,15 @@ domain is a common AI-assisted-indie-site fingerprint) but is not itself evidenc
 same caveat already applied to every other fan source cited throughout this document.
 
 ### E2. UI/UX direction: adopt the reference site's team-builder layout concept, fix 7 defects
-The user wants this project's *layout concept* (icon-based creature cards in the grid,
+
+The user wants this project's _layout concept_ (icon-based creature cards in the grid,
 type-colored card backgrounds, a modal creature search per slot, level/Shiny controls per
 placement, a hover detail panel) without visually cloning batomon.com's Build Lab, and wants our
 own differentiators (StatModifiers, DPS/damage numbers — batomon.com's Build Lab has **none** of
 either) preserved and foregrounded, not lost in the redesign. The user also identified 7 concrete
 defects in the reference implementation to deliberately avoid:
 
-1. **Search modal doesn't autofocus or clear on reopen** — opening the picker for a *different*
+1. **Search modal doesn't autofocus or clear on reopen** — opening the picker for a _different_
    slot keeps the previous slot's typed query, so the first thing visible is a stale, over-
    filtered result list, and the user must manually click into the field to type at all.
    **Decision**: the search input must both clear its value AND receive keyboard focus every
@@ -447,7 +465,7 @@ defects in the reference implementation to deliberately avoid:
    everywhere a type is rendered as a color — card background, tag chip, and any future type
    filter control — so this class of inconsistency can't recur.
 5. **No drag-and-drop between slots** — only a modal-based "click a slot, pick from a list" flow.
-   **Decision**: add drag-and-drop as an *additional* interaction, not a replacement — the
+   **Decision**: add drag-and-drop as an _additional_ interaction, not a replacement — the
    existing modal/dropdown-driven assignment must stay fully functional for keyboard/
    screen-reader users (accessibility parity, Constitution-aligned with the still-open `tasks.md`
    T054 accessibility pass). Library choice:
@@ -477,7 +495,7 @@ defects in the reference implementation to deliberately avoid:
      2026-10-05 — lists 13 evolutions across 11 base Batomon for the current build; corroborates
      Panbud→Bambudo, Scorchimp→Sunsage, and the already-cited Beetbud→Beetdown, but the scraped
      table lost its trigger-condition column alignment for several pairs (notably Ignit, which
-     this source appears to list against *two* different targets — Basilord and Flarilisk — and
+     this source appears to list against _two_ different targets — Basilord and Flarilisk — and
      Sproutquill, listed against both Fernfowl and Quillustrous). **Left unresolved, not
      guessed**: a branching evolution (more than one documented target) needs its own trigger
      condition confirmed from a source with intact table structure before encoding either branch
@@ -491,7 +509,7 @@ defects in the reference implementation to deliberately avoid:
    currently hovered, disappears when the pointer leaves, and visually covers lower-row cards
    when a card near the top of the grid is hovered (z-index/anchoring bug). **Decision**: the
    detail view becomes a single, layout-reserved side panel (not an overlay) driven by a
-   `highlightedSlot` piece of *transient UI state* — updates on hover/focus of a new card, never
+   `highlightedSlot` piece of _transient UI state_ — updates on hover/focus of a new card, never
    clears on hover/focus-out, defaults to the first placed creature (or an empty state) rather
    than nothing. This is explicitly UI-only state, not part of `TeamConfiguration` — see
    data-model.md's note on keeping it out of the persisted team-config shape.
@@ -553,7 +571,7 @@ defects in the reference implementation to deliberately avoid:
 
 ### F3. New stats: Heal and Sell Value
 
-> User-supplied in-game stat reference, corroborated: **Heal** restores HP, resolved *after*
+> User-supplied in-game stat reference, corroborated: **Heal** restores HP, resolved _after_
 > damage in the same tick (so it can save a target from damage that would otherwise be lethal in
 > that same tick) — a mechanic this engine cannot simulate yet for the same reason Shield
 > absorption isn't wired in (`tasks.md` T037: no modeled opposing HP pool exists under the
@@ -581,7 +599,7 @@ defects in the reference implementation to deliberately avoid:
   itself already shows position; repeating "Back 1" / "front0" text in `TeamSummary`'s rows and
   `PlacedCreatureDetails`'s panel is redundant. **Decision**: drop the slot-position text from
   both displays. The underlying per-slot keying (`${creatureId}@${slotKey}`) is unchanged — only
-  the *displayed* label changes; two placements of the same species will show as two
+  the _displayed_ label changes; two placements of the same species will show as two
   identically-labeled rows, which the user has explicitly accepted as a non-issue.
 
 ### F5. Corpus scale-up, part 1: level 2/3/4 stats are NOT accessible via any available static source — a hard blocker, not just a lot of work
@@ -593,15 +611,15 @@ defects in the reference implementation to deliberately avoid:
 > content (confirmed via direct fetch, not just search snippets) never returns those numbers.
 
 - **Evidence**: direct fetch of <https://batodex.com/monsters/bonshell> returns only the Lv 1
-  card (Shield 100, 7.0s cooldown, "+80 Damage and +80 Shield") plus inert tab *labels* ("Lv 1
+  card (Shield 100, 7.0s cooldown, "+80 Damage and +80 Shield") plus inert tab _labels_ ("Lv 1
   Lv 2 Lv 3 Lv 4") with no associated values. <https://batomon.net/batomon/dracana/> and
-  <https://batomon.net/batomon/bonshell/> both say outright: *"This page deliberately keeps
+  <https://batomon.net/batomon/bonshell/> both say outright: _"This page deliberately keeps
   normal level 1 separate from levels 2, 3 and 4... the in-game inspect panel gives you the
-  current numbers directly"* — i.e. even that source's authors only have level-1 numbers to
+  current numbers directly"_ — i.e. even that source's authors only have level-1 numbers to
   publish. No source found (across ~10 distinct fan sites cited in this document) publishes a
   level 2/3/4 numeric table for the general creature roster; the handful of specific values this
   project already cites (Pyronade Burn 20/40/60, Coalem Shield 550/1100/1650, etc. — research.md
-  D2) are rare exceptions some *guide* authors chose to manually transcribe for a few popular
+  D2) are rare exceptions some _guide_ authors chose to manually transcribe for a few popular
   units, not a systematically available dataset.
 - **Engine/data implication**: "Add all level 2/3/4 stats for all 149 creatures" is **blocked**
   by this project's tooling (no browser automation available/authorized this round — Constitution
@@ -613,7 +631,7 @@ defects in the reference implementation to deliberately avoid:
 
 ### F6. Corpus scale-up, part 2: level-1 damage/cooldown for all remaining creatures — large but achievable
 
-Unlike F5, level-1 `baseDamage`/`baseCooldownSeconds` *is* accessible via individual
+Unlike F5, level-1 `baseDamage`/`baseCooldownSeconds` _is_ accessible via individual
 batodex.com-style pages (confirmed working for the 9 creatures already completed across prior
 rounds). This remains a large, multi-source-citation task — continuing `tasks.md` T075's
 existing "one cited batch at a time" pattern, scaled up substantially this round, not claimed
@@ -624,7 +642,7 @@ as 100% complete in one pass unless it genuinely is.
 ### G1. Correction to research.md F5: level 2/3/4 stats are NOT blocked — F5's finding was a tooling artifact, not a data-availability fact
 
 > **F5 is retracted.** Investigating directly (not re-asserting the prior finding): batodex.com's
-> creature pages are server-rendered by Next.js's App Router, which embeds the *entire* site
+> creature pages are server-rendered by Next.js's App Router, which embeds the _entire_ site
 > database — every creature, every level 1-4 stat, every evolved form, both normal and Shiny
 > variants, and the full by-level ability text — as one JSON object inside a
 > `self.__next_f.push([1, "..."])` React Server Components streaming script tag on **every**
@@ -636,11 +654,11 @@ as 100% complete in one pass unless it genuinely is.
 - **Verified structure** (`https://batodex.com/monsters/bonshell`, retrieved 2026-10-06):
   decoding the JS string inside the matching `push` call yields
   `{"category":"monsters","entries":[{"id":"beetbud",...,"levels":[{"level":1,"cooldown":7,
-  "multicast":null,"stats":[{"key":"shield","value":100}]},{"level":2,...,"value":200},
-  {"level":3,...,"value":300},{"level":4,...,"value":600}],"shinyLevels":[...],"ability":
-  {"trigger":"On Cast","description":"...","byLevel":{"1":"...","2":"...","3":"...","4":"..."}},
-  "shinyAbility":{...},"evolution":{"targetId":"bambudo","level":3,"trigger":"level"}|null,
-  "evolvedForm":{...nested, same shape...}|"$undefined", ...}, ...]}` — 144 top-level entries,
+"multicast":null,"stats":[{"key":"shield","value":100}]},{"level":2,...,"value":200},
+{"level":3,...,"value":300},{"level":4,...,"value":600}],"shinyLevels":[...],"ability":
+{"trigger":"On Cast","description":"...","byLevel":{"1":"...","2":"...","3":"...","4":"..."}},
+"shinyAbility":{...},"evolution":{"targetId":"bambudo","level":3,"trigger":"level"}|null,
+"evolvedForm":{...nested, same shape...}|"$undefined", ...}, ...]}` — 144 top-level entries,
   with evolved forms nested one level inside their pre-evolution entry's `evolvedForm` key
   (multi-stage chains nest recursively — e.g. Ignit's `evolvedForm` is Flarilisk, whose own
   `evolvedForm` would be Basilord if encoded the same way). Flattening recursively yields
@@ -654,7 +672,7 @@ as 100% complete in one pass unless it genuinely is.
   victory-triggered one gets `evolvesInto` populated with no `evolvesAtLevel` — recorded as a
   known limitation (resolveLevelUp cannot currently resolve a victory-triggered evolution,
   since it has no "level" input to key off; still correct for not evolving when it shouldn't).
-- **New data per level, not previously captured**: `multicast` varies *by level* for some
+- **New data per level, not previously captured**: `multicast` varies _by level_ for some
   species (e.g. Humbolt: 2/3/4/8 across levels 1-4; Sunsage: null/null/null/2) — round 4's
   `baseMulticast` was only ever set from level-1 data. Ability text's magnitude also scales by
   level independent of the base `stats` value (e.g. Bonshell's On-Cast ability: "+80/+160/
@@ -671,8 +689,8 @@ as 100% complete in one pass unless it genuinely is.
 
 > `https://batodex.com/trinkets` embeds the identical pattern: one `self.__next_f.push` block
 > containing `{"category":"trinkets","entries":[{"id":"bargain_bin","name":"Bargain Bin",
-> "tier":1,"description":"The first Common monster you buy each day is free.","isUnique":true,
-> "sets":[...],"sources":{...},"rarity":{"label":"Common","color":"#70707a"}}, ...]}` —
+"tier":1,"description":"The first Common monster you buy each day is free.","isUnique":true,
+"sets":[...],"sources":{...},"rarity":{"label":"Common","color":"#70707a"}}, ...]}` —
 > **93 entries**, matching this project's own `src/ui/CorpusBrowser/CorpusBrowser.tsx` comment
 > ("93 trinket(s)") and the earlier-cited `batomon.com/wiki` "93 trinkets" figure.
 
@@ -694,15 +712,15 @@ team panel, and two before/after captures of the DPS bug in item 14.
 
 ### H1. Official card layout — four stacked bands, not one run-on stat line
 
-> User-supplied screenshot of the in-game Brimtoad card. Transcribed structure (the *layout* is
+> User-supplied screenshot of the in-game Brimtoad card. Transcribed structure (the _layout_ is
 > being adopted; the pixel-art styling and palette deliberately are not — see H3):
 >
-> | Band | Left | Right |
-> |---|---|---|
-> | 1 (header) | `BRIMTOAD` | `UNCOMMON` |
-> | 2 | sprite thumbnail | type badges, stacked vertically (`FIRE`, `TOXIC`) |
-> | 3 | cooldown block (`6.0` / `sec`) | one line per stat: `Deal 5 damage`, `Poison 1`, `Burn 1` |
-> | 4 (ability) | trigger (`On Battle Start`) above description (`+4 Burn and +4 Poison permanently.`) | — |
+> | Band        | Left                                                                                 | Right                                                    |
+> | ----------- | ------------------------------------------------------------------------------------ | -------------------------------------------------------- |
+> | 1 (header)  | `BRIMTOAD`                                                                           | `UNCOMMON`                                               |
+> | 2           | sprite thumbnail                                                                     | type badges, stacked vertically (`FIRE`, `TOXIC`)        |
+> | 3           | cooldown block (`6.0` / `sec`)                                                       | one line per stat: `Deal 5 damage`, `Poison 1`, `Burn 1` |
+> | 4 (ability) | trigger (`On Battle Start`) above description (`+4 Burn and +4 Poison permanently.`) | —                                                        |
 
 - **Decision**: one shared card component renders bands 1-4, used by **both** the Corpus
   Browser's per-creature cards **and** the Calculator's "currently selected mon" panel (item 1
@@ -716,7 +734,7 @@ team panel, and two before/after captures of the DPS bug in item 14.
   card at all — it is a shop property, not a battle stat — so it moves to a secondary line
   rather than competing with battle stats for the reader's attention.
 - **Band 4 has two parts, not one** (caught during this round's review): the in-game card renders
-  the ability **trigger** (`On Battle Start`) as its own emphasised line *above* the description
+  the ability **trigger** (`On Battle Start`) as its own emphasised line _above_ the description
   (`+4 Burn and +4 Poison permanently.`). This corpus's `abilityText` holds only the description —
   the trigger is a separate field in the extracted payload (`ability.trigger`) that rounds 2-5
   never captured. Faithfully reproducing band 4 therefore needs a small schema addition
@@ -733,15 +751,15 @@ team panel, and two before/after captures of the DPS bug in item 14.
 The same embedded batodex payload documented in G1 carries the game's own colour for every stat
 and rarity, so item 8's "color coordinated" requirement needs no invented palette:
 
-| Stat | Colour | | Rarity | Colour |
-|---|---|---|---|---|
-| Damage | `#ef426b` | | Common | `#70707a` |
-| Burn | `#ed6b3a` | | Uncommon | `#4ab500` |
-| Poison | `#7b57a1` | | Rare | `#0084bd` |
-| Shock | `#e7c61c` | | Super Rare | `#a040a0` |
-| Shield | `#a47c41` | | Legendary | `#d47c00` |
-| Heal | `#578ac9` | | Mythical | `#dc2844` |
-| Multicast | `#7b93c3` | | | |
+| Stat      | Colour    |     | Rarity     | Colour    |
+| --------- | --------- | --- | ---------- | --------- |
+| Damage    | `#ef426b` |     | Common     | `#70707a` |
+| Burn      | `#ed6b3a` |     | Uncommon   | `#4ab500` |
+| Poison    | `#7b57a1` |     | Rare       | `#0084bd` |
+| Shock     | `#e7c61c` |     | Super Rare | `#a040a0` |
+| Shield    | `#a47c41` |     | Legendary  | `#d47c00` |
+| Heal      | `#578ac9` |     | Mythical   | `#dc2844` |
+| Multicast | `#7b93c3` |     |            |           |
 
 - **Cross-check against the screenshot**: the in-game Brimtoad card renders "Deal 5 damage" in
   pink, "Poison 1" in purple, and "Burn 1" in orange — matching `#ef426b`/`#7b57a1`/`#ed6b3a`
@@ -771,7 +789,7 @@ and rarity, so item 8's "color coordinated" requirement needs no invented palett
   item this round with a non-technical (licensing/courtesy) dimension rather than silently
   bundling someone else's art.
 - **Slug reconciliation — 11 species, not 4** (corrected during this round's review; the initial
-  draft of this section wrongly carried over round 5's *id*-reconciliation count of 4):
+  draft of this section wrongly carried over round 5's _id_-reconciliation count of 4):
 
   ```text
   craghorn    -> alpinine.png      draconarch -> dragonarch.png    dragonegg  -> dragon_egg_0.png
@@ -780,7 +798,7 @@ and rarity, so item 8's "color coordinated" requirement needs no invented palett
   pyronade    -> infernade.png     scorubble  -> scorbble.png
   ```
 
-  Round 5's 4 were genuine *id* divergences; the other 7 are publishing-convention differences
+  Round 5's 4 were genuine _id_ divergences; the other 7 are publishing-convention differences
   (underscored multiword slugs for the Egg/NULL families) plus one further real rename
   (`pyronade` is published as `infernade`). **Matching on `name` (case-insensitive) resolves all
   149/149**, which is the same technique round 5 used to reconcile ids — so the mapping is done by
@@ -803,7 +821,7 @@ and rarity, so item 8's "color coordinated" requirement needs no invented palett
 
 ### H5. Per-slot clear control (item 5) — why the modal's "Clear slot" wasn't enough
 
-Clearing a slot is *already possible* two ways (the search modal's "Clear slot" button, and the
+Clearing a slot is _already possible_ two ways (the search modal's "Clear slot" button, and the
 fallback `<select>`'s "— empty —" option), but the user could not find either — which makes it a
 discoverability defect, not a missing capability. **Decision**: a small `×` affordance in the
 filled card's top-right corner, as requested. Implementation constraint worth stating up front
@@ -830,7 +848,7 @@ propagation (or the search modal will open as the slot is cleared).
 - **Item 13 (modal heading prose)**: `Choose a Banto — {row} row, slot {col+1}` loses the slot
   suffix. This is round 4's FR-024 decision applied to the one surface that was missed: the user
   has just clicked that slot, and drag-and-drop means the choice isn't slot-bound anyway. The
-  `aria-label` keeps a slot reference for screen-reader users who did *not* see the click.
+  `aria-label` keeps a slot reference for screen-reader users who did _not_ see the click.
 
 ### H7. Modifiers section redesign (item 11)
 
@@ -869,59 +887,59 @@ AFTER  (bumblebolt back-2):  facilitated 4.30, Shock/sec 4.30
 Minimal 2-creature control (Panbud + Bumblebolt, nothing else) isolates it cleanly: **2.20** with
 Bumblebolt at `front-1` vs **2.40** at `back-0`.
 
-- **Root cause**: Bumblebolt (2.5 s cooldown) and Panbud (5 s cooldown) cast at *identical*
+- **Root cause**: Bumblebolt (2.5 s cooldown) and Panbud (5 s cooldown) cast at _identical_
   timestamps (t = 5, 10, 15, 20). `simulate()` sorts coincident casts by
   `stableSlotIndex(sourceSlot)` (`simulate.ts` Phase A's final sort), and Phase B mutates the
   shared `shockLayers` counter as it walks that order. So whether Bumblebolt's Shock application
-  at t=5 lands *before* or *after* Panbud's hit at t=5 — and therefore whether Panbud's hit procs
+  at t=5 lands _before_ or _after_ Panbud's hit at t=5 — and therefore whether Panbud's hit procs
   against 1 layer or 2 — is decided purely by which slot each occupies. `STABLE_SLOT_ORDER` puts
   all of `back` before all of `front`, which is why moving Bumblebolt to the top row raised it.
 - **Why this is a genuine defect, not a modelling choice**: neither creature has any positional
   ability (`abilityTags: []`), so no documented game mechanic connects their slots to their
-  output. The tie-break exists to make the timeline *deterministic* (contracts/engine-api.md) —
-  determinism is correct, but it was silently doubling as a *damage-affecting* rule.
+  output. The tie-break exists to make the timeline _deterministic_ (contracts/engine-api.md) —
+  determinism is correct, but it was silently doubling as a _damage-affecting_ rule.
 - **Decision — "simultaneous casts resolve against a common pre-cast status snapshot"**: within a
   single timestamp, every cast's Shock proc resolves against the layer count as it stood when
   that timestamp began; layers applied at that timestamp take effect from the next timestamp
   onward. This makes output invariant to slot permutation while keeping the timeline's stable
   ordering (and its tie-break) exactly as documented for display purposes.
-- **Alternatives considered**: (a) *apply all status first, then all hits at a timestamp* — also
+- **Alternatives considered**: (a) _apply all status first, then all hits at a timestamp_ — also
   order-independent, but it lets a layer empower a hit it was simultaneous with, i.e. it picks the
-  opposite arbitrary answer and inflates output; (b) *leave as-is and document it* — rejected, it
-  tells users position matters when the corpus says it doesn't; (c) *sub-order by creature id
-  instead of slot* — rejected, it only relabels the arbitrary tie-break without removing the
+  opposite arbitrary answer and inflates output; (b) _leave as-is and document it_ — rejected, it
+  tells users position matters when the corpus says it doesn't; (c) _sub-order by creature id
+  instead of slot_ — rejected, it only relabels the arbitrary tie-break without removing the
   position/order coupling for other permutations.
 - **Second, independent manifestation of the same root cause — found during this round's review,
-  and NOT fixed by the snapshot rule alone.** Phase B expands Multicast repetitions *inline inside
-  the cast loop*, so a cast at t=5.0 with a repetition at t=5.1 is fully processed before another
+  and NOT fixed by the snapshot rule alone.** Phase B expands Multicast repetitions _inline inside
+  the cast loop_, so a cast at t=5.0 with a repetition at t=5.1 is fully processed before another
   creature's cast at t=5.0 that happens to sort later. Phase B therefore does not walk events in
   global chronological order at all, and round 4's 0.1 s stagger does not save it — "repetitions
   occupy distinct timestamps" is true but irrelevant if the loop never visits timestamps in order.
   Reproduced: Panbud + Bumblebolt **at level 4** (where Bumblebolt's Multicast is 2) yields
   **Shock 20.55/s** with Bumblebolt at `front-1` versus **21.60/s** at `back-1`. 7 creature records
-  in the corpus have Multicast > 1 *and* apply Shock (Humbolt at all 4 levels, Bumblebolt Lv4,
+  in the corpus have Multicast > 1 _and_ apply Shock (Humbolt at all 4 levels, Bumblebolt Lv4,
   Frizzly Lv4), so this is reachable with real data, not a synthetic edge case.
   **Therefore the fix has two parts**: (a) flatten every cast's repetitions into a single event
-  list and sort it by `(tSeconds, stableSlotIndex)` *before* walking it, so Phase B is genuinely
+  list and sort it by `(tSeconds, stableSlotIndex)` _before_ walking it, so Phase B is genuinely
   chronological; (b) then apply the per-timestamp snapshot rule. Part (a) alone is not sufficient
   (the original front-1/back-2 case is a true same-timestamp collision), and part (b) alone is not
   sufficient (the Multicast case above). A regression test must cover **both** shapes.
 - **The snapshot must cover `shockLayersBySource`, not just `shockLayers`.** Facilitated damage is
-  attributed by each source's *share* of the live layer total
+  attributed by each source's _share_ of the live layer total
   (`shockDamage * sourceLayers / shockLayers`). Snapshotting only the scalar total while leaving
   the per-source map live would leave attribution order-dependent even once the total is not —
   i.e. it would fix the symptom the user reported (`Shock/sec`) while leaving the column they
-  reported it *in* (`Facilitated DPS`) still wrong in other configurations.
+  reported it _in_ (`Facilitated DPS`) still wrong in other configurations.
 - **One pre-existing test's expected value changes, and that is the fix working rather than a
   regression.** `simulate.test.ts`'s facilitated-damage attribution test asserted 5/s, and its own
-  comment explained why: *"shockApplier (front0) is processed before attacker (front1) at each tied
-  timestamp (stable slot order), so it grants +2 Shock before attacker's same-tick hit."* That
+  comment explained why: _"shockApplier (front0) is processed before attacker (front1) at each tied
+  timestamp (stable slot order), so it grants +2 Shock before attacker's same-tick hit."_ That
   expected value was derived from the exact slot-ordering dependency the user reported — swapping
   the two creatures' slots would have changed it. Under the snapshot rule both orderings agree at
   3/s (snapshots of 0/2/4/6 layers → procs 0+2+4+6 = 12 over 4 s). Updated with the reasoning
   recorded inline, not silently re-baselined.
 - **Honest limitation to record**: no source documents how the real game resolves two abilities
-  landing on the same frame. The snapshot rule is chosen because it is *invariant* (the property
+  landing on the same frame. The snapshot rule is chosen because it is _invariant_ (the property
   the user is actually asserting: a creature with no positional ability must not change output
   when moved), not because it is confirmed to match the game frame-for-frame. The regression test
   therefore asserts the **invariant** — permuting slots of positional-ability-free creatures
@@ -939,14 +957,14 @@ direct-damage line), but at least some are genuinely missing data, proven by the
 screenshot: the in-game Brimtoad card reads **"Deal 5 damage"**, while both batodex's embedded
 payload and this corpus record `baseDamage: null` for Brimtoad. So batodex's per-level `stats`
 array omits damage for some creatures, and "null" in this corpus currently conflates
-*confirmed-absent* with *not-published-by-our-source*. Corrected rather than restated: the
+_confirmed-absent_ with _not-published-by-our-source_. Corrected rather than restated: the
 labels are fixed to the real figure, and the conflation is logged as the open gap it is.
 
 ### H10. Unrequested finding: 10 species have level-1 values contradicting their own level 2-4 series
 
 Round 5 populated levels 2-4 from batodex's authoritative per-level series but left each
 species' **level-1** record at whatever rounds 2/4 had sourced from the older community dex — so
-10 species now have a level-1 value *larger* than their level-2 value, which no levelling curve
+10 species now have a level-1 value _larger_ than their level-2 value, which no levelling curve
 in this game does:
 
 ```text
@@ -965,7 +983,7 @@ the older community value as a recorded `FieldConflict` rather than deleting it 
 `bambudo` is noted separately: as Panbud's level-3 evolution it may have no real level-1/2 form
 at all, which is a different question (a spurious record) from a wrong value.
 
-### H11. Unrequested finding, and the most serious of the round: 49 level-1 records held a *different creature's* stats
+### H11. Unrequested finding, and the most serious of the round: 49 level-1 records held a _different creature's_ stats
 
 Investigating H10's 10 non-monotonic species during implementation turned up the actual cause,
 which is much larger than 10 species and was never reported by the user.
@@ -981,22 +999,22 @@ reapra:       ours cd=3.5   auth cd=7.5     runerock:  ours dmg=40   auth dmg=nu
 
 Each record held **the previous record's** values. Round 5's "fill in the remaining level-1
 records" pass (T108) had an **off-by-one row alignment bug**, so it wrote each creature the
-*preceding* creature's cooldown, damage, damage type, status amounts, and heal. **55** records
+_preceding_ creature's cooldown, damage, damage type, status amounts, and heal. **55** records
 were affected (a first pass of the repair script compared only cooldown and damage and so missed 6
-more whose *status amounts* alone were wrong -- Brimtoad among them, the one case the user's own
+more whose _status amounts_ alone were wrong -- Brimtoad among them, the one case the user's own
 screenshot adjudicates: Burn 5/Poison 5 recorded against Burn 1/Poison 1 published).
 
 Quantified across the corpus:
 
-| Level | Agreed with source | Disagreed |
-|---|---|---|
-| 1 | 94 / 149 | **61** (55 off-by-one shifted + 6 genuine source disagreements) |
-| 2 | 149 / 149 | 0 |
-| 3 | 149 / 149 | 0 |
-| 4 | 149 / 149 | 0 |
+| Level | Agreed with source | Disagreed                                                       |
+| ----- | ------------------ | --------------------------------------------------------------- |
+| 1     | 94 / 149           | **61** (55 off-by-one shifted + 6 genuine source disagreements) |
+| 2     | 149 / 149          | 0                                                               |
+| 3     | 149 / 149          | 0                                                               |
+| 4     | 149 / 149          | 0                                                               |
 
 - **Why only 10 showed up in H10**: the monotonicity check that found H10 only catches a shift
-  when it happens to produce a level-1 value *larger* than level 2. The other 39 shifts moved
+  when it happens to produce a level-1 value _larger_ than level 2. The other 39 shifts moved
   values that still looked plausible. A shape-based check (is this series monotonic?) was never
   going to find this; only a value-by-value comparison against the source did.
 - **Why levels 2-4 are clean**: they were written by a different, correctly-aligned bulk append in
@@ -1014,7 +1032,7 @@ Quantified across the corpus:
   series, verified programmatically rather than by spot check.
 - **Lesson worth recording, since this is the second round in a row a bulk data script shipped a
   silent misalignment** (round 5's `flatten_monsters` dedup bug, now this): a bulk corpus write
-  needs a verification pass that compares the *written* values back against the source
+  needs a verification pass that compares the _written_ values back against the source
   value-by-value. Shape or count checks ("596 records exist", "596 cooldowns are non-null") pass
   happily while every value is wrong by one row. That verification now exists as
   `provenance.test.ts`-adjacent tooling and should be run after any future bulk corpus edit.
@@ -1063,11 +1081,11 @@ card is shorter than a two-type one, the ability band grows with text length, an
 wraps. The grid visibly reflows on hover, which is both distracting and makes the adjacent column
 jump.
 
-- **Decision**: fixed, reserved dimensions for the whole card and *independently* for the bands
+- **Decision**: fixed, reserved dimensions for the whole card and _independently_ for the bands
   that vary (the type column, the sprite frame, the ability block). Sized to the corpus's actual
   worst case, not guessed: compute the longest name, longest ability text, and max type count
   across all 596 records and size against those.
-- **Also item 15**: the sprite in that card is far too small, which is *why* the two-type column
+- **Also item 15**: the sprite in that card is far too small, which is _why_ the two-type column
   looks like wasted space — the band's height is set by the type chips, and a 44px sprite doesn't
   fill it. Enlarging the sprite fixes the imbalance and the reserved height at once.
 
@@ -1095,14 +1113,14 @@ another showing the same quantity at different precision, which reads like a dis
 
 ### I6. "Shield (granted)" over-qualifies (item 7)
 
-The parenthetical was added in round 2 to distinguish Shield *granted* from Shield *absorbed* — but
+The parenthetical was added in round 2 to distinguish Shield _granted_ from Shield _absorbed_ — but
 absorption is not modelled and never has been (`T037`), so the qualifier advertises a distinction
 the tool does not make. **Decision**: render `Shield`. The granted-vs-absorbed scope limit stays
 documented in README/tasks where it belongs, not in a table cell.
 
 ### I7. Root cause found: `@dnd-kit` swallows the click because no activation constraint is set
 
-The user cannot click an occupied slot to reopen the picker; only dragging works. The card *does*
+The user cannot click an occupied slot to reopen the picker; only dragging works. The card _does_
 have an `onClick` that opens the modal (FR-023, round 4) and it is still wired — so the handler is
 not missing, it is **never reached**.
 
@@ -1138,14 +1156,14 @@ not missing, it is **never reached**.
   (you can see how many of each rarity match your filter) while removing text from the card.
 - **The "sliver"**, diagnosed correctly on the second attempt: the picker's result card is
   `border: 2px solid transparent` with `background: linear-gradient(to right, A 0%, A 50%, B 50%,
-  B 100%)`. CSS's default `background-origin: padding-box` positions the gradient against the
-  *padding* box, while the default `background-clip: border-box` *paints* it across the larger
-  *border* box — so the gradient repeats outward into the 2px border area on every side, putting a
+B 100%)`. CSS's default `background-origin: padding-box` positions the gradient against the
+  _padding_ box, while the default `background-clip: border-box` _paints_ it across the larger
+  _border_ box — so the gradient repeats outward into the 2px border area on every side, putting a
   thin band of the far colour along the card's edge. That is the user's sliver, and their own
   instinct ("the split color is just rendered over top on half, but it doesn't go the full width")
   is essentially right.
   (An earlier draft of this section blamed fractional-pixel antialiasing of the 50% hard stop.
-  That was wrong — it would produce a seam at the *centre*, not a band at the *edge*, which is not
+  That was wrong — it would produce a seam at the _centre_, not a band at the _edge_, which is not
   what the user reported.)
   **Decision**: stop expressing the split as a gradient. Render it as a dedicated primitive with
   two explicitly-sized halves, which cannot antialias a seam and cannot bleed under a border. This
@@ -1158,7 +1176,7 @@ above every view, on both views.
 
 **Correction to this section's first draft**, which claimed FR-014 would still be "satisfied by the
 Corpus Browser's own summary line". **That was false** — the Corpus Browser's summary line carries
-*counts only* (`149 creatures… 23 trainers…`); it states no patch or version anywhere. Removing the
+_counts only_ (`149 creatures… 23 trainers…`); it states no patch or version anywhere. Removing the
 header as drafted would have left FR-014 **unmet on every surface**, while the plan asserted it was
 fine. Caught in review.
 
@@ -1215,7 +1233,7 @@ follow-up guess ("this is how much poison is applied per second") is **not** it.
 - **It is damage per second**: `perStatusPerSecond.Poison = (total Poison tick damage) / window`.
   Measured on a representative team: 1310 total Poison damage over a 20s window → **65.50/s**.
 - **And that single number is unrepresentative**, exactly as the user argued — though **my first
-  measurement of *how* unrepresentative was wrong, and the corrected figure is below.** The probe
+  measurement of _how_ unrepresentative was wrong, and the corrected figure is below.** The probe
   that produced it clamped every tick at `t = windowSeconds` into the final bucket
   (`Math.min(19, floor(t))`), double-counting the last second and reporting `293`. That `293` was
   an artifact of my own bucketing, not engine behaviour. Re-measured with half-open `(k, k+1]`
@@ -1229,6 +1247,7 @@ follow-up guess ("this is how much poison is applied per second") is **not** it.
   So the real distortion is roughly **2.1–2.5×**, not 4.5×. Still large enough that one averaged
   figure materially misleads, which is the user's point and it stands — but the headline number is
   corrected rather than left overstated.
+
 - **CORRECTION (user-reported, after this section was first written): Burn also climbs, and the
   evidence I used to say otherwise was a badly-chosen fixture.** This section originally read
   "Burn, measured the same way, genuinely flattens", citing a Brimtoad's final 1-second buckets
@@ -1247,7 +1266,7 @@ follow-up guess ("this is how much poison is applied per second") is **not** it.
   ```
 
   **Mechanism** (corrected 2026-10-08 by the user, who plays the game; the paragraph this replaces
-  claimed per-*instance* decay and is wrong): there is **one Burn stack on the target**, not one per
+  claimed per-_instance_ decay and is wrong): there is **one Burn stack on the target**, not one per
   application. Every monster's Burn is added to that single stack, which ticks every 0.5 s for its
   current value and then sheds **exactly 1 layer** — once for the target, not once per contributor.
 
@@ -1269,6 +1288,7 @@ follow-up guess ("this is how much poison is applied per second") is **not** it.
 
   Both warrant the growth column. The original framing ("Poison grows, Burn doesn't") would have
   told fire-build users their scaling was flat when it is not.
+
 - **Why Poison in particular**: `applyStatusTick` decrements layers for **Burn** but explicitly
   **not** for Poison (research.md B2) — "Poison: layers do NOT decrease from the act of ticking".
   So every Poison application permanently adds its full amount to a per-tick damage floor, and the
@@ -1279,7 +1299,7 @@ follow-up guess ("this is how much poison is applied per second") is **not** it.
   the modelled mechanics, not a reporting preference.**
 - **Blocking gap found while measuring this**: `simulate()` pushes an `ongoingChange` timeline event
   for Shock and Shield applications but **not for Burn or Poison** — those only ever appear in the
-  timeline as *ticks*. So "stacks applied per second" is not derivable from the timeline today.
+  timeline as _ticks_. So "stacks applied per second" is not derivable from the timeline today.
   Fixing that is a prerequisite, not an optional extra.
 - **Decisions**:
   1. Record Burn/Poison applications in the timeline, closing the asymmetry above.
@@ -1287,14 +1307,14 @@ follow-up guess ("this is how much poison is applied per second") is **not** it.
      to "how much is being added per turn".
   3. Add a **growth rate (damage/s²)** per status — computed **exactly**, not by curve-fitting.
      A first draft of this plan proposed a least-squares slope over 1-second buckets; that was
-     rejected on measurement. For a non-decaying status the damage rate at time *t* is simply
+     rejected on measurement. For a non-decaying status the damage rate at time _t_ is simply
      `live layers(t) / tickInterval`, so
      `growth = (rate at window end − rate at window start) / windowSeconds` is exact, deterministic,
      and needs no fitting. The regression alternative was **noisy against a known-exact answer**
      (2.83 and 2.70 for a case whose true asymptotic growth is 2.50), sensitive to bucket-edge
      placement, polluted by the zero-damage startup period, and produced `NaN` at a 1-second
      window — which the UI permits. Exact arithmetic has none of those failure modes.
-  3b. Also expose the **end-of-window damage rate** alongside the window average. This is the most
+     3b. Also expose the **end-of-window damage rate** alongside the window average. This is the most
      directly interpretable form of the same information ("65.33/s average, but 140/s by the end"),
      and it is what makes the growth figure legible rather than abstract.
   4. **Attribute status damage to the creature that applied it**, so a pure DOT applier stops
@@ -1302,15 +1322,15 @@ follow-up guess ("this is how much poison is applied per second") is **not** it.
      too, and each tick's damage then accrues to that creature's facilitated total — the same
      `facilitatedDamage` map Shock procs already use. This directly implements the user's worked
      example (20 poison applied three times, ticking 3×, 2×, 1× times respectively).
-- **Scope boundary kept explicit**: facilitated DPS remains *separate* from own-DPS rather than
+- **Scope boundary kept explicit**: facilitated DPS remains _separate_ from own-DPS rather than
   being folded into it. A Poison applier's value genuinely is not direct damage, and merging the
   two would make a DOT team's DPS column incomparable with a direct-damage team's.
 
 ### I14. Standing requirement: a shared design system, applied retroactively and to all future work
 
-The user's most consequential item, and deliberately scoped beyond this round: *"please also take
+The user's most consequential item, and deliberately scoped beyond this round: _"please also take
 it into consideration for all future requests/changes/tasks, not just for the code base existing up
-until this request was made."*
+until this request was made."_
 
 **Current state, measured rather than asserted** — `style={{` occurrences by file:
 
@@ -1328,7 +1348,7 @@ trinket badges; and six call sites each passing their own literal sprite size (I
 - **Decision**: introduce a primitives layer — design tokens as CSS custom properties (spacing,
   radii, surface colours, border colours, type scale, sprite sizes) plus a small set of components
   (`Surface`/`Card`, `Chip`, `StatBadge`, `Modal`, `Disclosure`, `SectionHeading`, `TypeSplit`) —
-  and migrate the existing UI onto it. Not a component *library* dependency: this is ~7 local
+  and migrate the existing UI onto it. Not a component _library_ dependency: this is ~7 local
   components over the existing CSS-modules approach (research.md A4), which keeps Principle VI
   satisfied — each primitive has at least two existing call sites today, so none is abstraction
   ahead of need.
@@ -1389,7 +1409,7 @@ primitive.
 ### J3. WI-007 — the width shift and the chart redraw are the same bug
 
 The selected-creature column is `flex: 1 1 16rem`, so its width is computed from its content. Round 7
-fixed the card's *height* and explicitly left width flexible ("freezing the width would fight the page
+fixed the card's _height_ and explicitly left width flexible ("freezing the width would fight the page
 layout" — I3). The user has now asked for a fixed width, and that is the right call: a
 content-derived width means a longer creature name or ability text visibly resizes the column.
 
@@ -1398,7 +1418,7 @@ claimed the column's width "changes the sibling chart's width, which makes Recha
 `ResponsiveContainer` re-measure and redraw", and concluded the reflow and the redraw were one bug.
 **That mechanism is not supported by the DOM.** `#root` is a fixed `width: 1126px`
 (`src/index.css:55-57`) and `CumulativeChart` — while a sibling of the flex row in the `.App` tree —
-is not a flex *item inside* that row, so its width is already independent of the column's basis.
+is not a flex _item inside_ that row, so its width is already independent of the column's basis.
 
 **Decision**: fix the column's width via a new `--detail-panel-width` token, which resolves the
 visible reflow (FR-062). **Do not assume it cures the redraw.** If the redraw persists, the cause
@@ -1415,8 +1435,8 @@ home. WI-014 now asks to remove it from there too.
 - **This cannot be silently dropped.** Doing so would leave FR-014 unmet with no surface at all —
   precisely the failure a review caught in round 7 before it shipped.
 - **Decision**: honour the user's ask (the prose goes) and **narrow FR-014 again, explicitly**, to a
-  single unobtrusive footer line. The user's objection both times has been to *prose at the top of a
-  view*, not to the version being recorded anywhere. A footer satisfies the requirement's intent
+  single unobtrusive footer line. The user's objection both times has been to _prose at the top of a
+  view_, not to the version being recorded anywhere. A footer satisfies the requirement's intent
   without reintroducing what they asked to remove.
 - If a future round removes that too, FR-014 should be **retired outright with a stated rationale**
   rather than quietly unmet.
@@ -1443,14 +1463,14 @@ SS5.
 
 The existing chart plots **cumulative** damage, which is monotonic and therefore cannot show the
 "ebb and flow" the user wants. A rate chart answers a different question: how hard is the team hitting
-*at this moment*.
+_at this moment_.
 
 - **Decision**: a second chart plotting instantaneous DPS against time, derived from the same
   `timeline` the cumulative series already uses — damage bucketed into fixed intervals and divided by
   the interval. Same single-source-of-truth rule: it must not recompute anything `simulate()` didn't
   produce.
 - **Why this pairs with round 7's work**: the status table now reports end-of-window rate and growth
-  as *numbers*; this is the same information as a curve, and it is where a Poison or Shock ramp
+  as _numbers_; this is the same information as a curve, and it is where a Poison or Shock ramp
   becomes legible at a glance.
 - **Bucket choice matters and must be stated**: too fine and the chart is a comb of spikes at each
   cast; too coarse and the ramp flattens. A 1-second bucket matches the Poison tick interval and the
@@ -1472,8 +1492,8 @@ The user pre-flagged this as "a bit too far out". It is implementable, with a re
   ability … the chaining effects the user describes have no `AbilityTag`". In fact **two** creatures
   carry positional-target tags: Formiqueen (`adjacent`, 8 tag instances across its four level
   records) and **Onsetra** (`behind`, `extraOngoingApplications: 1`) — and Onsetra's ability text,
-  "the ally behind applies its Ongoing abilities 1 additional time", is *literally one of the
-  chaining effects the user described*. What is true is narrower: `simulate.ts:107-108` reads **only**
+  "the ally behind applies its Ongoing abilities 1 additional time", is _literally one of the
+  chaining effects the user described_. What is true is narrower: `simulate.ts:107-108` reads **only**
   `cooldownSpeedModifier` tags, so Onsetra's tag is present, correctly typed, and silently ignored —
   and Onsetra's level 2-4 records have empty `abilityTags` at all, so the count is level-dependent.
   **Why the distinction is load-bearing rather than pedantic**: FR-069 requires the UI to report how
@@ -1550,11 +1570,11 @@ perStatusPerSecond.Poison  136.60         <- exactly equals the facilitated tota
   `perStatusPerSecond.Poison`, and direct + facilitated is a complete, non-double-counting partition
   of all **damage** — `perCreatureDamage` takes only `isDirectHit` damage, `facilitatedDamage` takes
   exactly the status-tick damage plus Shock-proc damage split by shares that sum to the whole proc.
-  **But `perStatusPerSecond.Shield` is Shield *granted*, never damage**, and never enters
+  **But `perStatusPerSecond.Shield` is Shield _granted_, never damage**, and never enters
   `facilitatedDamage`. A headline that naively sums the whole `perStatusPerSecond` record would
   therefore inflate any Shield team. Sum direct + facilitated; do **not** sum the status record.
-- **WI-008 answered precisely**: Cobrex has a 15 s cooldown and applies **Poison 300**. Its *first
-  cast lands at t=15*. Poison never decays, so the per-second rate steps from **84/s at t=15 to
+- **WI-008 answered precisely**: Cobrex has a 15 s cooldown and applies **Poison 300**. Its _first
+  cast lands at t=15_. Poison never decays, so the per-second rate steps from **84/s at t=15 to
   400/s at t=16** and stays there. The takeoff is one creature's opening cast, not an artifact.
   ```text
   t=12 68 | t=13 84 | t=14 84 | t=15 84 | t=16 400 | t=17 420 | t=18 420
@@ -1565,17 +1585,17 @@ perStatusPerSecond.Poison  136.60         <- exactly equals the facilitated tota
 **Every one of the four creatures on the user's board has an unmodelled ability**, and three of them
 change DPS materially:
 
-| Creature | Ability text | Modelled? | Effect if modelled |
-|---|---|---|---|
-| Miasmaw | "Gain Poison … equal to 1x the total Poison of your allies" | **No** | Poison 10 → **336** |
-| Cobrex | "Whenever an ally inflicts Poison, Charge this by 1 second(s)" | **No** | First cast t=9-10 instead of t=15 |
-| Drumire | "When a Toxic ally casts, give it +5% Cooldown Speed for this battle" | **No** | Compounding team speed-up |
-| Fumungus | "Has additional Damage equal to 100% of the Poison stacks on the enemy" | **No** | Gains real *direct* damage |
+| Creature | Ability text                                                            | Modelled? | Effect if modelled                |
+| -------- | ----------------------------------------------------------------------- | --------- | --------------------------------- |
+| Miasmaw  | "Gain Poison … equal to 1x the total Poison of your allies"             | **No**    | Poison 10 → **336**               |
+| Cobrex   | "Whenever an ally inflicts Poison, Charge this by 1 second(s)"          | **No**    | First cast t=9-10 instead of t=15 |
+| Drumire  | "When a Toxic ally casts, give it +5% Cooldown Speed for this battle"   | **No**    | Compounding team speed-up         |
+| Fumungus | "Has additional Damage equal to 100% of the Poison stacks on the enemy" | **No**    | Gains real _direct_ damage        |
 
 Cobrex's is the most dramatic and directly answers WI-008's follow-up — **with a correction, because
 the first version of this paragraph got the arithmetic wrong twice.** Allied Poison applications land
 at t = 3, 3, 6, 6, 8, 9, 9, 12, 12 (Miasmaw and Fumungus every 3 s, Drumire at 8 s), which is **9
-applications strictly before t=15**, not 11: the first draft counted the two landing *at* t=15.
+applications strictly before t=15**, not 11: the first draft counted the two landing _at_ t=15.
 
 It then compounded that by computing the fire time as `15 − 11 = 4`, which credits Cobrex with
 charges that have not happened yet at the proposed fire time. The charge mechanic has to be solved,
@@ -1599,14 +1619,14 @@ t=15, and still confirming the user's suspicion, but the number a test pins must
 
 ### K4. The honest ceiling on all of this, stated before building it
 
-**Only 6 of 149 level-1 creatures have *any* `abilityTags` at all.** An effect engine can only act on
+**Only 6 of 149 level-1 creatures have _any_ `abilityTags` at all.** An effect engine can only act on
 structured tags, so building it does not retroactively make 143 creatures' abilities work — their
 effects exist solely as prose in `abilityText`.
 
-- **Decision**: build the engine *and* populate tags for the creatures this round exercises, then
+- **Decision**: build the engine _and_ populate tags for the creatures this round exercises, then
   state the coverage figure plainly in the UI and README rather than letting a working engine imply
   full coverage. This is the same honesty rule round 8 applied to the placement optimiser (FR-069),
-  and it matters more here because a DPS number *looks* authoritative in a way an empty suggestion
+  and it matters more here because a DPS number _looks_ authoritative in a way an empty suggestion
   list does not.
 - **Explicitly not claimed**: that this round makes DPS correct for arbitrary teams. It makes it
   correct for teams whose creatures have tags, and makes the gap visible for the rest.
@@ -1618,7 +1638,7 @@ effects exist solely as prose in `abilityText`.
   is `analyzePositionalCoverage()`'s count, which currently reports only `cooldownSpeedModifier`
   as actionable — it has to track whatever the resolver actually handles, or it will understate.
 - **WI-007**: the slider is a UI-only addition over `dpsRateSeries`, which already exists. The
-  headline number at time *t* is that series' value, so it agrees with the DPS-over-time chart by
+  headline number at time _t_ is that series' value, so it agrees with the DPS-over-time chart by
   construction rather than by a second computation.
 
 ### K6. Official Steam patch notes located — and the corpus is now a full version behind
@@ -1640,7 +1660,7 @@ Patch 1.1.0 contains an explicit simultaneity rule:
 
 That governs **which side** acts when both have a monster due on the same instant. Our engine models
 one team against an idealised target, so side-priority never applies, and nothing in any of the eight
-published patches states whether a Charge applied *at* instant *T* counts toward a trigger *at* *T*.
+published patches states whether a Charge applied _at_ instant _T_ counts toward a trigger _at_ _T_.
 **Per the user's instruction — "whichever matches the real game if you can find evidence; otherwise
 FR-040 consistency" — the evidence does not reach this case, so T200b pins t=10**, consistent with
 round 6's pre-timestamp snapshot rule. Recorded as "searched, not found" rather than "no rule exists".
@@ -1648,8 +1668,8 @@ round 6's pre-timestamp snapshot rule. Recorded as "searched, not found" rather 
 **Finding 2 — "Charge" is a first-class game stat**, confirming WI-009 is a real mechanic and not
 prose: patch 1.1.0 lists "Clawnetic — **Charge**: 1/2/3 seconds → 1 second at every level".
 
-**Finding 3 — the game itself shipped our WI-003 bug.** Patch 1.2.0: *"Fixed the monster inspect
-sheet opened during a battle showing pre-battle numbers instead of the live numbers."* That is
+**Finding 3 — the game itself shipped our WI-003 bug.** Patch 1.2.0: _"Fixed the monster inspect
+sheet opened during a battle showing pre-battle numbers instead of the live numbers."_ That is
 precisely the defect the user reported in our "Effective this battle" band — independent
 corroboration that resolved-not-base values are the correct behaviour.
 
@@ -1689,34 +1709,34 @@ On Cast 42 | (no trigger) 40 | On Battle Start 20 | Ongoing 15 | On Victory 8
 On Bought 5 | On Trinket Gained 2 | On Knocked Out 2 | On Battle Lost 1
 ```
 
-Classifying by what the effect *does* rather than when it fires yields **17 distinct mechanism
+Classifying by what the effect _does_ rather than when it fires yields **17 distinct mechanism
 families**:
 
-| Mechanism | Creatures | Tagged | Unsupported |
-|---|---:|---:|---:|
-| Unclassified (mostly simple self-buffs: "+15 Shield for this battle") | 49 | 3 | 46 |
-| Evolution note | 12 | 1 | 11 |
-| Shop / economy | 10 | 0 | 10 |
-| Knockout effect | 9 | 0 | 9 |
-| Adjacency aura | 8 | 1 | 7 |
-| Positional grant ("ally behind") | 8 | 1 | 7 |
-| Count scaling ("for each Trinket you own") | 7 | 0 | 7 |
-| On-battle-start team grant | 6 | 1 | 5 |
-| Multicast grant | 6 | 0 | 6 |
-| Cooldown-speed grant | 4 | 0 | 4 |
-| Trigger-chaining ("Trigger this when…") | 4 | 0 | 4 |
-| Row-wide effect | 3 | 0 | 3 |
-| Enemy-state scaling ("% of the Poison stacks on the enemy") | 3 | 0 | 3 |
-| Ally-event charge | 2 | 1 | 1 |
-| Ally-stat scaling | 2 | 0 | 2 |
-| Ally-cast grant | 1 | 1 | 0 |
-| Self-stat scaling | 1 | 0 | 1 |
-| **TOTAL** | **135** | **9** | **126** |
+| Mechanism                                                             | Creatures | Tagged | Unsupported |
+| --------------------------------------------------------------------- | --------: | -----: | ----------: |
+| Unclassified (mostly simple self-buffs: "+15 Shield for this battle") |        49 |      3 |          46 |
+| Evolution note                                                        |        12 |      1 |          11 |
+| Shop / economy                                                        |        10 |      0 |          10 |
+| Knockout effect                                                       |         9 |      0 |           9 |
+| Adjacency aura                                                        |         8 |      1 |           7 |
+| Positional grant ("ally behind")                                      |         8 |      1 |           7 |
+| Count scaling ("for each Trinket you own")                            |         7 |      0 |           7 |
+| On-battle-start team grant                                            |         6 |      1 |           5 |
+| Multicast grant                                                       |         6 |      0 |           6 |
+| Cooldown-speed grant                                                  |         4 |      0 |           4 |
+| Trigger-chaining ("Trigger this when…")                               |         4 |      0 |           4 |
+| Row-wide effect                                                       |         3 |      0 |           3 |
+| Enemy-state scaling ("% of the Poison stacks on the enemy")           |         3 |      0 |           3 |
+| Ally-event charge                                                     |         2 |      1 |           1 |
+| Ally-stat scaling                                                     |         2 |      0 |           2 |
+| Ally-cast grant                                                       |         1 |      1 |           0 |
+| Self-stat scaling                                                     |         1 |      0 |           1 |
+| **TOTAL**                                                             |   **135** |  **9** |     **126** |
 
 ### L2. WI-011 — the audit result, with a correction that makes it worse
 
 **CORRECTED IN VALIDATION.** This section first said "9 of 135 are modelled", which conflated
-*tagged* with *working* — the exact distinction the user asked for ("audit what abilities currently
+_tagged_ with _working_ — the exact distinction the user asked for ("audit what abilities currently
 are working and calculated"). A creature can carry a structured tag that no engine code reads.
 
 Counting what the engine **actually resolves** (`battleStartStatusFromAllies` and
@@ -1750,7 +1770,7 @@ notes. Excluding them is not a dodge — it is the project's own long-standing s
   shop/economy and evolution explicitly excluded **and counted**, so the excluded set is visible
   rather than quietly dropped from the denominator.
 - **Decision on sequencing, which matters more than it sounds**: coverage is limited by two
-  different things — the *engine* understanding a mechanism family, and each *creature* carrying a
+  different things — the _engine_ understanding a mechanism family, and each _creature_ carrying a
   structured tag. There are 17 families but 126 untagged creatures. Building the 17 families is
   bounded, well-specified work; tagging 126 creatures is bulk data entry that scales linearly and
   has twice produced silent misalignment (research.md H11, and the level-1-only tag bug found in
@@ -1765,7 +1785,7 @@ notes. Excluding them is not a dodge — it is the project's own long-standing s
 - **WI-001 (missing Heal chip)**: `SlotBadges` reads `baseDamage`, `appliesStatus`, and
   `baseMulticast` — Heal lives in `healAmount`, so it was never considered. Straightforward.
 - **WI-002 (missing Multicast chip) — the first diagnosis was wrong, and the real cause is much
-  bigger.** Puffloon's level-2 record *does* carry `baseMulticast: 2` (verified), so the
+  bigger.** Puffloon's level-2 record _does_ carry `baseMulticast: 2` (verified), so the
   `multicast > 1` gate would pass. The actual defect is at `GridPicker.tsx:272`:
   `getCreatureById(placement.creatureId)` returns the **first matching record — always level 1** —
   and ignores `placement.level` entirely. **So every chip on every levelled creature shows level-1
@@ -1775,7 +1795,7 @@ notes. Excluding them is not a dodge — it is the project's own long-standing s
   Round 9b changed the chips to base stats at the user's explicit request ("it should reflect his
   base stats, not his effective stats"). The resolution: **base stats plus the user's own manual
   modifiers**, excluding resolved ability effects. The distinction the user actually drew was
-  between *the creature's printed card* and *what the battle computes*; a modifier they typed in
+  between _the creature's printed card_ and _what the battle computes_; a modifier they typed in
   themselves is neither — it is an input they expect to see reflected. Also note `+50 damage` on
   Puffloon legitimately does nothing (`baseDamage: null`, and a modifier may only scale an effect
   that exists) — the UI must say so rather than silently ignoring the input.
@@ -1787,22 +1807,22 @@ notes. Excluding them is not a dodge — it is the project's own long-standing s
   tracks for Shock (`shockLayers`) and could track for Poison the same way. That is a much smaller
   change than a full target entity, so the deferral no longer holds.
 - **WI-009 (slider vs chart at t=0)**: the slider's "whole window" default shows the window
-  *average* while position 0 reads as "t=0". They are different quantities, not a disagreement —
+  _average_ while position 0 reads as "t=0". They are different quantities, not a disagreement —
   the control is mislabelled rather than miscalculated.
 
 ## C. Resolved Technical Context (feeds plan.md)
 
-| Field | Resolution |
-|---|---|
-| Language/Version | TypeScript, latest stable (7.x at time of writing) |
-| Primary Dependencies | React 19.x, Recharts |
-| Storage | None — static corpus data bundled as TypeScript/JSON modules; no database |
-| Testing | Vitest (engine unit tests headless; component tests via `@testing-library/react`) |
-| Target Platform | Static web (any modern evergreen browser), deployed to GitHub Pages |
-| Project Type | Single-page web application (frontend-only, no backend) |
-| Performance Goals | Chart/summary recompute within 1s of a config change (SC-002) on consumer hardware |
-| Constraints | Zero backend; fully static bundle; offline-capable once loaded |
-| Scale/Scope | On the order of 100–150 creature records + trainers/trinkets/items; single active team of ≤6 creatures simulated at a time |
+| Field                | Resolution                                                                                                                 |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| Language/Version     | TypeScript, latest stable (7.x at time of writing)                                                                         |
+| Primary Dependencies | React 19.x, Recharts                                                                                                       |
+| Storage              | None — static corpus data bundled as TypeScript/JSON modules; no database                                                  |
+| Testing              | Vitest (engine unit tests headless; component tests via `@testing-library/react`)                                          |
+| Target Platform      | Static web (any modern evergreen browser), deployed to GitHub Pages                                                        |
+| Project Type         | Single-page web application (frontend-only, no backend)                                                                    |
+| Performance Goals    | Chart/summary recompute within 1s of a config change (SC-002) on consumer hardware                                         |
+| Constraints          | Zero backend; fully static bundle; offline-capable once loaded                                                             |
+| Scale/Scope          | On the order of 100–150 creature records + trainers/trinkets/items; single active team of ≤6 creatures simulated at a time |
 
 No `NEEDS CLARIFICATION` markers remain — all Technical Context fields above are resolved.
 
@@ -1812,12 +1832,12 @@ The round-10 taxonomy's largest row was a 49-creature "Unclassified" catch-all. 
 looking for creatures to tag showed it is not a grab-bag at all — it is **one coherent mechanism the
 resolver structurally cannot express**:
 
-| Creature | Ability text | Trigger |
-|---|---|---|
-| Mosslug | "+20 Damage for this battle." | **On Cast** |
-| Bonshell | "+80 Damage and +80 Shield for this battle." | **On Cast** |
+| Creature | Ability text                                     | Trigger     |
+| -------- | ------------------------------------------------ | ----------- |
+| Mosslug  | "+20 Damage for this battle."                    | **On Cast** |
+| Bonshell | "+80 Damage and +80 Shield for this battle."     | **On Cast** |
 | Aerophim | "Give adjacent allies +1 Multicast permanently…" | **On Cast** |
-| Shelldra | "Every 4 seconds, +1 Multicast for this battle." | periodic |
+| Shelldra | "Every 4 seconds, +1 Multicast for this battle." | periodic    |
 
 These read like static self-buffs, which is why they were first classed as "+N for this battle"
 one-shots. They are not. The trigger is **On Cast**, so the bonus **accumulates every time the
@@ -1846,14 +1866,14 @@ selector families combined. It is a well-defined piece of work, but it is engine
 `simulate.ts`, and it was not scoped this round.
 
 > **The "roughly 40" above is RETRACTED — the real figure is 14** (round 11, measured while
-> implementing T224). The 40 came from counting creatures whose ability *text* matched a loose
+> implementing T224). The 40 came from counting creatures whose ability _text_ matched a loose
 > buff-like pattern. Counting the thing that actually defines the family — `abilityTrigger ===
-> "On Cast"` **and** a `+N <stat>` grant in the text — gives **14 species**:
+"On Cast"` **and** a `+N <stat>` grant in the text — gives **14 species**:
 >
-> | | species |
-> |---|---|
-> | self-buff, accumulates on the holder | mosslug, bambudo, pebbler, bonshell, pyrokami, galvanine |
-> | **grants to an ally** (positional) | magmalith, noxalith, voltalith, zephyrex, saberhorn, noxnimbus, aerophim |
+> |                                      | species                                                                  |
+> | ------------------------------------ | ------------------------------------------------------------------------ |
+> | self-buff, accumulates on the holder | mosslug, bambudo, pebbler, bonshell, pyrokami, galvanine                 |
+> | **grants to an ally** (positional)   | magmalith, noxalith, voltalith, zephyrex, saberhorn, noxnimbus, aerophim |
 >
 > (The prose above says 14; the rows sum to **15**. The rows are correct — corrected 2026-10-06
 > in pass-2 remediation of the round-4 orchestration.)
@@ -1862,14 +1882,14 @@ selector families combined. It is a well-defined piece of work, but it is engine
 > Two things follow, and both cut against what L5 originally concluded:
 >
 > 1. **Half the family is positional, not self-targeted.** "Give the ally above +2 Burn
->    permanently" is a `buffOnCast` with a *selector* — so T219's selector work and T224's
+>    permanently" is a `buffOnCast` with a _selector_ — so T219's selector work and T224's
 >    accumulation work compose, rather than being alternatives. Seven species were unlocked by
 >    having both, and neither alone would have done it.
 > 2. **It is not larger than the seven selector families combined.** That claim followed from the
 >    inflated 40 and does not survive the recount.
 >
 > Still untagged after round 11, and why: **pebbler, bonshell, pyrokami** grant a status they
-> *already apply* ("+15 Shield" against `appliesStatus` Shield 20), and whether those are one
+> _already apply_ ("+15 Shield" against `appliesStatus` Shield 20), and whether those are one
 > effect or two is genuinely unclear from the text — guessing wrong double-counts, which is
 > exactly the trap that doubled Bumblebolt's Shock in round 10. **saberhorn** grants +1 Multicast
 > but also adds 8s to its own cooldown; tagging only the upside would overstate it. **aerophim**
@@ -1888,42 +1908,42 @@ That is not Painter's ability. It came from `batomonshowdowngame.wiki`'s trainer
 why the record already carried `unconfirmedFields: ["abilityText"]` — the flag was correct and was
 never followed up. Two independent sources agree with the user instead:
 
-- `batomon-showdown-wiki.wiki/trainers/batomon-showdown-painter`: *"turns selected units into
+- `batomon-showdown-wiki.wiki/trainers/batomon-showdown-painter`: _"turns selected units into
   all-type monsters… Random species from the pool are selected to become 'painted'. Whenever these
   specific species appear in your shop or on your board, they possess every single typing
-  simultaneously."*
-- GamesFuze Season 1 guide: *"Painter's ability causes random species to be painted with every type
-  during the run."*
+  simultaneously."_
+- GamesFuze Season 1 guide: _"Painter's ability causes random species to be painted with every type
+  during the run."_
 
 **Decision**: replace the ability text. The superseded text is recorded here:
 
 > "Your monsters gain +1 to all stats for each different type they have (dual-typed monsters get a
 > bigger bonus than single-typed ones)."
 
-*It was briefly carried on the record as `supersededText` and shown on the trainer card; both were
+_It was briefly carried on the record as `supersededText` and shown on the trainer card; both were
 removed 2026-10-06 — on the card it was clutter, and an unrendered field is unread data. This
-section is where the provenance belongs.*
+section is where the provenance belongs._
 
 ### M2. WI-003 ANSWERED: which trainers designate a creature set
 
 Scanned all 23 trainers for type-granting and set-designating language. The answer is **two
 trainers need the picker, and a third grants types by rule and does not**:
 
-| Trainer | Ability | Needs a 9-creature picker? |
-|---|---|---|
-| **Painter** | paints selected species with every type | **Yes** |
-| **Smuggler** | "Batomon from other regions appear in your shop and cost 25% less" | **Yes** |
-| Chef | "Your single-typed monsters gain Fire typing" | **No** — rule-based, derivable from the board |
+| Trainer      | Ability                                                            | Needs a 9-creature picker?                    |
+| ------------ | ------------------------------------------------------------------ | --------------------------------------------- |
+| **Painter**  | paints selected species with every type                            | **Yes**                                       |
+| **Smuggler** | "Batomon from other regions appear in your shop and cost 25% less" | **Yes**                                       |
+| Chef         | "Your single-typed monsters gain Fire typing"                      | **No** — rule-based, derivable from the board |
 
 The user's "at least 2" is therefore exactly 2 for the picker, and Chef is the item they suspected
-existed but could not name. Steam's 1.2.0 notes corroborate the grouping: *"Added a visual effect
-for Batomon that have additional types from Painter, Chef, events, etc."* — Painter and Chef are
+existed but could not name. Steam's 1.2.0 notes corroborate the grouping: _"Added a visual effect
+for Batomon that have additional types from Painter, Chef, events, etc."_ — Painter and Chef are
 named together as type-granting sources, and only Painter's is a selected set.
 
 ### M3. WI-004 ANSWERED: why the set is 9, and its composition
 
-Community gameplay reports give the breakdown: *"the random assignment typically selects two
-common, two uncommon, two rare, two super rare, and one legendary species"* — 2+2+2+2+1 = **9**.
+Community gameplay reports give the breakdown: _"the random assignment typically selects two
+common, two uncommon, two rare, two super rare, and one legendary species"_ — 2+2+2+2+1 = **9**.
 This independently corroborates the user's "9 mons" and, more usefully, says the 9 are **not** a
 free choice: they are constrained by rarity.
 
@@ -1934,7 +1954,7 @@ shape is shown as guidance with an indicator when the selection departs from it.
 
 ### M4. WI-005 ANSWERED: the regions are **Pantra** and **Jinto**, not "starter" and Jinto
 
-The user said *"two regions being 'starter' and 'Jinto'"*. The official Steam patch notes name the
+The user said _"two regions being 'starter' and 'Jinto'"_. The official Steam patch notes name the
 original region **Pantra**:
 
 > "At days 10+, median DPS of Jinto teams are almost 2 times higher than **Pantra** teams. I'm
@@ -1957,11 +1977,11 @@ say whether that was one effect or two. The user has answered it: **two effects*
 `appliesStatus` is what the FIRST cast emits; the ability grant accumulates on top from the second
 cast onward. Checked against our own data, the user's numbers reproduce exactly:
 
-| Creature | Base (cast 1) | Grant | Sequence |
-|---|---|---|---|
-| Pebbler | Shield 20 | +15 | 20, 35, 50, 65 … |
+| Creature | Base (cast 1)       | Grant                | Sequence                       |
+| -------- | ------------------- | -------------------- | ------------------------------ |
+| Pebbler  | Shield 20           | +15                  | 20, 35, 50, 65 …               |
 | Bonshell | Shield 100, cd 7.0s | +80 dmg / +80 shield | (0,100), (80,180), (160,260) … |
-| Pyrokami | Burn 5 | +10 | 5, 15, 25, 35 … |
+| Pyrokami | Burn 5              | +10                  | 5, 15, 25, 35 …                |
 
 This is **exactly** `buffOnCast` with the FR-040 snapshot rule already built in round 11 (first cast
 unbuffed, grant lands after the instant). So the mechanism needs no new engine work — only tagging.
@@ -1979,20 +1999,20 @@ change items 9-11 require.
 Pass-1 validation found T229 had no source for attributing creatures to regions. It does now.
 batodex's embedded payload carries a `sets` field per monster:
 
-| `sets` value | species |
-|---|---|
-| `['starter']` | 56 |
-| `['oshima']` | 56 |
-| `['starter','oshima']` | **14** |
-| `[]` | 13 |
+| `sets` value           | species |
+| ---------------------- | ------- |
+| `['starter']`          | 56      |
+| `['oshima']`           | 56      |
+| `['starter','oshima']` | **14**  |
+| `[]`                   | 13      |
 
 **Three naming schemes are in play and they must be reconciled, not averaged:**
 
-| Source | Original region | Second region |
-|---|---|---|
-| The user | "starter" | "Jinto" |
-| Official Steam patch notes | **Pantra** | **Jinto** |
-| batodex `sets` | `starter` | `oshima` |
+| Source                     | Original region | Second region |
+| -------------------------- | --------------- | ------------- |
+| The user                   | "starter"       | "Jinto"       |
+| Official Steam patch notes | **Pantra**      | **Jinto**     |
+| batodex `sets`             | `starter`       | `oshima`      |
 
 **The tally does not cover the corpus**: 56+56+14+13 = **139**, but we hold **149** level-1
 species. Ten are absent from batodex's payload entirely (it lists 144 monsters to our 149). Those
@@ -2006,7 +2026,7 @@ present and the only count matching. Recorded as an inference so a later contrad
 find. Display names follow the official notes (Pantra, Jinto) because that is what the player sees.
 
 **The complication, which changes the design**: 14 species are in **both** regions and 13 are in
-**neither**. So "the opposite region" is not a complement — `opposite(starter)` is *not*
+**neither**. So "the opposite region" is not a complement — `opposite(starter)` is _not_
 "everything that isn't starter". Smuggler's picker must offer species whose sets include the other
 region and exclude the current one, and the 13 set-less species (events, fossils, shop-only) belong
 to no region and must not appear under either. A naive `!== selectedRegion` filter would wrongly
@@ -2023,7 +2043,7 @@ trainers do designate creature sets that reach the board:
   days."
 
 Both are excluded, and the reason is **not** that they affect no creatures — it is that both are
-scoped by *day*, and this engine simulates a single battle with no day counter (research.md B6
+scoped by _day_, and this engine simulates a single battle with no day counter (research.md B6
 excludes shop/economy/run-progression). Neither designates a stable set the player could enumerate
 for a given battle the way Painter's 9 and Smuggler's 9 can be. If a run-timeline model is ever
 added, both return as candidates.
@@ -2034,13 +2054,13 @@ Regenerable via `npx vite-node scripts/audit-coverage.mjs` (T218), which imports
 rather than reimplementing it, so the script and the app cannot drift. This is the mechanism round
 10 lacked when it published a figure that was wrong by 3×.
 
-| | start of round 4 | end |
-|---|---|---|
-| battle-relevant abilities | 135 | 135 |
-| **resolved by the engine** | **10** | **17** |
-| carry a tag but are inert | 7 | **0** |
-| structurally excluded | — | 40 |
-| remaining unsupported | 125 | **78** |
+|                            | start of round 4 | end    |
+| -------------------------- | ---------------- | ------ |
+| battle-relevant abilities  | 135              | 135    |
+| **resolved by the engine** | **10**           | **17** |
+| carry a tag but are inert  | 7                | **0**  |
+| structurally excluded      | —                | 40     |
+| remaining unsupported      | 125              | **78** |
 
 Newly resolved: Bonshell, Drumire, Pebbler, Petrirex, Prismagon, Pyrokami, Saberhorn.
 
@@ -2057,8 +2077,8 @@ scope per B6), leaving ~38 that are reachable with more tagging and a few more m
 - **Aerophim** — "+1 Multicast to adjacent allies **and transform them into random monsters of their
   rarity**". The transformation replaces a creature with an unknown one; no simulator of a known
   board can express it, and approximating it would fabricate output.
-- **General knockout** — a creature dying to incoming damage. Petrirex's *self-inflicted,
-  position-chosen* knockout is now modelled because its outcome is decidable before the first cast;
+- **General knockout** — a creature dying to incoming damage. Petrirex's _self-inflicted,
+  position-chosen_ knockout is now modelled because its outcome is decidable before the first cast;
   the general case still needs an HP/death model.
 - **v1.3.0 corpus refresh** — the corpus remains pinned to Balance 24 / 1.2.0 (K6).
 
@@ -2066,26 +2086,26 @@ scope per B6), leaving ~38 that are reachable with more tagging and a few more m
 
 ### N1. WI-014 ANSWERED: "all shiny mons get better" is right, but NOT at the stat level
 
-The ask states *"All shiny mons get better stats/abilities than their normal counterpart."* That
+The ask states _"All shiny mons get better stats/abilities than their normal counterpart."_ That
 contradicts committed, tested data — `shiny.ts` and `shiny.test.ts` pin that some shiny stat lines
 are strictly worse — so it was re-measured rather than assumed either way.
 
 **Per individual stat**, the claim is false. **7 species = 28 level-records** are worse:
 
-| species | stat that regresses |
-|---|---|
-| Velocect | damage 15 → 8 (L1) |
-| Kappow | cooldown 4.5s → **5.5s** (slower) |
-| Plunderbird | heal 25 → 18 |
-| Aristobat | poison |
-| Lignite | cooldown |
-| Steamscuttle | cooldown |
-| Blazewing | burn |
+| species      | stat that regresses               |
+| ------------ | --------------------------------- |
+| Velocect     | damage 15 → 8 (L1)                |
+| Kappow       | cooldown 4.5s → **5.5s** (slower) |
+| Plunderbird  | heal 25 → 18                      |
+| Aristobat    | poison                            |
+| Lignite      | cooldown                          |
+| Steamscuttle | cooldown                          |
+| Blazewing    | burn                              |
 
-*Corrected in pass-2 remediation: this said "20 level-records" and listed only 3 of the 7 species.
+_Corrected in pass-2 remediation: this said "20 level-records" and listed only 3 of the 7 species.
 The undercount came from checking damage, multicast, heal and cooldown but **not status amounts**,
 which is how Aristobat, Lignite, Steamscuttle and Blazewing were missed. Regenerate with
-`node scripts/audit-shiny.mjs`.*
+`node scripts/audit-shiny.mjs`._
 
 **In aggregate throughput** `(damage + statuses + heal) × multicast ÷ cooldown`, it is mostly true
 but not universally: **222 better, 299 equal, 15 worse** (Kappow, Lignite, Steamscuttle). Velocect
@@ -2100,11 +2120,11 @@ never pulled — and the uplift is mostly there:
 > **Bunchop L1 shiny**: "Your team has +60 HP. / On Victory: Increase this ability's HP bonus by +60."
 
 **Shiny ability text differs at 343 of the 508 level-records that have both** (165 identical, 28
-normal-only, 40 with neither). *Corrected during validation: the first draft said "315 of 470" and
+normal-only, 40 with neither). _Corrected during validation: the first draft said "315 of 470" and
 did not reproduce. The cause was counting from an uncommitted `/tmp` extract that silently kept
 RSC `$17:props:…` reference strings as if they were ability text. Both the extractor
 (`scripts/extract-batodex.mjs`) and the recount (`scripts/audit-batodex.mjs`) are now committed, so
-every figure in this section is regenerable.* So the user is right
+every figure in this section is regenerable._ So the user is right
 about the direction of the effect and right that we are missing it; "better stats" is the part that
 needed qualifying. Recorded both ways so neither the ask nor the committed guard is quietly dropped:
 `shiny.test.ts`'s downgrade guard stays valid and must NOT be deleted to make the ask true.
@@ -2117,21 +2137,21 @@ our prose. Across 144 monsters:
 Regenerate with `node scripts/audit-batodex.mjs`. Across the **144** monsters batodex publishes
 (our corpus has 149 — the extra 5 are unsourced there, see M6):
 
-| trigger | count |
-|---|---|
-| *(none)* | 53 |
-| `On Cast` | 42 |
-| `On Battle Start` | 20 |
-| `Ongoing` | 14 |
-| `On Victory` | 6 |
-| `On Bought` | 5 |
-| `On Trinket Gained` | 2 |
-| `On Knocked Out` | 1 |
-| `On Battle Lost` | 1 |
+| trigger             | count |
+| ------------------- | ----- |
+| _(none)_            | 53    |
+| `On Cast`           | 42    |
+| `On Battle Start`   | 20    |
+| `Ongoing`           | 14    |
+| `On Victory`        | 6     |
+| `On Bought`         | 5     |
+| `On Trinket Gained` | 2     |
+| `On Knocked Out`    | 1     |
+| `On Battle Lost`    | 1     |
 
-*Corrected during validation: the first draft gave "(none) 36" and "Across 144 monsters" without a
+_Corrected during validation: the first draft gave "(none) 36" and "Across 144 monsters" without a
 reproducible source. The `(none)` bucket was undercounted because unresolved RSC references were
-being treated as present data.* The load-bearing conclusion is unchanged and is what matters here:
+being treated as present data._ The load-bearing conclusion is unchanged and is what matters here:
 there are **exactly 8 non-null trigger values**, and `null` is a real value (an ability with no
 trigger), not missing data — so the union can be closed safely.
 
@@ -2147,7 +2167,7 @@ snapshot 144).
 
 So the honest answer to "please add all missing ability text values" is: **the count is 3, and all
 3 are unavailable from our only structured source.** They need a different source or a direct
-in-game transcription. `ability.byLevel` remains worth wiring up for the per-level text it *does*
+in-game transcription. `ability.byLevel` remains worth wiring up for the per-level text it _does_
 provide, but it will not fill these.
 
 ### N4. The handoff's confidence gates are binding, and two findings must NOT be implemented
@@ -2157,7 +2177,7 @@ must not be implemented as though it can". Two findings are explicitly fenced:
 
 - **Finding 8 (tie-break order)** — medium confidence, "Consistent with all evidence, proven by
   none of it… should not be committed as a confirmed rule on this evidence." Every observed gap was
-  2 frames, never 0, so *no tie was ever exhibited*. `STABLE_SLOT_ORDER` is therefore **not changed**
+  2 frames, never 0, so _no tie was ever exhibited_. `STABLE_SLOT_ORDER` is therefore **not changed**
   this round. Recording the hypothesis and the experiment that would settle it is the whole task.
 - **Finding 9 (same-tick pre-buff reads)** — low confidence, "**Do not implement a propagation
   delay on this evidence.**" The actionable half is that the engine's existing FR-040 snapshot rule
@@ -2176,7 +2196,7 @@ counter should not be allowed to imply otherwise."
 
 "Video time is compressed by roughly 2.6x relative to battle time… **no absolute second-count from
 this footage is usable**." Every number taken from the capture into a test must therefore be a
-*ratio* or an *arithmetic identity* (Miasmaw's 1080, Cobrex's ×1.7, Thorntail's +24 steps), never a
+_ratio_ or an _arithmetic identity_ (Miasmaw's 1080, Cobrex's ×1.7, Thorntail's +24 steps), never a
 wall-clock time. Tests that pin seconds from this recording would encode the fast-forward factor.
 
 ### N6. Validation-pass corrections to the handoff's own board table
@@ -2232,11 +2252,11 @@ handoff. It gives T247's test a cited derivation. **Charge grants stack additive
 - **The captured board cannot be reproduced end-to-end**, so Miasmaw's 1080 cannot be pinned as an
   integration fixture this round. It depends on four run modifiers nothing models: Link Cable
   (carried as text with `abilityTags: []`), an inferred flat +4 Poison, a +70% effect on cooldowns
-  >= 5 s, and a leftmost-column battle-start effect. Two terms in the handoff's own 1066
-  decomposition also fail to reproduce from our corpus (Puffloon's 19 and Thorntail's unmultiplied
-  5 despite a 6 s cooldown). **The phase-ordering fix is therefore pinned on synthetic values that
-  exercise phase 1 -> 3 ordering directly**, which tests the mechanism without depending on an
-  unobserved loadout.
+  > = 5 s, and a leftmost-column battle-start effect. Two terms in the handoff's own 1066
+  > decomposition also fail to reproduce from our corpus (Puffloon's 19 and Thorntail's unmultiplied
+  > 5 despite a 6 s cooldown). **The phase-ordering fix is therefore pinned on synthetic values that
+  > exercise phase 1 -> 3 ordering directly**, which tests the mechanism without depending on an
+  > unobserved loadout.
 
 ### N9. WI-017: the "0.5s increments" premise is false in the current code
 
@@ -2269,13 +2289,13 @@ committed snapshot in a later round; not done here because it is outside this le
 Validation pass 3 reported that 3 of 23 trainer ids diverge from batodex's. Re-derived: it is
 **12 of 23**.
 
-| ours | batodex |
-|---|---|
-| `chef` | `pyromaniac` |
-| `lucky-girl` | `youngster_f` |
-| `rich-lady` | `lady` |
-| `youngster` | `youngster_m` |
-| 8 more | hyphen → underscore |
+| ours         | batodex             |
+| ------------ | ------------------- |
+| `chef`       | `pyromaniac`        |
+| `lucky-girl` | `youngster_f`       |
+| `rich-lady`  | `lady`              |
+| `youngster`  | `youngster_m`       |
+| 8 more       | hyphen → underscore |
 
 All 23 resolve by **name**. `vendor-sprites.mjs` already records this exact lesson for monsters
 ("id-matching silently misses 11"); the trainer case is worse, and an id-keyed script would have
@@ -2283,13 +2303,13 @@ quietly produced a mostly-empty sprite set that looked like a successful run.
 
 ### N12. T258 — round-5 coverage report
 
-| | before | after |
-|---|---|---|
-| battle-relevant abilities | 135 | 135 |
+|                            | before | after  |
+| -------------------------- | ------ | ------ |
+| battle-relevant abilities  | 135    | 135    |
 | **resolved by the engine** | **17** | **20** |
-| tags carried but inert | 0 | **0** |
-| structurally excluded | 40 | 40 |
-| remaining unsupported | 78 | **75** |
+| tags carried but inert     | 0      | **0**  |
+| structurally excluded      | 40     | 40     |
+| remaining unsupported      | 78     | **75** |
 
 Newly resolved: **Thorntail, Puffloon, Fumungus** — three, not the handoff's four, because
 Noxnimbus was already tagged in round 11.
@@ -2313,10 +2333,10 @@ Source: [Patch 1.3.0](https://store.steampowered.com/news/app/4557380/view/68639
 Steam, 2026-10-06. Applied by `scripts/patch-1_3_0.mjs`; the corpus was pinned to Balance 24 / 1.2.0
 (K6 had flagged this as deferred work).
 
-| | changes |
-|---|---|
-| Jinto | Opalion (cd 9→6, Rock allies 2→1), Petrirex (7→5.5), Steamscuttle (3→3.5), Kappow (4.5→5.5, cost 30→25), Aviarab (cost 20→25), Dollhime (40/80/120→50/100/150), Mallogre (9→8), Danuki (cost 50→45), Sarudo (cost 35→25) |
-| Pantra | Guardiant (7/14/21→8/16/24), Noxnimbus (cd 4→3), Lignite (×15/30/45→×20/40/60, cd 4→5), Stalagrove (5.5→4.5), Aegistruct (7→6), Geminiss (12→10) |
+|        | changes                                                                                                                                                                                                                  |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Jinto  | Opalion (cd 9→6, Rock allies 2→1), Petrirex (7→5.5), Steamscuttle (3→3.5), Kappow (4.5→5.5, cost 30→25), Aviarab (cost 20→25), Dollhime (40/80/120→50/100/150), Mallogre (9→8), Danuki (cost 50→45), Sarudo (cost 35→25) |
+| Pantra | Guardiant (7/14/21→8/16/24), Noxnimbus (cd 4→3), Lignite (×15/30/45→×20/40/60, cd 4→5), Stalagrove (5.5→4.5), Aegistruct (7→6), Geminiss (12→10)                                                                         |
 
 **The notes publish levels 1-3 only** for the scaling abilities, but our corpus carries a level 4.
 Each L4 value is rescaled by the same factor as L1, preserving that creature's existing L1:L4 ratio
@@ -2344,25 +2364,24 @@ the neighbouring avg-vs-end pair already show.
 Poison" from "my Poison deals a lot". FR-055's substance — more than one averaged figure — is still
 met by avg, end and applied.
 
-
 ## P. Enemy HP by day, and a retraction about sudden death (2026-10-07)
 
 ### P1. Observed enemy team HP
 
 Read off the battle UI across one run. Stored in `src/data/enemyHealth.ts`.
 
-| day | HP | day | HP |
-|---|---|---|---|
-| 1 | 300 | 11 | 24,900 |
-| 2 | 500 | 12 | 34,700 |
-| 3 | 800 | 13 | 47,300 |
-| 4 | 1,400 | 14 | 63,000 |
-| 5 | 2,400 | 15 | 82,400 |
-| 6 | 3,800 | 16 | 106,000 |
-| 7 | 5,700 | 17 | 134,300 |
-| 8 | 8,300 | 18 | 168,000 |
-| 9 | 11,600 | 19 | **207,700** (derived) |
-| 10 | 17,300 | 20 | not captured |
+| day | HP     | day | HP                    |
+| --- | ------ | --- | --------------------- |
+| 1   | 300    | 11  | 24,900                |
+| 2   | 500    | 12  | 34,700                |
+| 3   | 800    | 13  | 47,300                |
+| 4   | 1,400  | 14  | 63,000                |
+| 5   | 2,400  | 15  | 82,400                |
+| 6   | 3,800  | 16  | 106,000               |
+| 7   | 5,700  | 17  | 134,300               |
+| 8   | 8,300  | 18  | 168,000               |
+| 9   | 11,600 | 19  | **207,700** (derived) |
+| 10  | 17,300 | 20  | not captured          |
 
 **Day 19 is derived, not read.** The run carried a +25% max-health trinket by then and the UI
 showed 259,625. 259,625 / 1.25 = **207,700** exactly, and the implied day-18→19 ratio of 1.236 sits
@@ -2400,10 +2419,10 @@ before a team has done its work makes a slow, scaling build look worse than it i
 The ask states "**Both** trainer abilities only allow a max of 9 mons to be painted/smuggled". The
 corpus supports that for one of the two:
 
-| Trainer | Published `abilityText` (src/data/trainers.ts) | Says "nine"? |
-| --- | --- | --- |
-| **Painter** | "**Nine random species** are painted with every type. Whenever a painted species appears in your shop or on your board, it counts as every type for any effect that checks typing." | **Yes** |
-| **Smuggler** | "Batomon from other regions appear in your shop and cost 25% less." | **No — no count at all** |
+| Trainer      | Published `abilityText` (src/data/trainers.ts)                                                                                                                                      | Says "nine"?             |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
+| **Painter**  | "**Nine random species** are painted with every type. Whenever a painted species appears in your shop or on your board, it counts as every type for any effect that checks typing." | **Yes**                  |
+| **Smuggler** | "Batomon from other regions appear in your shop and cost 25% less."                                                                                                                 | **No — no count at all** |
 
 Smuggler's record also carries `unconfirmedFields: ["abilityText"]`, so its text is itself flagged as
 unverified. The "9 species from the opposite region" string the UI shows for Smuggler comes from
@@ -2429,13 +2448,13 @@ over `creatures.ts`, which mis-handled `unconfirmedFields` and nested status ent
 come from running the real `buildStatLines(perCastOutputOf(creature))` over `corpus.creatures`, which
 is the only count that can be trusted because it is the code that draws the band:
 
-| Lines | Records |
-| --- | --- |
-| 0 | 16 |
-| 1 | 373 |
-| 2 | 181 |
-| 3 | 26 |
-| **4+** | **0** |
+| Lines  | Records |
+| ------ | ------- |
+| 0      | 16      |
+| 1      | 373     |
+| 2      | 181     |
+| 3      | 26      |
+| **4+** | **0**   |
 
 So no published creature reaches four lines, and the reported breakage cannot come from base stats.
 It comes from everything that ADDS output: user modifiers, trinket `effectTags`, ally abilities and
@@ -2475,20 +2494,20 @@ x3") — a Shelldra with three statuses added.
 - **The two columns are a column-flow GRID, not CSS multi-column.** `columns: 2` was specified first
   and is inert here: `.statLines` is `display: flex`, and multi-column does not apply to a flex
   container (validation pass 3). `grid-auto-flow: column` with `grid-template-rows: repeat(ceil(n/2),
-  auto)` fills the first column before the second by construction, keeps the band's existing `gap`,
+auto)` fills the first column before the second by construction, keeps the band's existing `gap`,
   and makes a third column arithmetically impossible.
 
 ### Q4. T265 MEASURED: the band at 3 to 7 lines, and why no reservation changed
 
 Shelldra Lv1 in the Calculator's panel card, statuses added one at a time in a real browser:
 
-| Lines | Rows | Band height | Card height | Card scrollHeight | Overflowing? | Ability text visible? |
-| --- | --- | --- | --- | --- | --- | --- |
-| 3 (published) | 1 column | 81.9px | 522px | 520px | no | yes |
-| 4 | 2 | 58.5px | 522px | 520px | no | yes |
-| 5 | 3 | 81.9px | 522px | 520px | no | yes |
-| 6 (the ask's example) | 3 | 81.9px | 522px | 520px | no | yes |
-| 7 (worst case) | 4 | 109.8px | 522px | 520px | no | yes |
+| Lines                 | Rows     | Band height | Card height | Card scrollHeight | Overflowing? | Ability text visible? |
+| --------------------- | -------- | ----------- | ----------- | ----------------- | ------------ | --------------------- |
+| 3 (published)         | 1 column | 81.9px      | 522px       | 520px             | no           | yes                   |
+| 4                     | 2        | 58.5px      | 522px       | 520px             | no           | yes                   |
+| 5                     | 3        | 81.9px      | 522px       | 520px             | no           | yes                   |
+| 6 (the ask's example) | 3        | 81.9px      | 522px       | 520px             | no           | yes                   |
+| 7 (worst case)        | 4        | 109.8px     | 522px       | 520px             | no           | yes                   |
 
 **No reservation needed changing**, which T265 required to be stated explicitly rather than assumed:
 `.cardFixedPanel`'s 29rem absorbs the 4-row band with the ability text and the level pips still in view,
@@ -2513,7 +2532,7 @@ guarantees the two agree.
 corpus's `Rarity` union and `RARITIES_DESC` use `"SuperRare"`. The chip row is built by filtering
 `RARITIES_DESC` against those keys, so the Super Rare entry is silently dropped: the guidance row shows
 four chips summing to **7 of 9**, not five summing to 9. The user's own screenshot of the picker shows
-exactly four chips — "Legendary 0/1  Rare 1/2  Uncommon 0/2  Common 1/2" — so the defect is visible in
+exactly four chips — "Legendary 0/1 Rare 1/2 Uncommon 0/2 Common 1/2" — so the defect is visible in
 the evidence attached to the ask without being part of it.
 
 `statColors.ts` already documents this exact trap: "the deliberate spelling bridge: this corpus's
@@ -2542,7 +2561,7 @@ user is pointing at would survive the round.
 evidence from this repo's own history:
 
 1. **No runtime value list.** A literal union is erased at compile time, so every site needing to
-   *iterate* a vocabulary hand-writes an array. Those restatements have drifted twice already:
+   _iterate_ a vocabulary hand-writes an array. Those restatements have drifted twice already:
    round 7's T172 found the rarity ordering declared as a local `RARITIES` array in three files
    "with inconsistent ordering between them (two descending, one ascending)", and
    `src/data/__tests__/triggers.test.ts:55-59` still hand-lists all ten `AbilityTrigger` values in
@@ -2564,7 +2583,7 @@ that there are three such records instead of one.
 ### R2. SUPERSEDED by R8 — read R8 first
 
 > **This section's conclusion was overturned by the user on 2026-10-07 and the code now does the
-> opposite of what it recommends.** It argued for a const-object registry *instead of* TypeScript's
+> opposite of what it recommends.** It argued for a const-object registry _instead of_ TypeScript's
 > `enum`; the codebase uses string enums. The reasoning is kept verbatim below because one of its
 > four arguments was simply wrong and it is more useful to see which, than to see a tidied record.
 > See **R8** for what was wrong and what replaced it.
@@ -2578,11 +2597,11 @@ keys.**
 
 ```ts
 export const RARITY = defineVocabulary({
-  Common:    { label: "Common",     order: 0, color: "#70707a" },
+  Common: { label: "Common", order: 0, color: "#70707a" },
   //...
   SuperRare: { label: "Super Rare", order: 3, color: "#a040a0" },
 });
-export type Rarity = VocabularyKey<typeof RARITY>;   // the SAME union as today
+export type Rarity = VocabularyKey<typeof RARITY>; // the SAME union as today
 ```
 
 **Why not `enum`.** Four reasons, in order of how much they cost:
@@ -2609,7 +2628,7 @@ label or colour becomes a compile error rather than a dropped chip.
 
 **Lineage, since item 3 asks for senior-level OOP reasoning.** This is the enum-with-fields pattern
 from Java/C# (`enum Rarity { SUPER_RARE("Super Rare", 3) }`), reached in TypeScript by the idiom the
-language actually supports. It is Fowler's *Replace Type Code with Class* applied to a type code that
+language actually supports. It is Fowler's _Replace Type Code with Class_ applied to a type code that
 is already a union: keep the cheap comparable key, attach the behaviour to it in one place. The
 alternative OOP-purist reading — a `Rarity` class with instances — is rejected under Principle VI and
 for reason 2 above: the values must stay JSON-serialisable primitives.
@@ -2640,10 +2659,10 @@ else**. `"Burn"`, `"Poison"` and `"Shock"` are used at runtime on `TimelineEvent
 `damageType === "Direct"` to apply the status-vs-shield reduction. So one type spans two different
 concepts:
 
-| Role | Inhabited by | Where |
-| --- | --- | --- |
-| "what channel is **this hit** on" | Direct, Burn, Poison, Shock (SuddenDeath unused) | `TimelineEvent`, `shield.ts`, `status.ts` |
-| "what kind of cast does **this creature** publish" | Direct, or absent | `CreatureRecord.damageType` |
+| Role                                               | Inhabited by                                     | Where                                     |
+| -------------------------------------------------- | ------------------------------------------------ | ----------------------------------------- |
+| "what channel is **this hit** on"                  | Direct, Burn, Poison, Shock (SuddenDeath unused) | `TimelineEvent`, `shield.ts`, `status.ts` |
+| "what kind of cast does **this creature** publish" | Direct, or absent                                | `CreatureRecord.damageType`               |
 
 **That conflation is the real mess in item 3**, and it is why the field looks half-empty: it is being
 read as a creature property while being typed as a hit property.
@@ -2674,7 +2693,7 @@ WI-002's derivation work. Principle VI applies. **An invariant test is added now
 the 596/596 correlation, so the redundancy cannot begin to drift in the interval: if a future record
 ever sets one field without the other, the suite fails and (b) becomes urgent with evidence.
 
-A note for whoever lands (b): `modifiers.test.ts:47-59` exercises Burn- and Poison-typed *attackers*
+A note for whoever lands (b): `modifiers.test.ts:47-59` exercises Burn- and Poison-typed _attackers_
 (`{...pebbler, damage: 10, damageType: "Burn"}`). **No corpus creature has ever had that shape** — the
 fixtures are synthetic, so the engine supports a case the data has never contained. That is worth
 keeping (T232 allows ability grants to create damage) but it means those tests pin a capability, not
@@ -2686,8 +2705,8 @@ The ledger made this a named deliverable of the proposal and the first draft of 
 (validation pass 1). The two vocabularies overlap on three of four members:
 
 ```ts
-DamageChannel    = "Direct" | "Burn"   | "Poison" | "Shock"
-StatusEffectType =            "Burn"   | "Poison" | "Shock" | "Shield"
+DamageChannel = "Direct" | "Burn" | "Poison" | "Shock";
+StatusEffectType = "Burn" | "Poison" | "Shock" | "Shield";
 ```
 
 **They are not the same vocabulary, and the overlap is not duplication.** They answer different
@@ -2730,7 +2749,12 @@ database — has 144 records. **4 of them** (`beetbud`, `aviarab`, `aristobat`, 
 materialised rarity:
 
 ```json
-{ "id": "beetbud", "name": "Beetbud", "rarity": { "label": "Common", "color": "#70707a" }, "trigger": null }
+{
+  "id": "beetbud",
+  "name": "Beetbud",
+  "rarity": { "label": "Common", "color": "#70707a" },
+  "trigger": null
+}
 ```
 
 The other 140 carry a React-flight dereference string instead — `"$17:props:children:0:props:entries:0:rarity"`
@@ -2744,7 +2768,7 @@ The other 140 carry a React-flight dereference string instead — `"$17:props:ch
   genuine, if narrow, corroboration of R2.
 - **NOT supported, and withdrawn**: the claim that the fixture's labels evidence the "Super Rare"
   spelling. The four materialised labels are Common, Uncommon, Rare and Mythical — Super Rare is not
-  among them. The file's only two "Super Rare" strings sit inside *ability text* ("Gain a random
+  among them. The file's only two "Super Rare" strings sit inside _ability text_ ("Gain a random
   non-unique Super Rare Trinket."). That still shows the published data spells the tier with a space,
   but by different evidence than first claimed, and R5's primary citation (`statColors.ts`'s own
   record of the extracted database) remains the load-bearing one.
@@ -2760,12 +2784,12 @@ representation of "no published trigger", which supports keeping `abilityTrigger
 
 Census over all 596 records:
 
-| Measure | Count |
-| --- | --- |
-| Records with real ability text (per `hasAbilityText`) | 543 |
-| Records with real ability text and **zero** `abilityTags` | **424** |
-| Level-1 species with real ability text and zero tags | **106 of 149** |
-| Records carrying at least one tag | 119 |
+| Measure                                                   | Count          |
+| --------------------------------------------------------- | -------------- |
+| Records with real ability text (per `hasAbilityText`)     | 543            |
+| Records with real ability text and **zero** `abilityTags` | **424**        |
+| Level-1 species with real ability text and zero tags      | **106 of 149** |
+| Records carrying at least one tag                         | 119            |
 
 So the user's "140+ mons" is if anything an understatement of the hand-management burden: **106 of
 149 species** have a published ability and no structured representation of it at all. Ninflora is not
@@ -2794,19 +2818,19 @@ built ahead of the evidence, which Principle VI prohibits in those words. This r
 refused family claims that had not been measured). Shapes are counted in order, each record attributed
 to the first shape it matches:
 
-| Text shape | New records | Total matching |
-|---|---|---|
-| contains "permanently" — **the `manualTrigger` family** | **60** | 60 |
-| mentions an ally | 140 | 174 |
-| "for this battle" | 24 | 56 |
-| "adjacent" | 0 | 64 |
-| "for each" / "per" | 10 | 45 |
-| knockout | 24 | 40 |
-| shop / gold / sell value / Berries / day | 28 | 44 |
-| evolution only ("Evolves at level 3") | 19 | 19 |
-| row / column / behind / in front | 9 | 41 |
-| charge | 0 | 16 |
-| **matching none of the above** | — | **110** |
+| Text shape                                              | New records | Total matching |
+| ------------------------------------------------------- | ----------- | -------------- |
+| contains "permanently" — **the `manualTrigger` family** | **60**      | 60             |
+| mentions an ally                                        | 140         | 174            |
+| "for this battle"                                       | 24          | 56             |
+| "adjacent"                                              | 0           | 64             |
+| "for each" / "per"                                      | 10          | 45             |
+| knockout                                                | 24          | 40             |
+| shop / gold / sell value / Berries / day                | 28          | 44             |
+| evolution only ("Evolves at level 3")                   | 19          | 19             |
+| row / column / behind / in front                        | 9           | 41             |
+| charge                                                  | 0           | 16             |
+| **matching none of the above**                          | —           | **110**        |
 
 "New" attributes each record to the **first** shape it matches, so the New column sums to 314 and
 314 + 110 = 424. The two columns differ sharply for some shapes — 56 records say "for this battle" but
@@ -2826,10 +2850,10 @@ Two things follow that no amount of reasoning would have produced:
 
 1. **The pattern shapes are the hard part, not the family boundary.** Of the 60 untagged records
    containing "permanently", only **10** match the three text shapes `manualTrigger` was hand-written
-   against. The other 50 are the same *family* — a permanent stat grant — expressed with targets the
+   against. The other 50 are the same _family_ — a permanent stat grant — expressed with targets the
    hand-written three never needed: `"Adjacent Water allies gain +25 Heal permanently"` (Aster),
    `"Give the ally behind +3% Cooldown Speed permanently"` (Boomagon), `"Allies of level 3 or above gain
-   +15 Damage and +15 Heal permanently"` (Lumijel), `"+4 Burn and +4 Poison permanently"` (Brimtoad —
++15 Damage and +15 Heal permanently"` (Lumijel), `"+4 Burn and +4 Poison permanently"` (Brimtoad —
    two stats, no target clause), `"+4 Damage and +4 Shield permanently for each Trinket that you own"`
    (Mallogre — count-scaled).
    **This is good news for the design and bad news for a narrow rule set**: those targets are already
@@ -2843,17 +2867,18 @@ Two things follow that no amount of reasoning would have produced:
    "one" and then "two" records). 27 records across 7 species are outside this family regardless of
    selector support:
 
-   | Not derivable | Why |
-   |---|---|
+   | Not derivable                                    | Why                                                                                                                                                                                                                        |
+   | ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
    | Mallogre ×4, Sproach ×4, Talonite ×4, Sunsage ×3 | count-scaled — "for each Trinket that you own", "for each life lost this run", "for each Rock ally". These belong to `statFromCount`, and two of the inputs (trinket count, lives lost) do not exist in this model at all. |
-   | Omnichrome ×4 | "Gain 2400% of the stats of the enemy monster with the highest stats" — a multiplier off an enemy, not a flat grant. |
-   | Aerophim ×4 | "+60 Multicast permanently **and transform them into random monsters of their rarity**" — a second clause no tag expresses. |
-   | Gildshell ×4 | "+240 Sell Value permanently" — **Sell Value is not a `ModifierStat`**, so there is nothing to write. |
+   | Omnichrome ×4                                    | "Gain 2400% of the stats of the enemy monster with the highest stats" — a multiplier off an enemy, not a flat grant.                                                                                                       |
+   | Aerophim ×4                                      | "+60 Multicast permanently **and transform them into random monsters of their rarity**" — a second clause no tag expresses.                                                                                                |
+   | Gildshell ×4                                     | "+240 Sell Value permanently" — **Sell Value is not a `ModifierStat`**, so there is nothing to write.                                                                                                                      |
 
    The lesson generalises past this round: **a "family" identified by one keyword is not a family.**
    "Permanently" selects 60 records spanning flat grants, positional grants, count-scaling, an
    enemy-stat multiplier, a transform, and a stat this model does not have. That is the argument for a
    rule table keyed on full text shapes rather than on a trigger word.
+
 2. **The derivation must be a rule TABLE, not a parser.** 110 records match no recognised shape, the
    families are long-tailed, and as item 1 shows a single family spans five target shapes. The
    mechanism that matters is therefore "adding a shape or a family is one declarative row", which is
@@ -2904,16 +2929,16 @@ evidence the item worked, not collateral.
 Of 543 records with real ability text, **318 contain at least one** of Damage / Shield / Burn /
 Poison / Shock / Cooldown Speed / Multicast / Heal:
 
-| Keyword | Records |
-| --- | --- |
-| Damage | 124 | 
-| Poison | 49 |
-| Shield | 48 |
-| Cooldown Speed | 43 |
-| Burn | 41 |
-| Multicast | 40 |
-| Heal | 18 |
-| Shock | 17 |
+| Keyword        | Records |
+| -------------- | ------- |
+| Damage         | 124     |
+| Poison         | 49      |
+| Shield         | 48      |
+| Cooldown Speed | 43      |
+| Burn           | 41      |
+| Multicast      | 40      |
+| Heal           | 18      |
+| Shock          | 17      |
 
 The remaining 225 are not all unkeyworded — they carry terms outside `STAT_COLORS`, e.g. "Give
 adjacent allies **Protect** 1", "Your team has +50 **HP**", "**Trigger** the Bug ally above",
@@ -2929,7 +2954,7 @@ Three constraints the design must respect, each read off the data rather than as
    sentence**, which also settles that highlighting is per-keyword, not per-card.
 3. **Flavour text is concatenated into some abilities** and must not be mangled: Bumblebolt's reads
    `Deals 3 direct damage every 2.5 seconds and applies 1 Shock. "The poster Common: 2.5s, Shock,
-   cheap."` The longest ability text in the corpus is **169 characters**, which is the figure
+cheap."` The longest ability text in the corpus is **169 characters**, which is the figure
    `BatomonCard.module.css:29` already sized the band against — so the band's reservation (FR-043)
    is unchanged by colouring, since no text grows.
 
@@ -2942,7 +2967,7 @@ and it is testable without rendering.
 1. **Two species carry unresolved template placeholders in cited ability text.** `purpleegg` L1-L4
    reads "Hatches a level 2 **{monster_name}** in **{amount}** day(s)." — literal substitution tokens
    from the extracted database, shipped to the UI. `scrubber.test.tsx:60-65` guards against
-   placeholder *prose* ("unknown", "n/a") but not against template syntax, so this passed through.
+   placeholder _prose_ ("unknown", "n/a") but not against template syntax, so this passed through.
 2. **Eight records have an empty `types` array** — `dragonegg` and `purpleegg` at all four levels.
    `CreatureType` cannot express "typeless", so the hole is encoded as absence, and WI-003's
    decision about `"All"`/`"Curio"`/`"NULL"` should state whether typeless is a legitimate state.
@@ -3001,12 +3026,12 @@ generated id enums (`Species`, `TrainerId`, `TrinketId`, `ItemId`).
 Worth separating, because the user's actual requirement was "no logic keyed upon string matching"
 and swapping unions for enums addresses none of these:
 
-| Hazard | Status |
-|---|---|
-| `unconfirmedFields: string[]` with `isUnconfirmed(creature, "baseDamage")` | **Fixed** (`ConfirmableField`). This went live: the `publishedCast` rename left that string pointing at a removed field, so the "unknown" badge would have stopped appearing with no compile error and no failing test. |
-| `Record<string, number>` keyed by an inline `${id}@${slotKey}` at twelve sites | **Fixed** (branded `PlacementKey`, one builder). `TeamSummary` built it BY HAND as `${id}@${row}${col}`, matching only because `slotKey` happens to have that format. |
-| Ids as bare strings; `SHINY_STATS`/`CREATURE_REGIONS` keyed by them | **Fixed** (generated id enums, template-literal `ShinyKey`). |
-| `<select>` values cast with `as Rarity`/`as RegionId` | **Fixed** — parsed at the boundary via `parseRarity`/`parseRegionId`/`parseTrainerId`. |
-| `RegionId` was an OPEN union (`\| (string & {})`) | **Fixed** — closed, so a typo'd region fails instead of matching no creature. |
-| `Object.entries` erasing the key type in `TeamSummary`'s status rows | **Fixed** — iterates the vocabulary, which also makes display order the declared order. |
-| `toLowerCase()` matching in `deriveTags.ts` and corpus search | **Open.** Inherent to parsing prose; the parsers emit typed values, but their internal word lookup is still case-insensitive string matching. |
+| Hazard                                                                         | Status                                                                                                                                                                                                                  |
+| ------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `unconfirmedFields: string[]` with `isUnconfirmed(creature, "baseDamage")`     | **Fixed** (`ConfirmableField`). This went live: the `publishedCast` rename left that string pointing at a removed field, so the "unknown" badge would have stopped appearing with no compile error and no failing test. |
+| `Record<string, number>` keyed by an inline `${id}@${slotKey}` at twelve sites | **Fixed** (branded `PlacementKey`, one builder). `TeamSummary` built it BY HAND as `${id}@${row}${col}`, matching only because `slotKey` happens to have that format.                                                   |
+| Ids as bare strings; `SHINY_STATS`/`CREATURE_REGIONS` keyed by them            | **Fixed** (generated id enums, template-literal `ShinyKey`).                                                                                                                                                            |
+| `<select>` values cast with `as Rarity`/`as RegionId`                          | **Fixed** — parsed at the boundary via `parseRarity`/`parseRegionId`/`parseTrainerId`.                                                                                                                                  |
+| `RegionId` was an OPEN union (`\| (string & {})`)                              | **Fixed** — closed, so a typo'd region fails instead of matching no creature.                                                                                                                                           |
+| `Object.entries` erasing the key type in `TeamSummary`'s status rows           | **Fixed** — iterates the vocabulary, which also makes display order the declared order.                                                                                                                                 |
+| `toLowerCase()` matching in `deriveTags.ts` and corpus search                  | **Open.** Inherent to parsing prose; the parsers emit typed values, but their internal word lookup is still case-insensitive string matching.                                                                           |

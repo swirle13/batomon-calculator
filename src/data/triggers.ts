@@ -72,7 +72,10 @@ export interface ManualTrigger {
  */
 export function manualTriggersFor(creature: CreatureRecord): ManualTrigger[] {
   return creature.abilityTags
-    .filter((tag): tag is Extract<typeof tag, { kind: AbilityTagKind.ManualTrigger }> => tag.kind === AbilityTagKind.ManualTrigger)
+    .filter(
+      (tag): tag is Extract<typeof tag, { kind: AbilityTagKind.ManualTrigger }> =>
+        tag.kind === AbilityTagKind.ManualTrigger,
+    )
     .map((tag) => ({
       trigger: tag.trigger,
       definition: TRIGGER_DEFINITIONS[tag.trigger],
@@ -96,5 +99,9 @@ export function manualTriggersFor(creature: CreatureRecord): ManualTrigger[] {
  * subject is a monster in every case, so what a press banks is gone when that monster is sold.
  */
 export function modifiersForPress(trigger: ManualTrigger): Omit<StatModifier, "id">[] {
-  return trigger.effects.map((e) => ({ stat: e.stat, amount: e.amount, scope: ModifierScope.Creature }));
+  return trigger.effects.map((e) => ({
+    stat: e.stat,
+    amount: e.amount,
+    scope: ModifierScope.Creature,
+  }));
 }

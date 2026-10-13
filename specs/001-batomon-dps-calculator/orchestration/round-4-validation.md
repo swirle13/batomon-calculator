@@ -9,24 +9,24 @@ overreach/vagueness findings.
 
 ### Verdict table
 
-| Item | Verdict |
-|---|---|
-| WI-001 Painter ability correction | COVERED |
-| WI-002 Trainer card + optional button | **PARTIAL** |
-| WI-003 Which trainers designate a set | COVERED |
+| Item                                               | Verdict     |
+| -------------------------------------------------- | ----------- |
+| WI-001 Painter ability correction                  | COVERED     |
+| WI-002 Trainer card + optional button              | **PARTIAL** |
+| WI-003 Which trainers designate a set              | COVERED     |
 | WI-004 Both surface a 9-set; Smuggler adds to pool | **PARTIAL** |
-| WI-005 Region as first-class concept | **PARTIAL** |
-| WI-006 User picks the 9 | COVERED |
-| WI-007 Rainbow type chip | COVERED |
-| WI-008 Scrolling SE rainbow overlay | COVERED |
-| WI-009 Pebbler 20/35/50 | COVERED |
-| WI-010 Bonshell (0,100)/(80,180)/(160,260) | COVERED |
-| WI-011 Pyrokami 5/15/25 | COVERED |
-| WI-012 Execute the ten deferred tasks | **PARTIAL** |
+| WI-005 Region as first-class concept               | **PARTIAL** |
+| WI-006 User picks the 9                            | COVERED     |
+| WI-007 Rainbow type chip                           | COVERED     |
+| WI-008 Scrolling SE rainbow overlay                | COVERED     |
+| WI-009 Pebbler 20/35/50                            | COVERED     |
+| WI-010 Bonshell (0,100)/(80,180)/(160,260)         | COVERED     |
+| WI-011 Pyrokami 5/15/25                            | COVERED     |
+| WI-012 Execute the ten deferred tasks              | **PARTIAL** |
 
 ### Gaps
 
-- **WI-002**: no task says what the card or the button *renders*; existing trainer UI is a bare
+- **WI-002**: no task says what the card or the button _renders_; existing trainer UI is a bare
   `<select>` (`TrainerPicker.tsx:9-22`) and no task says it is replaced.
 - **WI-004**: "added to the creature pool" is recorded but has no effect — the pool is not
   region-aware (`corpus.ts:130` filters name/type/rarity only), so smuggling is a no-op.

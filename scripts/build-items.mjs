@@ -18,7 +18,11 @@ const ROOT = path.resolve(import.meta.dirname, "..");
 
 /** The same member-name derivation `generate-ids.ts` uses, so the two cannot disagree. */
 const member = (id) =>
-  id.split(/[^a-zA-Z0-9]+/).filter(Boolean).map((w) => w[0].toUpperCase() + w.slice(1)).join("")
+  id
+    .split(/[^a-zA-Z0-9]+/)
+    .filter(Boolean)
+    .map((w) => w[0].toUpperCase() + w.slice(1))
+    .join("")
     .replace(/^(\d)/, "_$1");
 
 /**
@@ -147,7 +151,10 @@ const block = `/** The ${items.length} items. */\nexport enum ItemId {\n${[...it
   .sort()
   .map((id) => `  ${member(id)} = "${id}",`)
   .join("\n")}\n}\n`;
-const replaced = ids.replace(/\/\*\*[^*]*(?:\*(?!\/)[^*]*)*\*\/\nexport enum ItemId \{[^}]*\}\n/, block);
+const replaced = ids.replace(
+  /\/\*\*[^*]*(?:\*(?!\/)[^*]*)*\*\/\nexport enum ItemId \{[^}]*\}\n/,
+  block,
+);
 if (replaced === ids) throw new Error("ItemId block not found in ids.ts");
 writeFileSync(idsPath, replaced);
 

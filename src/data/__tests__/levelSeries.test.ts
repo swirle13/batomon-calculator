@@ -55,8 +55,21 @@ function sourceFor(name: string, level: number): SourceLevel | undefined {
  * Source: https://store.steampowered.com/news/app/4557380/view/686392527015643351
  */
 const PATCHED_AHEAD_OF_SNAPSHOT = new Set([
-  "opalion", "petrirex", "steamscuttle", "kappow", "aviarab", "dollhime", "mallogre", "danuki",
-  "sarudo", "guardiant", "noxnimbus", "lignite", "stalagrove", "aegistruct", "geminiss",
+  "opalion",
+  "petrirex",
+  "steamscuttle",
+  "kappow",
+  "aviarab",
+  "dollhime",
+  "mallogre",
+  "danuki",
+  "sarudo",
+  "guardiant",
+  "noxnimbus",
+  "lignite",
+  "stalagrove",
+  "aegistruct",
+  "geminiss",
 ]);
 
 describe("creature corpus matches the authoritative per-level series (research.md H11)", () => {
@@ -71,8 +84,13 @@ describe("creature corpus matches the authoritative per-level series (research.m
     const mismatches = allCreatureRecords()
       .map((c) => ({ c, source: sourceFor(c.name, c.level) }))
       .filter(({ c }) => !PATCHED_AHEAD_OF_SNAPSHOT.has(c.id))
-      .filter(({ c, source }) => source && Number(c.baseCooldownSeconds) !== Number(source.cooldown))
-      .map(({ c, source }) => `${c.id}@L${c.level}: ours=${c.baseCooldownSeconds} source=${source!.cooldown}`);
+      .filter(
+        ({ c, source }) => source && Number(c.baseCooldownSeconds) !== Number(source.cooldown),
+      )
+      .map(
+        ({ c, source }) =>
+          `${c.id}@L${c.level}: ours=${c.baseCooldownSeconds} source=${source!.cooldown}`,
+      );
     expect(mismatches).toEqual([]);
   });
 

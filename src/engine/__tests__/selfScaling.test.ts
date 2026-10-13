@@ -4,7 +4,14 @@ import { simulate } from "../simulate";
 import { resolveEffects } from "../effects";
 import { perCastOutputOf } from "../../ui/shared/BatomonCard/perCastOutput";
 import type { GridSlot, StatModifier, TeamConfiguration } from "../../data/types";
-import { AbilityTagKind, GridRow, ModifierStat, StatChangeStat, StatusEffectType, TimelineEventKind } from "../../data/enums";
+import {
+  AbilityTagKind,
+  GridRow,
+  ModifierStat,
+  StatChangeStat,
+  StatusEffectType,
+  TimelineEventKind,
+} from "../../data/enums";
 import { Species } from "../../data/ids";
 
 /**
@@ -47,7 +54,12 @@ describe("the tag is read off the published text, not hand-written", () => {
   it("derives one scaling rule per level, with that level's multiplier", () => {
     // 20/40/60/120 across the four levels. A rule row rather than four hand-written tags is the
     // whole reason the levels cannot drift apart from the text they came from.
-    for (const [level, multiplier] of [[1, 20], [2, 40], [3, 60], [4, 120]] as const) {
+    for (const [level, multiplier] of [
+      [1, 20],
+      [2, 40],
+      [3, 60],
+      [4, 120],
+    ] as const) {
       expect(lignite(level).abilityTags).toEqual([
         {
           kind: AbilityTagKind.StatFromOwnStat,
@@ -134,7 +146,9 @@ describe("the battle uses the same number the card shows", () => {
       { id: Species.Magmalith, slot: FRONT0 },
     ]);
     const hits = simulate(config, corpus)
-      .timeline.filter((e) => e.kind === TimelineEventKind.Attack && e.sourceSlot.row === GridRow.Top)
+      .timeline.filter(
+        (e) => e.kind === TimelineEventKind.Attack && e.sourceSlot.row === GridRow.Top,
+      )
       .map((e) => (e as { tSeconds: number; damage?: number }).damage);
 
     // Lignite casts at 5/10/15/20; Magmalith's land at 9 and 18.

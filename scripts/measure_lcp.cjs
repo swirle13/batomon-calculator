@@ -70,19 +70,29 @@ const PROBE = `
 
   const lcp = await page.evaluate("window.__lcp");
   const paints = await page.evaluate("window.__paints");
-  const nav = await page.evaluate(`JSON.parse(JSON.stringify(performance.getEntriesByType('navigation')[0]))`);
+  const nav = await page.evaluate(
+    `JSON.parse(JSON.stringify(performance.getEntriesByType('navigation')[0]))`,
+  );
 
-  console.log(`\n===== ${label} ${withBoard ? "(with board)" : "(empty board)"} ${throttle ? "[4x CPU, 10Mbit]" : "[no throttle]"} =====`);
+  console.log(
+    `\n===== ${label} ${withBoard ? "(with board)" : "(empty board)"} ${throttle ? "[4x CPU, 10Mbit]" : "[no throttle]"} =====`,
+  );
   console.log(`  requests ${requests}, declared bytes ${(bytes / 1024).toFixed(0)}kB`);
   if (big.length) console.log(`  large: ${big.join(", ")}`);
   console.log(`  TTFB            ${nav.responseStart.toFixed(0)}ms`);
   for (const p of paints) console.log(`  ${p.name.padEnd(15)} ${p.t.toFixed(0)}ms`);
   const last = lcp[lcp.length - 1];
   if (last) {
-    console.log(`  LCP             ${last.startTime.toFixed(0)}ms  <${last.tag} class="${(last.cls || "").slice(0, 40)}"> size=${last.size}`);
-    console.log(`  LCP candidates: ${lcp.map((e) => `${e.startTime.toFixed(0)}ms/${e.tag}`).join(", ")}`);
+    console.log(
+      `  LCP             ${last.startTime.toFixed(0)}ms  <${last.tag} class="${(last.cls || "").slice(0, 40)}"> size=${last.size}`,
+    );
+    console.log(
+      `  LCP candidates: ${lcp.map((e) => `${e.startTime.toFixed(0)}ms/${e.tag}`).join(", ")}`,
+    );
   }
-  console.log(`  domContentLoaded ${nav.domContentLoadedEventEnd.toFixed(0)}ms, load ${nav.loadEventEnd.toFixed(0)}ms`);
+  console.log(
+    `  domContentLoaded ${nav.domContentLoadedEventEnd.toFixed(0)}ms, load ${nav.loadEventEnd.toFixed(0)}ms`,
+  );
 
   await browser.close();
 })();

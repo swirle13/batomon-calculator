@@ -20,7 +20,11 @@ describe("filterCreatures", () => {
     // legitimate result here. This assertion previously read `c.types.includes("Fire")`, which
     // encoded the old bug: the one creature in the game that is every type matched no type filter
     // at all, because `["All"].includes("Fire")` is false.
-    expect(results.every((c) => c.types.includes(CreatureType.Fire) || c.types.includes(CreatureType.All))).toBe(true);
+    expect(
+      results.every(
+        (c) => c.types.includes(CreatureType.Fire) || c.types.includes(CreatureType.All),
+      ),
+    ).toBe(true);
     expect(results.some((c) => c.types.includes(CreatureType.All))).toBe(true);
     expect(results.map((c) => c.id)).toContain("scorchimp");
   });

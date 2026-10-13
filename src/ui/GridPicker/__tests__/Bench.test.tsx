@@ -41,7 +41,9 @@ const bench = () => screen.getByRole("region", { name: "Bench" });
 describe("the bench", () => {
   it("offers four positions, separate from the six that fight", () => {
     renderBoard();
-    expect(within(bench()).getAllByRole("button", { name: /empty bench position/i })).toHaveLength(4);
+    expect(within(bench()).getAllByRole("button", { name: /empty bench position/i })).toHaveLength(
+      4,
+    );
     // The grid's own empties are a different control with a different name, so the two cannot be
     // confused by a query here or by a screen reader on the page.
     expect(screen.getAllByRole("button", { name: /^empty slot/i })).toHaveLength(6);
@@ -117,7 +119,10 @@ describe("the bench", () => {
   });
 
   it("leaves a benched monster alone when no trainer grants anything", () => {
-    renderBoard({ trainerId: null, bench: [{ index: 0, creatureId: Species.Scorchimp, level: 1 }] });
+    renderBoard({
+      trainerId: null,
+      bench: [{ index: 0, creatureId: Species.Scorchimp, level: 1 }],
+    });
     expect(within(bench()).getByTitle("Burn: 5")).toBeTruthy();
     expect(bench().querySelector("[class*='chefFire']")).toBeNull();
   });

@@ -21,7 +21,10 @@
   line-height: 1.2;
   /* Colour only: a transform or size transition on a control that sits in a grid of six makes the
      whole row appear to breathe. */
-  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    color 120ms ease;
 }
 
 .control:hover:not(:disabled) {

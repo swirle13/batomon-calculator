@@ -54,7 +54,15 @@ describe("AffectedCreaturePicker (WI-001) — the trinket picker's shape, not a 
       .filter((h) => h.tagName === "H4")
       .map((h) => (h.textContent ?? "").replace(/\s*\(.*\)\s*$/, ""));
     // Selected first, then the rarity tiers Common -> Mythical, the same order as the other pickers.
-    expect(headings).toEqual(["Selected", "Common", "Uncommon", "Rare", "Super Rare", "Legendary", "Mythical"]);
+    expect(headings).toEqual([
+      "Selected",
+      "Common",
+      "Uncommon",
+      "Rare",
+      "Super Rare",
+      "Legendary",
+      "Mythical",
+    ]);
   });
 
   it("keeps the rarity-shape row, with all five tiers (WI-002 validation finding)", () => {
@@ -68,7 +76,9 @@ describe("AffectedCreaturePicker (WI-001) — the trinket picker's shape, not a 
   it("keeps a selection across a close and reopen (FR-090 — user-chosen, never generated)", () => {
     const bambudo = distinctCreatures.find((c) => c.name === "Bambudo")!;
     const dialog = openPainted({ paintedCreatureIds: [bambudo.id] });
-    expect(within(selectedSection(dialog)).getByRole("button", { name: `Remove ${bambudo.name}` })).toBeTruthy();
+    expect(
+      within(selectedSection(dialog)).getByRole("button", { name: `Remove ${bambudo.name}` }),
+    ).toBeTruthy();
   });
 });
 
@@ -78,7 +88,9 @@ describe("AffectedCreaturePicker (WI-002) — nine slots, shown and enforced", (
     const section = selectedSection(dialog);
     // The cap is the section's SHAPE, not a number in a sentence: 9 = three rows of OVERLAY_COLUMNS.
     expect(within(section).getAllByText("— empty —").length).toBe(MAX_AFFECTED_SPECIES);
-    expect(within(dialog).getByRole("heading", { name: `Selected (0/${MAX_AFFECTED_SPECIES})` })).toBeTruthy();
+    expect(
+      within(dialog).getByRole("heading", { name: `Selected (0/${MAX_AFFECTED_SPECIES})` }),
+    ).toBeTruthy();
   });
 
   it("fills a slot on selection and frees it again on removal", () => {
@@ -88,7 +100,9 @@ describe("AffectedCreaturePicker (WI-002) — nine slots, shown and enforced", (
     fireEvent.click(within(dialog).getByRole("button", { name: `Add ${bambudo.name}` }));
     let section = selectedSection(dialog);
     expect(within(section).getAllByText("— empty —").length).toBe(MAX_AFFECTED_SPECIES - 1);
-    expect(within(dialog).getByRole("heading", { name: `Selected (1/${MAX_AFFECTED_SPECIES})` })).toBeTruthy();
+    expect(
+      within(dialog).getByRole("heading", { name: `Selected (1/${MAX_AFFECTED_SPECIES})` }),
+    ).toBeTruthy();
 
     fireEvent.click(within(section).getByRole("button", { name: `Remove ${bambudo.name}` }));
     section = selectedSection(dialog);
@@ -100,22 +114,33 @@ describe("AffectedCreaturePicker (WI-002) — nine slots, shown and enforced", (
     const tenth = distinctCreatures[MAX_AFFECTED_SPECIES]!;
     const dialog = openPainted({ paintedCreatureIds: nine });
 
-    expect(within(dialog).getByRole("heading", { name: `Selected (9/${MAX_AFFECTED_SPECIES})` })).toBeTruthy();
+    expect(
+      within(dialog).getByRole("heading", { name: `Selected (9/${MAX_AFFECTED_SPECIES})` }),
+    ).toBeTruthy();
     // Refused BEFORE the click, and it says why — a click that silently does nothing reads as a bug,
     // and a silent rotation would drop a species the user chose deliberately.
-    const tenthCard = within(dialog).getByRole("button", { name: `Add ${tenth.name}` }) as HTMLButtonElement;
+    const tenthCard = within(dialog).getByRole("button", {
+      name: `Add ${tenth.name}`,
+    }) as HTMLButtonElement;
     expect(tenthCard.disabled).toBe(true);
     expect(within(dialog).getByText(/all 9 slots are taken/i)).toBeTruthy();
 
     fireEvent.click(tenthCard);
-    expect(within(dialog).getByRole("heading", { name: `Selected (9/${MAX_AFFECTED_SPECIES})` })).toBeTruthy();
+    expect(
+      within(dialog).getByRole("heading", { name: `Selected (9/${MAX_AFFECTED_SPECIES})` }),
+    ).toBeTruthy();
   });
 });
 
 describe("AffectedCreaturePicker — Smuggler's pool (FR-088)", () => {
   it("offers only opposite-region species, never the set complement", () => {
     render(
-      <TeamConfigProvider initialConfig={configWith({ trainerId: TrainerId.Smuggler, selectedRegion: RegionId.Pantra })}>
+      <TeamConfigProvider
+        initialConfig={configWith({
+          trainerId: TrainerId.Smuggler,
+          selectedRegion: RegionId.Pantra,
+        })}
+      >
         <AffectedCreaturePicker kind={AffectedSpeciesKind.Smuggled} onClose={() => {}} />
       </TeamConfigProvider>,
     );
@@ -125,7 +150,9 @@ describe("AffectedCreaturePicker — Smuggler's pool (FR-088)", () => {
       .map((b) => /^Add (.+)$/.exec(b.getAttribute("aria-label") ?? "")?.[1])
       .filter((name): name is string => name !== undefined);
 
-    const expected = distinctCreatures.filter((c) => isInOppositeRegion(c.id, RegionId.Pantra)).map((c) => c.name);
+    const expected = distinctCreatures
+      .filter((c) => isInOppositeRegion(c.id, RegionId.Pantra))
+      .map((c) => c.name);
     expect(offered.length).toBe(expected.length);
     // 14 species are in both regions and 13 in neither, so a `!== selectedRegion` filter would wrongly
     // offer all 27 — that difference is the whole point of FR-088.

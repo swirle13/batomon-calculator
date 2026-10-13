@@ -94,7 +94,8 @@ function pretendPhone() {
 
 const drawer = () => document.getElementById("team-library")!;
 /** The handle and header are one grip; a test drags it the way a thumb would. */
-const grip = () => screen.getByRole("heading", { name: "Library" }).closest("header")!.parentElement!;
+const grip = () =>
+  screen.getByRole("heading", { name: "Library" }).closest("header")!.parentElement!;
 
 function drag(from: number, to: number) {
   fireEvent.pointerDown(grip(), { clientY: from });

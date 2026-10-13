@@ -57,7 +57,9 @@ describe("tokenizeAbilityText — the two rules that are easy to get wrong", () 
   });
 
   it("still colours a bare 'Cooldown', which the corpus also writes", () => {
-    const runs = coloured(tokenizeAbilityText("increase this monster's Cooldown by 6 for this battle."));
+    const runs = coloured(
+      tokenizeAbilityText("increase this monster's Cooldown by 6 for this battle."),
+    );
     // Just the word: a quantity joins the run only when ADJACENT, and "by" sits between them.
     // Colouring "Cooldown by 6" would tint a preposition.
     expect(runs.map((r) => r.text)).toEqual(["Cooldown"]);
@@ -150,7 +152,10 @@ describe("tokenizeAbilityText — it must not change the text", () => {
     // The assertion that matters most: a highlighter that drops or duplicates a character is worse
     // than one that colours nothing, and jsdom would not notice.
     const broken = withText.filter(
-      (c) => tokenizeAbilityText(c.abilityText).map((r) => r.text).join("") !== c.abilityText,
+      (c) =>
+        tokenizeAbilityText(c.abilityText)
+          .map((r) => r.text)
+          .join("") !== c.abilityText,
     );
     expect(broken.map((c) => `${c.id} L${c.level}`)).toEqual([]);
   });
@@ -159,7 +164,10 @@ describe("tokenizeAbilityText — it must not change the text", () => {
     // Trainers render through this since 2026-10-08, and their prose is a different shape from a
     // creature's — "$30", "shop rank +2", "1 rarity tier higher".
     const broken = trainers.filter(
-      (t) => tokenizeAbilityText(t.abilityText).map((r) => r.text).join("") !== t.abilityText,
+      (t) =>
+        tokenizeAbilityText(t.abilityText)
+          .map((r) => r.text)
+          .join("") !== t.abilityText,
     );
     expect(broken.map((t) => t.id)).toEqual([]);
   });
@@ -223,7 +231,9 @@ describe("WI-007 coverage — stated, not implied", () => {
   it("uses the stat badges' own palette, so text and badges cannot drift", () => {
     // Principle VII: one colour source. If these diverged, a card would show the same stat in two
     // different reds six pixels apart.
-    expect(runColor({ text: "+20 Damage", colorKey: StatColorKey.Damage })).toBe(STAT_COLORS.damage);
+    expect(runColor({ text: "+20 Damage", colorKey: StatColorKey.Damage })).toBe(
+      STAT_COLORS.damage,
+    );
     expect(runColor({ text: "Burn", colorKey: StatColorKey.Burn })).toBe(STAT_COLORS.burn);
     expect(runColor({ text: "plain" })).toBeUndefined();
   });

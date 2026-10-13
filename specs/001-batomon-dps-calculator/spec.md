@@ -13,7 +13,7 @@ effects like poison/shock/burn do damage but burn down). Must represent the unde
 code: 2x3 grid positioning, countdown attack timing, damage types, status-effect tracking, a timing
 system, creature types, and trainer abilities."
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Build a team and see its DPS/status output (Priority: P1)
 
@@ -48,7 +48,7 @@ A player views a chart of cumulative damage and cumulative per-status value acro
 time window, so they can distinguish burst damage from sustained/decaying damage-over-time
 contributions.
 
-**Why this priority**: DPS alone hides *when* damage lands and how fast a DOT effect burns down;
+**Why this priority**: DPS alone hides _when_ damage lands and how fast a DOT effect burns down;
 the chart is what makes those cumulative/decay dynamics visible, which is the second explicit
 requirement of this tool.
 
@@ -131,7 +131,7 @@ correct and show their data source citation(s).
   one of them applies a status the other's hit could consume? It MUST resolve both against the
   status state as of the start of that timestamp, so the outcome does not depend on an internal
   iteration order (grid position, creature id, or insertion order). A tie-break MAY still fix the
-  *display* order of simultaneous timeline events, but MUST NOT change any computed value
+  _display_ order of simultaneous timeline events, but MUST NOT change any computed value
   (research.md H8 — this was a real defect, found via a user report).
 - How does the system handle a stat value that a source does not publish at all, versus one the
   source confirms the creature does not have? These are different facts and MUST NOT both be
@@ -143,7 +143,7 @@ correct and show their data source citation(s).
   the whole series from one internally consistent source and record the superseded value as a
   conflict, rather than leaving a series that contradicts itself (research.md H10).
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### Functional Requirements
 
@@ -188,12 +188,12 @@ correct and show their data source citation(s).
   Trainer/ability triggers.
 - **FR-013**: Users MUST be able to search the corpus by name and filter it by creature type and by
   rarity.
-- **FR-014** *(narrowed twice; see the round 7 and round 8 Amendments)*: System MUST clearly display, for the active corpus snapshot, which game patch/version
+- **FR-014** _(narrowed twice; see the round 7 and round 8 Amendments)_: System MUST clearly display, for the active corpus snapshot, which game patch/version
   it reflects.
 - **FR-015**: System MUST provide the full documented Trainer roster (not a partial seed), and the
   Trainer-selection control MUST be presented before/above the creature grid-placement controls in
   the team-building flow, so Trainer choice is made first.
-- **FR-016**: System MUST display, for each currently-placed creature, its current *effective*
+- **FR-016**: System MUST display, for each currently-placed creature, its current _effective_
   combat output per type (direct damage, each status effect it applies, and its Multicast count)
   reflecting any active `StatModifier`s, so a user can see what a modifier change actually affects
   without having to infer it from the aggregate DPS/status summary alone.
@@ -415,7 +415,7 @@ correct and show their data source citation(s).
   both derived — ensuring the two displays can never show inconsistent numbers for the same
   configuration.
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 
@@ -485,7 +485,7 @@ Logged here so this does not get re-opened as a suspected engine bug in a future
 ### 2026-10-05 (round 3) — FR-018 through FR-022 added: reference-site-inspired team-builder redesign
 
 The user found an external, independently-built companion site (batomon.com's "Build Lab") whose
-*layout concept* they want this project to adopt (icon-based creature cards, type-colored
+_layout concept_ they want this project to adopt (icon-based creature cards, type-colored
 backgrounds, a per-slot search modal, a hover detail panel) without visually cloning it, while
 fixing 7 specific defects they identified in it and preserving this project's own
 differentiators (StatModifiers, DPS/damage output — the reference has neither). See research.md
@@ -535,7 +535,7 @@ and in-game team panel as the layout reference, and two before/after captures of
 **FR-004/SC-004 are explicitly re-scoped, not quietly dropped.** FR-030 (user item 2) removes
 source citations, patch tags, and recorded source conflicts from the corpus browser UI — and
 SC-004 as originally written ("100% of corpus entries where source wikis disagree have that
-disagreement **visibly recorded in the entry**") was being satisfied *by that very UI*. Rather
+disagreement **visibly recorded in the entry**") was being satisfied _by that very UI_. Rather
 than delete the criterion or pretend the removal doesn't touch it, its enforcement surface moves:
 conflicts and citations remain mandatory **in the corpus data** (`sourceRefs`, `patch`,
 `conflicts` on every record — unchanged, and still required by Principle IV), and the criterion is
@@ -549,7 +549,7 @@ Shock-proc damage for creatures with no positional ability, via `simulate()`'s
 simultaneous-cast tie-break doubling as a damage-ordering rule. Reproduced, root-caused, and
 fixed per research.md H8 / data-model.md's "common pre-cast status snapshot" amendment. The
 user's reasoning in the report ("Bumblebolt doesn't care about positioning and the math shouldn't
-change") is adopted *as the specification* — FR-040 states the invariant, and the regression test
+change") is adopted _as the specification_ — FR-040 states the invariant, and the regression test
 asserts the invariant rather than either of the two numbers observed.
 
 **Two defects found during this round's investigation that the user did not report, recorded
@@ -579,11 +579,11 @@ the project operates going forward.
 application header, which is where FR-014 ("state which corpus/patch snapshot is active") was being
 satisfied. FR-014 is therefore amended: the active corpus/patch version MUST still be stated, but
 **on one discoverable surface rather than persistently on every view**. It moves into the Corpus
-Browser's summary line. This is deliberately *not* a re-run of FR-030: FR-030 removed **per-record**
+Browser's summary line. This is deliberately _not_ a re-run of FR-030: FR-030 removed **per-record**
 citations, patch tags, and conflicts from the browser; a single corpus-level version stamp is a
 different thing, and the distinction is recorded here rather than assumed.
 
-A first draft of this round's research claimed FR-014 was *already* satisfied by the Corpus
+A first draft of this round's research claimed FR-014 was _already_ satisfied by the Corpus
 Browser's existing summary line. **That was false** — that line carries entry counts only and names
 no version. Had it shipped as drafted, FR-014 would have been silently unmet everywhere while the
 plan asserted compliance. Caught in review and corrected here rather than quietly fixed.
@@ -595,7 +595,7 @@ independent card treatments, two cooldown formatters disagreeing on decimal plac
 chrome, chip styling defined in three files, `RARITIES` defined in three files with inconsistent
 order, `STATUS_COLOR_KEY` defined twice plus a third `statusColor()` variant, chart stroke colours
 diverging from `STAT_COLORS`, and six call sites hard-coding sprite sizes — which reached the user
-as several *separate* visual bugs that are really one cause.
+as several _separate_ visual bugs that are really one cause.
 
 **Two corrections to this round's own evidence**, recorded rather than quietly amended:
 
@@ -606,7 +606,6 @@ as several *separate* visual bugs that are really one cause.
   was wrong — it would show at the card's centre, not its edge. The real cause is
   `background-origin: padding-box` with `background-clip: border-box` repeating the gradient into a
   transparent 2px border.
-
 
 ### 2026-10-06 (round 8) — FR-059..FR-070 added; FR-014 narrowed a second time; round 7's fixed-height decision reversed
 
@@ -620,7 +619,7 @@ rendered at two different heights purely from its parents' layouts. FR-059 is th
 these produce.
 
 **FR-014 is narrowed for the second time, explicitly.** Round 7 removed the corpus/patch prose from
-the app header (FR-050) and relocated it to the Corpus Browser's summary line *specifically* so
+the app header (FR-050) and relocated it to the Corpus Browser's summary line _specifically_ so
 FR-014 kept a home. WI-014 asks to remove it from there too. Rather than leave the requirement unmet
 with no surface — the exact failure a review caught in round 7 before it shipped — the version moves
 to a single unobtrusive footer line. The user's objection both times has been to provenance **prose
@@ -638,14 +637,13 @@ positional-target `AbilityTag`s — Formiqueen (`adjacent`) and Onsetra (`behind
 reads only `cooldownSpeedModifier` tags, so **one** is actually actionable and Onsetra's is silently
 ignored. Any count shown to the user must therefore be computed from what the engine can act on, not
 from what carries a tag; the latter would reassure about a creature the optimiser cannot reason
-about. Unmodelled positional *trinkets* must be disclosed too — Link Cable ("All of your team's
+about. Unmodelled positional _trinkets_ must be disclosed too — Link Cable ("All of your team's
 monsters are now considered adjacent to each other") would invalidate the one interaction the
 optimiser can see. The chaining effects motivating the request —
 "speeds up mon in front", "mon in slot X gets multicast Y" — exist as `abilityText` with no
 `AbilityTag`, so the engine cannot reason about them. An optimiser will therefore find no improvement
-for almost every team, and the UI must say *why* rather than presenting an empty result as a
+for almost every team, and the UI must say _why_ rather than presenting an empty result as a
 conclusion.
-
 
 ### 2026-10-06 (round 9) — FR-071..FR-076 added; the DPS accuracy gap confirmed and quantified
 
@@ -696,7 +694,7 @@ stopped at FR-084 while every prior round added FRs.
   your team unselectable, so the app could not represent a board the player was looking at. Events,
   gifts and fossils all create the same case.
   Region is now shown as a **marker** on out-of-region creatures, and still drives Smuggler's
-  "opposite region" list. Smuggling no longer changes what is *selectable*, because nothing is
+  "opposite region" list. Smuggling no longer changes what is _selectable_, because nothing is
   unselectable; it changes what is marked.
 - **FR-092**: Painted creatures MUST render a rainbow type chip and a translucent rainbow sprite
   overlay scrolling slowly south-east, suppressed under `prefers-reduced-motion`.
@@ -745,7 +743,6 @@ useful: v1.3.0 touched 15 creatures, so a single app-wide label would have been 
 `src/App.tsx` carried a comment instructing that a third removal should trigger exactly this
 retirement rather than silence. That is what happened.
 
-
 ### FR-018 AMENDED (2026-10-07) — the picker's filters persist, its query does not
 
 > **FR-018** (round 3): the search modal clears its query and refocuses on every open, "so the first
@@ -764,7 +761,6 @@ Also: rarity sections now run **Common → Mythical** rather than Mythical-first
 creatures picked least at the top and pushed Commons below the fold. Alphabetical within each tier
 is unchanged. And **Enter selects when exactly one creature matches** — only one, because choosing
 "the first of several" would decide for the user.
-
 
 ### FR-032 AMENDED (2026-10-07) — the trinket picker is the Batomon picker, not a lookalike
 
@@ -1027,8 +1023,8 @@ against — every prior round recorded FRs and this one had not.
   label, order or colour MUST be a compile error.
   Rationale: this repo has shipped two user-visible defects from hand-written restatements — three
   rarity arrays with inconsistent ordering (T172) and a rarity key misspelling that silently dropped a
-  guidance chip so the row summed to 7 of 9 (research.md Q3). The requirement is on the *declaration
-  count*, not on any particular TypeScript construct; research.md R2 records why a const-object registry
+  guidance chip so the row summed to 7 of 9 (research.md Q3). The requirement is on the _declaration
+  count_, not on any particular TypeScript construct; research.md R2 records why a const-object registry
   rather than `enum`, and R2a records that the published source data already uses this shape.
 - **FR-112**: A vocabulary member's **stored key and its displayed label are separate**, and only the
   label may be rendered. Specifically, the Super Rare tier MUST display as **"Super Rare"** with a space

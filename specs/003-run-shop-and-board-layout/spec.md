@@ -6,13 +6,13 @@
 
 **Status**: Draft — specification only, nothing built
 
-**Input**: User description: *"it's about time we specced out building out a 5-mon shop, displaying
+**Input**: User description: _"it's about time we specced out building out a 5-mon shop, displaying
 the mon's rarity and cost in a updated/modified mon card. I'm honestly not sure how I'll make it
 usable on a mobile device. But this is the official game's layout, and I'd like to mimic it for ease
 of use (familiarity). This will mean some foundational changes to the page layout regarding the
 trainer card, the mon detail card, and then where to fit the additional
 modifiers/trinkets/items elements (the backpack icon in the top left opens to show trinkets in the
-game screenshot)."*
+game screenshot)."_
 
 ---
 
@@ -25,7 +25,7 @@ The draft weighed this against a simulated shop that rolls offers from a rank-we
 Simulation lost on three counts:
 
 1. **It cannot reproduce your actual shop**, so the one question the feature exists to answer —
-   *"I had $55 and these four offers, which two should I have bought?"* — would be answered about a
+   _"I had $55 and these four offers, which two should I have bought?"_ — would be answered about a
    fictional shop instead of yours.
 2. **It rewards the wrong behaviour.** A simulated shop invites rerolling until the monster you want
    appears, which is minutes spent to reach a board you could have typed in directly.
@@ -39,7 +39,7 @@ of the draft's FR-S09). Reroll and lock survive as transcription aids — see FR
 
 ---
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 — Price the shop in front of me (Priority: P1)
 
@@ -72,7 +72,7 @@ The app's layout puts the same things in the same places the game does: trainer 
 in the middle with the bench above it, selected monster on the right, shop along the bottom, run
 status along the top. I can look between my phone and the app without re-orienting.
 
-**Why this priority**: familiarity is the stated goal and it is real, but it is a *presentation* of
+**Why this priority**: familiarity is the stated goal and it is real, but it is a _presentation_ of
 US1's data. US1 shipped in the current layout is already useful; this makes it fast to use.
 
 **Independent Test**: screenshot the app beside the game screenshot and confirm each of the six
@@ -149,7 +149,7 @@ every editing action previously reachable from the panel row is reachable inside
 
 ---
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### Shop and economy
 
@@ -170,7 +170,7 @@ every editing action previously reachable from the panel row is reachable inside
 - **FR-S08** An offer MUST be draggable onto a specific board or bench position, which buys it into
   that position. Dragging onto an occupied position MUST be refused rather than replacing the
   occupant — a purchase that silently destroys a monster you paid for is not recoverable.
-- **FR-S09** *RETIRED before implementation.* The draft required a rank and a rarity-odds strip.
+- **FR-S09** _RETIRED before implementation._ The draft required a rank and a rarity-odds strip.
   Both existed only to serve the simulated shop and reroll expected value, which §0 rejects, and
   shop rank is modified by trinkets, items and trainers, so a static table would misreport exactly
   the boards a player is asking about. No rank is stored, displayed or modelled.
@@ -230,7 +230,7 @@ every editing action previously reachable from the panel row is reachable inside
   screen-reader order are correct at every breakpoint.
 - **FR-L07** The page MUST NOT impose a minimum width that exceeds the viewport. `#root`'s current
   `width: max(1126px, …)` MUST be replaced — see `ui-architecture.md` §7.1.
-- **FR-L08** The figures that answer *"should I press Battle"* — window DPS, mitigation per second,
+- **FR-L08** The figures that answer _"should I press Battle"_ — window DPS, mitigation per second,
   and time to kill the day's enemy — MUST be visible without interaction, alongside the board, at
   every viewport. They MUST NOT be placed behind a tab: they are read **while** the board is being
   edited, which is the case NN/g names as the one tabs handle worst.
@@ -246,22 +246,22 @@ every editing action previously reachable from the panel row is reachable inside
 
 ### Key Entities
 
-| Entity | What it is | Where it lives |
-|---|---|---|
-| `RunState` | gold, lives, day | `TeamConfiguration.run`, `src/data/types.ts` |
-| `ShopOffer` | one of five positions: species, price, locked flag, bought flag | `TeamConfiguration.shop`, `src/data/types.ts` |
-| `AcquisitionSource` | how a (species, level) can be obtained | `src/data/enums.ts` + per-record corpus field |
-| `PurchaseBasket` | a set of offers, their total cost, the board they produce | `src/engine/shopAdvice.ts` (new) |
-| `RegionId` *(layout)* | the six named grid areas | `src/ui/RunLayout/` (new) |
+| Entity                | What it is                                                      | Where it lives                                |
+| --------------------- | --------------------------------------------------------------- | --------------------------------------------- |
+| `RunState`            | gold, lives, day                                                | `TeamConfiguration.run`, `src/data/types.ts`  |
+| `ShopOffer`           | one of five positions: species, price, locked flag, bought flag | `TeamConfiguration.shop`, `src/data/types.ts` |
+| `AcquisitionSource`   | how a (species, level) can be obtained                          | `src/data/enums.ts` + per-record corpus field |
+| `PurchaseBasket`      | a set of offers, their total cost, the board they produce       | `src/engine/shopAdvice.ts` (new)              |
+| `RegionId` _(layout)_ | the six named grid areas                                        | `src/ui/RunLayout/` (new)                     |
 
 ---
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 - **SC-001** Given a shop and a gold amount, the app names an affordable basket and its cost in
-  under 500 ms on a mid-range phone. *(The current lineup search evaluates ~2,900 boards in ~250 ms;
+  under 500 ms on a mid-range phone. _(The current lineup search evaluates ~2,900 boards in ~250 ms;
   adding five offers to a ten-strong roster must not push it past half a second — see
-  `ui-architecture.md` §7 for why this is a real risk.)*
+  `ui-architecture.md` §7 for why this is a real risk.)_
 - **SC-002** No recommendation the app makes costs more gold than the user has.
 - **SC-003** At 360 px viewport width, every one of the six regions is reachable and nothing is
   clipped horizontally.
@@ -295,19 +295,19 @@ every editing action previously reachable from the panel row is reachable inside
 
 All six of the draft's questions are resolved. Three remain and none blocks a start.
 
-| # | Question | Blocks | Position |
-|---|---|---|---|
-| Q7 | Where do the missing prices for shop-obtainable species come from? | US1 at full coverage | Entered in the shop row, cached per species in local storage, periodically folded into the corpus. The cache is a ready-made patch file |
-| Q8 | Is the reroll cost fixed at $3 or does it escalate? | FR-S10 | Editable number defaulting to 3. Costs nothing to be wrong about |
-| Q9 | Should the Corpus Browser adopt the new layout? | Scope | No — it is a catalogue, not a run. It should adopt the `Sheet` primitive and the container-query card |
+| #   | Question                                                           | Blocks               | Position                                                                                                                                |
+| --- | ------------------------------------------------------------------ | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Q7  | Where do the missing prices for shop-obtainable species come from? | US1 at full coverage | Entered in the shop row, cached per species in local storage, periodically folded into the corpus. The cache is a ready-made patch file |
+| Q8  | Is the reroll cost fixed at $3 or does it escalate?                | FR-S10               | Editable number defaulting to 3. Costs nothing to be wrong about                                                                        |
+| Q9  | Should the Corpus Browser adopt the new layout?                    | Scope                | No — it is a catalogue, not a run. It should adopt the `Sheet` primitive and the container-query card                                   |
 
 ### Resolved (2026-10-13)
 
-| # | Question | Answer |
-|---|---|---|
-| Q1 | Transcribed or simulated? | Transcribed — §0 |
-| Q2 | How to disambiguate `shopCost: 0`? | Acquisition sources, per species and per level — FR-A01 |
-| Q3 | Is rarity-odds data citable? | Moot. Rank and odds are dropped entirely — FR-S09 |
-| Q4 | *(reroll cost)* | Carried forward as Q8 |
-| Q5 | *(Corpus Browser)* | Carried forward as Q9 |
-| Q6 | Do the charts stay on the Calculator page? | No. They and the per-creature tables move into an analysis sheet; DPS, mitigation and time-to-kill stay on the stage — FR-L08/L10 |
+| #   | Question                                   | Answer                                                                                                                            |
+| --- | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
+| Q1  | Transcribed or simulated?                  | Transcribed — §0                                                                                                                  |
+| Q2  | How to disambiguate `shopCost: 0`?         | Acquisition sources, per species and per level — FR-A01                                                                           |
+| Q3  | Is rarity-odds data citable?               | Moot. Rank and odds are dropped entirely — FR-S09                                                                                 |
+| Q4  | _(reroll cost)_                            | Carried forward as Q8                                                                                                             |
+| Q5  | _(Corpus Browser)_                         | Carried forward as Q9                                                                                                             |
+| Q6  | Do the charts stay on the Calculator page? | No. They and the per-creature tables move into an analysis sheet; DPS, mitigation and time-to-kill stay on the stage — FR-L08/L10 |

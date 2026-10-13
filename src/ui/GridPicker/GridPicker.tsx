@@ -1,4 +1,11 @@
-import { Fragment, memo, useState, type KeyboardEvent, type MouseEvent, type ReactNode } from "react";
+import {
+  Fragment,
+  memo,
+  useState,
+  type KeyboardEvent,
+  type MouseEvent,
+  type ReactNode,
+} from "react";
 import {
   DndContext,
   DragOverlay,
@@ -11,7 +18,14 @@ import {
   type DragEndEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
-import type { CreatureRecord, CreatureType, GridCol, StatModifier, GridSlot, RosterRef } from "../../data/types";
+import type {
+  CreatureRecord,
+  CreatureType,
+  GridCol,
+  StatModifier,
+  GridSlot,
+  RosterRef,
+} from "../../data/types";
 import { BENCH_INDEXES, RosterZone } from "../../data/types";
 import type { Species } from "../../data/ids";
 import { resolveCreatureVariant } from "../../data/corpus";
@@ -114,11 +128,18 @@ function SlotBadges({ creature, modifiers }: SlotBadgesProps) {
       {/* T209 (WI-001): Heal lives in `healAmount`, not `appliesStatus`, so it was never shown.
           Read off the same producer as everything else here, so a Heal modifier moves this chip —
           `creature.healAmount` was the published figure and silently ignored them. */}
-      {heal != null && heal > 0 && <StatBadge statKey={StatColorKey.Heal} value={heal} label="Heal" />}
+      {heal != null && heal > 0 && (
+        <StatBadge statKey={StatColorKey.Heal} value={heal} label="Heal" />
+      )}
       {/* `×2`, matching the card's "Multicast ×2" line. Multicast is a multiplier, and an
           unmarked 2 beside a 25 read as a second magnitude. */}
       {multicast > 1 && (
-        <StatBadge statKey={StatColorKey.Multicast} value={multicast} label="Multicast" prefix="×" />
+        <StatBadge
+          statKey={StatColorKey.Multicast}
+          value={multicast}
+          label="Multicast"
+          prefix="×"
+        />
       )}
     </div>
   );
@@ -310,7 +331,11 @@ function DraggableCard({
               : `Lock ${creature.name} onto the board, so placement suggestions keep it`
           }
           aria-pressed={locked === true}
-          title={locked ? `${creature.name} is locked onto the board` : `Lock ${creature.name} onto the board`}
+          title={
+            locked
+              ? `${creature.name} is locked onto the board`
+              : `Lock ${creature.name} onto the board`
+          }
         >
           <LockGlyph locked={locked === true} />
         </button>
@@ -326,7 +351,13 @@ function DraggableCard({
       >
         ×
       </button>
-      <CardFace creature={creature} level={level} modifiers={modifiers} painted={painted} chefFire={chefFire} />
+      <CardFace
+        creature={creature}
+        level={level}
+        modifiers={modifiers}
+        painted={painted}
+        chefFire={chefFire}
+      />
     </div>
   );
 }
@@ -345,7 +376,13 @@ function DragGhost({ creature, level, modifiers, painted, chefFire }: CardFacePr
       style={{ background: typeBackground(creature.types) }}
       aria-hidden
     >
-      <CardFace creature={creature} level={level} modifiers={modifiers} painted={painted} chefFire={chefFire} />
+      <CardFace
+        creature={creature}
+        level={level}
+        modifiers={modifiers}
+        painted={painted}
+        chefFire={chefFire}
+      />
     </div>
   );
 }
@@ -386,7 +423,8 @@ function DroppableZone({ target, children }: { target: RosterRef; children: Reac
  * actually holds; passing an inline arrow from the parent would silently defeat it.
  */
 export const GridPicker = memo(function GridPicker({ onHighlight }: GridPickerProps) {
-  const { config, setPlacement, setPlacementLocked, setBenchCreature, moveRoster } = useTeamConfig();
+  const { config, setPlacement, setPlacementLocked, setBenchCreature, moveRoster } =
+    useTeamConfig();
   const [searchTarget, setSearchTarget] = useState<RosterRef | null>(null);
   /** The position being dragged, so `<DragOverlay>` knows which card to draw under the pointer. */
   const [draggingFrom, setDraggingFrom] = useState<RosterRef | null>(null);
@@ -562,9 +600,7 @@ export const GridPicker = memo(function GridPicker({ onHighlight }: GridPickerPr
           `engine/rosterAdvice.ts`), so the cost of a wider one is paid on every edit.
         */}
         <section className={styles.bench} aria-label="Bench">
-          <p className={styles.benchHeading}>
-            Bench
-          </p>
+          <p className={styles.benchHeading}>Bench</p>
           <div className={styles.benchRow}>
             {BENCH_INDEXES.map((index) => {
               const ref = benchRef(index);

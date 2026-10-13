@@ -7,18 +7,21 @@ Branch: 001-batomon-dps-calculator
 > The `Ask` field preserves the user's exact wording; it is immutable once written.
 
 ## WI-001
+
 - **Ask** (verbatim): puffloon's "Heal" shows no chip card when it should.
 - **Type**: bug fix
 - **Done means**: a creature with a `healAmount` renders a Heal chip in its grid slot, in the
   published Heal colour.
 
 ## WI-002
+
 - **Ask** (verbatim): and when it levels up and gains multi-cast x2, it also doesn't add that new
   chip either.
 - **Type**: bug fix
 - **Done means**: a creature whose level grants Multicast > 1 renders a Multicast chip.
 
 ## WI-003
+
 - **Ask** (verbatim): A chip also doesn't get added when any modifiers are added either. I just
   added +50 damage to Puffloon and it still just sat there with the "1 poison" chip.
 - **Type**: bug fix
@@ -30,6 +33,7 @@ Branch: 001-batomon-dps-calculator
   addressed, not just the easier one.
 
 ## WI-004
+
 - **Ask** (verbatim): Modifiers layout should be reactive and be tied to the same positions in the
   mon grid so that the layout matches the mon grid layout. Currently, it doesn't do that.
 - **Type**: behavior change
@@ -37,6 +41,7 @@ Branch: 001-batomon-dps-calculator
   grid's slots, including empty ones, rather than a flowing list.
 
 ## WI-005
+
 - **Ask** (verbatim): I think our "over time" calculations aren't taking mon changes into effect.
   Drumire speeds up any toxic ally when it casts by +15% cooldown speed for this battle (aka gets
   faster)
@@ -45,6 +50,7 @@ Branch: 001-batomon-dps-calculator
   cast, so affected allies visibly cast more often as the fight goes on.
 
 ## WI-006
+
 - **Ask** (verbatim): but for the fast mons, especially like Puffloon that triggers when adjacent
   toxic allies trigger, Puffloon goes off something like 10-15 times a round.
 - **Type**: bug fix
@@ -52,6 +58,7 @@ Branch: 001-batomon-dps-calculator
   reflects its adjacent Toxic allies' casts rather than its own cooldown alone.
 
 ## WI-007
+
 - **Ask** (verbatim): Fumungus also doesn't have its effective damage shown properly. At the
   beginning, accurately, it will have 0 damage, but will gain damage equal to the stacks of poison
   on the enemy team.
@@ -61,12 +68,14 @@ Branch: 001-batomon-dps-calculator
   so either the target state is modelled or the reason it still cannot be is recorded.
 
 ## WI-008
+
 - **Ask** (verbatim): the graphs have their Y axis label overwritten when the axis values become
   longer, see SS3
 - **Type**: bug fix
 - **Done means**: the rotated Y-axis label never overlaps the tick values, at any magnitude.
 
 ## WI-009
+
 - **Ask** (verbatim): "DPS single source slider" and "DPS over time" graph seem to agree mostly
   except for when t=0. Slider shows 2366.45 dps at t=0 but graph shows 0 with increasing
   accumulation.
@@ -75,6 +84,7 @@ Branch: 001-batomon-dps-calculator
   labelled so it cannot be mistaken for a t=0 reading.
 
 ## WI-010
+
 - **Ask** (verbatim): Can we go through and find every type of interaction via deep research,
   identify all mechanisms that can/should be calculated
 - **Type**: question to answer
@@ -82,6 +92,7 @@ Branch: 001-batomon-dps-calculator
   mechanism present in the corpus, derived from the data rather than guessed.
 
 ## WI-011
+
 - **Ask** (verbatim): then audit what abilities currently are working and calculated and which
   aren't
 - **Type**: question to answer
@@ -89,6 +100,7 @@ Branch: 001-batomon-dps-calculator
   so the real coverage figure is known rather than estimated.
 
 ## WI-012
+
 - **Ask** (verbatim): then build against the list of all of the unsupported abilities so that we
   have 100% support for ability calculations? This is massively important to this DPS calc to be
   useful in any capacity

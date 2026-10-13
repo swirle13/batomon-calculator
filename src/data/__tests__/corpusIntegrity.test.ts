@@ -26,9 +26,14 @@ describe("vendored sprites (FR-036)", () => {
   });
 
   it("every creature and trinket actually has a sprite (full coverage, not just valid ones)", () => {
-    const creaturesWithout = allCreatureRecords().filter((c) => !c.spriteFile).map((c) => `${c.id}@L${c.level}`);
+    const creaturesWithout = allCreatureRecords()
+      .filter((c) => !c.spriteFile)
+      .map((c) => `${c.id}@L${c.level}`);
     const trinketsWithout = corpus.trinkets.filter((t) => !t.spriteFile).map((t) => t.id);
-    expect({ creaturesWithout, trinketsWithout }).toEqual({ creaturesWithout: [], trinketsWithout: [] });
+    expect({ creaturesWithout, trinketsWithout }).toEqual({
+      creaturesWithout: [],
+      trinketsWithout: [],
+    });
   });
 });
 
@@ -108,6 +113,13 @@ describe("display ordering (FR-067)", () => {
     // The exact symptom from the user's screenshot: Bumblebolt/Formiqueen/Venopuff/Scorchimp/
     // Pebbler/Onsetra led the list because they lead the file.
     const firstSix = distinctCreatures.slice(0, 6).map((c) => c.name);
-    expect(firstSix).not.toEqual(["Bumblebolt", "Formiqueen", "Venopuff", "Scorchimp", "Pebbler", "Onsetra"]);
+    expect(firstSix).not.toEqual([
+      "Bumblebolt",
+      "Formiqueen",
+      "Venopuff",
+      "Scorchimp",
+      "Pebbler",
+      "Onsetra",
+    ]);
   });
 });

@@ -121,8 +121,12 @@ describe("cumulative chart draws steps, not slopes (2026-10-06)", () => {
     // half a second wrong when it was right.
     //
     // Asserted against the source rather than the DOM because Recharts renders an SVG path whose
-    // `type` is not recoverable from the markup.
-    const src = readFileSync("src/ui/CumulativeChart/CumulativeChart.tsx", "utf8");
+    // `type` is not recoverable from the markup. Whitespace is collapsed first so that where
+    // Prettier breaks each entry across lines is not an invariant of this test.
+    const src = readFileSync("src/ui/CumulativeChart/CumulativeChart.tsx", "utf8").replace(
+      /\s+/g,
+      " ",
+    );
     const seriesEntries = src.match(/\{ name: "[^"]+", values:[^}]+\}/g) ?? [];
     // Five: Total, Direct, Burn, Poison, Shock. Shield is deliberately not on a DAMAGE chart.
     expect(seriesEntries.length).toBe(5);

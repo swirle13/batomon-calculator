@@ -28,7 +28,11 @@ function team(trainerId: TrainerId | null): TeamConfiguration {
   };
 }
 
-function burnOf(result: ReturnType<typeof simulate>, creatureId: Species, slot: { row: GridRow; col: 0 | 1 | 2 }) {
+function burnOf(
+  result: ReturnType<typeof simulate>,
+  creatureId: Species,
+  slot: { row: GridRow; col: 0 | 1 | 2 },
+) {
   const stats = result.perCreatureEffectiveStats[placementKey(creatureId, slot)];
   return stats?.output.appliesStatus.find((s) => s.type === StatusEffectType.Burn)?.amount ?? 0;
 }

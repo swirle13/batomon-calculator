@@ -15,10 +15,7 @@ import { Species, syntheticSpecies } from "../../../data/ids";
  */
 
 /** Renders GridPicker inside the provider with one creature already placed at front-0. */
-function renderWithPlacement(
-  creatureId: Species = Species.Bumblebolt,
-  modifiers?: StatModifier[],
-) {
+function renderWithPlacement(creatureId: Species = Species.Bumblebolt, modifiers?: StatModifier[]) {
   const config: TeamConfiguration = {
     placements: [{ slot: { row: GridRow.Bottom, col: 0 }, creatureId, level: 1, modifiers }],
     trainerId: null,

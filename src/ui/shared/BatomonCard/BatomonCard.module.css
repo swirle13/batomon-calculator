@@ -12,27 +12,27 @@
  * Principle V) and already has an established plain-CSS-modules dark theme (research.md A4).
  */
 .card {
-	display: flex;
-	flex-direction: column;
-	border: 1px solid var(--line);
-	border-radius: var(--radius-lg);
-	background: var(--surface-2);
-	overflow: hidden;
-	text-align: left;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface-2);
+  overflow: hidden;
+  text-align: left;
 }
 .cardFixedPanel {
-	min-height: 20rem;
+  min-height: 20rem;
 }
 .cardFixedPanel .identity {
-	min-height: 1rem;
+  min-height: 1rem;
 }
 /* .cardFixedPanel .output { min-height: 5.5rem; } */
 .cardFixedPanel .ability {
-	min-height: 5rem;
+  min-height: 5rem;
 }
 /* .cardFixedPanel .extra { min-height: 1rem; } */
 .cardFixedPanel .meta {
-	min-height: 2.5rem;
+  min-height: 2.5rem;
 }
 /*
  * A SUM of the two units this card is made of, not a single rem figure (2026-10-09).
@@ -49,131 +49,131 @@
  * `.ability { overflow: hidden }` below is for, and it is a separate question from this one.
  */
 .cardFixedBrowser {
-	height: calc(var(--card-sprite-frame) + 15.75rem);
+  height: calc(var(--card-sprite-frame) + 15.75rem);
 }
 /* This band's `min-height: 6.5rem` is gone: the well is taller than it at both font sizes, so the
    reservation was inert. A min-height in a fixed-height flex column is also a shrink floor, though,
    which is a real job and the only one it was still doing — so that is now stated as itself rather
    than as a number that has to be kept larger than the well it is protecting. */
 .identity {
-	flex-shrink: 0;
+  flex-shrink: 0;
 }
 .cardFixedBrowser .output {
-	min-height: 4.5rem;
+  min-height: 4.5rem;
 }
 .cardFixedBrowser .ability {
-	min-height: 5.5rem;
-	overflow: hidden;
+  min-height: 5.5rem;
+  overflow: hidden;
 }
 .cardFixedBrowser .meta {
-	min-height: 2rem;
+  min-height: 2rem;
 }
 /* --- Band 1: name + rarity, rarity-coloured --- */
 .header {
-	display: flex;
-	align-items: baseline;
-	justify-content: space-between;
-	gap: var(--space-sm);
-	padding: var(--card-band-pad-tight);
-	/* Set per-card from RARITY_COLORS via a custom property, so the header reads as the rarity
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  padding: var(--card-band-pad-tight);
+  /* Set per-card from RARITY_COLORS via a custom property, so the header reads as the rarity
      band the game card uses rather than a generic title bar. */
-	background: color-mix(in srgb, var(--rarity-color, var(--rarity-fallback)) 30%, var(--surface-1));
-	border-bottom: 1px solid var(--rarity-color, var(--line));
+  background: color-mix(in srgb, var(--rarity-color, var(--rarity-fallback)) 30%, var(--surface-1));
+  border-bottom: 1px solid var(--rarity-color, var(--line));
 }
 .name {
-	margin: 0;
-	font-size: var(--font-xl);
-	font-weight: 700;
-	letter-spacing: 0.01em;
+  margin: 0;
+  font-size: var(--font-xl);
+  font-weight: 700;
+  letter-spacing: 0.01em;
 }
 .rarity {
-	font-size: var(--font-2xs);
-	font-weight: 700;
-	text-transform: uppercase;
-	letter-spacing: 0.08em;
-	color: var(--rarity-color, var(--text-muted));
-	/* The rarity colours are mid-tone by design; a dark outline keeps them legible on the tinted
+  font-size: var(--font-2xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--rarity-color, var(--text-muted));
+  /* The rarity colours are mid-tone by design; a dark outline keeps them legible on the tinted
      header without lightening the published colour itself. */
-	text-shadow: var(--shadow-on-art);
-	white-space: nowrap;
+  text-shadow: var(--shadow-on-art);
+  white-space: nowrap;
 }
 /* --- Band 2: sprite + stacked type badges --- */
 .identity {
-	display: flex;
-	align-items: center;
-	gap: var(--space-md);
-	padding: var(--card-band-pad);
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--card-band-pad);
 }
 .spriteFrame {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	/* Square, and sized from the sprite it holds rather than independently of it — see
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Square, and sized from the sprite it holds rather than independently of it — see
      --card-sprite-frame. The creature, not its canvas, is what is centred here: `opticalCenter`
      lifts the artwork off the canvas's bottom edge, and the well's gap is measured against the
      artwork's own extent. */
-	width: var(--card-sprite-frame);
-	height: var(--card-sprite-frame);
-	border: 1px solid var(--line);
-	border-radius: var(--radius-md);
-	background: var(--surface-1);
-	flex-shrink: 0;
+  width: var(--card-sprite-frame);
+  height: var(--card-sprite-frame);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface-1);
+  flex-shrink: 0;
 }
 .types {
-	display: flex;
-	flex-direction: column;
-	gap: var(--space-2xs);
-	align-items: flex-start;
-	/* item 15: reserve two chips' worth so a single-type creature doesn't render a shorter band. */
-	min-height: 3.5rem;
-	justify-content: center;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  align-items: flex-start;
+  /* item 15: reserve two chips' worth so a single-type creature doesn't render a shorter band. */
+  min-height: 3.5rem;
+  justify-content: center;
 }
 /* --- Band 3: cooldown block | one line per output stat --- */
 .output {
-	display: flex;
-	gap: var(--space-md);
-	padding: var(--card-band-pad);
-	border-top: 1px solid var(--line-subtle);
+  display: flex;
+  gap: var(--space-md);
+  padding: var(--card-band-pad);
+  border-top: 1px solid var(--line-subtle);
 }
 .cooldown {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	/* 2026-10-06 round 8 (FR-059): an INTRINSIC size, so the block renders identically wherever it
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  /* 2026-10-06 round 8 (FR-059): an INTRINSIC size, so the block renders identically wherever it
      is placed. It previously had only `min-width` and inherited its height from its parent -- the
      base band's parent carries `min-height: 5.5rem` and stretched it, the effective band's parent
      did not, so one shared component rendered at two sizes. A primitive whose appearance is
      decided by its container is not reusable; that is the rule FR-059 generalizes. */
-	width: var(--cooldown-block-width);
-	height: var(--cooldown-block-height);
-	align-self: start;
-	flex-shrink: 0;
-	padding: var(--space-2xs);
-	border: 1px solid var(--line);
-	border-radius: var(--radius-md);
-	background: var(--surface-1);
-	line-height: 1.1;
+  width: var(--cooldown-block-width);
+  height: var(--cooldown-block-height);
+  align-self: start;
+  flex-shrink: 0;
+  padding: var(--space-2xs);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface-1);
+  line-height: 1.1;
 }
 .cooldownValue {
-	font-size: var(--font-2xl);
-	font-weight: 700;
+  font-size: var(--font-2xl);
+  font-weight: 700;
 }
 .cooldownUnit {
-	font-size: var(--font-2xs);
-	text-transform: uppercase;
-	letter-spacing: 0.06em;
-	color: var(--text-muted);
+  font-size: var(--font-2xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
 }
 /* One line per stat -- the substantive fix. Previously cost/cooldown/damage shared one
    `·`-separated sentence, which forced the reader to parse three unrelated magnitudes at once. */
 .statLines {
-	display: flex;
-	flex-direction: column;
-	gap: var(--space-3xs);
-	justify-content: center;
-	flex: 1;
-	min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3xs);
+  justify-content: center;
+  flex: 1;
+  min-width: 0;
 }
 /*
  * Four or more lines overflow into a SECOND COLUMN (2026-10-07, WI-003).
@@ -191,21 +191,21 @@
  * third column arithmetically unreachable: n items over ceil(n/2) rows is at most two columns.
  */
 .statLinesTwoColumn {
-	display: grid;
-	grid-auto-flow: column;
-	grid-template-rows: repeat(var(--stat-rows), auto);
-	column-gap: var(--space-sm);
-	align-content: center;
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: repeat(var(--stat-rows), auto);
+  column-gap: var(--space-sm);
+  align-content: center;
 }
 .statLine {
-	font-size: var(--font-lg);
-	font-weight: 600;
-	/* Colour comes from STAT_COLORS (the game's own published value), set inline per line. */
+  font-size: var(--font-lg);
+  font-weight: 600;
+  /* Colour comes from STAT_COLORS (the game's own published value), set inline per line. */
 }
 .noOutput {
-	font-size: var(--font-md);
-	color: var(--text-muted);
-	font-style: italic;
+  font-size: var(--font-md);
+  color: var(--text-muted);
+  font-style: italic;
 }
 /* --- Band 4: ability trigger + description --- */
 /*
@@ -216,49 +216,49 @@
  * card where that is true: every other row's height follows its content.
  */
 .ability {
-	padding: var(--card-band-pad);
-	border-top: 1px solid var(--line-subtle);
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: flex-start;
-	text-align: center;
+  padding: var(--card-band-pad);
+  border-top: 1px solid var(--line-subtle);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: center;
 }
 .abilityTrigger {
-	font-size: var(--font-xs);
-	font-weight: 700;
-	text-transform: uppercase;
-	letter-spacing: 0.06em;
-	/* Amber, matching the game card's trigger line treatment. */
-	color: var(--text-accent);
-	margin-bottom: var(--space-3xs);
+  font-size: var(--font-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  /* Amber, matching the game card's trigger line treatment. */
+  color: var(--text-accent);
+  margin-bottom: var(--space-3xs);
 }
 .abilityText {
-	font-size: var(--font-md);
-	line-height: 1.35;
-	color: var(--text-body);
-	margin: 0;
+  font-size: var(--font-md);
+  line-height: 1.35;
+  color: var(--text-body);
+  margin: 0;
 }
 /* --- Secondary metadata: cost, evolution, unconfirmed fields --- */
 .meta {
-	padding: var(--card-band-pad-tight);
-	border-top: 1px solid var(--line-subtle);
-	font-size: var(--font-xs);
-	color: var(--text-muted);
-	display: flex;
-	flex-wrap: wrap;
-	gap: var(--space-xs) var(--space-md);
-	/* A wrapping flex container is multi-line even when it holds ONE line, so `align-content`
+  padding: var(--card-band-pad-tight);
+  border-top: 1px solid var(--line-subtle);
+  font-size: var(--font-xs);
+  color: var(--text-muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-md);
+  /* A wrapping flex container is multi-line even when it holds ONE line, so `align-content`
 	   defaults to `stretch` and the band's `min-height` is handed to whatever is in it. That made
 	   the level/shiny strip 31.4px tall on a card with nothing else in this band and 28.8px on a
 	   card with a trigger row under it — the same control at two heights. */
-	align-content: flex-start;
+  align-content: flex-start;
 }
 .unconfirmed {
-	color: var(--text-warn);
+  color: var(--text-warn);
 }
 /* Slot for the Calculator's "Effective this battle" band (never rendered by the Corpus Browser). */
 .extra {
-	border-top: 1px dashed var(--line-strong);
-	padding: var(--card-band-pad);
+  border-top: 1px dashed var(--line-strong);
+  padding: var(--card-band-pad);
 }

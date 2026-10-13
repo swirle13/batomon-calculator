@@ -165,8 +165,9 @@ function bankedPresses(row: PressRow): number {
       // Creature-scoped only: a press banks onto the monster, so a slot-scoped modifier of the
       // same stat is somebody else's and must not be read back as a press.
       const carried =
-        modifiers.find((m) => m.stat === effect.stat && isCreatureScoped(m) && m.label === row.sourceLabel)?.amount ??
-        0;
+        modifiers.find(
+          (m) => m.stat === effect.stat && isCreatureScoped(m) && m.label === row.sourceLabel,
+        )?.amount ?? 0;
       presses = Math.min(presses, Math.floor(carried / effect.amount + 1e-9));
     }
   }
@@ -187,13 +188,21 @@ export function TriggerButtons({ creature, placement }: TriggerButtonsProps) {
   const sourceKey = slotKey(placement.slot);
   const board: BoardMember[] = config.placements.flatMap((p) => {
     const resolved =
-      slotKey(p.slot) === sourceKey ? creature : resolveCreatureVariant(p.creatureId, p.level, p.shiny);
-    return resolved ? [{ slot: p.slot, key: slotKey(p.slot), creature: resolved, placement: p }] : [];
+      slotKey(p.slot) === sourceKey
+        ? creature
+        : resolveCreatureVariant(p.creatureId, p.level, p.shiny);
+    return resolved
+      ? [{ slot: p.slot, key: slotKey(p.slot), creature: resolved, placement: p }]
+      : [];
   });
   // Falls back to a source built from the props, so the component still works when rendered
   // against a placement that is not in the config (component tests do this).
-  const source: BoardMember =
-    board.find((m) => m.key === sourceKey) ?? { slot: placement.slot, key: sourceKey, creature, placement };
+  const source: BoardMember = board.find((m) => m.key === sourceKey) ?? {
+    slot: placement.slot,
+    key: sourceKey,
+    creature,
+    placement,
+  };
 
   const rows: PressRow[] = [
     ...triggers.map((trigger): PressRow => ({
@@ -273,7 +282,13 @@ export function TriggerButtons({ creature, placement }: TriggerButtonsProps) {
               </Button>
             </div>
             {row.sprite && (
-              <Sprite spriteFile={row.sprite.file} kind="trinket" size={16} alt="" className={styles.rowSprite} />
+              <Sprite
+                spriteFile={row.sprite.file}
+                kind="trinket"
+                size={16}
+                alt=""
+                className={styles.rowSprite}
+              />
             )}
             <span className={styles.label}>{row.label}</span>
             <span className={styles.effects}>

@@ -12,13 +12,13 @@ stay checkable against the real source.
 
 ## Read in this order
 
-| Document | What it answers |
-|---|---|
-| [`spec.md`](./spec.md) | What the thing is: user stories, functional requirements, success criteria, phasing, open decisions |
-| [`research.md`](./research.md) | What's actually possible: Android/iOS platform limits, Play policy, the game's engine, perception options, framework choice, precedent |
-| [`port-inventory.md`](./port-inventory.md) | What transfers from this repo, what gets rewritten, what has to be built, and what's still missing |
-| [`uncertainty-register.md`](./uncertainty-register.md) | Known knowns, known unknowns with the spike that resolves each, and where unknown unknowns live |
-| [`project-setup.md`](./project-setup.md) | Monorepo topology, extraction sequence, engineering practice to carry over and to add |
+| Document                                               | What it answers                                                                                                                        |
+| ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| [`spec.md`](./spec.md)                                 | What the thing is: user stories, functional requirements, success criteria, phasing, open decisions                                    |
+| [`research.md`](./research.md)                         | What's actually possible: Android/iOS platform limits, Play policy, the game's engine, perception options, framework choice, precedent |
+| [`port-inventory.md`](./port-inventory.md)             | What transfers from this repo, what gets rewritten, what has to be built, and what's still missing                                     |
+| [`uncertainty-register.md`](./uncertainty-register.md) | Known knowns, known unknowns with the spike that resolves each, and where unknown unknowns live                                        |
+| [`project-setup.md`](./project-setup.md)               | Monorepo topology, extraction sequence, engineering practice to carry over and to add                                                  |
 
 ## The one-hour test that gates everything
 

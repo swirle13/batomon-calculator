@@ -94,8 +94,12 @@ const OBSERVER = `
     });
   }
 
-  console.log(`\n===== PER-DRAG, IN ORDER — ${label} ${throttle > 1 ? `(${throttle}x throttle)` : "(no throttle)"} =====`);
-  console.log("drag | worst event         | input delay | processing | presentation | longest task");
+  console.log(
+    `\n===== PER-DRAG, IN ORDER — ${label} ${throttle > 1 ? `(${throttle}x throttle)` : "(no throttle)"} =====`,
+  );
+  console.log(
+    "drag | worst event         | input delay | processing | presentation | longest task",
+  );
   for (const d of perDrag) {
     console.log(
       `${String(d.i).padStart(4)} | ${d.worst.toFixed(0).padStart(5)}ms ${d.worstName.padEnd(12)} | ${d.inputDelay.toFixed(0).padStart(8)}ms | ${d.processing.toFixed(0).padStart(7)}ms | ${d.presentation.toFixed(0).padStart(9)}ms | ${d.longest.toFixed(0).padStart(9)}ms`,
@@ -118,7 +122,9 @@ const OBSERVER = `
     byType[e.name] = cur;
   }
 
-  console.log(`\n===== ${label} ${throttle > 1 ? `(${throttle}x CPU throttle)` : "(no throttle)"} =====`);
+  console.log(
+    `\n===== ${label} ${throttle > 1 ? `(${throttle}x CPU throttle)` : "(no throttle)"} =====`,
+  );
   const worst = [...events].sort((a, b) => b.duration - a.duration).slice(0, 6);
   console.log("Worst individual events:");
   for (const e of worst) {
@@ -128,10 +134,14 @@ const OBSERVER = `
   }
   console.log("By event type (max duration / max processing):");
   for (const [k, v] of Object.entries(byType).sort((a, b) => b[1].max - a[1].max)) {
-    console.log(`  ${k.padEnd(14)} n=${String(v.count).padStart(3)}  max ${v.max.toFixed(0).padStart(5)}ms  proc ${v.maxProc.toFixed(0).padStart(5)}ms`);
+    console.log(
+      `  ${k.padEnd(14)} n=${String(v.count).padStart(3)}  max ${v.max.toFixed(0).padStart(5)}ms  proc ${v.maxProc.toFixed(0).padStart(5)}ms`,
+    );
   }
   const lt = longtasks.sort((a, b) => b.duration - a.duration).slice(0, 5);
-  console.log("Longest long-tasks: " + (lt.map((t) => t.duration.toFixed(0) + "ms").join(", ") || "none"));
+  console.log(
+    "Longest long-tasks: " + (lt.map((t) => t.duration.toFixed(0) + "ms").join(", ") || "none"),
+  );
 
   await browser.close();
 })();

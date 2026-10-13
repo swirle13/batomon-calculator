@@ -72,7 +72,10 @@ export const corpus: Corpus = {
  * overrides to produce the flat `CreatureRecord` that the engine, the cards and the pickers have
  * always read. Pure, so a caller can resolve a fixture it built itself.
  */
-export function resolveSpeciesLevel(species: CreatureSpecies, level: CreatureLevel): CreatureRecord {
+export function resolveSpeciesLevel(
+  species: CreatureSpecies,
+  level: CreatureLevel,
+): CreatureRecord {
   const { levels, ...base } = species;
   return level === 1 ? { ...base, level } : { ...base, ...levels?.[level], level };
 }

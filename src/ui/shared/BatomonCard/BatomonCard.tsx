@@ -8,7 +8,12 @@ import { CreatureSprite } from "../CreatureSprite";
 import styles from "./BatomonCard.module.css";
 import { isWildcardType } from "../../../data/vocabularies";
 import { AbilityText } from "../AbilityText";
-import { buildStatLines, cooldownWithModifiers, perCastOutputOf, type StatLine } from "./perCastOutput";
+import {
+  buildStatLines,
+  cooldownWithModifiers,
+  perCastOutputOf,
+  type StatLine,
+} from "./perCastOutput";
 
 /**
  * The one creature card, shared by the Corpus Browser and the Calculator's selected-creature panel
@@ -45,10 +50,18 @@ export function StatLines({ lines }: { lines: StatLine[] }) {
       className={`${styles.statLines} ${twoColumn ? styles.statLinesTwoColumn : ""}`}
       // The row count is what makes the first column fill before the second, and the only part of
       // this that jsdom can see — layout it does not do, an inline custom property it does.
-      style={twoColumn ? ({ ["--stat-rows" as string]: Math.ceil(lines.length / 2) } as React.CSSProperties) : undefined}
+      style={
+        twoColumn
+          ? ({ ["--stat-rows" as string]: Math.ceil(lines.length / 2) } as React.CSSProperties)
+          : undefined
+      }
     >
       {lines.map((line) => (
-        <div key={`${line.key}-${line.label}`} className={styles.statLine} style={{ color: STAT_COLORS[line.key] }}>
+        <div
+          key={`${line.key}-${line.label}`}
+          className={styles.statLine}
+          style={{ color: STAT_COLORS[line.key] }}
+        >
           {line.label}
         </div>
       ))}
@@ -108,7 +121,17 @@ interface BatomonCardProps {
   modifiers?: StatModifier[];
 }
 
-export function BatomonCard({ creature, children, levelLabel, fixedHeight, meta, painted, chefFire, grantedTypes, modifiers }: BatomonCardProps) {
+export function BatomonCard({
+  creature,
+  children,
+  levelLabel,
+  fixedHeight,
+  meta,
+  painted,
+  chefFire,
+  grantedTypes,
+  modifiers,
+}: BatomonCardProps) {
   // Painted species and natively-"All" species render identically — they mean the same thing
   // in-game and differ only in where the "All" came from (run configuration vs corpus data).
   //
@@ -132,7 +155,9 @@ export function BatomonCard({ creature, children, levelLabel, fixedHeight, meta,
       <header className={styles.header}>
         <h3 className={styles.name}>
           {creature.name}
-          {levelLabel ? <small style={{ opacity: 0.7, fontWeight: 400 }}> {levelLabel}</small> : null}
+          {levelLabel ? (
+            <small style={{ opacity: 0.7, fontWeight: 400 }}> {levelLabel}</small>
+          ) : null}
         </h3>
         <span className={styles.rarity}>{rarityLabel(creature.rarity)}</span>
       </header>
@@ -179,7 +204,9 @@ export function BatomonCard({ creature, children, levelLabel, fixedHeight, meta,
 
       {hasAbilityText(creature.abilityText) ? (
         <div className={styles.ability}>
-          {creature.abilityTrigger ? <div className={styles.abilityTrigger}>{creature.abilityTrigger}</div> : null}
+          {creature.abilityTrigger ? (
+            <div className={styles.abilityTrigger}>{creature.abilityTrigger}</div>
+          ) : null}
           {/* Keywords coloured in place, from the same palette as the stat badges above (WI-007). */}
           <AbilityText text={creature.abilityText} className={styles.abilityText} />
         </div>

@@ -117,7 +117,13 @@ interface SelectProps extends Omit<ComponentPropsWithRef<"select">, "size"> {
 }
 
 /** A native `<select>` with its OS arrow suppressed and ours drawn in its place. */
-export function Select({ size = "md", block = false, className = "", children, ...rest }: SelectProps) {
+export function Select({
+  size = "md",
+  block = false,
+  className = "",
+  children,
+  ...rest
+}: SelectProps) {
   return (
     <span className={`${styles.selectWrap} ${block ? styles.block : ""}`}>
       <select
@@ -142,7 +148,13 @@ interface TextFieldProps extends Omit<ComponentPropsWithRef<"input">, "type" | "
   block?: boolean;
 }
 
-export function TextField({ size = "md", type = "text", block = false, className = "", ...rest }: TextFieldProps) {
+export function TextField({
+  size = "md",
+  type = "text",
+  block = false,
+  className = "",
+  ...rest
+}: TextFieldProps) {
   return (
     <input
       type={type}
@@ -158,7 +170,13 @@ interface NumberFieldProps extends Omit<ComponentPropsWithRef<"input">, "type" |
   width?: string;
 }
 
-export function NumberField({ size = "md", width, className = "", style, ...rest }: NumberFieldProps) {
+export function NumberField({
+  size = "md",
+  width,
+  className = "",
+  style,
+  ...rest
+}: NumberFieldProps) {
   return (
     <input
       type="number"
@@ -169,7 +187,10 @@ export function NumberField({ size = "md", width, className = "", style, ...rest
   );
 }
 
-interface ClampedNumberFieldProps extends Omit<NumberFieldProps, "value" | "defaultValue" | "onChange" | "onBlur"> {
+interface ClampedNumberFieldProps extends Omit<
+  NumberFieldProps,
+  "value" | "defaultValue" | "onChange" | "onBlur"
+> {
   value: number;
   min: number;
   max?: number;
@@ -194,7 +215,13 @@ interface ClampedNumberFieldProps extends Omit<NumberFieldProps, "value" | "defa
  * Committing on every valid keystroke, rather than on blur, is deliberate: these drive a live
  * recomputation, and making the user leave the field to see it would be its own annoyance.
  */
-export function ClampedNumberField({ value, min, max, onCommit, ...rest }: ClampedNumberFieldProps) {
+export function ClampedNumberField({
+  value,
+  min,
+  max,
+  onCommit,
+  ...rest
+}: ClampedNumberFieldProps) {
   const [draft, setDraft] = useState<string | null>(null);
   const inRange = (n: number) => Number.isFinite(n) && n >= min && (max === undefined || n <= max);
 
@@ -238,7 +265,9 @@ export function TextArea({ mono = false, className = "", ...rest }: TextAreaProp
 
 /** The time scrubber. A default range control is the most conspicuously unstyled thing on a page. */
 export function Range({ className = "", ...rest }: Omit<ComponentPropsWithRef<"input">, "type">) {
-  return <input type="range" className={`${styles.control} ${styles.range} ${className}`} {...rest} />;
+  return (
+    <input type="range" className={`${styles.control} ${styles.range} ${className}`} {...rest} />
+  );
 }
 
 /* ------------------------------------ Field ----------------------------------- */
@@ -268,7 +297,14 @@ interface FieldProps {
  * A label bound to its control by wrapping it, so no `id`/`htmlFor` pair can fall out of step — the
  * failure mode of the alternative is a label that silently labels nothing.
  */
-export function Field({ label, children, inline = false, labelWidth, hint, className = "" }: FieldProps) {
+export function Field({
+  label,
+  children,
+  inline = false,
+  labelWidth,
+  hint,
+  className = "",
+}: FieldProps) {
   return (
     <label
       className={`${styles.field} ${inline ? styles.fieldInline : styles.fieldStacked} ${className}`}

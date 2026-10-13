@@ -36,7 +36,11 @@ export function resolveLevelUp(
     if (!species) return null;
 
     const { evolvesInto, evolvesAtLevel } = species;
-    if (evolvesInto !== undefined && evolvesAtLevel !== undefined && targetLevel >= evolvesAtLevel) {
+    if (
+      evolvesInto !== undefined &&
+      evolvesAtLevel !== undefined &&
+      targetLevel >= evolvesAtLevel
+    ) {
       currentId = evolvesInto;
       continue;
     }

@@ -15,37 +15,44 @@ import type { PlacementKey } from "../data/types";
  */
 
 /** Stable iteration order used for tie-breaking simultaneous timeline events (contracts/engine-api.md). */
-export const STABLE_SLOT_ORDER: GridSlot[] = [{
-	row: GridRow.Top,
-	col: 0
-}, {
-	row: GridRow.Top,
-	col: 1
-}, {
-	row: GridRow.Top,
-	col: 2
-}, {
-	row: GridRow.Bottom,
-	col: 0
-}, {
-	row: GridRow.Bottom,
-	col: 1
-}, {
-	row: GridRow.Bottom,
-	col: 2
-}];
+export const STABLE_SLOT_ORDER: GridSlot[] = [
+  {
+    row: GridRow.Top,
+    col: 0,
+  },
+  {
+    row: GridRow.Top,
+    col: 1,
+  },
+  {
+    row: GridRow.Top,
+    col: 2,
+  },
+  {
+    row: GridRow.Bottom,
+    col: 0,
+  },
+  {
+    row: GridRow.Bottom,
+    col: 1,
+  },
+  {
+    row: GridRow.Bottom,
+    col: 2,
+  },
+];
 export function slotKey(slot: GridSlot): string {
-	return `${slot.row}${slot.col}`;
+  return `${slot.row}${slot.col}`;
 }
 export function slotsEqual(a: GridSlot, b: GridSlot): boolean {
-	return a.row === b.row && a.col === b.col;
+  return a.row === b.row && a.col === b.col;
 }
 export function stableSlotIndex(slot: GridSlot): number {
-	const index = STABLE_SLOT_ORDER.findIndex(s => slotsEqual(s, slot));
-	if (index === -1) {
-		throw new Error(`Invalid grid slot: ${JSON.stringify(slot)}`);
-	}
-	return index;
+  const index = STABLE_SLOT_ORDER.findIndex((s) => slotsEqual(s, slot));
+  if (index === -1) {
+    throw new Error(`Invalid grid slot: ${JSON.stringify(slot)}`);
+  }
+  return index;
 }
 
 /**
@@ -68,8 +75,8 @@ export function stableSlotIndex(slot: GridSlot): number {
  * diagonals at 2, and a slot is at 0 from itself.
  */
 export function isAdjacent(a: GridSlot, b: GridSlot): boolean {
-	const rowDistance = a.row === b.row ? 0 : 1;
-	return rowDistance + Math.abs(a.col - b.col) === 1;
+  const rowDistance = a.row === b.row ? 0 : 1;
+  return rowDistance + Math.abs(a.col - b.col) === 1;
 }
 
 /**
@@ -85,14 +92,20 @@ export function isAdjacent(a: GridSlot, b: GridSlot): boolean {
  * Read everywhere `isAdjacent` is, which is two places — `selectTargets` and the cooldown-speed
  * aura sum in `simulate.ts` — through {@link adjacentUnder} so neither can forget it.
  */
-export function hasUniversalAdjacency(config: Pick<TeamConfiguration, "trinketIds"> | undefined): boolean {
-	return (config?.trinketIds ?? []).includes(TrinketId.LinkCable);
+export function hasUniversalAdjacency(
+  config: Pick<TeamConfiguration, "trinketIds"> | undefined,
+): boolean {
+  return (config?.trinketIds ?? []).includes(TrinketId.LinkCable);
 }
 
 /** `isAdjacent`, except that Link Cable makes it true for every distinct pair. */
-export function adjacentUnder(config: Pick<TeamConfiguration, "trinketIds"> | undefined, a: GridSlot, b: GridSlot): boolean {
-	if (slotsEqual(a, b)) return false;
-	return hasUniversalAdjacency(config) || isAdjacent(a, b);
+export function adjacentUnder(
+  config: Pick<TeamConfiguration, "trinketIds"> | undefined,
+  a: GridSlot,
+  b: GridSlot,
+): boolean {
+  if (slotsEqual(a, b)) return false;
+  return hasUniversalAdjacency(config) || isAdjacent(a, b);
 }
 
 /*
@@ -121,26 +134,32 @@ export function adjacentUnder(config: Pick<TeamConfiguration, "trinketIds"> | un
 
 /** One column LEFT, same row. `null` at the leftmost column. */
 export function behindSlot(slot: GridSlot): GridSlot | null {
-	return slot.col === 0 ? null : {
-		row: slot.row,
-		col: slot.col - 1 as GridSlot["col"]
-	};
+  return slot.col === 0
+    ? null
+    : {
+        row: slot.row,
+        col: (slot.col - 1) as GridSlot["col"],
+      };
 }
 
 /** One column RIGHT, same row. `null` at the rightmost column. */
 export function inFrontSlot(slot: GridSlot): GridSlot | null {
-	return slot.col === 2 ? null : {
-		row: slot.row,
-		col: slot.col + 1 as GridSlot["col"]
-	};
+  return slot.col === 2
+    ? null
+    : {
+        row: slot.row,
+        col: (slot.col + 1) as GridSlot["col"],
+      };
 }
 
 /** Same column, top row. `null` from the top row, which has nothing above it. */
 export function aboveSlot(slot: GridSlot): GridSlot | null {
-	return slot.row === GridRow.Bottom ? {
-		row: GridRow.Top,
-		col: slot.col
-	} : null;
+  return slot.row === GridRow.Bottom
+    ? {
+        row: GridRow.Top,
+        col: slot.col,
+      }
+    : null;
 }
 
 /**
@@ -157,5 +176,5 @@ export function aboveSlot(slot: GridSlot): GridSlot | null {
  */
 /** The one place the key format is defined. */
 export function placementKey(creatureId: Species, slot: GridSlot): PlacementKey {
-	return `${creatureId}@${slotKey(slot)}` as PlacementKey;
+  return `${creatureId}@${slotKey(slot)}` as PlacementKey;
 }
